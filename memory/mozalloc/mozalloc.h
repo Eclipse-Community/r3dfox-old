@@ -173,7 +173,11 @@ MFBT_API void* moz_xvalloc(size_t size)
 /*
  * Suppress build warning spam (bug 578546).
  */
+#if _MSC_VER < 1912
 #define MOZALLOC_THROW_IF_HAS_EXCEPTIONS
+#else
+#define MOZALLOC_THROW_IF_HAS_EXCEPTIONS throw()
+#endif
 #define MOZALLOC_THROW_BAD_ALLOC_IF_HAS_EXCEPTIONS
 #else
 #define MOZALLOC_THROW_IF_HAS_EXCEPTIONS throw()

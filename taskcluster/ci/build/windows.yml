@@ -19,8 +19,8 @@ win32/debug:
             - builds/releng_base_firefox.py
             - builds/taskcluster_firefox_windows_32_debug.py
     toolchains:
-        - win32-clang-cl
-        - win32-rust
+        - win64-clang-cl
+        - win64-rust
         - win64-sccache
 
 win32/opt:
@@ -44,8 +44,8 @@ win32/opt:
             - builds/releng_base_firefox.py
             - builds/taskcluster_firefox_windows_32_opt.py
     toolchains:
-        - win32-clang-cl
-        - win32-rust
+        - win64-clang-cl
+        - win64-rust
         - win64-sccache
 
 win32-dmd/opt:
@@ -71,8 +71,8 @@ win32-dmd/opt:
         custom-build-variant-cfg: dmd
     run-on-projects: [ ]
     toolchains:
-        - win32-clang-cl
-        - win32-rust
+        - win64-clang-cl
+        - win64-rust
         - win64-sccache
 
 win32/pgo:
@@ -97,8 +97,8 @@ win32/pgo:
             - builds/releng_base_firefox.py
             - builds/taskcluster_firefox_windows_32_opt.py
     toolchains:
-        - win32-clang-cl
-        - win32-rust
+        - win64-clang-cl
+        - win64-rust
         - win64-sccache
 
 win64/debug:
@@ -205,8 +205,8 @@ win32-nightly/opt:
             - disable_signing.py
             - taskcluster_nightly.py
     toolchains:
-        - win32-clang-cl
-        - win32-rust
+        - win64-clang-cl
+        - win64-rust
         - win64-sccache
 
 win64-nightly/opt:
@@ -289,8 +289,8 @@ win32-add-on-devel/opt:
             - balrog/production.py
     run-on-projects: [ 'mozilla-beta', 'mozilla-release', 'mozilla-esr45' ]
     toolchains:
-        - win32-clang-cl
-        - win32-rust
+        - win64-clang-cl
+        - win64-rust
         - win64-sccache
 
 win64-add-on-devel/opt:
@@ -368,8 +368,8 @@ win32-noopt/debug:
             - builds/taskcluster_firefox_win32_noopt_debug.py
     run-on-projects: [ 'trunk', 'try' ]
     toolchains:
-        - win32-clang-cl
-        - win32-rust
+        - win64-clang-cl
+        - win64-rust
         - win64-sccache
 
 win32-rusttests/opt:
@@ -394,8 +394,8 @@ win32-rusttests/opt:
             - builds/taskcluster_firefox_win32_rusttests_opt.py
     run-on-projects: [ 'trunk', 'try' ]
     toolchains:
-        - win32-clang-cl
-        - win32-rust
+        - win64-clang-cl
+        - win64-rust
         - win64-sccache
 
 win64-rusttests/opt:
@@ -532,8 +532,8 @@ win32-devedition-nightly/opt:
         custom-build-variant-cfg: devedition
     run-on-projects: [ 'mozilla-beta', ]
     toolchains:
-        - win32-clang-cl
-        - win32-rust
+        - win64-clang-cl
+        - win64-rust
         - win64-sccache
 
 win64-devedition-nightly/opt:

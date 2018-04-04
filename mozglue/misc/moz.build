@@ -33,6 +33,9 @@ OS_LIBS += CONFIG['REALTIME_LIBS']
 DEFINES['IMPL_MFBT'] = True
 
 if CONFIG['OS_ARCH'] == 'WINNT':
+    EXPORTS.mozilla += [
+        'DynamicallyLinkedFunctionPtr.h',
+    ]
     SOURCES += [
         'TimeStamp_windows.cpp',
     ]

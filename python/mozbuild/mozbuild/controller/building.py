@@ -1238,6 +1238,21 @@ class BuildDriver(MozbuildObject):
                 # as when doing OSX Universal builds)
                 pass
 
+        # Check if there are any unpreprocessed files in '@MOZ_OBJDIR@/dist/bin'
+        # See python/mozbuild/mozbuild/preprocessor.py#L293-L309 for the list of directives
+        # We skip if, ifdef, ifndef, else, elif, elifdef and elifndef, because they are never used alone
+        #
+        # The original version of this script only worked with GNU grep because of the --include flag. 
+        # Not a problem in and of itself, except that it didn't take TOOLCHAIN_PREFIX and simply assumed 
+        # all operating systems use GNU grep as the system grep (often it's called ggrep or something). 
+        # This script is a bit slower, but should do the same thing on all Unix platforms. 
+
+        grepcmd = 'find ' + self.topobjdir + '/dist/bin' + ' -name \'\*.{css,dtd,html,js,jsm,xhtml,xml,xul,manifest,properties,rdf}\' ' + '| xargs grep -E "^(#|%)(define|endif|error|expand|filter|include|literal|undef|unfilter)" '\
+                  + '| awk "/\.css:%/ || (!/\.css/ && /:#/)"'
+        grepresult = subprocess.Popen(grepcmd, stdout=subprocess.PIPE, shell=True).communicate()[0]
+        if grepresult:
+            print('\nERROR: preprocessor was not applied to the following files:\n\n' + grepresult)
+
         return status
 
     def configure(self, options=None, buildstatus_messages=False,

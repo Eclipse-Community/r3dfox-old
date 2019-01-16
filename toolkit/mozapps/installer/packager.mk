@@ -142,7 +142,6 @@ checksum:
 	@echo 'CHECKSUM FILE START'
 	@cat $(CHECKSUM_FILE)
 	@echo 'CHECKSUM FILE END'
-	$(SIGN_CHECKSUM_CMD)
 
 
 upload: checksum

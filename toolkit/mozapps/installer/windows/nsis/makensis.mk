@@ -6,8 +6,6 @@ ifndef CONFIG_DIR
 $(error CONFIG_DIR must be set before including makensis.mk)
 endif
 
-include $(MOZILLA_DIR)/toolkit/mozapps/installer/signing.mk
-
 ABS_CONFIG_DIR := $(abspath $(CONFIG_DIR))
 
 SFX_MODULE ?= $(error SFX_MODULE is not defined)
@@ -46,9 +44,6 @@ $(CONFIG_DIR)/setup.exe::
 	$(INSTALL) $(addprefix $(MOZILLA_DIR)/other-licenses/nsis/Plugins/,$(CUSTOM_NSIS_PLUGINS)) $(CONFIG_DIR)
 	$(INSTALL) $(addprefix $(MOZILLA_DIR)/other-licenses/nsis/,$(CUSTOM_UI)) $(CONFIG_DIR)
 	cd $(CONFIG_DIR) && $(MAKENSISU) $(MAKENSISU_FLAGS) installer.nsi
-ifdef MOZ_EXTERNAL_SIGNING_FORMAT
-	$(MOZ_SIGN_CMD) $(foreach f,$(MOZ_EXTERNAL_SIGNING_FORMAT),-f $(f)) "$@"
-endif
 
 ifdef ZIP_IN
 installer:: $(CONFIG_DIR)/setup.exe $(ZIP_IN)
@@ -61,9 +56,6 @@ installer:: $(CONFIG_DIR)/setup.exe $(ZIP_IN)
 	  --tag $(topsrcdir)/$(MOZ_BUILD_APP)/installer/windows/app.tag \
 	  --setupexe $(CONFIG_DIR)/setup.exe \
 	  --sfx-stub $(SFX_MODULE)
-ifdef MOZ_EXTERNAL_SIGNING_FORMAT
-	$(MOZ_SIGN_CMD) $(foreach f,$(MOZ_EXTERNAL_SIGNING_FORMAT),-f $(f)) "$(DIST)/$(PKG_INST_PATH)$(PKG_INST_BASENAME).exe"
-endif
 else
 installer::
 	$(error ZIP_IN must be set when building installer)

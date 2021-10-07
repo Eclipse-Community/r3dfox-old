@@ -292,7 +292,7 @@ const char* mozilla::dom::ContentPrefs::gEarlyPrefs[] = {
     "network.tcp.keepalive.retry_interval",
     "network.tcp.sendbuffer",
     "nglayout.debug.invalidation",
-    "privacy.donottrackheader.enabled",
+    "privacy.GPCheader.enabled",
     "privacy.firstparty.isolate",
     "privacy.firstparty.isolate.restrict_opener_access",
     "privacy.reduceTimerPrecision",

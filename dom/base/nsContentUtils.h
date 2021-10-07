@@ -2665,9 +2665,9 @@ class nsContentUtils {
   static mozilla::HTMLEditor* GetHTMLEditor(nsPresContext* aPresContext);
 
   /**
-   * Returns true if the privacy.donottrackheader.enabled pref is set.
+   * Returns true if the privacy.GPCheader.enabled pref is set.
    */
-  static bool DoNotTrackEnabled();
+  static bool GPCEnabled();
 
   /**
    * Returns a LogModule that dump calls from content script are logged to.
@@ -3398,7 +3398,7 @@ class nsContentUtils {
   // bytecode out of the nsCacheInfoChannel.
   static nsCString* sJSBytecodeMimeType;
 
-  static bool sDoNotTrackEnabled;
+  static bool sGPCEnabled;
   static mozilla::LazyLogModule sDOMDumpLog;
 
   static PopupControlState sPopupControlState;

@@ -35,6 +35,7 @@ Navigator implements NavigatorStorageUtils;
 Navigator implements NavigatorConcurrentHardware;
 Navigator implements NavigatorStorage;
 Navigator implements NavigatorAutomationInformation;
+Navigator implements NavigatorGlobalPrivacyControl;
 
 [NoInterfaceObject, Exposed=(Window,Worker)]
 interface NavigatorID {
@@ -116,9 +117,10 @@ partial interface Navigator {
   readonly attribute PluginArray plugins;
 };
 
-// http://www.w3.org/TR/tracking-dnt/ sort of
-partial interface Navigator {
-  readonly attribute DOMString doNotTrack;
+// https://globalprivacycontrol.github.io/gpc-spec/
+[NoInterfaceObject, Exposed=(Window,Worker)]
+interface NavigatorGlobalPrivacyControl {
+  readonly attribute boolean globalPrivacyControl;
 };
 
 // http://www.w3.org/TR/geolocation-API/#geolocation_interface

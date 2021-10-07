@@ -478,7 +478,7 @@ class nsHttpChannel final : public HttpBaseChannel,
   void MaybeWarnAboutAppCache();
 
   void SetOriginHeader();
-  void SetDoNotTrack();
+  void SetGPC();
 
   already_AddRefed<nsChannelClassifier> GetOrCreateChannelClassifier();
 

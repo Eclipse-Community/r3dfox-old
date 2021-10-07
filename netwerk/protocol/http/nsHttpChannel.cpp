@@ -5922,7 +5922,7 @@ nsresult nsHttpChannel::BeginConnect() {
   mRequestHead.SetOrigin(scheme, host, port);
 
   SetOriginHeader();
-  SetDoNotTrack();
+  SetGPC();
 
   OriginAttributes originAttributes;
   NS_GetOriginAttributes(this, originAttributes);
@@ -8424,18 +8424,13 @@ void nsHttpChannel::SetOriginHeader() {
   MOZ_ASSERT(NS_SUCCEEDED(rv));
 }
 
-void nsHttpChannel::SetDoNotTrack() {
+void nsHttpChannel::SetGPC() {
   /**
-   * 'DoNotTrack' header should be added if 'privacy.donottrackheader.enabled'
-   * is true or tracking protection is enabled. See bug 1258033.
+   * 'Sec-GPC: 1' header should be added if 'privacy.GPCheader.enabled' is true.
    */
-  nsCOMPtr<nsILoadContext> loadContext;
-  NS_QueryNotificationCallbacks(this, loadContext);
-
-  if ((loadContext && loadContext->UseTrackingProtection()) ||
-      nsContentUtils::DoNotTrackEnabled()) {
+  if (nsContentUtils::GPCEnabled()) {
     DebugOnly<nsresult> rv = mRequestHead.SetHeader(
-        nsHttp::DoNotTrack, NS_LITERAL_CSTRING("1"), false);
+        nsHttp::GlobalPrivacyControl, NS_LITERAL_CSTRING("1"), false);
     MOZ_ASSERT(NS_SUCCEEDED(rv));
   }
 }

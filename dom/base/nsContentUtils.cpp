@@ -338,7 +338,7 @@ nsIParser* nsContentUtils::sXMLFragmentParser = nullptr;
 nsIFragmentContentSink* nsContentUtils::sXMLFragmentSink = nullptr;
 bool nsContentUtils::sFragmentParsingActive = false;
 
-bool nsContentUtils::sDoNotTrackEnabled = false;
+bool nsContentUtils::sGPCEnabled = false;
 
 mozilla::LazyLogModule nsContentUtils::sDOMDumpLog("Dump");
 
@@ -658,8 +658,8 @@ nsresult nsContentUtils::Init() {
                                "network.cookie.cookieBehavior",
                                nsICookieService::BEHAVIOR_ACCEPT);
 
-  Preferences::AddBoolVarCache(&sDoNotTrackEnabled,
-                               "privacy.donottrackheader.enabled", false);
+  Preferences::AddBoolVarCache(&sGPCEnabled,
+                               "privacy.GPCheader.enabled", false);
 
   Preferences::AddBoolVarCache(&sUseActivityCursor, "ui.use_activity_cursor",
                                false);
@@ -7042,8 +7042,8 @@ bool nsContentUtils::IsAllowedNonCorsContentType(
          contentType.LowerCaseEqualsLiteral("multipart/form-data");
 }
 
-bool nsContentUtils::DoNotTrackEnabled() {
-  return nsContentUtils::sDoNotTrackEnabled;
+bool nsContentUtils::GPCEnabled() {
+  return nsContentUtils::sGPCEnabled;
 }
 
 mozilla::LogModule* nsContentUtils::DOMDumpLog() { return sDOMDumpLog; }

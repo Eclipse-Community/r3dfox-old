@@ -8,6 +8,7 @@
 #define mozilla_dom_workernavigator_h__
 
 #include "WorkerCommon.h"
+#include "nsContentUtils.h"
 #include "nsString.h"
 #include "nsWrapperCache.h"
 #include "mozilla/dom/BindingDeclarations.h"
@@ -80,6 +81,11 @@ class WorkerNavigator final : public nsWrapperCache {
 
   // Worker thread only!
   void SetOnLine(bool aOnline) { mOnline = aOnline; }
+
+  bool GlobalPrivacyControl() const
+  {
+    return nsContentUtils::GPCEnabled();
+  }
 
   void SetLanguages(const nsTArray<nsString>& aLanguages);
 

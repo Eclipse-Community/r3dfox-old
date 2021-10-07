@@ -1388,8 +1388,8 @@ pref("content.sink.pending_event_mode", 0);
 //   3 = openAbused
 pref("privacy.popups.disable_from_plugins", 3);
 
-// send "do not track" HTTP header, disabled by default
-pref("privacy.donottrackheader.enabled",    false);
+// Send "Sec-GPC" HTTP header, disabled by default
+pref("privacy.GPCheader.enabled",    false);
 // If true, close button will be shown on permission prompts
 // and for all PopupNotifications, the secondary action of
 // the popup will be called when the popup is dismissed.

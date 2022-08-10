@@ -359,13 +359,13 @@
         </hbox>
       </vbox>
     </hbox>
-    <vbox id="doNotTrackLearnMoreBox">
-      <label><label class="tail-with-learn-more" data-l10n-id="do-not-track-description"></label><label
-      class="learnMore text-link" href="https://www.mozilla.org/dnt"
-      data-l10n-id="do-not-track-learn-more"></label></label>
-      <radiogroup id="doNotTrackRadioGroup" aria-labelledby="doNotTrackDesc" preference="privacy.donottrackheader.enabled">
-        <radio value="false" data-l10n-id="do-not-track-option-default"/>
-        <radio value="true" data-l10n-id="do-not-track-option-always"/>
+    <vbox id="privacyGPCLearnMoreBox">
+      <label><label class="tail-with-learn-more" data-l10n-id="privacy-gpc-description"></label><label
+      class="learnMore text-link" href="https://www.palemoon.org/support/global-privacy-control"
+      data-l10n-id="privacy-gpc-learn-more"></label></label>
+      <radiogroup id="privacyGPCRadioGroup" aria-labelledby="privacyGPCDesc" preference="privacy.GPCheader.enabled">
+        <radio value="false" data-l10n-id="privacy-gpc-option-default"/>
+        <radio value="true" data-l10n-id="privacy-gpc-option-always"/>
       </radiogroup>
     </vbox>
   </vbox>

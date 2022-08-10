@@ -352,13 +352,13 @@ button > hbox > label {
   margin-top: 28px;
 }
 
-.doNotTrackLearnMore {
+.privacyGPCLearnMore {
   margin-inline-start: calc(1em + 30px);
   margin-bottom: 1em;
   font-weight: normal;
 }
 
-.doNotTrackLearnMore > label {
+.privacyGPCLearnMore > label {
   font-size: 1em !important;
   margin-left: 0;
 }
@@ -373,7 +373,7 @@ button > hbox > label {
   margin-bottom: 4px;
 }
 
-#doNotTrackLearnMoreBox {
+#privacyGPCLearnMoreBox {
   margin-top: 32px;
 }
 

@@ -70,8 +70,8 @@ Preferences.addAll([
   // Clear Private Data
   { id: "privacy.sanitize.sanitizeOnShutdown", type: "bool" },
   { id: "privacy.sanitize.timeSpan", type: "int" },
-  // Do not track
-  { id: "privacy.donottrackheader.enabled", type: "bool" },
+  // Global Privacy Control
+  { id: "privacy.GPCheader.enabled", type: "bool" },
 
   // Popups
   { id: "dom.disable_open_during_load", type: "bool" },

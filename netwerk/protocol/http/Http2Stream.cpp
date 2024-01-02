@@ -798,8 +798,9 @@ void Http2Stream::UpdateTransportSendEvents(uint32_t count) {
   // the session and cap the send buffers by default at 128KB.
   // (10Mbit/sec @ 100ms)
   //
+  // This feature is disabled by default.
   uint32_t bufferSize = gHttpHandler->SpdySendBufferSize();
-  if ((mTotalSent > bufferSize) && !mSetTCPSocketBuffer) {
+  if ((bufferSize > 0) && (mTotalSent > bufferSize) && !mSetTCPSocketBuffer) {
     mSetTCPSocketBuffer = 1;
     mSocketTransport->SetSendBufferSize(bufferSize);
   }

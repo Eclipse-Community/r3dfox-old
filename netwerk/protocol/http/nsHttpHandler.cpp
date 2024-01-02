@@ -1522,8 +1522,12 @@ void nsHttpHandler::PrefsChanged(nsIPrefBranch *prefs, const char *pref) {
   // closing the session.
   if (PREF_CHANGED(HTTP_PREF("spdy.send-buffer-size"))) {
     rv = prefs->GetIntPref(HTTP_PREF("spdy.send-buffer-size"), &val);
-    if (NS_SUCCEEDED(rv))
-      mSpdySendBufferSize = (uint32_t)clamped(val, 1500, 0x7fffffff);
+    if (NS_SUCCEEDED(rv)) {
+      if (val != 0)
+        mSpdySendBufferSize = (uint32_t) clamped(val, 1500, 0x7fffffff);
+      else
+        mSpdySendBufferSize = 0;
+    }
   }
 
   // The maximum amount of time to wait for socket transport to be

@@ -77,6 +77,7 @@ struct ThemeColors {
 
 enum class PreXULSkeletonUIError : uint32_t {
   None,
+  Ineligible,
   Disabled,
   EnabledKeyDoesNotExist,
   OOM,

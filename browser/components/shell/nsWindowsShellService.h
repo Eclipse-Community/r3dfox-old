@@ -31,6 +31,7 @@ class nsWindowsShellService : public nsToolkitShellService,
   nsresult LaunchControlPanelDefaultPrograms();
   nsresult LaunchModernSettingsDialogDefaultApps();
   nsresult InvokeHTTPOpenAsVerb();
+  nsresult LaunchHTTPHandlerPane();
 };
 
 #endif  // nswindowsshellservice_h____

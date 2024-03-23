@@ -7,6 +7,7 @@
 #include "mozilla/EMEUtils.h"
 #include "mozilla/KeySystemConfig.h"
 #include "mozilla/RefPtr.h"
+#include "mozilla/WindowsVersion.h"
 #include "mozilla/StaticString.h"
 #include "mozilla/WMFCDMProxyCallback.h"
 #include "nsString.h"
@@ -85,6 +86,13 @@ void MFCDMChild::EnsureRemote() {
 
   if (!mManagerThread) {
     LOG("no manager thread");
+    mState = NS_ERROR_NOT_AVAILABLE;
+    mRemotePromise = RemotePromise::CreateAndReject(mState, __func__);
+    return;
+  }
+
+  if (!IsWin10OrLater()) {
+    LOG("only support MF CDM on Windows 10+");
     mState = NS_ERROR_NOT_AVAILABLE;
     mRemotePromise = RemotePromise::CreateAndReject(mState, __func__);
     return;

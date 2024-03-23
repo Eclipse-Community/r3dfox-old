@@ -497,6 +497,7 @@ if CONFIG["MOZ_INSTRUMENTS"]:
 if CONFIG["OS_ARCH"] == "WINNT":
     OS_LIBS += [
         "advapi32",
+        "winmm",
     ]
     UNIFIED_SOURCES += [
         "threading/windows/CpuCount.cpp",

@@ -263,6 +263,12 @@ pub enum SystemColor {
     /// Used for menubar item text when hovered.
     MozMenubarhovertext,
 
+    /// Colors used for the header bar (sorta like the tab bar / menubar).
+    MozHeaderbar,
+    MozHeaderbartext,
+    MozHeaderbarinactive,
+    MozHeaderbarinactivetext,
+
     /// On platforms where these colors are the same as -moz-field, use
     /// -moz-fieldtext as foreground color
     MozEventreerow,
@@ -279,17 +285,6 @@ pub enum SystemColor {
     /// Used for button background when disabled.
     #[parse(condition = "ParserContext::chrome_rules_enabled")]
     MozButtondisabledface,
-
-    /// Colors used for the header bar (sorta like the tab bar / menubar).
-    #[parse(condition = "ParserContext::chrome_rules_enabled")]
-    MozHeaderbar,
-    #[parse(condition = "ParserContext::chrome_rules_enabled")]
-    MozHeaderbartext,
-    #[parse(condition = "ParserContext::chrome_rules_enabled")]
-    MozHeaderbarinactive,
-    #[parse(condition = "ParserContext::chrome_rules_enabled")]
-    MozHeaderbarinactivetext,
-
     /// Foreground color of default buttons.
     #[parse(condition = "ParserContext::chrome_rules_enabled")]
     MozMacDefaultbuttontext,

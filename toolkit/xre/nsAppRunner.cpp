@@ -121,7 +121,6 @@
 #  include "mozilla/WindowsMsctfInitialization.h"
 #  include "mozilla/WindowsOleAut32Initialization.h"
 #  include "mozilla/WindowsProcessMitigations.h"
-#  include "mozilla/WindowsVersion.h"
 #  include "mozilla/WinHeaderOnlyUtils.h"
 #  include "mozilla/mscom/ProcessRuntime.h"
 #  include "mozilla/mscom/ProfilerMarkers.h"

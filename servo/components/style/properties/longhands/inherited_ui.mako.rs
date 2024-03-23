@@ -120,14 +120,3 @@ ${helpers.predefined_type(
     ignored_when_colors_disabled=True,
     affects="paint",
 )}
-
-${helpers.predefined_type(
-    "-moz-theme",
-    "ui::MozTheme",
-    "specified::ui::MozTheme::Auto",
-    engines="gecko",
-    enabled_in="chrome",
-    animation_value_type="discrete",
-    spec="Internal",
-    affects="paint",
-)}

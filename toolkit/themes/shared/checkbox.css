@@ -53,6 +53,8 @@ checkbox {
 
 @media (-moz-platform: windows) {
   checkbox:where([native]) {
+    appearance: auto;
+    -moz-default-appearance: checkbox-container;
     align-items: center;
     margin: 2px 4px;
     padding-top: 1px;
@@ -84,15 +86,13 @@ checkbox {
     -moz-default-appearance: checkbox;
     align-items: center;
     margin-inline-end: 5px;
-    /* TODO: This matches what the old native theme did, but maybe we want to
-     * use em-based sizes here. */
-    width: 13px;
-    height: 13px;
   }
 }
 
 @media (-moz-platform: macos) {
   checkbox:where([native]) {
+    appearance: auto;
+    -moz-default-appearance: checkbox-container;
     align-items: center;
     margin: 4px 2px;
   }

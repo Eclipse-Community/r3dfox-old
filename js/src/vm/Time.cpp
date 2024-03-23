@@ -49,7 +49,7 @@ int64_t PRMJ_Now() {
 #else
 
 // Returns the number of microseconds since the Unix epoch.
-static int64_t FileTimeToUnixMicroseconds(const FILETIME& ft) {
+static double FileTimeToUnixMicroseconds(const FILETIME& ft) {
   // Get the time in 100ns intervals.
   int64_t t = (int64_t(ft.dwHighDateTime) << 32) | int64_t(ft.dwLowDateTime);
 
@@ -59,13 +59,13 @@ static int64_t FileTimeToUnixMicroseconds(const FILETIME& ft) {
   t -= TimeToEpochIn100ns;
 
   // Divide by 10 to convert to microseconds.
-  return t / 10;
+  return double(t) * 0.1;
 }
 
 int64_t PRMJ_Now() {
   FILETIME ft;
   GetSystemTimePreciseAsFileTime(&ft);
-  return FileTimeToUnixMicroseconds(ft);
+  return int64_t(FileTimeToUnixMicroseconds(ft));
 }
 #endif
 

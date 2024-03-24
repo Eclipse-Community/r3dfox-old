@@ -921,6 +921,9 @@ void CompositorD3D11::EndFrame() {
 
   if (oldSize == mSize) {
     Present();
+    if (StaticPrefs::gfx_compositor_clearstate()) {
+      mContext->ClearState();
+    }
   }
 
   // Block until the previous frame's work has been completed.

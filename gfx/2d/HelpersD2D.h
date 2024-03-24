@@ -13,6 +13,7 @@
 
 #include <dwrite.h>
 #include <float.h>
+#include <versionhelpers.h>
 #include "2D.h"
 #include "Logging.h"
 #include "ImageScaling.h"
@@ -283,10 +284,11 @@ static inline D2D1_BLEND_MODE D2DBlendMode(CompositionOp aOp) {
 static inline bool D2DSupportsPrimitiveBlendMode(CompositionOp aOp) {
   switch (aOp) {
     case CompositionOp::OP_OVER:
-    // case CompositionOp::OP_SOURCE:
-    // case CompositionOp::OP_DARKEN:
-    case CompositionOp::OP_ADD:
+      //  case CompositionOp::OP_SOURCE:
       return true;
+      //  case CompositionOp::OP_DARKEN:
+    case CompositionOp::OP_ADD:
+      return IsWindows8Point1OrGreater();
     default:
       return false;
   }

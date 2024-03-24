@@ -2468,7 +2468,8 @@ void gfxPlatform::InitAcceleration() {
       gfxCriticalNote << "Cannot evaluate keyed mutex feature status";
       gfxVars::SetAllowD3D11KeyedMutex(true);
     }
-    if (StaticPrefs::gfx_direct3d11_use_double_buffering()) {
+    if (StaticPrefs::gfx_direct3d11_use_double_buffering() &&
+        IsWin10OrLater()) {
       gfxVars::SetUseDoubleBufferingWithCompositor(true);
     }
 #endif
@@ -2841,7 +2842,8 @@ void gfxPlatform::InitWebRenderConfig() {
 
   bool useHwVideoZeroCopy = false;
   if (StaticPrefs::media_wmf_zero_copy_nv12_textures_AtStartup()) {
-    if (hasHardware) {
+    // XXX relax limitation to Windows 8.1
+    if (IsWin10OrLater() && hasHardware) {
       useHwVideoZeroCopy = true;
     }
 

@@ -1595,7 +1595,7 @@ nsDefaultCommandLineHandler.prototype = {
       }
     } else if (!cmdLine.preventDefault) {
       if (
-        AppConstants.platform == "win" &&
+        AppConstants.isPlatformAndVersionAtLeast("win", "10") &&
         cmdLine.state != Ci.nsICommandLine.STATE_INITIAL_LAUNCH &&
         lazy.WindowsUIUtils.inTabletMode
       ) {

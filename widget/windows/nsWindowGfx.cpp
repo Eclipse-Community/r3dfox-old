@@ -332,7 +332,8 @@ bool nsWindow::OnPaint(uint32_t aNestingLevel) {
       } break;
       case LayersBackend::LAYERS_WR: {
         result = listener->PaintWindow(this, region);
-        if (!gfxEnv::MOZ_DISABLE_FORCE_PRESENT()) {
+        if (!gfxEnv::MOZ_DISABLE_FORCE_PRESENT() &&
+            gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled()) {
           nsCOMPtr<nsIRunnable> event = NewRunnableMethod(
               "nsWindow::ForcePresent", this, &nsWindow::ForcePresent);
           NS_DispatchToMainThread(event);

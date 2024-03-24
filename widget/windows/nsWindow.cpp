@@ -1563,8 +1563,22 @@ void nsWindow::Show(bool bState) {
 
   if (mWindowType == WindowType::Popup) {
     MOZ_ASSERT(ChooseWindowClass(mWindowType) == kClassNameDropShadow);
-    const bool shouldUseDropShadow =
-        mTransparencyMode != TransparencyMode::Transparent;
+    const bool shouldUseDropShadow = [&] {
+      if (mTransparencyMode == TransparencyMode::Transparent) {
+        return false;
+      }
+      if (HasBogusPopupsDropShadowOnMultiMonitor() &&
+          WinUtils::GetMonitorCount() > 1 &&
+          !gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled()) {
+        // See bug 603793. When we try to draw D3D9/10 windows with a drop
+        // shadow without the DWM on a secondary monitor, windows fails to
+        // composite our windows correctly. We therefor switch off the drop
+        // shadow for pop-up windows when the DWM is disabled and two monitors
+        // are connected.
+        return false;
+      }
+      return true;
+    }();
 
     static bool sShadowEnabled = true;
     if (sShadowEnabled != shouldUseDropShadow) {
@@ -2512,6 +2526,8 @@ void nsWindow::UpdateDarkModeToolbar() {
 }
 
 LayoutDeviceIntMargin nsWindow::NormalWindowNonClientOffset() const {
+  bool glass = gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled();
+
   LayoutDeviceIntMargin nonClientOffset;
 
   // We're dealing with a "normal" window (not maximized, minimized, or
@@ -2522,7 +2538,7 @@ LayoutDeviceIntMargin nsWindow::NormalWindowNonClientOffset() const {
   // frame intact.  Setting it to a value greater than 0 reduces the frame
   // size by that amount.
 
-  if (mNonClientMargins.top > 0) {
+  if (mNonClientMargins.top > 0 && glass) {
     nonClientOffset.top = std::min(mCaptionHeight, mNonClientMargins.top);
   } else if (mNonClientMargins.top == 0) {
     nonClientOffset.top = mCaptionHeight;
@@ -2530,7 +2546,7 @@ LayoutDeviceIntMargin nsWindow::NormalWindowNonClientOffset() const {
     nonClientOffset.top = 0;
   }
 
-  if (mNonClientMargins.bottom > 0) {
+  if (mNonClientMargins.bottom > 0 && glass) {
     nonClientOffset.bottom =
         std::min(mVertResizeMargin, mNonClientMargins.bottom);
   } else if (mNonClientMargins.bottom == 0) {
@@ -2539,7 +2555,7 @@ LayoutDeviceIntMargin nsWindow::NormalWindowNonClientOffset() const {
     nonClientOffset.bottom = 0;
   }
 
-  if (mNonClientMargins.left > 0) {
+  if (mNonClientMargins.left > 0 && glass) {
     nonClientOffset.left = std::min(mHorResizeMargin, mNonClientMargins.left);
   } else if (mNonClientMargins.left == 0) {
     nonClientOffset.left = mHorResizeMargin;
@@ -2547,7 +2563,7 @@ LayoutDeviceIntMargin nsWindow::NormalWindowNonClientOffset() const {
     nonClientOffset.left = 0;
   }
 
-  if (mNonClientMargins.right > 0) {
+  if (mNonClientMargins.right > 0 && glass) {
     nonClientOffset.right = std::min(mHorResizeMargin, mNonClientMargins.right);
   } else if (mNonClientMargins.right == 0) {
     nonClientOffset.right = mHorResizeMargin;
@@ -2783,6 +2799,23 @@ void nsWindow::InvalidateNonClientRegion() {
   DeleteObject(winRgn);
 }
 
+HRGN nsWindow::ExcludeNonClientFromPaintRegion(HRGN aRegion) {
+  RECT rect;
+  HRGN rgn = nullptr;
+  if (aRegion == (HRGN)1) {  // undocumented value indicating a full refresh
+    GetWindowRect(mWnd, &rect);
+    rgn = CreateRectRgnIndirect(&rect);
+  } else {
+    rgn = aRegion;
+  }
+  GetClientRect(mWnd, &rect);
+  MapWindowPoints(mWnd, nullptr, (LPPOINT)&rect, 2);
+  HRGN nonClientRgn = CreateRectRgnIndirect(&rect);
+  CombineRgn(rgn, rgn, nonClientRgn, RGN_DIFF);
+  DeleteObject(nonClientRgn);
+  return rgn;
+}
+
 /**************************************************************
  *
  * SECTION: nsIWidget::SetBackgroundColor
@@ -3005,6 +3038,13 @@ void nsWindow::SetTransparencyMode(TransparencyMode aMode) {
   MOZ_ASSERT(window);
 
   if (!window || window->DestroyCalled()) {
+    return;
+  }
+
+  if (WindowType::TopLevel == window->mWindowType &&
+      mTransparencyMode != aMode &&
+      !gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled()) {
+    NS_WARNING("Cannot set transparency mode on top-level windows.");
     return;
   }
 
@@ -3291,6 +3331,13 @@ NS_IMPL_ISUPPORTS0(FullscreenTransitionData)
 
 /* virtual */
 bool nsWindow::PrepareForFullscreenTransition(nsISupports** aData) {
+  // We don't support fullscreen transition when composition is not
+  // enabled, which could make the transition broken and annoying.
+  // See bug 1184201.
+  if (!gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled()) {
+    return false;
+  }
+
   FullscreenTransitionInitData initData;
   nsCOMPtr<nsIScreen> screen = GetWidgetScreen();
   const DesktopIntRect rect = screen->GetRectDisplayPix();
@@ -5146,7 +5193,9 @@ bool nsWindow::ProcessMessageInternal(UINT msg, WPARAM& wParam, LPARAM& lParam,
        * sending the message with an updated title
        */
 
-      if (mSendingSetText || !mCustomNonClient || mNonClientMargins.top == -1)
+      if ((mSendingSetText &&
+           gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled()) ||
+          !mCustomNonClient || mNonClientMargins.top == -1)
         break;
 
       {
@@ -5182,14 +5231,17 @@ bool nsWindow::ProcessMessageInternal(UINT msg, WPARAM& wParam, LPARAM& lParam,
       }
 
       // There is a case that rendered result is not kept. Bug 1237617
-      if (wParam == TRUE && !gfxEnv::MOZ_DISABLE_FORCE_PRESENT()) {
+      if (wParam == TRUE && !gfxEnv::MOZ_DISABLE_FORCE_PRESENT() &&
+          gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled()) {
         NS_DispatchToMainThread(NewRunnableMethod(
             "nsWindow::ForcePresent", this, &nsWindow::ForcePresent));
       }
 
       // let the dwm handle nc painting on glass
       // Never allow native painting if we are on fullscreen
-      if (mFrameState->GetSizeMode() != nsSizeMode_Fullscreen) break;
+      if (mFrameState->GetSizeMode() != nsSizeMode_Fullscreen &&
+          gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled())
+        break;
 
       if (wParam == TRUE) {
         // going active
@@ -5214,6 +5266,24 @@ bool nsWindow::ProcessMessageInternal(UINT msg, WPARAM& wParam, LPARAM& lParam,
        * do seem to always send a WM_NCPAINT message, so let's update on that.
        */
       gfxDWriteFont::UpdateSystemTextVars();
+
+      /*
+       * Reset the non-client paint region so that it excludes the
+       * non-client areas we paint manually. Then call defwndproc
+       * to do the actual painting.
+       */
+
+      if (!mCustomNonClient) break;
+
+      // let the dwm handle nc painting on glass
+      if (gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled()) break;
+
+      HRGN paintRgn = ExcludeNonClientFromPaintRegion((HRGN)wParam);
+      LRESULT res = CallWindowProcW(GetPrevWindowProc(), mWnd, msg,
+                                    (WPARAM)paintRgn, lParam);
+      if (paintRgn != (HRGN)wParam) DeleteObject(paintRgn);
+      *aRetValue = res;
+      result = true;
     } break;
 
     case WM_POWERBROADCAST:
@@ -5939,6 +6009,26 @@ bool nsWindow::ProcessMessageInternal(UINT msg, WPARAM& wParam, LPARAM& lParam,
       }
     } break;
 
+    case WM_DWMCOMPOSITIONCHANGED:
+      // Every window will get this message, but gfxVars only broadcasts
+      // updates when the value actually changes
+      if (XRE_IsParentProcess()) {
+        BOOL dwmEnabled = FALSE;
+        if (FAILED(::DwmIsCompositionEnabled(&dwmEnabled)) || !dwmEnabled) {
+          gfxVars::SetDwmCompositionEnabled(false);
+        } else {
+          gfxVars::SetDwmCompositionEnabled(true);
+        }
+      }
+
+      UpdateNonClientMargins();
+      BroadcastMsg(mWnd, WM_DWMCOMPOSITIONCHANGED);
+      // TODO: Why is NotifyThemeChanged needed, what does it affect? And can we
+      // make it more granular by tweaking the ChangeKind we pass?
+      NotifyThemeChanged(widget::ThemeChangeKind::StyleAndLayout);
+      Invalidate(true, true, true);
+      break;
+
     case WM_DPICHANGED: {
       LPRECT rect = (LPRECT)lParam;
       OnDPIChanged(rect->left, rect->top, rect->right - rect->left,
@@ -6084,6 +6174,35 @@ void nsWindow::FinishLiveResizing(ResizeState aNewState) {
   }
   mResizeState = aNewState;
   ForcePresent();
+}
+
+/**************************************************************
+ *
+ * SECTION: Broadcast messaging
+ *
+ * Broadcast messages to all windows.
+ *
+ **************************************************************/
+
+// Enumerate all child windows sending aMsg to each of them
+BOOL CALLBACK nsWindow::BroadcastMsgToChildren(HWND aWnd, LPARAM aMsg) {
+  WNDPROC winProc = (WNDPROC)::GetWindowLongPtrW(aWnd, GWLP_WNDPROC);
+  if (winProc == &nsWindow::WindowProc) {
+    // it's one of our windows so go ahead and send a message to it
+    ::CallWindowProcW(winProc, aWnd, aMsg, 0, 0);
+  }
+  return TRUE;
+}
+
+// Enumerate all top level windows specifying that the children of each
+// top level window should be enumerated. Do *not* send the message to
+// each top level window since it is assumed that the toolkit will send
+// aMsg to them directly.
+BOOL CALLBACK nsWindow::BroadcastMsg(HWND aTopWindow, LPARAM aMsg) {
+  // Iterate each of aTopWindows child windows sending the aMsg
+  // to each of them.
+  ::EnumChildWindows(aTopWindow, nsWindow::BroadcastMsgToChildren, aMsg);
+  return TRUE;
 }
 
 /**************************************************************
@@ -7184,6 +7303,37 @@ void nsWindow::WindowUsesOMTC() {
   style |= CS_HREDRAW | CS_VREDRAW;
   DebugOnly<ULONG_PTR> result = ::SetClassLongPtr(mWnd, GCL_STYLE, style);
   NS_WARNING_ASSERTION(result, "Could not reset window class style");
+}
+
+// See bug 603793
+bool nsWindow::HasBogusPopupsDropShadowOnMultiMonitor() {
+  static const bool sHasBogusPopupsDropShadowOnMultiMonitor = [] {
+    // Since any change in the preferences requires a restart, this can be
+    // done just once.
+    // Check for Direct2D first.
+    if (gfxWindowsPlatform::GetPlatform()->IsDirect2DBackend()) {
+      return true;
+    }
+    // Otherwise check if Direct3D 9 may be used.
+    if (gfxConfig::IsEnabled(gfx::Feature::HW_COMPOSITING) &&
+        !gfxConfig::IsEnabled(gfx::Feature::OPENGL_COMPOSITING)) {
+      nsCOMPtr<nsIGfxInfo> gfxInfo = components::GfxInfo::Service();
+      if (gfxInfo) {
+        int32_t status;
+        nsCString discardFailureId;
+        if (NS_SUCCEEDED(
+                gfxInfo->GetFeatureStatus(nsIGfxInfo::FEATURE_DIRECT3D_9_LAYERS,
+                                          discardFailureId, &status))) {
+          if (status == nsIGfxInfo::FEATURE_STATUS_OK ||
+              gfxConfig::IsForcedOnByUser(gfx::Feature::HW_COMPOSITING)) {
+            return true;
+          }
+        }
+      }
+    }
+    return false;
+  }();
+  return sHasBogusPopupsDropShadowOnMultiMonitor;
 }
 
 void nsWindow::OnDPIChanged(int32_t x, int32_t y, int32_t width,
@@ -8436,7 +8586,9 @@ void nsWindow::GetCompositorWidgetInitData(
       mTransparencyMode, mFrameState->GetSizeMode());
 }
 
-bool nsWindow::SynchronouslyRepaintOnResize() { return false; }
+bool nsWindow::SynchronouslyRepaintOnResize() {
+  return !gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled();
+}
 
 void nsWindow::MaybeDispatchInitialFocusEvent() {
   if (mIsShowingPreXULSkeletonUI && ::GetActiveWindow() == mWnd) {

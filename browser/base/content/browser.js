@@ -5084,14 +5084,14 @@ function updateToggleControlLabel(control) {
 
 var TabletModeUpdater = {
   init() {
-    if (AppConstants.platform == "win") {
+    if (AppConstants.isPlatformAndVersionAtLeast("win", "10")) {
       this.update(WindowsUIUtils.inTabletMode);
       Services.obs.addObserver(this, "tablet-mode-change");
     }
   },
 
   uninit() {
-    if (AppConstants.platform == "win") {
+    if (AppConstants.isPlatformAndVersionAtLeast("win", "10")) {
       Services.obs.removeObserver(this, "tablet-mode-change");
     }
   },
@@ -5180,7 +5180,7 @@ var gUIDensity = {
   getCurrentDensity() {
     // Automatically override the uidensity to touch in Windows tablet mode.
     if (
-      AppConstants.platform == "win" &&
+      AppConstants.isPlatformAndVersionAtLeast("win", "10") &&
       WindowsUIUtils.inTabletMode &&
       Services.prefs.getBoolPref(this.autoTouchModePref)
     ) {

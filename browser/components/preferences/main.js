@@ -1770,7 +1770,7 @@ var gMainPane = {
       setDefaultButton.disabled = true;
 
       try {
-        await shellSvc.setDefaultBrowser(false);
+        await shellSvc.setDefaultBrowser(true, false);
       } catch (ex) {
         console.error(ex);
         return;

@@ -2259,6 +2259,7 @@ STATIC_ATOMS = [
     Atom("_moz_overlay_scrollbar_fade_duration", "-moz-overlay-scrollbar-fade-duration"),
     Atom("_moz_windows_accent_color_in_titlebar", "-moz-windows-accent-color-in-titlebar"),
     Atom("_moz_windows_accent_color_in_tabs", "-moz-windows-accent-color-in-tabs"),
+    Atom("_moz_windows_default_theme", "-moz-windows-default-theme"),
     Atom("_moz_mac_big_sur_theme", "-moz-mac-big-sur-theme"),
     Atom("_moz_mac_rtl", "-moz-mac-rtl"),
     Atom("_moz_mac_titlebar_height", "-moz-mac-titlebar-height"),

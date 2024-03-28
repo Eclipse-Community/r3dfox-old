@@ -4,10 +4,19 @@
 
 @import url("chrome://global/skin/menulist-shared.css");
 
-:host([native]) {
+@namespace url("http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul");
+
+label {
+  margin: 1px 3px;
+}
+
+:host([native])  {
+  appearance: auto;
+  -moz-default-appearance: menulist;
   margin: 2px 4px;
   color: -moz-DialogText;
   font: menu;
+  text-shadow: none;
 }
 
 :host([native]:not([disabled="true"]):hover) {
@@ -19,10 +28,20 @@
   color: -moz-buttonactivetext;
 }
 
-:host([native]) label {
-  margin: 1px 3px;
+:host([native][disabled="true"]) {
+  color: GrayText;
 }
 
-:host([native]) dropmarker {
+/* Label box */
+
+#label-box[native] {
+  align-items: center;
+  justify-content: center;
+  color: inherit;
+}
+
+/* Dropmarker */
+
+dropmarker[native] {
   display: none;
 }

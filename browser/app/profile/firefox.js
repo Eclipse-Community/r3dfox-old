@@ -1511,7 +1511,7 @@ pref("browser.bookmarks.editDialog.maxRecentFolders", 7);
   pref("browser.taskbar.previews.max", 20);
   pref("browser.taskbar.previews.cachetime", 5);
 
-  pref("browser.taskbar.lists.legacyBackend", false);
+  pref("browser.taskbar.lists.legacyBackend", true);
 
   pref("browser.taskbar.lists.enabled", true);
   pref("browser.taskbar.lists.frequent.enabled", true);

@@ -6,7 +6,6 @@
 #ifndef GPU_ExternalTextureD3D11_H_
 #define GPU_ExternalTextureD3D11_H_
 
-#include "mozilla/gfx/FileHandleWrapper.h"
 #include "mozilla/webgpu/ExternalTexture.h"
 
 struct ID3D11Texture2D;
@@ -25,8 +24,7 @@ class ExternalTextureD3D11 final : public ExternalTexture {
   ExternalTextureD3D11(const uint32_t aWidth, const uint32_t aHeight,
                        const struct ffi::WGPUTextureFormat aFormat,
                        const ffi::WGPUTextureUsages aUsage,
-                       const RefPtr<ID3D11Texture2D> aTexture,
-                       RefPtr<gfx::FileHandleWrapper>&& aSharedHandle);
+                       RefPtr<ID3D11Texture2D> aTexture);
   virtual ~ExternalTextureD3D11();
 
   void* GetExternalTextureHandle() override;
@@ -38,8 +36,7 @@ class ExternalTextureD3D11 final : public ExternalTexture {
                    const gfx::IntSize& aSize) override;
 
  protected:
-  const RefPtr<ID3D11Texture2D> mTexture;
-  const RefPtr<gfx::FileHandleWrapper> mSharedHandle;
+  RefPtr<ID3D11Texture2D> mTexture;
 };
 
 }  // namespace webgpu

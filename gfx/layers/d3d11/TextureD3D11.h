@@ -8,7 +8,7 @@
 #define MOZILLA_GFX_TEXTURED3D11_H
 
 #include <d3d11.h>
-#include <d3d11_1.h>
+
 #include <vector>
 
 #include "d3d9.h"
@@ -25,9 +25,8 @@
 namespace mozilla {
 
 namespace gfx {
-class FileHandleWrapper;
 struct FenceInfo;
-}  // namespace gfx
+}
 
 namespace gl {
 class GLBlitHelper;
@@ -125,9 +124,10 @@ class D3D11TextureData final : public TextureData {
 
  private:
   D3D11TextureData(ID3D11Texture2D* aTexture, uint32_t aArrayIndex,
-                   RefPtr<gfx::FileHandleWrapper> aSharedHandle,
                    gfx::IntSize aSize, gfx::SurfaceFormat aFormat,
                    TextureAllocationFlags aFlags);
+
+  void GetDXGIResource(IDXGIResource** aOutResource);
 
   bool PrepareDrawTargetInLock(OpenMode aMode);
 
@@ -155,7 +155,6 @@ class D3D11TextureData final : public TextureData {
   const bool mHasKeyedMutex;
 
   RefPtr<ID3D11Texture2D> mTexture;
-  const RefPtr<gfx::FileHandleWrapper> mSharedHandle;
   Maybe<GpuProcessTextureId> mGpuProcessTextureId;
   uint32_t mArrayIndex = 0;
   const TextureAllocationFlags mAllocationFlags;
@@ -209,7 +208,7 @@ class DXGIYCbCrTextureData : public TextureData {
 
  protected:
   RefPtr<ID3D11Texture2D> mD3D11Textures[3];
-  RefPtr<gfx::FileHandleWrapper> mHandles[3];
+  HANDLE mHandles[3];
   gfx::IntSize mSize;
   gfx::IntSize mSizeY;
   gfx::IntSize mSizeCbCr;
@@ -396,7 +395,7 @@ class DXGITextureHostD3D11 : public TextureHost {
   uint32_t mArrayIndex = 0;
   RefPtr<DataTextureSourceD3D11> mTextureSource;
   gfx::IntSize mSize;
-  const RefPtr<gfx::FileHandleWrapper> mHandle;
+  HANDLE mHandle;
   gfx::SurfaceFormat mFormat;
   bool mHasKeyedMutex;
   gfx::FenceInfo mAcquireFenceInfo;
@@ -457,9 +456,7 @@ class DXGIYCbCrTextureHostD3D11 : public TextureHost {
   gfx::IntSize mSize;
   gfx::IntSize mSizeY;
   gfx::IntSize mSizeCbCr;
-  // Handles will be closed automatically when `UniqueFileHandle` gets
-  // destroyed.
-  RefPtr<gfx::FileHandleWrapper> mHandles[3];
+  HANDLE mHandles[3];
   bool mIsLocked;
   gfx::ColorDepth mColorDepth;
   gfx::YUVColorSpace mYUVColorSpace;
@@ -505,7 +502,7 @@ class SyncObjectD3D11Host : public SyncObjectHost {
 
   SyncHandle mSyncHandle;
   RefPtr<ID3D11Device> mDevice;
-  RefPtr<IDXGIResource1> mSyncTexture;
+  RefPtr<IDXGIResource> mSyncTexture;
   RefPtr<IDXGIKeyedMutex> mKeyedMutex;
 };
 
@@ -532,7 +529,7 @@ class SyncObjectD3D11Client : public SyncObjectClient {
   std::vector<ID3D11Texture2D*> mSyncedTextures;
 
  private:
-  SyncHandle mSyncHandle;
+  const SyncHandle mSyncHandle;
   RefPtr<IDXGIKeyedMutex> mKeyedMutex;
   const RefPtr<ID3D11Device> mDevice;
 };

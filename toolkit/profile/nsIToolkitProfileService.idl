@@ -189,6 +189,8 @@ interface nsIToolkitProfileService : nsISupports
     [implicit_jscontext]
     Promise removeProfileFilesByPath(in nsIFile aRootDir, in nsIFile aLocalDir,
                                      in unsigned long aTimeout);
+
+    uint32_t portable();
 };
 
 %{C++

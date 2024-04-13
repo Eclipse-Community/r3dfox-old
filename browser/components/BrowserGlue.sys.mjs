@@ -5797,53 +5797,67 @@ export var DefaultBrowserCheck = {
       );
     }
 
-    let willPrompt = shouldCheck && !isDefault && !willRecoverSession;
+    let pService = Cc["@mozilla.org/toolkit/profile-service;1"].getService(
+      Ci.nsIToolkitProfileService
+    );
 
-    if (willPrompt) {
-      if (skipDefaultBrowserCheck) {
-        if (isStartupCheck) {
-          Services.prefs.setBoolPref(
-            "browser.shell.didSkipDefaultBrowserCheckOnFirstRun",
-            true
-          );
-        }
-        willPrompt = false;
-      } else {
-        promptCount++;
-        if (isStartupCheck) {
-          Services.prefs.setIntPref(
-            "browser.shell.defaultBrowserCheckCount",
-            promptCount
-          );
-        }
-        if (!AppConstants.RELEASE_OR_BETA && promptCount > 3) {
+    if (pService.portable() !=1 ) {
+      if (isDefault) {
+        let now = Math.floor(Date.now() / 1000).toString();
+        Services.prefs.setCharPref(
+          "browser.shell.mostRecentDateSetAsDefault",
+          now
+        );
+      }
+
+      let willPrompt = shouldCheck && !isDefault && !willRecoverSession;
+
+      if (willPrompt) {
+        if (skipDefaultBrowserCheck) {
+          if (isStartupCheck) {
+            Services.prefs.setBoolPref(
+              "browser.shell.didSkipDefaultBrowserCheckOnFirstRun",
+              true
+            );
+          }
           willPrompt = false;
+        } else {
+          promptCount++;
+          if (isStartupCheck) {
+            Services.prefs.setIntPref(
+              "browser.shell.defaultBrowserCheckCount",
+              promptCount
+            );
+          }
+          if (!AppConstants.RELEASE_OR_BETA && promptCount > 3) {
+            willPrompt = false;
+          }
         }
       }
-    }
 
-    if (isStartupCheck) {
-      try {
-        // Report default browser status on startup to telemetry
-        // so we can track whether we are the default.
-        Services.telemetry
-          .getHistogramById("BROWSER_IS_USER_DEFAULT")
-          .add(isDefault);
-        Services.telemetry
-          .getHistogramById("BROWSER_IS_USER_DEFAULT_ERROR")
-          .add(isDefaultError);
-        Services.telemetry
-          .getHistogramById("BROWSER_SET_DEFAULT_ALWAYS_CHECK")
-          .add(shouldCheck);
-        Services.telemetry
-          .getHistogramById("BROWSER_SET_DEFAULT_DIALOG_PROMPT_RAWCOUNT")
-          .add(promptCount);
-      } catch (ex) {
-        /* Don't break the default prompt if telemetry is broken. */
+      if (isStartupCheck) {
+        try {
+          // Report default browser status on startup to telemetry
+          // so we can track whether we are the default.
+          Services.telemetry
+            .getHistogramById("BROWSER_IS_USER_DEFAULT")
+            .add(isDefault);
+          Services.telemetry
+            .getHistogramById("BROWSER_IS_USER_DEFAULT_ERROR")
+            .add(isDefaultError);
+          Services.telemetry
+            .getHistogramById("BROWSER_SET_DEFAULT_ALWAYS_CHECK")
+            .add(shouldCheck);
+          Services.telemetry
+            .getHistogramById("BROWSER_SET_DEFAULT_DIALOG_PROMPT_RAWCOUNT")
+            .add(promptCount);
+        } catch (ex) {
+          /* Don't break the default prompt if telemetry is broken. */
+        }
       }
-    }
 
-    return willPrompt;
+      return willPrompt;
+    }
   },
 };
 

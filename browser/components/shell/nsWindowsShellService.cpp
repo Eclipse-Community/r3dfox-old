@@ -234,6 +234,31 @@ static bool IsPathDefaultForClass(
 }
 
 NS_IMETHODIMP
+nsWindowsShellService::CancelPortableMode()
+{
+  nsresult rv;
+
+  nsCOMPtr<nsIFile> portmodemark;
+
+  rv = NS_GetSpecialDirectory(NS_OS_CURRENT_PROCESS_DIR,
+                              getter_AddRefs(portmodemark));
+  NS_ENSURE_SUCCESS(rv, rv);
+
+  rv = portmodemark->AppendNative("pmprt.mod"_ns);
+
+  NS_ENSURE_SUCCESS(rv, rv);
+
+  bool fileExists;
+  rv = portmodemark->Exists(&fileExists);
+
+  NS_ENSURE_SUCCESS(rv, rv);
+  if (fileExists)
+  portmodemark->Remove(false);
+
+  return NS_OK;
+}
+
+NS_IMETHODIMP
 nsWindowsShellService::IsDefaultBrowser(bool aForAllTypes,
                                         bool* aIsDefaultBrowser) {
   *aIsDefaultBrowser = false;

@@ -959,12 +959,25 @@ nsToolkitProfileService::GetIsListOutdated(bool* aResult) {
 nsresult nsToolkitProfileService::Init() {
   NS_ASSERTION(gDirServiceProvider, "No dirserviceprovider!");
   nsresult rv;
+  uint32_t portable;
+  gDirServiceProvider->Portable(&portable);
 
-  rv = nsXREDirProvider::GetUserAppDataDirectory(getter_AddRefs(mAppData));
-  NS_ENSURE_SUCCESS(rv, rv);
-
-  rv = nsXREDirProvider::GetUserLocalDataDirectory(getter_AddRefs(mTempData));
-  NS_ENSURE_SUCCESS(rv, rv);
+  if(portable > 0) {
+    nsCOMPtr<nsIFile> appFile;
+    bool per = false;
+    rv = gDirServiceProvider->GetFile(XRE_EXECUTABLE_FILE, &per, getter_AddRefs(appFile));
+    NS_ENSURE_SUCCESS(rv, rv);
+    rv = appFile->GetParent(getter_AddRefs(mAppData));
+    NS_ENSURE_SUCCESS(rv, rv);
+    rv = appFile->GetParent(getter_AddRefs(mTempData));
+    NS_ENSURE_SUCCESS(rv, rv);
+    }
+  else {
+    rv = nsXREDirProvider::GetUserAppDataDirectory(getter_AddRefs(mAppData));
+    NS_ENSURE_SUCCESS(rv, rv);
+    rv = nsXREDirProvider::GetUserLocalDataDirectory(getter_AddRefs(mTempData));
+    NS_ENSURE_SUCCESS(rv, rv);
+    }
 
   rv = mAppData->Clone(getter_AddRefs(mProfileDBFile));
   NS_ENSURE_SUCCESS(rv, rv);
@@ -1598,6 +1611,29 @@ nsresult nsToolkitProfileService::SelectStartupProfile(
 
     localDir.forget(aLocalDir);
 
+    return NS_OK;
+  }
+
+  uint32_t portable;
+  gDirServiceProvider->Portable(&portable);
+  if (portable > 0) {
+    nsCOMPtr<nsIFile> exeFile;
+    nsCOMPtr<nsIFile> rootDir;
+    bool exists = false;
+    rv = gDirServiceProvider->GetFile(XRE_EXECUTABLE_FILE, &exists, getter_AddRefs(exeFile));
+    NS_ENSURE_SUCCESS(rv, rv);
+    exeFile->GetParent(getter_AddRefs(rootDir));
+    rootDir->AppendNative("Profile"_ns);
+    rv = rootDir->Exists(&exists);
+    NS_ENSURE_SUCCESS(rv, rv);
+    if (!exists) {
+      rv = rootDir->Create(nsIFile::DIRECTORY_TYPE, 0700);
+      NS_ENSURE_SUCCESS(rv, rv);
+    }
+    GetProfileByDir(rootDir, rootDir, getter_AddRefs(mCurrent));
+    NS_ADDREF(*aRootDir = rootDir);
+    rootDir.forget(aLocalDir);
+    NS_IF_ADDREF(*aProfile = mCurrent);
     return NS_OK;
   }
 
@@ -2691,6 +2727,12 @@ nsresult nsToolkitProfileService::GetLocalDirFromRootDir(nsIFile* aRootDir,
   localDir.forget(aResult);
 
   return NS_OK;
+}
+
+NS_IMETHODIMP
+nsToolkitProfileService::Portable(uint32_t *aResult)
+{
+  return gDirServiceProvider->Portable(aResult);
 }
 
 already_AddRefed<nsToolkitProfileService> NS_GetToolkitProfileService() {

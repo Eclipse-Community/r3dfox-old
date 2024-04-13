@@ -171,6 +171,8 @@ interface nsIToolkitProfileService : nsISupports
      */
     [implicit_jscontext]
     Promise asyncFlushCurrentProfile();
+
+    uint32_t portable();
 };
 
 %{C++

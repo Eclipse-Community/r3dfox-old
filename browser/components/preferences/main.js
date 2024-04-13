@@ -1992,6 +1992,13 @@ var gMainPane = {
         defaultBrowserBox.hidden = true;
         return;
       }
+      let pService = Cc["@mozilla.org/toolkit/profile-service;1"].getService(
+        Ci.nsIToolkitProfileService
+      );
+      if (pService.portable() == 1) {
+        defaultBrowserBox.hidden = true;
+        return;
+      }
       let isDefault = shellSvc.isDefaultBrowser(false, true);
       let setDefaultPane = document.getElementById("setDefaultPane");
       setDefaultPane.classList.toggle("is-default", isDefault);

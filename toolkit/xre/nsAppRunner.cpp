@@ -4460,8 +4460,10 @@ int XREMain::XRE_mainInit(bool* aExitFlag) {
 
 #if defined(MOZ_HAS_REMOTE)
   // Handle the --new-instance command line arguments.
+  uint32_t portable;
   ar = CheckArg("new-instance");
-  if (ar == ARG_FOUND || EnvHasValue("MOZ_NEW_INSTANCE")) {
+  mDirProvider.Portable(&portable);
+  if (ar == ARG_FOUND || portable == 1 || EnvHasValue("MOZ_NEW_INSTANCE")) {
     mDisableRemoteClient = true;
   }
 #else

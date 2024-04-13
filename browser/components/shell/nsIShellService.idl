@@ -12,6 +12,7 @@ webidl Element;
 [scriptable, uuid(2d1a95e4-5bd8-4eeb-b0a8-c1455fd2a357)]
 interface nsIShellService : nsISupports
 {
+  void cancelPortableMode();
   /**
    * Determines whether or not Firefox is the "Default Browser."
    * This is simply whether or not Firefox is registered to handle

@@ -5500,51 +5500,65 @@ export var DefaultBrowserCheck = {
       );
     }
 
-    let willPrompt = shouldCheck && !isDefault && !willRecoverSession;
+    let pService = Cc["@mozilla.org/toolkit/profile-service;1"].getService(
+      Ci.nsIToolkitProfileService
+    );
 
-    if (willPrompt) {
-      if (skipDefaultBrowserCheck) {
-        if (isStartupCheck) {
-          Services.prefs.setBoolPref(
-            "browser.shell.didSkipDefaultBrowserCheckOnFirstRun",
-            true
-          );
+    if (pService.portable() !=1 ) {
+      if (isDefault) {
+        let now = Math.floor(Date.now() / 1000).toString();
+        Services.prefs.setCharPref(
+          "browser.shell.mostRecentDateSetAsDefault",
+          now
+        );
+      }
+
+      let willPrompt = shouldCheck && !isDefault && !willRecoverSession;
+
+      if (willPrompt) {
+        if (skipDefaultBrowserCheck) {
+          if (isStartupCheck) {
+            Services.prefs.setBoolPref(
+              "browser.shell.didSkipDefaultBrowserCheckOnFirstRun",
+              true
+            );
+          }
+          willPrompt = false;
+        } else {
+          promptCount++;
+          if (isStartupCheck) {
+            Services.prefs.setIntPref(
+              "browser.shell.defaultBrowserCheckCount",
+              promptCount
+            );
+          }
+          if (!AppConstants.RELEASE_OR_BETA && promptCount > 3) {
+            willPrompt = false;
+          }
         }
-        willPrompt = false;
-      } else {
-        promptCount++;
-        if (isStartupCheck) {
-          Services.prefs.setIntPref(
-            "browser.shell.defaultBrowserCheckCount",
+      }
+
+      if (isStartupCheck) {
+        try {
+          // Report default browser status on startup to telemetry
+          // so we can track whether we are the default.
+          Glean.browser.isUserDefault[isDefault ? "true" : "false"].add();
+          Glean.browser.isUserDefaultError[
+            isDefaultError ? "true" : "false"
+          ].add();
+          Glean.browser.setDefaultAlwaysCheck[
+            shouldCheck ? "true" : "false"
+          ].add();
+          Glean.browser.setDefaultDialogPromptRawcount.accumulateSingleSample(
             promptCount
           );
-        }
-        if (!AppConstants.RELEASE_OR_BETA && promptCount > 3) {
-          willPrompt = false;
-        }
-      }
-    }
-
-    if (isStartupCheck) {
-      try {
-        // Report default browser status on startup to telemetry
-        // so we can track whether we are the default.
-        Glean.browser.isUserDefault[isDefault ? "true" : "false"].add();
-        Glean.browser.isUserDefaultError[
-          isDefaultError ? "true" : "false"
-        ].add();
-        Glean.browser.setDefaultAlwaysCheck[
-          shouldCheck ? "true" : "false"
-        ].add();
-        Glean.browser.setDefaultDialogPromptRawcount.accumulateSingleSample(
-          promptCount
-        );
-      } catch (ex) {
+        } catch (ex) {
         /* Don't break the default prompt if telemetry is broken. */
+        }
       }
-    }
 
-    return willPrompt;
+      return willPrompt;
+    }
   },
 };
 

@@ -322,6 +322,26 @@ static nsresult GetSystemParentDirectory(nsIFile** aFile) {
 }
 #endif
 
+nsresult
+nsXREDirProvider::Portable(uint32_t *aResult)
+{
+  bool portable;
+  nsCOMPtr<nsIFile> portmodemark;
+  GetAppDir()->Clone(getter_AddRefs(portmodemark));
+  portmodemark->AppendNative("pmprt.mod"_ns);
+  portmodemark->Exists(&portable);
+  if (portable) {
+     *aResult = 1;
+     return NS_OK;
+     }
+  GetAppDir()->Clone(getter_AddRefs(portmodemark));
+  portmodemark->AppendNative("pmundprt.mod"_ns);
+  portmodemark->Exists(&portable);
+  if (portable) *aResult = 2;
+  else *aResult = 0;
+  return NS_OK;
+}
+
 NS_IMETHODIMP
 nsXREDirProvider::GetFile(const char* aProperty, bool* aPersistent,
                           nsIFile** aFile) {
@@ -329,6 +349,9 @@ nsXREDirProvider::GetFile(const char* aProperty, bool* aPersistent,
   nsresult rv = NS_ERROR_FAILURE;
 
   nsCOMPtr<nsIFile> file;
+
+  uint32_t portable;
+  Portable(&portable);
 
   if (!strcmp(aProperty, NS_APP_USER_PROFILE_LOCAL_50_DIR) ||
       !strcmp(aProperty, NS_APP_PROFILE_LOCAL_DIR_STARTUP)) {
@@ -372,7 +395,8 @@ nsXREDirProvider::GetFile(const char* aProperty, bool* aPersistent,
 #endif  // !defined(MOZ_WIDGET_ANDROID)
   } else if (!strcmp(aProperty, NS_APP_APPLICATION_REGISTRY_DIR) ||
              !strcmp(aProperty, XRE_USER_APP_DATA_DIR)) {
-    rv = GetUserAppDataDirectory(getter_AddRefs(file));
+    if (mProfileDir && portable > 0) rv = mProfileDir->Clone(getter_AddRefs(file));
+      else rv = GetUserAppDataDirectory(getter_AddRefs(file));
   }
 #if defined(XP_UNIX) || defined(XP_MACOSX)
   else if (!strcmp(aProperty, XRE_SYS_NATIVE_MANIFESTS)) {

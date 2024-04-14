@@ -781,10 +781,6 @@ Section "-Application" APP_IDX
                      "DidRegisterDefaultBrowserAgent" $RegisterDefaultAgent
 !endif
 
-; Return value is saved to an unused variable to prevent the the error flag
-; from being set.
-Var /GLOBAL UnusedExecCatchReturn
-ExecWait '"$INSTDIR\${FileMainEXE}" --backgroundtask install' $UnusedExecCatchReturn
 SectionEnd
 
 ; Cleanup operations to perform at the end of the installation.

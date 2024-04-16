@@ -1153,7 +1153,7 @@ class ASRouterAdminInner extends (react__WEBPACK_IMPORTED_MODULE_1___default().P
         label = /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement("span", null, "remote settings (", /*#__PURE__*/react__WEBPACK_IMPORTED_MODULE_1___default().createElement("a", {
           className: "small-text",
           target: "_blank",
-          href: "https://firefox.settings.services.mozilla.com/v1/buckets/main/collections/nimbus-desktop-experiments/records",
+          href: "https://see.ticket.about.this.invalid",
           rel: "noopener noreferrer"
         }, "nimbus-desktop-experiments"), ")");
       }

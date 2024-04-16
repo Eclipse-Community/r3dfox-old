@@ -2058,10 +2058,19 @@ nsresult GfxInfo::GetFeatureStatusImpl(
             GfxDriverInfo::GetDeviceVendor(DeviceVendor::Microsoft),
             nsCaseInsensitiveStringComparator) &&
         !adapterVendorID.Equals(
+            GfxDriverInfo::GetDeviceVendor(DeviceVendor::MicrosoftHyperV),
+            nsCaseInsensitiveStringComparator) &&
+        !adapterVendorID.Equals(
             GfxDriverInfo::GetDeviceVendor(DeviceVendor::Parallels),
             nsCaseInsensitiveStringComparator) &&
         !adapterVendorID.Equals(
             GfxDriverInfo::GetDeviceVendor(DeviceVendor::Qualcomm),
+            nsCaseInsensitiveStringComparator) &&
+        !adapterVendorID.Equals(
+            GfxDriverInfo::GetDeviceVendor(DeviceVendor::VMWare),
+            nsCaseInsensitiveStringComparator) &&
+        !adapterVendorID.Equals(
+            GfxDriverInfo::GetDeviceVendor(DeviceVendor::VirtualBox),
             nsCaseInsensitiveStringComparator) &&
         // FIXME - these special hex values are currently used in xpcshell tests
         // introduced by bug 625160 patch 8/8. Maybe these tests need to be
@@ -2070,17 +2079,7 @@ nsresult GfxInfo::GetFeatureStatusImpl(
         !adapterVendorID.LowerCaseEqualsLiteral("0xdcba") &&
         !adapterVendorID.LowerCaseEqualsLiteral("0xabab") &&
         !adapterVendorID.LowerCaseEqualsLiteral("0xdcdc")) {
-      if (adapterVendorID.Equals(
-              GfxDriverInfo::GetDeviceVendor(DeviceVendor::MicrosoftHyperV),
-              nsCaseInsensitiveStringComparator) ||
-          adapterVendorID.Equals(
-              GfxDriverInfo::GetDeviceVendor(DeviceVendor::VMWare),
-              nsCaseInsensitiveStringComparator) ||
-          adapterVendorID.Equals(
-              GfxDriverInfo::GetDeviceVendor(DeviceVendor::VirtualBox),
-              nsCaseInsensitiveStringComparator)) {
-        aFailureId = "FEATURE_FAILURE_VM_VENDOR";
-      } else if (adapterVendorID.Equals(GfxDriverInfo::GetDeviceVendor(
+      if (adapterVendorID.Equals(GfxDriverInfo::GetDeviceVendor(
                                             DeviceVendor::MicrosoftBasic),
                                         nsCaseInsensitiveStringComparator)) {
         aFailureId = "FEATURE_FAILURE_MICROSOFT_BASIC_VENDOR";

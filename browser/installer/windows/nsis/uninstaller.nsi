@@ -203,10 +203,6 @@ UninstPage custom un.preConfirm
 !insertmacro MUI_UNPAGE_INSTFILES
 
 ; Finish Page
-!define MUI_FINISHPAGE_SHOWREADME
-!define MUI_FINISHPAGE_SHOWREADME_NOTCHECKED
-!define MUI_FINISHPAGE_SHOWREADME_TEXT $(UN_SURVEY_CHECKBOX_LABEL)
-!define MUI_FINISHPAGE_SHOWREADME_FUNCTION un.Survey
 !define MUI_PAGE_CUSTOMFUNCTION_PRE un.preFinish
 !define MUI_PAGE_CUSTOMFUNCTION_SHOW un.showFinish
 !insertmacro MUI_UNPAGE_FINISH
@@ -216,15 +212,6 @@ ChangeUI IDD_VERIFY "${NSISDIR}\Contrib\UIs\default.exe"
 
 ################################################################################
 # Helper Functions
-
-Function un.Survey
-  ; We can't actually call ExecInExplorer here because it's going to have to
-  ; make some marshalled COM calls and those are not allowed from within a
-  ; synchronous message handler (where we currently are); we'll be thrown
-  ; RPC_E_CANTCALLOUT_ININPUTSYNCCALL if we try. So all we can do is record
-  ; that we need to make the call later, which we'll do from un.onGUIEnd.
-  StrCpy $ShouldOpenSurvey "1"
-FunctionEnd
 
 ; This function is used to uninstall the maintenance service if the
 ; application currently being uninstalled is the last application to use the
@@ -978,7 +965,7 @@ FunctionEnd
 
 Function un.onUninstSuccess
   ; Send a ping at un.onGUIEnd, to avoid freezing the GUI.
-  StrCpy $ShouldSendPing "1"
+  StrCpy $ShouldSendPing "0"
 
   ${If} ${Silent}
     ; If this is a silent uninstall then un.onGUIEnd doesn't run, so do it now.

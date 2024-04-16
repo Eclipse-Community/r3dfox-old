@@ -5,11 +5,11 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 imply_option("MOZ_PLACES", True)
-imply_option("MOZ_SERVICES_HEALTHREPORT", True)
+imply_option("MOZ_SERVICES_HEALTHREPORT", False)
 imply_option("MOZ_SERVICES_SYNC", True)
 imply_option("MOZ_DEDICATED_PROFILES", True)
 imply_option("MOZ_BLOCK_PROFILE_DOWNGRADE", True)
-imply_option("MOZ_NORMANDY", True)
+imply_option("MOZ_NORMANDY", False)
 
 # We want to disable the pre-XUL launcher for now, as it won't look good with the browser UI.
 # If we choose to enable the launcher at a later date, then this can be re-enabled.

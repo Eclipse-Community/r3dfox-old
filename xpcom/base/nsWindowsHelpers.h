@@ -298,7 +298,16 @@ bool inline ConstructSystem32Path(LPCWSTR aModule, WCHAR* aSystemPath,
 }
 
 HMODULE inline LoadLibrarySystem32(LPCWSTR aModule) {
-  return LoadLibraryExW(aModule, nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32);
+  static const auto setDefaultDllDirectories =
+      GetProcAddress(GetModuleHandleW(L"kernel32"), "SetDefaultDllDirectories");
+  if (setDefaultDllDirectories) {
+    return LoadLibraryExW(aModule, nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32);
+  }
+  WCHAR systemPath[MAX_PATH + 1];
+  if (!ConstructSystem32Path(aModule, systemPath, MAX_PATH + 1)) {
+    return NULL;
+  }
+  return LoadLibraryExW(systemPath, nullptr, LOAD_WITH_ALTERED_SEARCH_PATH);
 }
 
 // for UniquePtr

@@ -511,6 +511,7 @@ Section "Uninstall"
   ${un.RegCleanFileHandler}  ".svg"   "FirefoxHTML-$AppUserModelID"
   ${un.RegCleanFileHandler}  ".webp"  "FirefoxHTML-$AppUserModelID"
   ${un.RegCleanFileHandler}  ".avif"  "FirefoxHTML-$AppUserModelID"
+  ${un.RegCleanFileHandler}  ".jxl"   "FirefoxHTML-$AppUserModelID"
 
   ${un.RegCleanFileHandler}  ".pdf"   "FirefoxPDF-$AppUserModelID"
 

@@ -38,8 +38,8 @@ restart-required = false
 preference = "image.jxl.enabled"
 type = "boolean"
 bug-numbers = [1539075]
-is-public-jexl = "nightly_build"
-default-value-jexl = "false"
+is-public-jexl = "true"
+default-value-jexl = "true"
 
 [cookie-samesite-none-requires-secure]
 title = "experimental-features-cookie-samesite-none-requires-secure2"

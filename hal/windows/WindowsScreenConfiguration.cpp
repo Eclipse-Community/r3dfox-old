@@ -3,6 +3,7 @@
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "Hal.h"
+#include "mozilla/WindowsVersion.h"
 #include "mozilla/widget/ScreenManager.h"
 #include "nsIWindowsUIUtils.h"
 #include "WinUtils.h"
@@ -17,6 +18,12 @@ static decltype(SetDisplayAutoRotationPreferences)*
 
 RefPtr<GenericNonExclusivePromise> LockScreenOrientation(
     const hal::ScreenOrientation& aOrientation) {
+  // SetDisplayAutoRotationPreferences requires Win8, tablet mode and device
+  // support.
+  if (!IsWin8OrLater()) {
+    return GenericNonExclusivePromise::CreateAndReject(
+        NS_ERROR_DOM_NOT_SUPPORTED_ERR, __func__);
+  }
   AR_STATE state;
   if (!widget::WinUtils::GetAutoRotationState(&state)) {
     return GenericNonExclusivePromise::CreateAndReject(

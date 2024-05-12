@@ -19,6 +19,7 @@ EXPORTS += [
 UNIFIED_SOURCES += [
     "HTMLSelectEventListener.cpp",
     "ListMutationObserver.cpp",
+    "nsButtonFrameRenderer.cpp",
     "nsCheckboxRadioFrame.cpp",
     "nsColorControlFrame.cpp",
     "nsComboboxControlFrame.cpp",

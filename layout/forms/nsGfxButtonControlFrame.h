@@ -7,7 +7,9 @@
 #ifndef nsGfxButtonControlFrame_h___
 #define nsGfxButtonControlFrame_h___
 
+#include "mozilla/Attributes.h"
 #include "nsHTMLButtonControlFrame.h"
+#include "nsCOMPtr.h"
 #include "nsIAnonymousContentCreator.h"
 
 class nsTextNode;
@@ -27,25 +29,26 @@ class nsGfxButtonControlFrame final : public nsHTMLButtonControlFrame,
 
   void Destroy(DestroyContext&) override;
 
-  nsresult HandleEvent(nsPresContext* aPresContext,
-                       mozilla::WidgetGUIEvent* aEvent,
-                       nsEventStatus* aEventStatus) override;
+  virtual nsresult HandleEvent(nsPresContext* aPresContext,
+                               mozilla::WidgetGUIEvent* aEvent,
+                               nsEventStatus* aEventStatus) override;
 
 #ifdef DEBUG_FRAME_DUMP
-  nsresult GetFrameName(nsAString& aResult) const override;
+  virtual nsresult GetFrameName(nsAString& aResult) const override;
 #endif
 
   NS_DECL_QUERYFRAME
 
   // nsIAnonymousContentCreator
-  nsresult CreateAnonymousContent(nsTArray<ContentInfo>& aElements) override;
-  void AppendAnonymousContentTo(nsTArray<nsIContent*>& aElements,
-                                uint32_t aFilter) override;
+  virtual nsresult CreateAnonymousContent(
+      nsTArray<ContentInfo>& aElements) override;
+  virtual void AppendAnonymousContentTo(nsTArray<nsIContent*>& aElements,
+                                        uint32_t aFilter) override;
 
-  nsresult AttributeChanged(int32_t aNameSpaceID, nsAtom* aAttribute,
-                            int32_t aModType) override;
+  virtual nsresult AttributeChanged(int32_t aNameSpaceID, nsAtom* aAttribute,
+                                    int32_t aModType) override;
 
-  nsContainerFrame* GetContentInsertionFrame() override { return this; }
+  virtual nsContainerFrame* GetContentInsertionFrame() override;
 
  protected:
   nsresult GetDefaultLabel(nsAString& aLabel) const;

@@ -160,6 +160,10 @@ nsresult nsGfxButtonControlFrame::AttributeChanged(int32_t aNameSpaceID,
   return rv;
 }
 
+nsContainerFrame* nsGfxButtonControlFrame::GetContentInsertionFrame() {
+  return this;
+}
+
 nsresult nsGfxButtonControlFrame::HandleEvent(nsPresContext* aPresContext,
                                               WidgetGUIEvent* aEvent,
                                               nsEventStatus* aEventStatus) {

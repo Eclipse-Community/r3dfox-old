@@ -3,6 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #placesToolbar {
+  appearance: none;
   position: relative;
   -moz-window-dragging: drag;
   padding: env(-moz-mac-titlebar-height) 4px 3px;

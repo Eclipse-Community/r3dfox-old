@@ -69,15 +69,26 @@ if CONFIG["CC_TYPE"] == "clang-cl":
 
 if CONFIG["OS_ARCH"] == "WINNT":
     RCINCLUDE = "splash.rc"
-    DIRS += [
-        "winlauncher",
-    ]
-    USE_LIBS += [
-        "winlauncher",
-    ]
-    LOCAL_INCLUDES += [
-        "/browser/app/winlauncher",
-    ]
+    if CONFIG["MOZ_LAUNCHER_PROCESS"]:
+        DIRS += [
+            "winlauncher",
+        ]
+        USE_LIBS += [
+            "winlauncher",
+        ]
+        LOCAL_INCLUDES += [
+            "/browser/app/winlauncher",
+        ]
+        WIN32_EXE_LDFLAGS += [
+            libpath_flag + OBJDIR + "/winlauncher/freestanding",
+        ]
+    else:
+        # Build libraries required for non-launcher build.
+        OS_LIBS += [
+            "ntdll",
+            "user32",
+            "version",
+        ]
     DELAYLOAD_DLLS += [
         "oleaut32.dll",
         "ole32.dll",
@@ -89,10 +100,6 @@ if CONFIG["OS_ARCH"] == "WINNT":
         libpath_flag = "-LIBPATH:"
     else:
         libpath_flag = "-L"
-
-    WIN32_EXE_LDFLAGS += [
-        libpath_flag + OBJDIR + "/winlauncher/freestanding",
-    ]
 
 if CONFIG["MOZ_SANDBOX"] and CONFIG["OS_ARCH"] == "Darwin":
     USE_LIBS += [

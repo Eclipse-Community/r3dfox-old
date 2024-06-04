@@ -22,7 +22,6 @@
 #include "mozilla/Unused.h"
 #include "mozilla/UniquePtr.h"
 #include "mozilla/Printf.h"
-#include "mozilla/RuntimeExceptionModule.h"
 #include "mozilla/ScopeExit.h"
 #include "mozilla/Sprintf.h"
 #include "mozilla/StaticPrefs_browser.h"
@@ -1968,7 +1967,6 @@ nsresult SetExceptionHandler(nsIFile* aXREDirectory, bool force /*=false*/) {
   // the crash reporter client
   doReport = ShouldReport();
 
-  RegisterRuntimeExceptionModule();
   InitializeAppNotes();
   RegisterAnnotations();
 
@@ -3533,7 +3531,6 @@ CrashPipeType GetChildNotificationPipe() {
 
 bool SetRemoteExceptionHandler(CrashPipeType aCrashPipe) {
   MOZ_ASSERT(!gExceptionHandler, "crash client already init'd");
-  RegisterRuntimeExceptionModule();
   InitializeAppNotes();
   RegisterAnnotations();
 

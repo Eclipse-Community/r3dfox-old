@@ -4,6 +4,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "mozilla/Attributes.h"
+#include "mozilla/DynamicallyLinkedFunctionPtr.h"
 #include "mozilla/ScopeExit.h"
 #include "mozilla/ipc/MessageChannel.h"
 #include "mozilla/ipc/WindowsMessageLoop.h"
@@ -106,7 +107,11 @@ class WinWakeLockListener final : public nsIDOMMozWakeLockListener {
     context.Version = POWER_REQUEST_CONTEXT_VERSION;
     context.Flags = POWER_REQUEST_CONTEXT_SIMPLE_STRING;
     context.Reason.SimpleReasonString = RequestTypeLPWSTR(aType);
-    HANDLE handle = PowerCreateRequest(&context);
+    // `PowerCreateRequest` added in Windows 7.
+    DynamicallyLinkedFunctionPtr<decltype(&PowerCreateRequest)>
+        pPowerCreateRequest(L"kernel32.dll",
+                                          "PowerCreateRequest");
+    HANDLE handle = pPowerCreateRequest(&context);
     if (!handle) {
       WAKE_LOCK_LOG("Failed to create handle for %s, error=%lu",
                     RequestTypeStr(aType), GetLastError());
@@ -154,7 +159,12 @@ class WinWakeLockListener final : public nsIDOMMozWakeLockListener {
       return;
     }
 
-    if (PowerSetRequest(handle, aType)) {
+    // `PowerSetRequest` added in Windows 7.
+    DynamicallyLinkedFunctionPtr<decltype(&PowerSetRequest)>
+        pPowerSetRequest(L"kernel32.dll",
+                                          "PowerSetRequest");
+
+    if (pPowerSetRequest(handle, aType)) {
       WAKE_LOCK_LOG("Requested %s lock", RequestTypeStr(aType));
     } else {
       WAKE_LOCK_LOG("Failed to request %s lock, error=%lu",
@@ -169,8 +179,13 @@ class WinWakeLockListener final : public nsIDOMMozWakeLockListener {
       return;
     }
 
+    // `PowerClearRequest` added in Windows 7.
+    DynamicallyLinkedFunctionPtr<decltype(&PowerClearRequest)>
+        pPowerClearRequest(L"kernel32.dll",
+                                          "PowerClearRequest");
+
     WAKE_LOCK_LOG("Prepare to release wakelock for %s", RequestTypeStr(aType));
-    if (!PowerClearRequest(GetHandle(aType), aType)) {
+    if (!pPowerClearRequest(GetHandle(aType), aType)) {
       WAKE_LOCK_LOG("Failed to release %s lock, error=%lu",
                     RequestTypeStr(aType), GetLastError());
       return;

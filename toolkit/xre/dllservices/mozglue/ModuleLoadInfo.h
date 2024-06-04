@@ -33,11 +33,7 @@ struct ModuleLoadInfo final {
         mBaseAddr(nullptr),
         mStatus(Status::Loaded),
         mIsDependent(false) {
-#  if defined(IMPL_MFBT)
     ::QueryPerformanceCounter(&mBeginTimestamp);
-#  else
-    ::RtlQueryPerformanceCounter(&mBeginTimestamp);
-#  endif  // defined(IMPL_MFBT)
   }
 
   /**
@@ -54,22 +50,14 @@ struct ModuleLoadInfo final {
         mBaseAddr(aBaseAddr),
         mStatus(aLoadStatus),
         mIsDependent(aIsDependent) {
-#  if defined(IMPL_MFBT)
     ::QueryPerformanceCounter(&mBeginTimestamp);
-#  else
-    ::RtlQueryPerformanceCounter(&mBeginTimestamp);
-#  endif  // defined(IMPL_MFBT)
   }
 
   /**
    * Marks the time that LdrLoadDll began loading this library.
    */
   void SetBeginLoadTimeStamp() {
-#  if defined(IMPL_MFBT)
     ::QueryPerformanceCounter(&mLoadTimeInfo);
-#  else
-    ::RtlQueryPerformanceCounter(&mLoadTimeInfo);
-#  endif  // defined(IMPL_MFBT)
   }
 
   /**
@@ -77,11 +65,7 @@ struct ModuleLoadInfo final {
    */
   void SetEndLoadTimeStamp() {
     LARGE_INTEGER endTimeStamp;
-#  if defined(IMPL_MFBT)
     ::QueryPerformanceCounter(&endTimeStamp);
-#  else
-    ::RtlQueryPerformanceCounter(&endTimeStamp);
-#  endif  // defined(IMPL_MFBT)
 
     LONGLONG& timeInfo = mLoadTimeInfo.QuadPart;
     if (!timeInfo) {

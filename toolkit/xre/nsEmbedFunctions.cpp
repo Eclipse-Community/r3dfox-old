@@ -31,7 +31,6 @@
 
 #include "nsAppRunner.h"
 #include "nsExceptionHandler.h"
-#include "mozilla/RuntimeExceptionModule.h"
 #include "nsThreadUtils.h"
 #include "nsJSUtils.h"
 #include "nsWidgetsCID.h"
@@ -396,12 +395,6 @@ nsresult XRE_InitChildProcess(int aArgc, char* aArgv[],
         // Bug 684322 will add better visibility into this condition
         NS_WARNING("Could not setup crash reporting\n");
       }
-    } else {
-      // We might have registered a runtime exception module very early in
-      // process startup to catch early crashes. This is before we process the
-      // crash reporter arg, so unregister here if it turns out the crash
-      // reporter is disabled.
-      CrashReporter::UnregisterRuntimeExceptionModule();
     }
   }
 

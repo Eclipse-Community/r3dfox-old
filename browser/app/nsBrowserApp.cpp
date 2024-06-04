@@ -9,7 +9,6 @@
 #include "application.ini.h"
 #include "mozilla/Bootstrap.h"
 #include "mozilla/ProcessType.h"
-#include "mozilla/RuntimeExceptionModule.h"
 #include "mozilla/ScopeExit.h"
 #include "BrowserDefines.h"
 #if defined(XP_WIN)
@@ -314,11 +313,6 @@ int main(int argc, char* argv[], char* envp[]) {
   AUTO_BASE_PROFILER_INIT;
   AUTO_BASE_PROFILER_LABEL("nsBrowserApp main", OTHER);
 
-  // Make sure we unregister the runtime exception module before returning.
-  // We do this here to cover both registers for child and main processes.
-  auto unregisterRuntimeExceptionModule =
-      MakeScopeExit([] { CrashReporter::UnregisterRuntimeExceptionModule(); });
-
 #ifdef MOZ_BROWSER_CAN_BE_CONTENTPROC
   // We are launching as a content process, delegate to the appropriate
   // main
@@ -326,11 +320,6 @@ int main(int argc, char* argv[], char* envp[]) {
     // Set the process type. We don't remove the arg here as that will be done
     // later in common code.
     SetGeckoProcessType(argv[argc - 1]);
-
-    // Register an external module to report on otherwise uncatchable
-    // exceptions. Note that in child processes this must be called after Gecko
-    // process type has been set.
-    CrashReporter::RegisterRuntimeExceptionModule();
 
 #  if defined(XP_WIN) && defined(MOZ_SANDBOX)
     // We need to set whether our process is supposed to have win32k locked down
@@ -389,9 +378,6 @@ int main(int argc, char* argv[], char* envp[]) {
     return result;
   }
 #endif
-
-  // Register an external module to report on otherwise uncatchable exceptions.
-  CrashReporter::RegisterRuntimeExceptionModule();
 
 #ifdef HAS_DLL_BLOCKLIST
   DllBlocklist_Initialize(gBlocklistInitFlags);

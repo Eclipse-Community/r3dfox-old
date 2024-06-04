@@ -25,7 +25,6 @@
 #include "mozilla/Printf.h"
 #include "mozilla/ProcessType.h"
 #include "mozilla/ResultExtensions.h"
-#include "mozilla/RuntimeExceptionModule.h"
 #include "mozilla/ScopeExit.h"
 #include "mozilla/StaticPrefs_browser.h"
 #include "mozilla/StaticPrefs_fission.h"
@@ -4236,11 +4235,6 @@ int XREMain::XRE_mainInit(bool* aExitFlag) {
         SaveWordToEnv("MOZ_CRASHREPORTER_STRINGS_OVERRIDE", overridePath);
       }
     }
-  } else {
-    // We might have registered a runtime exception module very early in process
-    // startup to catch early crashes. This is before we have access to ini file
-    // data, so unregister here if it turns out the crash reporter is disabled.
-    CrashReporter::UnregisterRuntimeExceptionModule();
   }
 
 #if defined(MOZ_SANDBOX) && defined(XP_WIN)

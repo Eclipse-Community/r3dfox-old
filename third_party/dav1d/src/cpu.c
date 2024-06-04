@@ -74,19 +74,9 @@ COLD void dav1d_set_cpu_flags_mask(const unsigned mask) {
 
 COLD int dav1d_num_logical_processors(Dav1dContext *const c) {
 #ifdef _WIN32
-#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
-    GROUP_AFFINITY affinity;
-    if (GetThreadGroupAffinity(GetCurrentThread(), &affinity)) {
-        int num_processors = 1;
-        while (affinity.Mask &= affinity.Mask - 1)
-            num_processors++;
-        return num_processors;
-    }
-#else
-    SYSTEM_INFO system_info;
-    GetNativeSystemInfo(&system_info);
-    return system_info.dwNumberOfProcessors;
-#endif
+    SYSTEM_INFO sysinfo;
+    GetSystemInfo(&sysinfo);
+    return sysinfo.dwNumberOfProcessors;
 #elif defined(HAVE_PTHREAD_GETAFFINITY_NP) && defined(CPU_COUNT)
     cpu_set_t affinity;
     if (!pthread_getaffinity_np(pthread_self(), sizeof(affinity), &affinity))

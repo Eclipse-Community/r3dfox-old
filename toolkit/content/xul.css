@@ -678,3 +678,15 @@ button, image {
 
 [flex="0"] { flex: none !important; }
 [flex="1"] { flex: 1 !important; }
+[flex="2"] { flex: 2 !important; }
+[flex="3"] { flex: 3 !important; }
+[flex="4"] { flex: 4 !important; }
+[flex="5"] { flex: 5 !important; }
+[flex="6"] { flex: 6 !important; }
+[flex="7"] { flex: 7 !important; }
+[flex="8"] { flex: 8 !important; }
+[flex="9"] { flex: 9 !important; }
+[flex="100"] { flex: 100 !important; }
+[flex="400"] { flex: 400 !important; }
+[flex="1000"] { flex: 1000 !important; }
+[flex="10000"] { flex: 10000 !important; }

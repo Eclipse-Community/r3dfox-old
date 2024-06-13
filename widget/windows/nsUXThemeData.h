@@ -51,10 +51,12 @@ class nsUXThemeData {
     void Close();
   };
 
+  static HMODULE sThemeDLL;
   static ThemeHandle sThemes[eUXNumClasses];
   static const wchar_t* GetClassName(nsUXThemeClass);
 
  public:
+  static const wchar_t kThemeLibraryName[];
   static bool sIsHighContrastOn;
 
   static void Invalidate();

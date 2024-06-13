@@ -67,6 +67,7 @@ class nsUXThemeData {
     void Close();
   };
 
+  static HMODULE sThemeDLL;
   static ThemeHandle sThemes[eUXNumClasses];
 
   // We initialize sCommandButtonBoxMetrics separately as a performance
@@ -87,6 +88,7 @@ class nsUXThemeData {
   static bool sIsDefaultWindowsTheme;
   static bool sIsHighContrastOn;
 
+  static const wchar_t kThemeLibraryName[];
   static void Invalidate();
   static HANDLE GetTheme(nsUXThemeClass cls);
   static HMODULE GetThemeDLL();

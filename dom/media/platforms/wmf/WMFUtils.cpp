@@ -466,13 +466,12 @@ LoadDLLs() {
 
 HRESULT
 MediaFoundationInitializer::MFStartup() {
-  if (IsWin7AndPre2000Compatible()) {
-    /*
-     * Specific exclude the usage of WMF on Win 7 with compatibility mode
-     * prior to Win 2000 as we may crash while trying to startup WMF.
-     * Using GetVersionEx API which takes compatibility mode into account.
-     * See Bug 1279171.
-     */
+  if (!IsVistaOrLater()) {
+    // *Only* use WMF on Vista and later, as if Firefox is run in Windows 95
+    // compatibility mode on Windows 7 (it does happen!) we may crash trying
+    // to startup WMF. So we need to detect the OS version here, as in
+    // compatibility mode IsVistaOrLater() and friends behave as if we're on
+    // the emulated version of Windows. See bug 1279171.
     return E_FAIL;
   }
 
@@ -481,6 +480,7 @@ MediaFoundationInitializer::MFStartup() {
     return hr;
   }
 
+  const int MF_VISTA_VERSION = (0x0001 << 16 | MF_API_VERSION);
   const int MF_WIN7_VERSION = (0x0002 << 16 | MF_API_VERSION);
 
   // decltype is unusable for functions having default parameters
@@ -488,8 +488,13 @@ MediaFoundationInitializer::MFStartup() {
   ENSURE_FUNCTION_PTR_(MFStartup, Mfplat.dll)
 
   hr = E_FAIL;
-  mozilla::mscom::EnsureMTA(
+  if (!IsWin7OrLater()) {
+    mozilla::mscom::EnsureMTA(
+      [&]() -> void { hr = MFStartupPtr(MF_VISTA_VERSION , MFSTARTUP_FULL); });
+    } else {
+    mozilla::mscom::EnsureMTA(
       [&]() -> void { hr = MFStartupPtr(MF_WIN7_VERSION, MFSTARTUP_FULL); });
+    }
   return hr;
 }
 

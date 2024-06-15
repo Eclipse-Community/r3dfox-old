@@ -11,6 +11,9 @@
 
 // For historical reasons, "All" in blocklist means "All Windows"
 GFXINFO_OS(Windows, "All")
+GFXINFO_OS(WindowsXP, "WINNT 5.1")
+GFXINFO_OS(WindowsServer2003, "WINNT 5.2")
+GFXINFO_OS(WindowsVista, "WINNT 6.0")
 GFXINFO_OS(Windows7, "WINNT 6.1")
 GFXINFO_OS(Windows8, "WINNT 6.2")
 GFXINFO_OS(Windows8_1, "WINNT 6.3")

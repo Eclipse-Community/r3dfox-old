@@ -6,6 +6,12 @@
 @import url("chrome://browser/skin/contextmenu.css");
 @import url("chrome://browser/skin/browser-custom-colors.css");
 
+@namespace html url("http://www.w3.org/1999/xhtml");
+
+:root {
+  --sidebar-border-color: ThreeDLightShadow;
+}
+
 #menubar-items {
   flex-direction: column; /* for flex hack */
   justify-content: normal; /* align the menubar to the top also in customize mode */
@@ -55,29 +61,86 @@
   }
 }
 
-/* Use a different color in inactive windows. */
+/* Use a different color only on Windows 8 and higher in inactive windows.
+ * On Win 7, the menubar fog disappears for inactive windows, and renders gray
+ * illegible.
+ */
 @media (-moz-windows-default-theme) {
-  #toolbar-menubar:not(:-moz-lwtheme):-moz-window-inactive {
-    color: ThreeDShadow;
+  @media not (-moz-platform: windows-win7) {
+    #toolbar-menubar:not([lwtheme]):-moz-window-inactive {
+      color: ThreeDShadow;
+    }
   }
 }
 
-/* When temporarily showing the menu bar, make it at least as tall as the
- * tab bar such that the window controls don't appear to move up. */
-:root[tabsintitlebar] #toolbar-menubar[autohide="true"] {
-  height: var(--tab-min-height);
+@media not (-moz-platform: windows-win7) {
+  @media not (-moz-platform: windows-win8) {
+    /* On Windows 10, when temporarily showing the menu bar, make it at least as
+     * tall as the tab bar such that the window controls don't appear to move up. */
+    :root[tabsintitlebar] #toolbar-menubar[autohide="true"] {
+      height: var(--tab-min-height);
+    }
+  }
 }
 
-@media not (-moz-windows-default-theme) {
+/* Add 4px extra margin on top of the tabs toolbar on Windows 7. */
+@media (-moz-platform: windows-win7) {
+  :root[sizemode="normal"][chromehidden~="menubar"] #TabsToolbar > .toolbar-items,
+  :root[sizemode="normal"] #toolbar-menubar[autohide="true"][inactive] + #TabsToolbar > .toolbar-items {
+    padding-top: 4px;
+  }
+}
+
+/* Add a fog for background tabs to be visible on Windows 7 glass window background */
+@media (-moz-platform: windows-win7) {
+  @media (-moz-windows-default-theme) {
+    #TabsToolbar:not([lwtheme]) {
+      background-image: radial-gradient(ellipse at bottom, rgba(255,255,255,0.8), rgba(255,255,255,0.5) 40%, transparent);
+    }
+  }
+}
+
+@media not (-moz-windows-compositor),
+       not (-moz-windows-default-theme),
+       (-moz-platform: windows-win8) {
   /* Please keep the menu text colors in this media block in sync with
-   * light-dark-overrides.css, minus the :not(:-moz-lwtheme) condition - see Bug 1165718.
+   * light-dark-overrides.css, minus the :not([lwtheme]) condition - see Bug 1165718.
    */
-  :root[tabsintitlebar]:not(:-moz-lwtheme) {
+  :root[tabsintitlebar]:not([lwtheme]) {
     color: CaptionText;
   }
 
-  :root[tabsintitlebar]:not(:-moz-lwtheme):-moz-window-inactive {
+  :root[tabsintitlebar]:not([lwtheme]):-moz-window-inactive {
     color: InactiveCaptionText;
+  }
+}
+
+@media (-moz-windows-classic) {
+  /**
+   * In the classic themes, the titlebar has a horizontal gradient, which is
+   * problematic for reading the text of background tabs when they're in the
+   * titlebar. We side-step this issue by layering our own background underneath
+   * the tabs.
+   */
+  :root[tabsintitlebar]:not([sizemode=fullscreen]) #TabsToolbar:not([lwtheme]) {
+    background-image: linear-gradient(transparent, ActiveCaption);
+    background-size: auto 200%;
+  }
+
+  :root[tabsintitlebar]:not([sizemode=fullscreen]) #TabsToolbar:not([lwtheme]):-moz-window-inactive {
+    background-image: linear-gradient(transparent, InactiveCaption);
+  }
+
+  /* Add a window top border for webextension themes */
+  :root[lwtheme][tabsintitlebar][sizemode="normal"] #navigator-toolbox {
+    background-image: linear-gradient(to bottom,
+          ThreeDLightShadow 0, ThreeDLightShadow 1px,
+          ThreeDHighlight 1px, ThreeDHighlight 2px,
+          ActiveBorder 2px, ActiveBorder 4px, transparent 4px);
+  }
+
+  :root[tabsintitlebar] :is(#TabsToolbar, #toolbar-menubar) toolbarbutton:not([lwtheme]) {
+    color: inherit;
   }
 }
 
@@ -91,6 +154,12 @@
 :root[tabsintitlebar][sizemode="maximized"] #titlebar {
   appearance: auto;
   -moz-default-appearance: -moz-window-titlebar-maximized;
+}
+
+@media (-moz-windows-classic) {
+  :root[tabsintitlebar][sizemode="normal"] #toolbar-menubar {
+    margin-top: 4px;
+  }
 }
 
 .titlebar-buttonbox {
@@ -113,12 +182,19 @@
   align-items: stretch;
 }
 
+@media (-moz-platform: windows-win7),
+       (-moz-platform: windows-win8) {
+  /* Preserve window control buttons position at the top of the button box. */
+  .titlebar-buttonbox-container {
+    align-items: flex-start;
+  }
+}
+
 /* Window control buttons */
 
 .titlebar-min {
   appearance: auto;
   -moz-default-appearance: -moz-window-button-minimize;
-  margin-inline-end: 2px;
 }
 
 .titlebar-max {
@@ -134,6 +210,12 @@
 .titlebar-close {
   appearance: auto;
   -moz-default-appearance: -moz-window-button-close;
+}
+
+@media not (-moz-windows-classic) {
+  .titlebar-min {
+    margin-inline-end: 2px;
+  }
 }
 
 :root[tabletmode] .titlebar-min,
@@ -218,7 +300,7 @@
 /* Address bar results view */
 
 @media not (-moz-windows-default-theme) {
-  :root:not(:-moz-lwtheme) {
+  :root:not([lwtheme]) {
     --urlbar-popup-action-color: LinkText;
   }
 }
@@ -290,8 +372,91 @@ menupopup[touchmode] :is(menu, menuitem, menucaption) {
   padding-block: calc((3.5em - 32px) / 2);
 }
 
-/* Other menu separators don't extend all the way to the menu edges, but the
-   one below the navigation buttons in the content context menu should. */
-#context-sep-navigation {
-  padding-inline: 0;
+@media not (-moz-windows-non-native-menus) {
+  #context-navigation {
+    background-color: menu;
+  }
+}
+
+@media (-moz-windows-non-native-menus) {
+  /* :not([hidden]) to avoid the display: flex unhiding the item. */
+  #context-navigation:not([hidden]) {
+    /* Use modern flex box so we can use percentage widths to redistribute
+     * spacing manually. */
+    display: flex;
+    flex-direction: row;
+    /* We want the first and last icons to align with the text items which
+     * have 1em inline padding, and for icons to be centered within their
+     * hover state, so each icon of 16px needs 1em padding on both sides:
+     */
+    --menuitem-min-width: calc(2em + 16px);
+    /* The total width of the container should then be at least 4 times that: */
+    min-width: calc(4 * var(--menuitem-min-width));
+  }
+
+  #context-navigation > .menuitem-iconic {
+    flex: 1 0 auto;
+  }
+
+  #context-navigation > .menuitem-iconic[_moz-menuactive="true"] {
+    /* We only show hover state on the icons. This ensures there is no
+     * dead space between icons, but the visible hover state is only
+     * around the icons, and all the icons' hover states match each other.
+     */
+    background-color: transparent;
+  }
+
+  #context-navigation > .menuitem-iconic > .menu-iconic-left {
+    margin: 0;
+    padding: 0;
+  }
+
+  /* override styles from shared/contextmenu.inc.css */
+  #context-navigation > .menuitem-iconic > .menu-iconic-left > .menu-iconic-icon {
+    width: var(--menuitem-min-width);
+    height: 32px;
+    padding: 8px 1em;
+    margin: 0;
+  }
+  #context-navigation > .menuitem-iconic[_moz-menuactive="true"] > .menu-iconic-left > .menu-iconic-icon {
+    background-color: -moz-menuhover;
+  }
+
+  #context-navigation > .menuitem-iconic[_moz-menuactive="true"][disabled="true"] > .menu-iconic-left > .menu-iconic-icon {
+    background-color: -moz-menuhoverdisabled;
+  }
+
+  /* If the menu is wider than the icons strictly need, the <menuitem> elements
+   * will stretch to pick up the extra space. In that case, the outer icons
+   * should align to the start/end of their containing <menuitem>: */
+  #context-navigation > .menuitem-iconic:first-child {
+    justify-content: flex-start;
+  }
+
+  #context-navigation > .menuitem-iconic:last-child {
+    justify-content: flex-end;
+  }
+
+  #context-navigation > .menuitem-iconic:last-child,
+  #context-navigation > .menuitem-iconic:first-child {
+    flex-grow: 0;
+    /* The first and last items start off as 16px + 2em, like the other ones.
+     * 100% is the width of the parent, which will be at least 4 * the width of
+     * an individual item (16px + 2em)
+     * So 100% - 4 item widths gets us the remaining available space if
+     * #context-navigation is wider than that.
+     * Then divide by 6 to get the 1/6 of that extra space, and add this space
+     * to the width of the first/last items.
+     * This ensures that the 3 visual gaps between the 4 icons are all the same
+     * size, with each 1/3 of the available space evenly distributed between
+     * the 2 items on either side of the gap.
+     */
+    width: calc(var(--menuitem-min-width) + calc(100% - 4 * var(--menuitem-min-width)) / 6);
+  }
+
+  /* Other menu separators don't extend all the way to the menu edges, but the
+     one below the navigation buttons in the content context menu should. */
+  #context-sep-navigation {
+    padding-inline: 0;
+  }
 }

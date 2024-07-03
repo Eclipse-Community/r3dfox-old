@@ -6,6 +6,7 @@
 
 #ifndef ETWTools_h
 #define ETWTools_h
+#define TLG_HAVE_EVENT_SET_INFORMATION 2
 
 #include "mozilla/BaseProfilerMarkers.h"
 #include "mozilla/TimeStamp.h"

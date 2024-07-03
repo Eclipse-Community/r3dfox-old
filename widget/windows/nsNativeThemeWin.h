@@ -87,6 +87,10 @@ class nsNativeThemeWin : public Theme {
 
   bool WidgetAppearanceDependsOnWindowFocus(StyleAppearance) override;
 
+  enum { eThemeGeometryTypeWindowButtons = eThemeGeometryTypeUnknown + 1 };
+  ThemeGeometryType ThemeGeometryTypeForWidget(nsIFrame*,
+                                               StyleAppearance) override;
+
   nsNativeThemeWin();
 
  protected:

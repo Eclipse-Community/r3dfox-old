@@ -10,3 +10,17 @@ menupopup::part(drop-indicator) {
   /* To account for the shadow margin + border of the panel */
   margin-inline-start: 5px;
 }
+
+.toolbar-menupopup {
+  --nested-margin: calc(-1 * (var(--arrowpanel-menuitem-padding-inline) + var(--panel-shadow-margin)));
+}
+
+@media not (-moz-windows-non-native-menus) {
+  .toolbar-menupopup {
+    --panel-shadow-margin: 4px;
+  }
+
+  .toolbar-menupopup menupopup {
+    margin-inline-start: var(--nested-margin);
+  }
+}

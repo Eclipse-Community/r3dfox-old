@@ -550,6 +550,7 @@ enum E10sStatus {
 static bool gBrowserTabsRemoteAutostart = false;
 static E10sStatus gBrowserTabsRemoteStatus;
 static bool gBrowserTabsRemoteAutostartInitialized = false;
+const char* kForceDisableE10sPref = "browser.e10s.disabled";
 
 namespace mozilla {
 
@@ -568,22 +569,11 @@ bool BrowserTabsRemoteAutostart() {
   gBrowserTabsRemoteAutostart = true;
   E10sStatus status = kE10sEnabledByDefault;
 
-// We are checking to ensure that either MOZILLA_OFFICIAL is undefined or that
-// xpc::AreNonLocalConnectionsDisabled() is true. If either check matches,
-// we move on to check the MOZ_FORCE_DISABLE_E10S environment variable which
-// must equal "1" to proceed with disabling e10s.
-#if defined(MOZILLA_OFFICIAL)
-  bool allowDisablingE10s = xpc::AreNonLocalConnectionsDisabled();
-#else
-  bool allowDisablingE10s = true;
-#endif
-
-  if (gBrowserTabsRemoteAutostart && allowDisablingE10s) {
-    const char* forceDisable = PR_GetEnv("MOZ_FORCE_DISABLE_E10S");
-    if (forceDisable && !strcmp(forceDisable, "1")) {
-      gBrowserTabsRemoteAutostart = false;
-      status = kE10sForceDisabled;
-    }
+  if (gBrowserTabsRemoteAutostart &&
+      (Preferences::GetBool(kForceDisableE10sPref, false) ||
+       EnvHasValue("MOZ_FORCE_DISABLE_E10S"))) {
+    gBrowserTabsRemoteAutostart = false;
+    status = kE10sForceDisabled;
   }
 
   gBrowserTabsRemoteStatus = status;

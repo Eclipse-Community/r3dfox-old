@@ -29,9 +29,11 @@
 #include "nsCOMPtr.h"
 
 #ifdef XP_WIN
-#  include "mozilla/PreXULSkeletonUI.h"
-#  include "freestanding/SharedSection.h"
-#  include "LauncherProcessWin.h"
+#  ifdef MOZ_LAUNCHER_PROCESS
+#    include "mozilla/PreXULSkeletonUI.h"
+#    include "freestanding/SharedSection.h"
+#    include "LauncherProcessWin.h"
+#  endif
 #  include "mozilla/GeckoArgs.h"
 #  include "mozilla/mscom/ProcessRuntime.h"
 #  include "mozilla/WindowsDllBlocklist.h"
@@ -442,12 +444,14 @@ int main(int argc, char* argv[], char* envp[]) {
     (void)result;  // Ignore errors since some tools block DPI calls
   }
 
-  // Once the browser process hits the main function, we no longer need
-  // a writable section handle because all dependent modules have been
-  // loaded.
-  mozilla::freestanding::gSharedSection.ConvertToReadOnly();
+  #if defined(MOZ_LAUNCHER_PROCESS)
+    // Once the browser process hits the main function, we no longer need
+    // a writable section handle because all dependent modules have been
+    // loaded.
+    mozilla::freestanding::gSharedSection.ConvertToReadOnly();
 
-  mozilla::CreateAndStorePreXULSkeletonUI(GetModuleHandle(nullptr), argc, argv);
+    mozilla::CreateAndStorePreXULSkeletonUI(GetModuleHandle(nullptr), argc, argv);
+  #endif
 #endif
 
   nsresult rv = InitXPCOMGlue(LibLoadingStrategy::ReadAhead);
@@ -463,7 +467,9 @@ int main(int argc, char* argv[], char* envp[]) {
 
   int result = do_main(argc, argv, envp);
 
-#if defined(XP_WIN)
+#if defined(XP_WIN) && defined(MOZ_LAUNCHER_PROCESS)
+  // This is used by the pre-XUL skeleton, so we only compile it when the
+  // launcher process is enabled.
   CleanupProcessRuntime();
 #endif
 

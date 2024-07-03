@@ -243,6 +243,7 @@ panelview {
 
 /* Tweaks for menupopups hanging off toolbar buttons to make them feel like panels */
 
+@media (-moz-bool-pref: "widget.non-native-theme.enabled") {
 .toolbar-menupopup {
   &,
   menupopup {
@@ -324,6 +325,7 @@ panelview {
   menuseparator {
     padding: var(--panel-separator-margin);
   }
+}
 }
 
 #BMB_bookmarksPopup {
@@ -1006,7 +1008,6 @@ panelmultiview[mainViewId="PanelUI-fxa"] #PanelUI-remotetabs-syncnow {
   display: none;
 }
 
-.toolbar-menupopup :is(menu, menuitem),
 .subview-subheader,
 panelview .toolbarbutton-1,
 .subviewbutton,
@@ -1018,6 +1019,18 @@ panelview .toolbarbutton-1,
   border-radius: var(--arrowpanel-menuitem-border-radius);
   background-color: transparent;
   flex-shrink: 0;
+}
+
+@media (-moz-bool-pref: "widget.non-native-theme.enabled") {
+  .toolbar-menupopup :is(menu, menuitem) {
+    appearance: none;
+    margin: var(--arrowpanel-menuitem-margin);
+    min-height: 24px;
+    padding: var(--arrowpanel-menuitem-padding);
+    border-radius: var(--arrowpanel-menuitem-border-radius);
+    background-color: transparent;
+    flex-shrink: 0;
+  }
 }
 
 .subview-subheader {
@@ -2085,3 +2098,32 @@ radiogroup:focus-visible > .subviewradio[focused="true"] {
 #content-analysis-panel-container {
   padding: 8px;
 }
+
+@media (-moz-bool-pref: "widget.non-native-theme.enabled") {
+  #PlacesToolbarItems toolbarbutton.bookmark-item menupopup.toolbar-menupopup menuseparator::before {
+    border-top: 1px solid var(--panel-separator-color) !important;
+    content: "" !important;
+    display: block !important;
+    flex: 1 !important;
+  }
+
+  #PlacesToolbarItems toolbarbutton.bookmark-item menupopup.toolbar-menupopup menuseparator {
+    appearance: unset !important;
+    -moz-default-appearance: unset !important;
+    border-top: unset !important;
+    border-bottom: unset !important;
+  }
+
+  #bookmarks-menu-button menupopup#BMB_bookmarksPopup menuseparator::before {
+    border-top: 1px solid var(--panel-separator-color) !important;
+    content: "" !important;
+    display: block !important;
+    flex: 1 !important;
+  }
+
+  #bookmarks-menu-button menupopup#BMB_bookmarksPopup menuseparator {
+    appearance: unset !important;
+    -moz-default-appearance: unset !important;
+    border-top: unset !important;
+    border-bottom: unset !important;
+  }

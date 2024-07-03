@@ -372,15 +372,22 @@ menupopup[touchmode] :is(menu, menuitem, menucaption) {
   padding-block: calc((3.5em - 32px) / 2);
 }
 
-@media not (-moz-windows-non-native-menus) {
-  #context-navigation {
-    background-color: menu;
-  }
+#context-navigation {
+  background-color: menu;
+}
+
+#context-sep-navigation {
+  margin-inline-start: -28px;
 }
 
 @media (-moz-windows-non-native-menus) {
   /* :not([hidden]) to avoid the display: flex unhiding the item. */
   #context-navigation:not([hidden]) {
+    /* The Windows 10 version of the navigation area needs the scrollbox's
+       background color, not the builtin "menu" color. */
+    background-color: inherit;
+    /* Match the inner top padding of the menupopup to center the icons visually. */
+    padding-bottom: 4px;
     /* Use modern flex box so we can use percentage widths to redistribute
      * spacing manually. */
     display: flex;

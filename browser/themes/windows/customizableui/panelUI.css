@@ -15,6 +15,7 @@ menupopup::part(drop-indicator) {
   --nested-margin: calc(-1 * (var(--arrowpanel-menuitem-padding-inline) + var(--panel-shadow-margin)));
 }
 
+@media (-moz-bool-pref: "widget.non-native-theme.enabled") {
 @media not (-moz-windows-non-native-menus) {
   .toolbar-menupopup {
     --panel-shadow-margin: 4px;
@@ -22,5 +23,6 @@ menupopup::part(drop-indicator) {
 
   .toolbar-menupopup menupopup {
     margin-inline-start: var(--nested-margin);
+  }
   }
 }

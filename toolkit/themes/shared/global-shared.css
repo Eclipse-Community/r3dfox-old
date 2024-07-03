@@ -28,7 +28,6 @@
   --arrowpanel-dimmed: color-mix(in srgb, currentColor 17%, transparent);
   --arrowpanel-dimmed-further: color-mix(in srgb, currentColor 30%, transparent);
 
-  --panel-separator-color: color-mix(in srgb, currentColor 25%, transparent);
   --panel-disabled-color: color-mix(in srgb, currentColor 40%, transparent);
 
   --popup-notification-body-width: calc(31em - calc(2 * var(--arrowpanel-padding)));
@@ -67,16 +66,11 @@
   }
 
   @media (prefers-contrast) {
-    /* Reduce the opacity of disabled toolbar buttons in order to increase
+    &:not(:-moz-lwtheme) {
+  /* Reduce the opacity of disabled toolbar buttons in order to increase
        contrast with the enabled state. */
     --toolbarbutton-disabled-opacity: 0.3;
 
-    --panel-separator-color: currentColor;
-    --toolbar-field-focus-border-color: var(--focus-outline-color);
-
-    --input-border-color: currentColor;
-
-    &:not([lwtheme]) {
       --panel-disabled-color: GrayText;
     }
   }
@@ -141,6 +135,7 @@ html|textarea {
   font: inherit;
 }
 
+@media (-moz-bool-pref: "widget.non-native-theme.enabled") {
 html|input:where(:not([type=radio i], [type=checkbox i], [type=range i])),
 html|textarea {
   appearance: none;
@@ -195,6 +190,7 @@ html|select:where(:not([size], [multiple])) {
   &:focus-visible {
     outline: var(--focus-outline);
     outline-offset: var(--focus-outline-offset);
+  }
   }
 }
 

@@ -551,6 +551,7 @@ enum E10sStatus {
 static bool gBrowserTabsRemoteAutostart = false;
 static E10sStatus gBrowserTabsRemoteStatus;
 static bool gBrowserTabsRemoteAutostartInitialized = false;
+const char* kForceDisableE10sPref = "browser.e10s.disabled";
 
 namespace mozilla {
 
@@ -575,12 +576,11 @@ bool BrowserTabsRemoteAutostart() {
   // they are not in (at least) gtests (where we can't) and xpcshell.
   // Long-term, hopefully we can make all tests e10s-friendly,
   // then we could remove this automation-only env variable.
-  if (gBrowserTabsRemoteAutostart && xpc::AreNonLocalConnectionsDisabled()) {
-    const char* forceDisable = PR_GetEnv("MOZ_FORCE_DISABLE_E10S");
-    if (forceDisable && !strcmp(forceDisable, "1")) {
-      gBrowserTabsRemoteAutostart = false;
-      status = kE10sForceDisabled;
-    }
+  if (gBrowserTabsRemoteAutostart &&
+      (Preferences::GetBool(kForceDisableE10sPref, false) ||
+       EnvHasValue("MOZ_FORCE_DISABLE_E10S"))) {
+    gBrowserTabsRemoteAutostart = false;
+    status = kE10sForceDisabled;
   }
 
   gBrowserTabsRemoteStatus = status;

@@ -1075,7 +1075,7 @@ nsresult nsWindow::Create(nsIWidget* aParent, const LayoutDeviceIntRect& aRect,
         (aInitData->mIsPrivate) &&
         !StaticPrefs::browser_privatebrowsing_autostart();
     RefPtr<IPropertyStore> pPropStore;
-    if (!FAILED(SHGetPropertyStoreForWindow(mWnd, IID_IPropertyStore,
+    if (IsWin7OrLater() && !FAILED(SHGetPropertyStoreForWindow(mWnd, IID_IPropertyStore,
                                             getter_AddRefs(pPropStore)))) {
       PROPVARIANT pv;
       nsAutoString aumid;
@@ -1821,14 +1821,14 @@ bool nsWindow::IsVisible() const { return mIsVisible; }
 
 void nsWindow::RegisterTouchWindow() {
   mTouchWindow = true;
-  ::RegisterTouchWindow(mWnd, TWF_WANTPALM);
+  mGesture.RegisterTouchWindow(mWnd);
   ::EnumChildWindows(mWnd, nsWindow::RegisterTouchForDescendants, 0);
 }
 
 BOOL CALLBACK nsWindow::RegisterTouchForDescendants(HWND aWnd, LPARAM aMsg) {
   nsWindow* win = WinUtils::GetNSWindowPtr(aWnd);
   if (win) {
-    ::RegisterTouchWindow(aWnd, TWF_WANTPALM);
+    win->mGesture.RegisterTouchWindow(aWnd);
   }
   return TRUE;
 }
@@ -6642,6 +6642,25 @@ void nsWindow::UserActivity() {
   }
 }
 
+LayoutDeviceIntPoint nsWindow::GetTouchCoordinates(WPARAM wParam,
+                                                   LPARAM lParam) {
+  LayoutDeviceIntPoint ret;
+  uint32_t cInputs = LOWORD(wParam);
+  if (cInputs != 1) {
+    // Just return 0,0 if there isn't exactly one touch point active
+    return ret;
+  }
+  PTOUCHINPUT pInputs = new TOUCHINPUT[cInputs];
+  if (mGesture.GetTouchInputInfo((HTOUCHINPUT)lParam, cInputs, pInputs)) {
+    ret.x = TOUCH_COORD_TO_PIXEL(pInputs[0].x);
+    ret.y = TOUCH_COORD_TO_PIXEL(pInputs[0].y);
+  }
+  delete[] pInputs;
+  // Note that we don't call CloseTouchInputHandle here because we need
+  // to read the touch input info again in OnTouch later.
+  return ret;
+}
+
 // Helper function for TouchDeviceNeedsPanGestureConversion(PTOUCHINPUT,
 // uint32_t).
 static bool TouchDeviceNeedsPanGestureConversion(HANDLE aSource) {
@@ -6777,8 +6796,7 @@ bool nsWindow::OnTouch(WPARAM wParam, LPARAM lParam) {
   uint32_t cInputs = LOWORD(wParam);
   PTOUCHINPUT pInputs = new TOUCHINPUT[cInputs];
 
-  if (GetTouchInputInfo((HTOUCHINPUT)lParam, cInputs, pInputs,
-                        sizeof(TOUCHINPUT))) {
+  if (mGesture.GetTouchInputInfo((HTOUCHINPUT)lParam, cInputs, pInputs)) {
     MultiTouchInput touchInput, touchEndInput;
 
     // Walk across the touch point array processing each contact point.
@@ -6868,7 +6886,7 @@ bool nsWindow::OnTouch(WPARAM wParam, LPARAM lParam) {
   }
 
   delete[] pInputs;
-  CloseTouchInputHandle((HTOUCHINPUT)lParam);
+  mGesture.CloseTouchInputHandle((HTOUCHINPUT)lParam);
   return true;
 }
 
@@ -6906,7 +6924,7 @@ bool nsWindow::OnGesture(WPARAM wParam, LPARAM lParam) {
       mGesture.PanFeedbackFinalize(mWnd, endFeedback);
     }
 
-    CloseGestureInfoHandle((HGESTUREINFO)lParam);
+    mGesture.CloseGestureInfoHandle((HGESTUREINFO)lParam);
 
     return true;
   }
@@ -6931,7 +6949,7 @@ bool nsWindow::OnGesture(WPARAM wParam, LPARAM lParam) {
   }
 
   // Only close this if we process and return true.
-  CloseGestureInfoHandle((HGESTUREINFO)lParam);
+  mGesture.CloseGestureInfoHandle((HGESTUREINFO)lParam);
 
   return true;  // Handled
 }
@@ -7633,24 +7651,6 @@ static bool IsTouchSupportEnabled(HWND aWnd) {
   return topWindow ? topWindow->IsTouchWindow() : false;
 }
 
-static Maybe<POINT> GetSingleTouch(WPARAM wParam, LPARAM lParam) {
-  Maybe<POINT> ret;
-  uint32_t cInputs = LOWORD(wParam);
-  if (cInputs != 1) {
-    return ret;
-  }
-  TOUCHINPUT input;
-  if (GetTouchInputInfo((HTOUCHINPUT)lParam, cInputs, &input,
-                        sizeof(TOUCHINPUT))) {
-    ret.emplace();
-    ret->x = TOUCH_COORD_TO_PIXEL(input.x);
-    ret->y = TOUCH_COORD_TO_PIXEL(input.y);
-  }
-  // Note that we don't call CloseTouchInputHandle here because we need
-  // to read the touch input info again in OnTouch later.
-  return ret;
-}
-
 // static
 bool nsWindow::DealWithPopups(HWND aWnd, UINT aMessage, WPARAM aWParam,
                               LPARAM aLParam, LRESULT* aResult) {
@@ -7683,7 +7683,6 @@ bool nsWindow::DealWithPopups(HWND aWnd, UINT aMessage, WPARAM aWParam,
   uint32_t popupsToRollup = UINT32_MAX;
 
   bool consumeRollupEvent = false;
-  Maybe<POINT> touchPoint;  // In screen coords.
 
   // If we rollup with animations but get occluded right away, we might not
   // advance the refresh driver enough for the animation to finish.
@@ -7695,10 +7694,6 @@ bool nsWindow::DealWithPopups(HWND aWnd, UINT aMessage, WPARAM aWParam,
       if (!IsTouchSupportEnabled(aWnd)) {
         // If APZ is disabled, don't allow touch inputs to dismiss popups. The
         // compatibility mouse events will do it instead.
-        return false;
-      }
-      touchPoint = GetSingleTouch(aWParam, aLParam);
-      if (!touchPoint) {
         return false;
       }
       [[fallthrough]];
@@ -7720,8 +7715,8 @@ bool nsWindow::DealWithPopups(HWND aWnd, UINT aMessage, WPARAM aWParam,
         // handling the long-tap-up.
         return false;
       }
-      if (!EventIsInsideWindow(popupWindow, touchPoint) &&
-          GetPopupsToRollup(rollupListener, &popupsToRollup, touchPoint)) {
+      if (!EventIsInsideWindow(popupWindow) &&
+          GetPopupsToRollup(rollupListener, &popupsToRollup)) {
         break;
       }
       return false;
@@ -7855,16 +7850,15 @@ bool nsWindow::DealWithPopups(HWND aWnd, UINT aMessage, WPARAM aWParam,
       nativeMessage == WM_POINTERDOWN) {
     LayoutDeviceIntPoint pos;
     if (nativeMessage == WM_TOUCH) {
-      pos.x = touchPoint->x;
-      pos.y = touchPoint->y;
+      if (nsWindow* win = WinUtils::GetNSWindowPtr(aWnd)) {
+        pos = win->GetTouchCoordinates(aWParam, aLParam);
+      }
     } else {
       POINT pt;
       pt.x = GET_X_LPARAM(aLParam);
       pt.y = GET_Y_LPARAM(aLParam);
       // POINTERDOWN is already in screen coords.
-      if (nativeMessage == WM_LBUTTONDOWN) {
-        ::ClientToScreen(aWnd, &pt);
-      }
+      ::ClientToScreen(aWnd, &pt);
       pos = LayoutDeviceIntPoint(pt.x, pt.y);
     }
 

@@ -258,7 +258,6 @@ win_if_nametoindex(const char *ifname)
 	return index;
 }
 
-#if WINVER < 0x0600
 /* These functions are written based on the code at
  * http://www.cs.wustl.edu/~schmidt/win32-cv-1.html
  * Therefore, for the rest of the file the following applies:
@@ -421,5 +420,4 @@ WakeAllXPConditionVariable(userland_cond_t *cv)
 	if (have_waiters)
 		SetEvent (cv->events_[C_BROADCAST]);
 }
-#endif
 #endif

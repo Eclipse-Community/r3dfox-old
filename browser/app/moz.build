@@ -75,16 +75,30 @@ if CONFIG["CC_TYPE"] == "clang-cl":
 
 if CONFIG["OS_ARCH"] == "WINNT":
     RCINCLUDE = "splash.rc"
-    DIRS += [
-        "pbproxy",
-        "winlauncher",
-    ]
-    USE_LIBS += [
-        "winlauncher",
-    ]
-    LOCAL_INCLUDES += [
-        "/browser/app/winlauncher",
-    ]
+    if CONFIG["MOZ_LAUNCHER_PROCESS"]:
+        DIRS += [
+            "pbproxy",
+            "winlauncher",
+        ]
+        USE_LIBS += [
+            "winlauncher",
+        ]
+        LOCAL_INCLUDES += [
+            "/browser/app/winlauncher",
+        ]
+        WIN32_EXE_LDFLAGS += [
+            libpath_flag + OBJDIR + "/winlauncher/freestanding",
+        ]
+    else:
+        DIRS += [
+            "pbproxy",
+        ]
+        # Build libraries required for non-launcher build.
+        OS_LIBS += [
+            "ntdll",
+            "user32",
+            "version",
+        ]
     OS_LIBS += [
         "advapi32",
         "shell32",
@@ -103,10 +117,6 @@ if CONFIG["OS_ARCH"] == "WINNT":
         libpath_flag = "-LIBPATH:"
     else:
         libpath_flag = "-L"
-
-    WIN32_EXE_LDFLAGS += [
-        libpath_flag + OBJDIR + "/winlauncher/freestanding",
-    ]
 
     # Don't build firefox.exe with CETCOMPAT, because we need to be able to
     # only enable it for processes that are not using JIT in xul.dll.

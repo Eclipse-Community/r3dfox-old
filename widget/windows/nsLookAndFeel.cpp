@@ -17,6 +17,10 @@
 #include "mozilla/Telemetry.h"
 #include "mozilla/widget/WinRegistry.h"
 
+// -- native controls patch includes --
+#include "mozilla/StaticPrefs_widget.h"
+// -- end native controls patch includes --
+
 using namespace mozilla;
 using namespace mozilla::widget;
 
@@ -496,16 +500,34 @@ nsresult nsLookAndFeel::NativeGetInt(IntID aID, int32_t& aResult) {
       aResult = nsUXThemeData::IsDefaultWindowTheme();
       break;
     case IntID::DWMCompositor:
+      if (StaticPrefs::widget_ev_native_controls_patch_force_dwm_report_off()) {
+        aResult = 0;
+        break;
+      }
+
       aResult = gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled();
       break;
     case IntID::WindowsAccentColorInTitlebar: {
       aResult = mTitlebarColors.mUseAccent;
     } break;
-    case IntID::WindowsGlass:
+    case IntID::WindowsGlass: {
+      int reportingPref =
+          StaticPrefs::widget_ev_native_controls_patch_force_glass_reporting();
+      if (reportingPref != 0) {
+        aResult = (reportingPref == 1) ? 1 : 0;
+        break;
+      }
+
+      int overrideWinVer =
+          StaticPrefs::widget_ev_native_controls_patch_override_win_version();
+      bool isWin8OrLater =
+          (overrideWinVer == 0 && IsWin8OrLater()) || overrideWinVer >= 8;
+
       // Aero Glass is only available prior to Windows 8 when DWM is used.
       aResult = (gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled() &&
-                 !IsWin8OrLater());
+                 !isWin8OrLater);
       break;
+    }
     case IntID::AlertNotificationOrigin:
       aResult = 0;
       {

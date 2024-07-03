@@ -34,7 +34,6 @@
   outline: none;
   color: var(--fc-color);
   accent-color: var(--fc-accent-color);
-  -moz-theme: non-native;
   --arrow-width: 33.9411px;
   --arrow-square-size: calc(var(--arrow-width) / sqrt(2));
   --extra-width-from-rotation: calc(var(--arrow-width) - var(--arrow-square-size));

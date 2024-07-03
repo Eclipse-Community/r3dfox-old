@@ -4,48 +4,6 @@
 
 @namespace url("http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul");
 
-*|*:root {
-  --menu-icon-opacity: 1;
-  --menu-arrow-width: 1em;
-
-  @media (-moz-platform: windows) {
-    --menu-arrow-width: max(1em, 16px);
-
-    @media (prefers-color-scheme: light) {
-      --menu-icon-opacity: 0.7;
-    }
-  }
-}
-
-/* Menu separator */
-
-menuseparator {
-  /* Using padding instead of margin to increase the hit area, as some
-     separators (e.g. in bookmarks menus) can be dragged or have a context
-     menu. */
-  padding-block: 4px;
-
-  @media (-moz-platform: macos) {
-    padding-block: 5px;
-    margin-inline: 9px;
-  }
-}
-
-menuseparator::before {
-  border-top: 1px solid var(--panel-separator-color);
-  content: "";
-  display: block;
-  flex: 1;
-}
-
-/* Accel text */
-
-@media not (prefers-contrast) {
-  menuitem:not([disabled]) > .menu-accel-container > :is(.menu-accel, .menu-iconic-accel) {
-    color: var(--panel-disabled-color);
-  }
-}
-
 /* Scroll buttons */
 
 /* Hide arrow buttons when there's nothing to scroll in that direction */
@@ -129,40 +87,4 @@ menuitem {
 menuitem:is([default="true"], .spell-suggestion),
 menucaption {
   font-weight: bold;
-}
-
-/* ..... menu arrow box ..... */
-
-.menu-right {
-  list-style-image: url("chrome://global/skin/icons/arrow-right.svg");
-  -moz-context-properties: fill, fill-opacity;
-  fill: currentColor;
-  fill-opacity: var(--menu-icon-opacity);
-
-  &:-moz-locale-dir(rtl) {
-    list-style-image: url("chrome://global/skin/icons/arrow-left.svg");
-  }
-
-  > image {
-    width: var(--menu-arrow-width);
-  }
-
-  @media (-moz-platform: linux) {
-    margin-block: 0;
-    margin-inline: 6px 0;
-  }
-
-  @media (-moz-platform: macos) {
-    margin-inline: 22px -3px;
-  }
-
-  @media (-moz-platform: windows) {
-    margin-inline-end: 1em;
-  }
-}
-
-@media (-moz-platform: macos) {
-  :is(.menu-accel, .menu-iconic-accel)[value] {
-    margin-inline-start: 25px;
-  }
 }

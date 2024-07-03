@@ -19,6 +19,10 @@ imply_option("MOZ_APP_ID", "{ec8030f7-c20a-464f-9b0e-13a3a9e97384}")
 imply_option("MOZ_DEVTOOLS", "all")
 imply_option("BROWSER_CHROME_URL", "chrome://browser/content/browser.xhtml")
 
+# We want to disable the pre-XUL launcher for now, as it won't look good with the browser UI.
+# If we choose to enable the launcher at a later date, then this can be re-enabled.
+imply_option("--enable-launcher-process", False)
+
 option(
     "--disable-browser-newtab-as-addon",
     default=True,

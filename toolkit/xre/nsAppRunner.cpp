@@ -543,6 +543,7 @@ enum E10sStatus {
 static bool gBrowserTabsRemoteAutostart = false;
 static E10sStatus gBrowserTabsRemoteStatus;
 static bool gBrowserTabsRemoteAutostartInitialized = false;
+const char* kForceDisableE10sPref = "browser.e10s.disabled";
 
 namespace mozilla {
 
@@ -571,9 +572,9 @@ bool BrowserTabsRemoteAutostart() {
   bool allowDisablingE10s = true;
 #endif
 
-  if (gBrowserTabsRemoteAutostart && allowDisablingE10s) {
+  if (gBrowserTabsRemoteAutostart && (Preferences::GetBool(kForceDisableE10sPref, false)) || allowDisablingE10s) {
     const char* forceDisable = PR_GetEnv("MOZ_FORCE_DISABLE_E10S");
-    if (forceDisable && !strcmp(forceDisable, "1")) {
+    if ((Preferences::GetBool(kForceDisableE10sPref, false)) || forceDisable && !strcmp(forceDisable, "1")) {
       gBrowserTabsRemoteAutostart = false;
       status = kE10sForceDisabled;
     }

@@ -114,6 +114,32 @@ class LookAndFeel {
     WindowsDefaultTheme,
 
     /*
+     * A Boolean value to determine whether the DWM compositor is being used
+     *
+     * This metric is not used on non-Windows platforms. These platforms
+     * should return NS_ERROR_NOT_IMPLEMENTED when queried for this metric.
+     */
+    DWMCompositor,
+
+    /*
+     * A Boolean value to determine whether Windows is themed (Classic vs.
+     * uxtheme)
+     *
+     * This is Windows-specific and is not implemented on other platforms
+     * (will return the default of NS_ERROR_FAILURE).
+     */
+    WindowsClassic,
+
+    /*
+     * A Boolean value to determine whether the current Windows desktop theme
+     * supports Aero Glass.
+     *
+     * This is Windows-specific and is not implemented on other platforms
+     * (will return the default of NS_ERROR_FAILURE).
+     */
+    WindowsGlass,
+
+    /*
      * A Boolean value to determine whether the macOS Big Sur-specific
      * theming should be used.
      */
@@ -388,6 +414,8 @@ class LookAndFeel {
   };
 
   using FontID = mozilla::StyleSystemFont;
+
+  static bool WindowsNonNativeMenusEnabled();
 
   static ColorScheme SystemColorScheme() {
     return GetInt(IntID::SystemUsesDarkTheme) ? ColorScheme::Dark

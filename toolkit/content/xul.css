@@ -407,24 +407,32 @@ tooltip {
 }
 
 @media (-moz-platform: windows) {
-  tooltip {
-    appearance: none;
-    border: 1px solid;
+  @media not (-moz-bool-pref: "widget.non-native-theme.enabled") {
+    tooltip {
+      color-scheme: light;
+    }
   }
 
-  @media (-moz-windows-default-theme) {
+  @media (-moz-bool-pref: "widget.non-native-theme.enabled") {
     tooltip {
-      background-color: #f9f9fb;
-      color: black;
-      border-color: #67676c;
-      border-radius: 4px;
+      appearance: none;
+      border: 1px solid;
     }
 
-    @media (prefers-color-scheme: dark) {
+    @media (-moz-windows-default-theme) {
       tooltip {
-        background-color: #2b2a33;
-        color: white;
-        border-color: #f9f9fb;
+        background-color: #f9f9fb;
+        color: black;
+        border-color: #67676c;
+        border-radius: 4px;
+      }
+  
+      @media (prefers-color-scheme: dark) {
+        tooltip {
+          background-color: #2b2a33;
+          color: white;
+          border-color: #f9f9fb;
+        }
       }
     }
   }

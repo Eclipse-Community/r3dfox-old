@@ -509,6 +509,7 @@ class nsHttpChannel final : public HttpBaseChannel,
   void SetPushedStreamTransactionAndId(
       HttpTransactionShell* aTransWithPushedStream, uint32_t aPushedStreamId);
 
+  void SetLoadGroupUserAgentOverride();
   void SetOriginHeader();
   void SetDoNotTrack();
   void SetGlobalPrivacyControl();

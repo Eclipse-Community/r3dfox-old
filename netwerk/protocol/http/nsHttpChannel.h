@@ -503,6 +503,7 @@ class nsHttpChannel final : public HttpBaseChannel,
   [[nodiscard]] nsresult OpenCacheInputStream(nsICacheEntry* cacheEntry,
                                               bool startBuffering);
 
+  void SetLoadGroupUserAgentOverride();
   void SetOriginHeader();
   void SetDoNotTrack();
   void SetGlobalPrivacyControl();

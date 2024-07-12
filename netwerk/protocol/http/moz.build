@@ -210,6 +210,11 @@ IPDL_SOURCES += [
     "PHttpTransaction.ipdl",
 ]
 
+EXTRA_JS_MODULES += [
+    "UserAgentOverrides.sys.mjs",
+    "UserAgentUpdates.sys.mjs",
+]
+
 include("/ipc/chromium/chromium-config.mozbuild")
 
 FINAL_LIBRARY = "xul"
@@ -235,6 +240,7 @@ EXTRA_JS_MODULES += [
     "HPKEConfigManager.sys.mjs",
     "NetworkErrorLogging.sys.mjs",
     "ObliviousHTTP.sys.mjs",
+    "UAOverridesBootstrapper.sys.mjs",
     "WellKnownOpportunisticUtils.sys.mjs",
 ]
 

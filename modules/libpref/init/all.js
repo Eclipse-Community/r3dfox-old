@@ -71,6 +71,9 @@ pref("security.crash_tracking.js_load_1.maxCrashes", 1);
 
 pref("general.useragent.compatMode.firefox", false);
 
+// Enable site specific overrides to fix shitty websites
+pref("general.useragent.site_specific_overrides", true);
+
 pref("general.config.obscure_value", 13); // for MCD .cfg files
 
 #ifndef MOZ_BUILD_APP_IS_BROWSER

@@ -51,7 +51,6 @@
 #include <windows.h>
 #include "user_environment.h"
 typedef CRITICAL_SECTION userland_mutex_t;
-#if WINVER < 0x0600
 typedef CRITICAL_SECTION userland_rwlock_t;
 enum {
 	C_SIGNAL = 0,
@@ -72,11 +71,6 @@ void WakeAllXPConditionVariable(userland_cond_t *);
 #define DeleteConditionVariable(cond) DeleteXPConditionVariable(cond)
 #define SleepConditionVariableCS(cond, mtx, time) SleepXPConditionVariable(cond, mtx)
 #define WakeAllConditionVariable(cond) WakeAllXPConditionVariable(cond)
-#else
-typedef SRWLOCK userland_rwlock_t;
-#define DeleteConditionVariable(cond)
-typedef CONDITION_VARIABLE userland_cond_t;
-#endif
 typedef HANDLE userland_thread_t;
 #define ADDRESS_FAMILY	unsigned __int8
 #define IPVERSION  4

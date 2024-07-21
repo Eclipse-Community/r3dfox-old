@@ -20,7 +20,7 @@ void CoUninitialize();
 
 HRESULT CoIncrementMTAUsage(CO_MTA_USAGE_COOKIE* pCookie);
 
-HRESULT CoGetApartmentType(APTTYPE* pAptType, APTTYPEQUALIFIER* pAptQualifier);
+//HRESULT CoGetApartmentType(APTTYPE* pAptType, APTTYPEQUALIFIER* pAptQualifier);
 
 HRESULT CoInitializeSecurity(PSECURITY_DESCRIPTOR pSecDesc, LONG cAuthSvc,
                              SOLE_AUTHENTICATION_SERVICE* asAuthSvc,

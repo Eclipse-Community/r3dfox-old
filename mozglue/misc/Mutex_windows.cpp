@@ -13,23 +13,25 @@
 #include "MutexPlatformData_windows.h"
 
 mozilla::detail::MutexImpl::MutexImpl() {
-  InitializeSRWLock(&platformData()->lock);
+  InitializeCriticalSection(&platformData()->lock);
 }
 
-mozilla::detail::MutexImpl::~MutexImpl() {}
+mozilla::detail::MutexImpl::~MutexImpl() {
+  DeleteCriticalSection(&platformData()->lock);
+}
 
 void mozilla::detail::MutexImpl::lock() {
-  AcquireSRWLockExclusive(&platformData()->lock);
+  EnterCriticalSection(&platformData()->lock);
 }
 
 bool mozilla::detail::MutexImpl::tryLock() { return mutexTryLock(); }
 
 bool mozilla::detail::MutexImpl::mutexTryLock() {
-  return !!TryAcquireSRWLockExclusive(&platformData()->lock);
+  return TryEnterCriticalSection(&platformData()->lock) != 0;
 }
 
 void mozilla::detail::MutexImpl::unlock() {
-  ReleaseSRWLockExclusive(&platformData()->lock);
+  LeaveCriticalSection(&platformData()->lock);
 }
 
 mozilla::detail::MutexImpl::PlatformData*

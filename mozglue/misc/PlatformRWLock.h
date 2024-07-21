@@ -11,6 +11,8 @@
 
 #ifndef XP_WIN
 #  include <pthread.h>
+#else
+#  include <windows.h>
 #endif
 
 namespace mozilla::detail {
@@ -39,9 +41,9 @@ class RWLockImpl {
 #ifndef XP_WIN
   pthread_rwlock_t mRWLock;
 #else
-  // SRWLock is pointer-sized. We declare it in such a fashion here to avoid
-  // pulling in windows.h wherever this header is used.
-  void* mRWLock;
+  CRITICAL_SECTION mLock;
+  DWORD mWriterThreadId;
+  uint32_t mReaderCount;
 #endif
 };
 

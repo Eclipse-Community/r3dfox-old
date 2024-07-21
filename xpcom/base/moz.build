@@ -209,6 +209,12 @@ if CONFIG["OS_TARGET"] == "WINNT":
         "MemoryInfo.cpp",
     ]
 
+    DEFINES["PSAPI_VERSION"] = "1"
+
+    OS_LIBS += [
+        "psapi",
+    ]
+
 if CONFIG["OS_TARGET"] == "Darwin":
     UNIFIED_SOURCES += [
         "AvailableMemoryWatcherMac.cpp",

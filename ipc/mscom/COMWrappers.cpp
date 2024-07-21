@@ -47,17 +47,6 @@ HRESULT CoIncrementMTAUsage(CO_MTA_USAGE_COOKIE* pCookie) {
   return hr;
 }
 
-HRESULT CoGetApartmentType(APTTYPE* pAptType, APTTYPEQUALIFIER* pAptQualifier) {
-  static const StaticDynamicallyLinkedFunctionPtr<
-      decltype(&::CoGetApartmentType)>
-      pCoGetApartmentType(L"combase.dll", "CoGetApartmentType");
-  if (!pCoGetApartmentType) {
-    return ::CoGetApartmentType(pAptType, pAptQualifier);
-  }
-
-  return pCoGetApartmentType(pAptType, pAptQualifier);
-}
-
 HRESULT CoInitializeSecurity(PSECURITY_DESCRIPTOR pSecDesc, LONG cAuthSvc,
                              SOLE_AUTHENTICATION_SERVICE* asAuthSvc,
                              void* pReserved1, DWORD dwAuthnLevel,

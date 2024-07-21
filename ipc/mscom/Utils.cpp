@@ -30,16 +30,33 @@ namespace mozilla {
 namespace mscom {
 
 bool IsCOMInitializedOnCurrentThread() {
-  APTTYPE aptType;
+  return false;
+  /*APTTYPE aptType;
   APTTYPEQUALIFIER aptTypeQualifier;
-  HRESULT hr = wrapped::CoGetApartmentType(&aptType, &aptTypeQualifier);
-  return hr != CO_E_NOTINITIALIZED;
+  struct oletls *info = COM_CurrentInfo();
+  HRESULT hr = CoGetApartmentType(&aptType, &aptTypeQualifier);
+  return hr != CO_E_NOTINITIALIZED;*/
 }
 
 bool IsCurrentThreadMTA() {
+  // We don't use RefPtr for token because CoGetContextToken does *not*
+  // increment its refcount!
+  IUnknown* token = nullptr;
+  HRESULT hr =
+    CoGetContextToken(reinterpret_cast<ULONG_PTR*>(&token));
+  if (FAILED(hr)) {
+    return false;
+  }
+
+  RefPtr<IComThreadingInfo> threadingInfo;
+  hr = token->QueryInterface(IID_IComThreadingInfo,
+                             getter_AddRefs(threadingInfo));
+  if (FAILED(hr)) {
+    return false;
+  }
+
   APTTYPE aptType;
-  APTTYPEQUALIFIER aptTypeQualifier;
-  HRESULT hr = wrapped::CoGetApartmentType(&aptType, &aptTypeQualifier);
+  hr = threadingInfo->GetCurrentApartmentType(&aptType);
   if (FAILED(hr)) {
     return false;
   }
@@ -48,27 +65,55 @@ bool IsCurrentThreadMTA() {
 }
 
 bool IsCurrentThreadExplicitMTA() {
-  APTTYPE aptType;
-  APTTYPEQUALIFIER aptTypeQualifier;
-  HRESULT hr = wrapped::CoGetApartmentType(&aptType, &aptTypeQualifier);
+  // We don't use RefPtr for token because CoGetContextToken does *not*
+  // increment its refcount!
+  IUnknown* token = nullptr;
+  HRESULT hr =
+    CoGetContextToken(reinterpret_cast<ULONG_PTR*>(&token));
   if (FAILED(hr)) {
     return false;
   }
 
-  return aptType == APTTYPE_MTA &&
-         aptTypeQualifier != APTTYPEQUALIFIER_IMPLICIT_MTA;
+  RefPtr<IComThreadingInfo> threadingInfo;
+  hr = token->QueryInterface(IID_IComThreadingInfo,
+                             getter_AddRefs(threadingInfo));
+  if (FAILED(hr)) {
+    return false;
+  }
+
+  APTTYPE aptType;
+  hr = threadingInfo->GetCurrentApartmentType(&aptType);
+  if (FAILED(hr)) {
+    return false;
+  }
+
+  return aptType == APTTYPE_MTA;
 }
 
 bool IsCurrentThreadImplicitMTA() {
-  APTTYPE aptType;
-  APTTYPEQUALIFIER aptTypeQualifier;
-  HRESULT hr = wrapped::CoGetApartmentType(&aptType, &aptTypeQualifier);
+  // We don't use RefPtr for token because CoGetContextToken does *not*
+  // increment its refcount!
+  IUnknown* token = nullptr;
+  HRESULT hr =
+    CoGetContextToken(reinterpret_cast<ULONG_PTR*>(&token));
   if (FAILED(hr)) {
     return false;
   }
 
-  return aptType == APTTYPE_MTA &&
-         aptTypeQualifier == APTTYPEQUALIFIER_IMPLICIT_MTA;
+  RefPtr<IComThreadingInfo> threadingInfo;
+  hr = token->QueryInterface(IID_IComThreadingInfo,
+                             getter_AddRefs(threadingInfo));
+  if (FAILED(hr)) {
+    return false;
+  }
+
+  APTTYPE aptType;
+  hr = threadingInfo->GetCurrentApartmentType(&aptType);
+  if (FAILED(hr)) {
+    return false;
+  }
+
+  return aptType == APTTYPE_MTA;
 }
 
 #if defined(MOZILLA_INTERNAL_API)

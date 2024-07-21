@@ -62,3 +62,9 @@ SOURCES += [
     #   bundled with.
     "StoreBuffer.cpp",
 ]
+
+DEFINES["PSAPI_VERSION"] = "1"
+
+OS_LIBS += [
+    "psapi",
+]

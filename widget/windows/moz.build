@@ -186,6 +186,7 @@ LOCAL_INCLUDES += [
 ]
 
 DEFINES["MOZ_UNICODE"] = True
+DEFINES["PSAPI_VERSION"] = "1"
 DEFINES["MOZ_APP_NAME"] = '"%s"' % CONFIG["MOZ_APP_NAME"]
 # Turn `firefox` into `Firefox`.
 DEFINES["MOZ_TOAST_APP_NAME"] = '"%s"' % CONFIG["MOZ_APP_NAME"].title()
@@ -196,6 +197,7 @@ USE_LIBS += [
 
 OS_LIBS += [
     "ktmw32",
+    "psapi",
     "rpcrt4",
     "urlmon",
     "winmm",

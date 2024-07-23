@@ -401,12 +401,11 @@ pref("gfx.downloadable_fonts.fallback_delay_short", 100);
 #if defined(XP_WIN)
   // comma separated list of backends to use in order of preference
 // e.g., pref("gfx.canvas.azure.backends", "direct2d,skia,cairo");
-pref("gfx.canvas.azure.backends", "direct2d1.1,skia,cairo");
-pref("gfx.content.azure.backends", "direct2d1.1,skia,cairo");
-#elif defined(XP_MACOSX)
-  pref("gfx.canvas.azure.backends", "skia");
+  pref("gfx.canvas.azure.backends", "direct2d1.1,skia,cairo");
+  pref("gfx.content.azure.backends", "direct2d1.1,skia,cairo");
 #else
   pref("gfx.canvas.azure.backends", "skia");
+  pref("gfx.content.azure.backends", "skia");
 #endif
 
 #ifdef XP_WIN

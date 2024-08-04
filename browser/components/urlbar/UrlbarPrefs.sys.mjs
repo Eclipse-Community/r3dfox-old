@@ -1076,15 +1076,15 @@ class Preferences {
         "quicksuggest.enabled": true,
         "quicksuggest.dataCollection.enabled": false,
         "quicksuggest.shouldShowOnboardingDialog": false,
-        "suggest.quicksuggest.nonsponsored": true,
-        "suggest.quicksuggest.sponsored": true,
+        "suggest.quicksuggest.nonsponsored": false,
+        "suggest.quicksuggest.sponsored": false,
       },
       online: {
         "quicksuggest.enabled": true,
         "quicksuggest.dataCollection.enabled": false,
-        "quicksuggest.shouldShowOnboardingDialog": true,
-        "suggest.quicksuggest.nonsponsored": true,
-        "suggest.quicksuggest.sponsored": true,
+        "quicksuggest.shouldShowOnboardingDialog": false,
+        "suggest.quicksuggest.nonsponsored": false,
+        "suggest.quicksuggest.sponsored": false,
       },
     };
   }

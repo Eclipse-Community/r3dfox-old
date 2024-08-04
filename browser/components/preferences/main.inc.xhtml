@@ -12,6 +12,116 @@
 
 <script src="chrome://mozapps/content/preferences/fontbuilder.js"/>
 
+<!-- r3dfox -->
+<hbox id="r3dfoxcategory"
+      class="subcategory"
+      hidden="true"
+      data-category="paneGeneral">
+  <html:h1 data-l10n-id="r3dfox-title"/>
+</hbox>
+
+<!-- r3dfox -->
+<groupbox id="r3dfoxGroup" data-category="paneGeneral" hidden="true">
+  <label class="search-header" hidden="true"><html:h2 data-l10n-id="r3dfox-title"/></label>
+
+  <hbox align="center">
+    <checkbox id="r3dfoxUseNativeStyles"
+              data-l10n-id="r3dfox-native-checkbox"
+              preference="widget.non-native-theme.enabled"/>
+  </hbox>
+  <description class="indent tip-caption" data-l10n-id="r3dfox-native-checkbox-desc"/>
+
+  <hbox align="center">
+    <label id="r3dfoxNativeScroll" data-l10n-id="r3dfox-native-scroll" control="r3dfoxNativeScrollType"/>
+    <menulist id="r3dfoxNativeScrollType" preference="widget.ev-native-controls-patch.scrollbar-style">
+      <menupopup>
+        <menuitem label="Native scrollbars always" value="0"/>
+        <menuitem label="Custom scrollbars always" value="1"/>
+        <menuitem label="Native scrollbars unless the website has a dark color scheme" value="2"/>
+      </menupopup>
+    </menulist>
+  </hbox>
+  <description id="r3dfoxNativeScrollDescription" class="tip-caption" data-l10n-id="r3dfox-native-scroll-desc"/>
+
+  <hbox align="center">
+    <label id="r3dfoxFakeScroll" data-l10n-id="r3dfox-fake-scroll-type" control="r3dfoxFakeScrollType"/>
+    <menulist id="r3dfoxFakeScrollType" preference="widget.non-native-theme.scrollbar.style">
+      <menupopup>
+        <menuitem label="Default platform scrollbar style (normal)" value="0"/>
+        <menuitem label="macOS scrollbar (small)" value="1"/>
+        <menuitem label="GTK scrollbar (smaller)" value="2"/>
+        <menuitem label="Android scrollbar (smallest)" value="3"/>
+        <menuitem label="Windows 10 scrollbar (normal)" value="4"/>
+        <menuitem label="Windows 11 scrollbar (smaller)" value="5"/>
+      </menupopup>
+    </menulist>
+  </hbox>
+  <description id="r3dfoxFakeScrollDescription" class="tip-caption" data-l10n-id="r3dfox-fake-scroll-type-desc"/>
+
+  <hbox align="center">
+    <checkbox id="r3dfoxTheme"
+              data-l10n-id="r3dfox-theme"
+              preference="r3dfox.customizations.enabled"/>
+  </hbox>
+  <description class="indent tip-caption" data-l10n-id="r3dfox-theme-desc"/>
+
+  <hbox align="center">
+    <checkbox id="r3dfoxColors"
+              data-l10n-id="r3dfox-colors"
+              preference="r3dfox.colors.enabled"/>
+  </hbox>
+  <description class="indent tip-caption" data-l10n-id="r3dfox-colors-desc"/>
+
+  <hbox align="center">
+    <checkbox id="r3dfoxMenubar"
+              data-l10n-id="r3dfox-menubar"
+              preference="r3dfox.transparent.menubar"/>
+  </hbox>
+  <description class="indent tip-caption" data-l10n-id="r3dfox-menubar-desc"/>
+
+  <hbox align="center">
+    <checkbox id="r3dfoxNavbar"
+              data-l10n-id="r3dfox-navbar"
+              preference="r3dfox.translucent.navbar"/>
+  </hbox>
+  <description class="indent tip-caption" data-l10n-id="r3dfox-navbar-desc"/>
+
+  <hbox align="center">
+    <checkbox id="r3dfoxlessfog"
+              data-l10n-id="r3dfox-less-fog"
+              preference="r3dfox.less.aero.fog"/>
+  </hbox>
+  <description class="indent tip-caption" data-l10n-id="r3dfox-less-fog-desc"/>
+
+  <hbox align="center">
+    <checkbox id="r3dfoxfog"
+              data-l10n-id="r3dfox-fog"
+              preference="r3dfox.aero.fog"/>
+  </hbox>
+  <description class="indent tip-caption" data-l10n-id="r3dfox-fog-desc"/>
+
+  <hbox align="center">
+    <checkbox id="r3dfoxtransparency"
+              data-l10n-id="r3dfox-transparency"
+              preference="r3dfox.force.transparency"/>
+  </hbox>
+  <description class="indent tip-caption" data-l10n-id="r3dfox-transparency-desc"/>
+
+  <hbox align="center">
+    <checkbox id="r3dfoxcaptiontext"
+              data-l10n-id="r3dfox-caption-text"
+              preference="r3dfox.caption.text.color"/>
+  </hbox>
+  <description class="indent tip-caption" data-l10n-id="r3dfox-caption-text-desc"/>
+
+  <hbox align="center">
+    <checkbox id="r3dfoxe10s"
+              data-l10n-id="r3dfox-e10s"
+              preference="browser.e10s.disabled"/>
+  </hbox>
+  <description class="indent tip-caption" data-l10n-id="r3dfox-e10s-desc"/>
+</groupbox>
+
 <html:template id="template-paneGeneral">
 <hbox id="generalCategory"
       class="subcategory"

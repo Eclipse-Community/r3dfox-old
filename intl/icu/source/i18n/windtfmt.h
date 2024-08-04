@@ -99,7 +99,7 @@ public:
      * </pre>
      * @return          The class ID for all objects of this class.
      */
-    U_I18N_API static UClassID U_EXPORT2 getStaticClassID();
+    U_I18N_API static UClassID U_EXPORT2 getStaticClassID(void);
 
     /**
      * Returns a unique class ID POLYMORPHICALLY. Pure virtual override. This
@@ -111,7 +111,7 @@ public:
      *                  given class have the same class ID.  Objects of
      *                  other classes have different class IDs.
      */
-    virtual UClassID getDynamicClassID() const;
+    virtual UClassID getDynamicClassID(void) const;
 
 private:
     void formatDate(const SYSTEMTIME *st, UnicodeString &appendTo) const;
@@ -124,10 +124,9 @@ private:
     DateFormat::EStyle fTimeStyle;
     DateFormat::EStyle fDateStyle;
     Locale fLocale;
+    int32_t fLCID;
     UnicodeString fZoneID;
     TIME_ZONE_INFORMATION *fTZI;
-
-    UnicodeString* fWindowsLocaleName; // Stores the equivalent Windows locale name.
 };
 
 U_NAMESPACE_END

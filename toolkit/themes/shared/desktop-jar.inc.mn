@@ -77,6 +77,8 @@
   skin/classic/global/icons/defaultFavicon.svg             (../../shared/icons/defaultFavicon.svg)
   skin/classic/global/icons/delete.svg                     (../../shared/icons/delete.svg)
   skin/classic/global/icons/developer.svg                  (../../shared/icons/developer.svg)
+  skin/classic/global/icons/download-folder.svg                      (../../shared/icons/download-folder.svg)
+  skin/classic/global/icons/download-retry.svg                      (../../shared/icons/download-retry.svg)
   skin/classic/global/icons/edit.svg                       (../../shared/icons/edit.svg)
   skin/classic/global/icons/edit-copy.svg                  (../../shared/icons/edit-copy.svg)
   skin/classic/global/icons/edit-outline.svg               (../../shared/icons/edit-outline.svg)

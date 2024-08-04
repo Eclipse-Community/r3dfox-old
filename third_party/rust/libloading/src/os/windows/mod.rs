@@ -7,7 +7,7 @@ mod windows_imports {
     use super::{DWORD, BOOL, HANDLE, HMODULE, FARPROC};
     pub(super) use std::os::windows::ffi::{OsStrExt, OsStringExt};
     windows_targets::link!("kernel32.dll" "system" fn GetLastError() -> DWORD);
-    windows_targets::link!("kernel32.dll" "system" fn SetThreadErrorMode(new_mode: DWORD, old_mode: *mut DWORD) -> BOOL);
+    windows_targets::link!("kernel32.dll" "system" fn SetErrorMode(umode: u32) -> u32);
     windows_targets::link!("kernel32.dll" "system" fn GetModuleHandleExW(flags: u32, module_name: *const u16, module: *mut HMODULE) -> BOOL);
     windows_targets::link!("kernel32.dll" "system" fn FreeLibrary(module: HMODULE) -> BOOL);
     windows_targets::link!("kernel32.dll" "system" fn LoadLibraryExW(filename: *const u16, file: HANDLE, flags: DWORD) -> HMODULE);
@@ -347,7 +347,7 @@ impl ErrorModeGuard {
     fn new() -> Option<ErrorModeGuard> {
         unsafe {
             let mut previous_mode = 0;
-            if SetThreadErrorMode(SEM_FAILCRITICALERRORS, &mut previous_mode) == 0 {
+            if SetErrorMode(SEM_FAILCRITICALERRORS) == 0 {
                 // How in the world is it possible for what is essentially a simple variable swap
                 // to fail?  For now we just ignore the error -- the worst that can happen here is
                 // the previous mode staying on and user seeing a dialog error on older Windows
@@ -365,7 +365,7 @@ impl ErrorModeGuard {
 impl Drop for ErrorModeGuard {
     fn drop(&mut self) {
         unsafe {
-            SetThreadErrorMode(self.0, ptr::null_mut());
+            SetErrorMode(self.0);
         }
     }
 }

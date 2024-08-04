@@ -223,7 +223,7 @@
 }
 
 .downloadIconShow > .button-box > .button-icon {
-  list-style-image: url("chrome://global/skin/icons/folder.svg");
+  list-style-image: url("chrome://global/skin/icons/download-folder.svg");
 }
 
 @media (-moz-platform: macos) {
@@ -233,7 +233,7 @@
 }
 
 .downloadIconRetry > .button-box > .button-icon {
-  list-style-image: url("chrome://global/skin/icons/reload.svg");
+  list-style-image: url("chrome://global/skin/icons/download-retry.svg");
 }
 
 .downloadIconSubviewArrow > .button-box > .button-icon {

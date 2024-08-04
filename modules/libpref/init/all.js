@@ -655,6 +655,24 @@ pref("toolkit.telemetry.user_characteristics_ping.logLevel", "Warn");
 // Extra logging for AsyncShutdown barriers and phases
 pref("toolkit.asyncshutdown.log", false);
 
+// r3dfox preferences.
+// Ability to enable/disable Aero fog.
+pref("r3dfox.aero.fog", true);
+// Less Aero fog than stock 115 by default.
+pref("r3dfox.less.aero.fog", true);
+// r3dfox theme.
+pref("r3dfox.customizations.enabled", true);
+// r3dfox colors.
+pref("r3dfox.colors.enabled", true);
+// Black or white caption text.
+pref("r3dfox.caption.text.color", false);
+// Force (kinda) transparency.
+pref("r3dfox.force.transparency", false);
+// Enable transparent menubar by default
+pref("r3dfox.transparent.menubar", true);
+// Translucent navbar design
+pref("r3dfox.translucent.navbar", false);
+
 // Enable JS dump() function.
 // IMPORTANT: These prefs must be here even though they're also defined in
 // StaticPrefList.yaml. They are required because MOZILLA_OFFICIAL is false in

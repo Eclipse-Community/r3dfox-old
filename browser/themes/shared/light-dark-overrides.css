@@ -31,25 +31,17 @@
     }
   }
 
-  /* Add a fog for background tabs to be visible on Windows 7 glass window background */
-  @media (-moz-platform: windows-win7) {
-    @media (-moz-windows-default-theme) {
+  /* Black toolbar text for 7 to make stuffs visible */
+  @media (-moz-platform: windows-win7),
+         (-moz-platform: windows-win8) {
+    @media (-moz-windows-default-theme), (-moz-windows-compositor) {
       #TabsToolbar {
-        background-image: radial-gradient(ellipse at bottom, rgba(255,255,255,0.8), rgba(255,255,255,0.5) 40%, transparent);
         color: black;
         --toolbarbutton-icon-fill: currentColor;
       }
-    }
-  }
-
-  @media (-moz-windows-classic) {
-    :root[tabsintitlebar]:not([sizemode=fullscreen]) #TabsToolbar {
-      background-image: linear-gradient(transparent, ActiveCaption);
-      background-size: auto 200%;
-    }
-  
-    :root[tabsintitlebar]:not([sizemode=fullscreen]) #TabsToolbar:-moz-window-inactive {
-      background-image: linear-gradient(transparent, InactiveCaption);
+      :root {
+        --lwt-text-color: black !important;
+      }
     }
   }
 

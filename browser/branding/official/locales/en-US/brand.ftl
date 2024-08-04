@@ -2,9 +2,9 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-## Firefox and Mozilla Brand
+## r3dfox and Eclipse Community Brand
 ##
-## Firefox and Mozilla must be treated as a brand.
+## r3dfox and Eclipse Community must be treated as a brand.
 ##
 ## They cannot be:
 ## - Transliterated.
@@ -16,12 +16,12 @@
 ## For further details, consult:
 ## https://mozilla-l10n.github.io/styleguides/mozilla_general/#brands-copyright-and-trademark
 
--brand-shorter-name = Firefox
--brand-short-name = Firefox
--brand-shortcut-name = Firefox
--brand-full-name = Mozilla Firefox
+-brand-shorter-name = r3dfox
+-brand-short-name = r3dfox
+-brand-shortcut-name = r3dfox
+-brand-full-name = Eclipse r3dfox
 # This brand name can be used in messages where the product name needs to
 # remain unchanged across different versions (Nightly, Beta, etc.).
--brand-product-name = Firefox
--vendor-short-name = Mozilla
-trademarkInfo = Firefox and the Firefox logos are trademarks of the Mozilla Foundation.
+-brand-product-name = r3dfox
+-vendor-short-name = Eclipse Community
+trademarkInfo = { "r3dfox logos are copyrights of Eclipse Community." }

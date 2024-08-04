@@ -181,14 +181,14 @@ addressbar-suggest-firefox-suggest = Choose the type of suggestions that appear 
 # First Firefox Suggest checkbox main label and description. This checkbox
 # controls non-sponsored suggestions related to the user's search string.
 addressbar-firefox-suggest-nonsponsored =
-  .label = Suggestions from { -brand-short-name }
+  .label = Suggestions from Mozilla
 addressbar-firefox-suggest-nonsponsored-desc = Get suggestions from the web related to your search.
 
 # Second Firefox Suggest checkbox main label and description. This checkbox
 # controls sponsored suggestions related to the user's search string.
 addressbar-firefox-suggest-sponsored =
   .label = Suggestions from sponsors
-addressbar-firefox-suggest-sponsored-desc = Support { -brand-short-name } with occasional sponsored suggestions.
+addressbar-firefox-suggest-sponsored-desc = Support Mozilla with occasional sponsored suggestions.
 
 # An additional toggle button in the Firefox Suggest settings that controls
 # whether userdata-based suggestions like history and bookmarks should be
@@ -201,8 +201,8 @@ addressbar-firefox-suggest-private =
 # .description is transferred into a separate paragraph by the moz-toggle
 # custom element code.
 addressbar-firefox-suggest-data-collection =
-  .label = Improve the { -firefox-suggest-brand-name } experience
-  .description = Share search query data with { -vendor-short-name } to create a richer search experience.
+  .label = Mozilla wants more of your data
+  .description = Share search query data with Mozilla to create a richer search experience.
 
 # The "Learn more" link shown in the Firefox Suggest preferences UI.
 addressbar-locbar-firefox-suggest-learn-more = Learn more
@@ -214,7 +214,7 @@ addressbar-locbar-firefox-suggest-learn-more = Learn more
 # Non-sponsored suggestions: on
 # Sponsored suggestions: on
 # Data collection: on
-addressbar-firefox-suggest-info-all = Based on your selection, you’ll receive suggestions from the web, including sponsored sites. We will process your search query data to develop the { -firefox-suggest-brand-name } feature.
+addressbar-firefox-suggest-info-all = Based on your selection, you’ll receive suggestions from the web, including sponsored sites. We will process your search query data to give Mozilla more data.
 
 # Non-sponsored suggestions: on
 # Sponsored suggestions: on
@@ -224,7 +224,7 @@ addressbar-firefox-suggest-info-nonsponsored-sponsored = Based on your selection
 # Non-sponsored suggestions: on
 # Sponsored suggestions: off
 # Data collection: on
-addressbar-firefox-suggest-info-nonsponsored-data = Based on your selection, you’ll receive suggestions from the web, but no sponsored sites. We will process your search query data to develop the { -firefox-suggest-brand-name } feature.
+addressbar-firefox-suggest-info-nonsponsored-data = Based on your selection, you’ll receive suggestions from the web, but no sponsored sites. We will process your search query data to give Mozilla more data.
 
 # Non-sponsored suggestions: on
 # Sponsored suggestions: off
@@ -234,7 +234,7 @@ addressbar-firefox-suggest-info-nonsponsored = Based on your selection, you’ll
 # Non-sponsored suggestions: off
 # Sponsored suggestions: on
 # Data collection: on
-addressbar-firefox-suggest-info-sponsored-data = Based on your selection, you’ll receive sponsored suggestions. We will process your search query data to develop the { -firefox-suggest-brand-name } feature.
+addressbar-firefox-suggest-info-sponsored-data = Based on your selection, you’ll receive sponsored suggestions. We will process your search query data to give Mozilla more data.
 
 # Non-sponsored suggestions: off
 # Sponsored suggestions: on
@@ -244,10 +244,10 @@ addressbar-firefox-suggest-info-sponsored = Based on your selection, you’ll re
 # Non-sponsored suggestions: off
 # Sponsored suggestions: off
 # Data collection: on
-addressbar-firefox-suggest-info-data = Based on your selection, you won’t receive suggestions from the web or sponsored sites. We will process your search query data to develop the { -firefox-suggest-brand-name } feature.
+addressbar-firefox-suggest-info-data = Based on your selection, you won’t receive suggestions from the web or sponsored sites. We will process your search query data to give Mozilla more data.
 
 addressbar-dismissed-suggestions-label = Dismissed suggestions
-addressbar-restore-dismissed-suggestions-description = Restore dismissed suggestions from sponsors and { -brand-short-name }.
+addressbar-restore-dismissed-suggestions-description = Restore dismissed suggestions from sponsors and Mozilla.
 addressbar-restore-dismissed-suggestions-button =
   .label = Restore
 addressbar-restore-dismissed-suggestions-learn-more = Learn more
@@ -312,16 +312,16 @@ firefox-suggest-onboarding-main-title-9 =
 
 ##
 
-firefox-suggest-onboarding-main-description-1 = Allowing { -vendor-short-name } to process your search queries means you’re helping us create smarter, more relevant search suggestions. And, as always, we’ll keep your privacy top of mind.
-firefox-suggest-onboarding-main-description-2 = When you allow { -vendor-short-name } to process your search queries, you’re helping build a better { -firefox-suggest-brand-name } for everyone. And, as always, we’ll keep your privacy top of mind.
-firefox-suggest-onboarding-main-description-3 = What if your browser helped you zero in on what you’re actually looking for? Allowing { -vendor-short-name } to process your search queries helps us create more relevant search suggestions that still keep your privacy top of mind.
-firefox-suggest-onboarding-main-description-4 = You’re trying to get where you’re going on the web and get on with it. When you allow { -vendor-short-name } to process your search queries, we can help you get there faster—while keeping your privacy top of mind.
-firefox-suggest-onboarding-main-description-5 = Allowing { -vendor-short-name } to process your search queries will help us create more relevant suggestions for everyone. And, as always, we’ll keep your privacy top of mind.
-firefox-suggest-onboarding-main-description-6 = Allowing { -vendor-short-name } to process your search queries will help us create more relevant search suggestions. We’re building { -firefox-suggest-brand-name } to help you get where you’re going on the Internet while keeping your privacy in mind.
-firefox-suggest-onboarding-main-description-7 = Allowing { -vendor-short-name } to process your search queries helps us create more relevant search suggestions.
-firefox-suggest-onboarding-main-description-8 = Allowing { -vendor-short-name } to process your search queries helps us provide more relevant search suggestions. We don’t use this data to profile you on the web.
+firefox-suggest-onboarding-main-description-1 = Allowing Mozilla to process your search queries means you’re helping us create smarter, more relevant search suggestions. And, as always, we’ll keep your privacy top of mind.
+firefox-suggest-onboarding-main-description-2 = When you allow Mozilla to process your search queries, you’re helping build a better { -firefox-suggest-brand-name } for everyone. And, as always, we’ll keep your privacy top of mind.
+firefox-suggest-onboarding-main-description-3 = What if your browser helped you zero in on what you’re actually looking for? Allowing Mozilla to process your search queries helps us create more relevant search suggestions that still keep your privacy top of mind.
+firefox-suggest-onboarding-main-description-4 = You’re trying to get where you’re going on the web and get on with it. When you allow Mozilla to process your search queries, we can help you get there faster—while keeping your privacy top of mind.
+firefox-suggest-onboarding-main-description-5 = Allowing Mozilla to process your search queries will help us create more relevant suggestions for everyone. And, as always, we’ll keep your privacy top of mind.
+firefox-suggest-onboarding-main-description-6 = Allowing Mozilla to process your search queries will help us create more relevant search suggestions. We’re building { -firefox-suggest-brand-name } to help you get where you’re going on the Internet while keeping your privacy in mind.
+firefox-suggest-onboarding-main-description-7 = Allowing Mozilla to process your search queries helps us create more relevant search suggestions.
+firefox-suggest-onboarding-main-description-8 = Allowing Mozilla to process your search queries helps us provide more relevant search suggestions. We don’t use this data to profile you on the web.
 firefox-suggest-onboarding-main-description-9 =
-  We’re building a better search experience. When you allow { -vendor-short-name } to process your search queries, we can create more relevant search suggestions for you.
+  We’re building a better search experience. When you allow Mozilla to process your search queries, we can create more relevant search suggestions for you.
   <a data-l10n-name="learn-more-link">Learn more</a>
 
 firefox-suggest-onboarding-main-privacy-first = No user profiling. Privacy-first, always.
@@ -344,14 +344,14 @@ firefox-suggest-onboarding-main-submit-button = Save preferences
 firefox-suggest-onboarding-main-skip-link = Not now
 
 urlbar-firefox-suggest-contextual-opt-in-title-1 =
-  Find the best of the web, faster
+  Mozilla wants your data
 urlbar-firefox-suggest-contextual-opt-in-title-2 =
-  Say hello to smarter suggestions
+  Mozilla wants your data
 urlbar-firefox-suggest-contextual-opt-in-description-1 =
-  We’re building a better search experience. When you allow { -vendor-short-name } to process your search queries, we can create more relevant suggestions from { -brand-short-name } and our partners. Privacy-first, always.
+  Share search query data with Mozilla to create a richer search experience.
   <a data-l10n-name="learn-more-link">Learn more</a>
 urlbar-firefox-suggest-contextual-opt-in-description-2 =
-  { -firefox-suggest-brand-name } uses your search keywords to make contextual suggestions from { -brand-short-name } and our partners while keeping your privacy in mind.
+  Share search query data with Mozilla to create a richer search experience.
   <a data-l10n-name="learn-more-link">Learn more</a>
 urlbar-firefox-suggest-contextual-opt-in-allow = Allow suggestions
 urlbar-firefox-suggest-contextual-opt-in-dismiss = Not now

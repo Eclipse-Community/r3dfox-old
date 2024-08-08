@@ -568,6 +568,9 @@ pref("browser.urlbar.resultMenu.keyboardAccessible", true);
 pref("browser.urlbar.richSuggestions.tail", true);
 
 // If true, top sites may include sponsored ones.
+pref("browser.urlbar.oneOffsInstant", true);
+
+// If true, top sites may include sponsored ones.
 pref("browser.urlbar.sponsoredTopSites", false);
 
 // Global toggle for whether the show search terms feature

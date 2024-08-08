@@ -197,6 +197,11 @@ r3dfox-caption-text =
 
 r3dfox-caption-text-desc = Enable for white caption text.
 
+r3dfox-one-offs =
+    .label = Instant one off searches
+
+r3dfox-one-offs-desc = Enable for instant one off searches.
+
 r3dfox-e10s =
     .label = (BETA) Disable e10s (multiprocess)
 

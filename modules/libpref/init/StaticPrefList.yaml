@@ -16350,6 +16350,11 @@
   value: 100
   mirror: always
 
+- name: security.csp.enable
+  type: bool
+  value: true
+  mirror: always
+
 # Time span in seconds for reporting limit.
 - name: security.csp.reporting.limit.timespan
   type: uint32_t

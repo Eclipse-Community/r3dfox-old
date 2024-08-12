@@ -149,7 +149,8 @@ static bool SubjectToCSP(nsILoadInfo* aLoadInfo, nsIURI* aURI,
   // to CSP. Please note, the correct way to opt-out of CSP using a custom
   // protocolHandler is to set one of the nsIProtocolHandler flags
   // that are allowlistet in subjectToCSP()
-  if (!SubjectToCSP(aLoadInfo, aContentLocation, contentType)) {
+  if (!StaticPrefs::security_csp_enable() ||
+      !SubjectToCSP(aLoadInfo, aContentLocation, contentType)) {
     return NS_OK;
   }
 
@@ -333,7 +334,8 @@ nsresult CSPService::ConsultCSPForRedirect(nsIURI* aOriginalURI,
   // protocolHandler is to set one of the nsIProtocolHandler flags
   // that are allowlistet in subjectToCSP()
   nsContentPolicyType policyType = aLoadInfo->InternalContentPolicyType();
-  if (!SubjectToCSP(aLoadInfo, aNewURI, policyType)) {
+  if (!StaticPrefs::security_csp_enable() ||
+      !SubjectToCSP(aLoadInfo, aNewURI, policyType)) {
     return NS_OK;
   }
 

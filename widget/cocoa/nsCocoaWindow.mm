@@ -785,7 +785,6 @@ void nsCocoaWindow::Show(bool aState) {
         [mWindow orderFront:nil];
       }
       NS_OBJC_END_TRY_IGNORE_BLOCK;
-      SendSetZLevelEvent();
       // If our popup window is a non-native context menu, tell the OS (and
       // other programs) that a menu has opened.  This is how the OS knows to
       // close other programs' context menus when ours open.
@@ -834,7 +833,6 @@ void nsCocoaWindow::Show(bool aState) {
         [mWindow makeKeyAndOrderFront:nil];
       }
       NS_OBJC_END_TRY_IGNORE_BLOCK;
-      SendSetZLevelEvent();
     }
   } else {
     // roll up any popups if a top-level window is going away
@@ -2030,15 +2028,6 @@ bool nsCocoaWindow::DragEvent(unsigned int aMessage,
   return false;
 }
 
-void nsCocoaWindow::SendSetZLevelEvent() {
-  if (mWidgetListener) {
-    nsWindowZ placement = nsWindowZTop;
-    nsCOMPtr<nsIWidget> actualBelow;
-    mWidgetListener->ZLevelChanged(true, &placement, nullptr,
-                                   getter_AddRefs(actualBelow));
-  }
-}
-
 // Invokes callback and ProcessEvent methods on Event Listener object
 nsresult nsCocoaWindow::DispatchEvent(WidgetGUIEvent* event,
                                       nsEventStatus& aStatus) {
@@ -2189,7 +2178,6 @@ void nsCocoaWindow::SetFocus(Raise aRaise,
       [mWindow deminiaturize:nil];
     }
     [mWindow makeKeyAndOrderFront:nil];
-    SendSetZLevelEvent();
   }
 }
 

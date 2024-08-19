@@ -1953,26 +1953,28 @@ static nsresult PinCurrentAppToTaskbarImpl(
     }
   }
 
-  auto pinWithWin11TaskbarAPIResults =
-      PinCurrentAppToTaskbarWin11(aCheckOnly, aAppUserModelId, shortcutPath);
-  switch (pinWithWin11TaskbarAPIResults.result) {
-    case Win11PinToTaskBarResultStatus::NotSupported:
-      // Fall through to the win 10 mechanism
-      break;
-
-    case Win11PinToTaskBarResultStatus::Success:
-    case Win11PinToTaskBarResultStatus::AlreadyPinned:
-      return NS_OK;
-
-    case Win11PinToTaskBarResultStatus::NotCurrentlyAllowed:
-    case Win11PinToTaskBarResultStatus::Failed:
-      // return NS_ERROR_FAILURE;
-
-      // Fall through to the old mechanism for now
-      // In future, we should be sending telemetry for when
-      // an error occurs or for when pinning is not allowed
-      // with the Win 11 APIs.
-      break;
+  if (IsWin11OrLater()) {
+    auto pinWithWin11TaskbarAPIResults =
+        PinCurrentAppToTaskbarWin11(aCheckOnly, aAppUserModelId, shortcutPath);
+    switch (pinWithWin11TaskbarAPIResults.result) {
+      case Win11PinToTaskBarResultStatus::NotSupported:
+        // Fall through to the win 10 mechanism
+        break;
+  
+      case Win11PinToTaskBarResultStatus::Success:
+      case Win11PinToTaskBarResultStatus::AlreadyPinned:
+        return NS_OK;
+  
+      case Win11PinToTaskBarResultStatus::NotCurrentlyAllowed:
+      case Win11PinToTaskBarResultStatus::Failed:
+        // return NS_ERROR_FAILURE;
+  
+        // Fall through to the old mechanism for now
+        // In future, we should be sending telemetry for when
+        // an error occurs or for when pinning is not allowed
+        // with the Win 11 APIs.
+        break;
+    }
   }
 
   if (IsWin10OrLater()) {

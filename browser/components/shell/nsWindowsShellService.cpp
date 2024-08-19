@@ -1958,6 +1958,7 @@ static nsresult PinCurrentAppToTaskbarImpl(
     }
   }
 
+  if (IsWin11OrLater()) {
   auto pinWithWin11TaskbarAPIResults =
       PinCurrentAppToTaskbarWin11(aCheckOnly, aAppUserModelId);
   switch (pinWithWin11TaskbarAPIResults.result) {
@@ -1979,6 +1980,7 @@ static nsresult PinCurrentAppToTaskbarImpl(
       // an error occurs or for when pinning is not allowed
       // with the Win 11 APIs.
       break;
+  }
   }
 
   if (IsWin10OrLater()) {

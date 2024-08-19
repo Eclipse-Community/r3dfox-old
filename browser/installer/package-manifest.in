@@ -128,6 +128,7 @@
 @BINPATH@/msvcp*.dll
 @BINPATH@/libEGL.dll
 @BINPATH@/libGLESv2.dll
+@BINPATH@/d3dcompiler_47.dll
 #endif
 
 [browser]
@@ -210,6 +211,10 @@
 #ifdef MOZ_ANGLE_RENDERER
 @BINPATH@/libEGL.dll
 @BINPATH@/libGLESv2.dll
+
+#ifdef MOZ_D3DCOMPILER_VISTA_DLL
+@BINPATH@/@MOZ_D3DCOMPILER_VISTA_DLL@
+#endif
 #endif # MOZ_ANGLE_RENDERER
 
 ; [Browser Chrome Files]

@@ -57,9 +57,18 @@
 
 /* Aero fog and other settings */
 
+@media (-moz-windows-default-theme), (-moz-windows-compositor) {
+  #main-menubar:not([lwtheme]) {
+    color: black;
+  }
+}
+
 @media (-moz-bool-pref: "r3dfox.aero.fog") {
   @media (-moz-platform: windows-win7), (-moz-platform: windows-win8) {
     @media (-moz-windows-default-theme), (-moz-windows-compositor) {
+      #navigator-toolbox:not([lwtheme]) {
+        background-color: transparent !important;
+      }
       #titlebar:not([lwtheme]) {
         appearance: inherit !important;
         @media (-moz-bool-pref: "r3dfox.less.aero.fog") {
@@ -99,7 +108,7 @@
   :root {
     --lwt-text-color: white !important;
   }
-  #main-menubar:not([lwtheme], :-moz-window-inactive) {
+  #main-menubar:not([lwtheme]) {
     color: white !important;
   }
 }
@@ -202,9 +211,6 @@
 
   :root:has(#toolbar-menubar[autohide="true"])[sizemode="normal"] {
     --drag-space: 15px;
-    #TabsToolbar > :is(.titlebar-buttonbox-container, .titlebar-spacer) {
-      display: none !important;
-    }
   }
 
   #TabsToolbar :is(.tabbrowser-tab, .toolbarbutton-1, separator, #personal-bookmarks, #search-container, .accessibility-indicator, .private-browsing-indicator, #private-browsing-indicator-with-label) {
@@ -265,12 +271,7 @@
       margin-inline-end: calc(-1 * var(--tab-first-last-inline-margin) / 2 + 1px) !important;
       z-index: 0 !important;
   }
-  
-  menupopup[needsgutter] menu:not([icon], .menu-iconic),
-  menupopup[needsgutter] menuitem:not([checked="true"], [icon], .menuitem-iconic) {
-      padding-inline-start: 1em !important;
-  }
-  
+
   /* ---------------------------------------- Tabs ---------------------------------------- */
   
   :root[tabsintitlebar] #titlebar:-moz-window-inactive {

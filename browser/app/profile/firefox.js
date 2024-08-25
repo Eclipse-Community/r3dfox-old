@@ -1099,7 +1099,7 @@ pref("privacy.history.custom",              false);
 // 6 - Last 24 hours
 pref("privacy.sanitize.timeSpan", 1);
 
-pref("privacy.sanitize.useOldClearHistoryDialog", false);
+pref("privacy.sanitize.useOldClearHistoryDialog", true);
 
 pref("privacy.sanitize.clearOnShutdown.hasMigratedToNewPrefs2", false);
 // flag to track migration of clear history dialog prefs, where cpd stands for
@@ -1193,7 +1193,7 @@ pref("browser.xul.error_pages.expert_bad_cert", false);
 pref("browser.xul.error_pages.show_safe_browsing_details_on_load", false);
 
 // Enable captive portal detection.
-pref("network.captive-portal-service.enabled", true);
+pref("network.captive-portal-service.enabled", false);
 
 // If true, network link events will change the value of navigator.onLine
 pref("network.manage-offline-status", true);
@@ -1399,7 +1399,7 @@ pref("browser.zoom.full", true);
 pref("browser.zoom.updateBackgroundTabs", true);
 
 // The breakpad report server to link to in about:crashes
-pref("breakpad.reportURL", "https://crash-stats.mozilla.org/report/index/");
+pref("breakpad.reportURL", "");
 
 // URL for "Learn More" for DataCollection
 pref("toolkit.datacollection.infoURL",
@@ -2314,7 +2314,7 @@ pref("browser.tabs.remote.warmup.maxTabs", 3);
 pref("browser.tabs.remote.warmup.unloadDelayMs", 2000);
 
 // For the about:tabcrashed page
-pref("browser.tabs.crashReporting.sendReport", true);
+pref("browser.tabs.crashReporting.sendReport", false);
 pref("browser.tabs.crashReporting.includeURL", false);
 
 // If true, unprivileged extensions may use experimental APIs on
@@ -2515,7 +2515,8 @@ pref("app.shield.optoutstudies.enabled", false);
 
 // Coverage ping is disabled by default.
 pref("toolkit.coverage.enabled", false);
-pref("toolkit.coverage.endpoint.base", "https://coverage.mozilla.org");
+pref("toolkit.coverage.opt-out", true);
+pref("toolkit.coverage.endpoint.base", "");
 
 // Discovery prefs
 pref("browser.discovery.enabled", true);

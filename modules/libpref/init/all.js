@@ -533,7 +533,7 @@ pref("ui.textHighlightForeground", "#ffffff");
 //
 // Values are -1 always on. 1 always off, 0 is auto as some platform perform
 // further checks.
-pref("accessibility.force_disabled", 0);
+pref("accessibility.force_disabled", 1);
 
 pref("focusmanager.testmode", false);
 

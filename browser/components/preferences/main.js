@@ -74,6 +74,7 @@ Preferences.addAll([
   { id: "r3dfox.caption.text.color", type: "bool" },
   { id: "browser.urlbar.oneOffsInstant", type: "bool" },
   { id: "browser.e10s.disabled", type: "bool" },
+  { id: "accessibility.force_disabled", type: "int" },
 
   /* Tab preferences
   Preferences:

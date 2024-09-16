@@ -127,6 +127,18 @@
               preference="browser.e10s.disabled"/>
   </hbox>
   <description class="indent tip-caption" data-l10n-id="r3dfox-e10s-desc"/>
+
+  <hbox align="center">
+    <label id="r3dfoxAccessibility" data-l10n-id="r3dfox-accessibility" control="r3dfoxAccessibilityType"/>
+    <menulist id="r3dfoxAccessibilityType" preference="accessibility.force_disabled">
+      <menupopup>
+        <menuitem label="Always disabled (1)" value="1"/>
+        <menuitem label="Default (0)" value="0"/>
+        <menuitem label="Always enabled (-1)" value="-1"/>
+      </menupopup>
+    </menulist>
+  </hbox>
+  <description id="r3dfoxAccessibilityDescription" class="tip-caption" data-l10n-id="r3dfox-accessibility-desc"/>
 </groupbox>
 
 <html:template id="template-paneGeneral">

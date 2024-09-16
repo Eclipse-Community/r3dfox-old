@@ -207,6 +207,10 @@ r3dfox-e10s =
 
 r3dfox-e10s-desc = Disables e10s/electrolysis. There are still multiple processes from other browser components with this enabled. Not recommended unless you know what you are doing.
 
+r3dfox-accessibility = Accessibility services
+
+r3dfox-accessibility-desc = Recommended to disable if you do not need them for enhanced security and performance.
+
 ## General Section - Startup
 
 startup-header = Startup

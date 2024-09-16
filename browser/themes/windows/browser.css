@@ -11,8 +11,8 @@
 :root {
   --sidebar-border-color: ThreeDLightShadow;
   @media (-moz-bool-pref: "r3dfox.translucent.navbar") {
-    --toolbar-bgcolor: rgba(43, 42, 51, 0.66) !important;
-    --toolbar-field-background-color: rgba(28, 27, 34, 0.25) !important;
+    --toolbar-bgcolor: light-dark(rgb(249, 249, 251, 0.66), rgba(43, 42, 51, 0.66)) !important;
+    --toolbar-field-background-color: light-dark(rgb(240, 240, 244, 0.25), rgba(28, 27, 34, 0.25)) !important;
   }
 }
 

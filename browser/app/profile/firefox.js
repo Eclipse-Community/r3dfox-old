@@ -617,6 +617,9 @@ pref("browser.urlbar.resultMenu.keyboardAccessible", true);
 // If true, we show tail suggestions when available.
 pref("browser.urlbar.richSuggestions.tail", true);
 
+// If true, clicking a different search engine in the urlbar instantly searches.
+pref("browser.urlbar.oneOffsInstant", true);
+
 // If true, top sites may include sponsored ones.
 pref("browser.urlbar.sponsoredTopSites", false);
 

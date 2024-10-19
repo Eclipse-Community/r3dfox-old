@@ -203,9 +203,10 @@ export class UrlbarSearchOneOffs extends SearchOneOffs {
     // Some key combinations should execute a search immediately. We handle
     // these here, outside the switch statement.
     if (
-      userTypedSearchString &&
-      engine &&
-      (event.shiftKey || where != "current")
+      lazy.UrlbarPrefs.get("oneOffsInstant") ||
+      (userTypedSearchString &&
+        engine &&
+        (event.shiftKey || where != "current"))
     ) {
       this.input.handleNavigation({
         event,

@@ -209,8 +209,13 @@
       display: none !important;
   }
 
-  :root:has(#toolbar-menubar[autohide="true"])[sizemode="normal"] {
-    --drag-space: 15px;
+  @media (-moz-bool-pref: "r3dfox.drag-space.enabled") {
+    :root:has(#toolbar-menubar[autohide="true"])[sizemode="normal"] {
+      --drag-space: 15px;
+/*      #TabsToolbar > :is(.titlebar-buttonbox-container, .titlebar-spacer) {
+        display: none !important;
+      }*/
+    }
   }
 
   #TabsToolbar :is(.tabbrowser-tab, .toolbarbutton-1, separator, #personal-bookmarks, #search-container, .accessibility-indicator, .private-browsing-indicator, #private-browsing-indicator-with-label) {

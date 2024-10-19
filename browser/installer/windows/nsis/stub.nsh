@@ -1566,8 +1566,8 @@ Function CommonOnInit
   StrCpy $CpuSupportsSSE "0"
   Call CheckCpuSupportsSSE
 
-  ; Windows NT 6.0 (Vista/Server 2008) and lower are not supported.
-  ${Unless} ${AtLeastWin7}
+  ; At least let it try to install on anything.
+  ${Unless} ${AtLeastWin95}
     StrCpy $ExitCode "${ERR_PREINSTALL_SYS_OS_REQ}"
     ${If} "$CpuSupportsSSE" == "0"
       strCpy $R7 "$(WARN_MIN_SUPPORTED_OSVER_CPU_MSG)"

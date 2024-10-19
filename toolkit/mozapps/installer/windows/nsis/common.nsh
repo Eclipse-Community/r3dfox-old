@@ -5379,8 +5379,8 @@
         Quit
       ${EndIf}
 
-      ; Windows NT 6.0 (Vista/Server 2008) and lower are not supported.
-      ${Unless} ${AtLeastWin7}
+      ; At least let it try to install on anything.
+      ${Unless} ${AtLeastWin95}
         MessageBox MB_OK|MB_ICONSTOP "$R9"
         ; Nothing initialized so no need to call OnEndCommon
         Quit

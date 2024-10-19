@@ -143,6 +143,9 @@ AC_SUBST(MOZ_APP_DISPLAYNAME)
 AC_SUBST(MOZ_APP_PROFILE)
 AC_DEFINE_UNQUOTED(MOZ_APP_UA_VERSION, "$MOZ_APP_VERSION")
 
+dnl win32 options
+AC_SUBST(WIN_UCRT_REDIST_DIR)
+
 dnl Set various defines and substitutions
 dnl ========================================================
 

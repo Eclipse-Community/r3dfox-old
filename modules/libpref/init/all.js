@@ -662,6 +662,8 @@ pref("r3dfox.aero.fog", true);
 pref("r3dfox.less.aero.fog", true);
 // r3dfox theme.
 pref("r3dfox.customizations.enabled", true);
+// r3dfox drag space in theme.
+pref("r3dfox.drag-space.enabled", true);
 // r3dfox colors.
 pref("r3dfox.colors.enabled", true);
 // Black or white caption text.

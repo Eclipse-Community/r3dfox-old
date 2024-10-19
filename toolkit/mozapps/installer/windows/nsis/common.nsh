@@ -5379,8 +5379,8 @@
         Quit
       ${EndIf}
 
-      ; Windows 8.1/Server 2012 R2 and lower are not supported.
-      ${Unless} ${AtLeastWin10}
+      ; At least let it try to install on anything.
+      ${Unless} ${AtLeastWin95}
         MessageBox MB_OK|MB_ICONSTOP "$R9"
         ; Nothing initialized so no need to call OnEndCommon
         Quit

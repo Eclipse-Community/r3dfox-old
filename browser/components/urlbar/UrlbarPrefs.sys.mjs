@@ -198,6 +198,10 @@ const PREF_URLBAR_DEFAULTS = new Map([
   // Set default NER threshold value of 0.5
   ["nerThreshold", [0.5, "float"]],
 
+  // Whether the urlbar one-offs act as search filters instead of executing a
+  // search immediately.
+  ["oneOffsInstant", true],
+
   // Whether addresses and search results typed into the address bar
   // should be opened in new tabs by default.
   ["openintab", false],

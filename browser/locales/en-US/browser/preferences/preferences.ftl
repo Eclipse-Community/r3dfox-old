@@ -162,6 +162,11 @@ r3dfox-theme =
 
 r3dfox-theme-desc = This enables or disables the r3dfox theme.
 
+r3dfox-drag =
+    .label = Enable drag space on r3dfox theme styles
+
+r3dfox-drag-desc = This enables or disables the caption/window bar drag space on the r3dfox theme.
+
 r3dfox-colors =
     .label = Use r3dfox colors
 

@@ -168,7 +168,12 @@ r3dfox-drag-desc = This enables or disables the caption/window bar drag space on
 r3dfox-colors =
     .label = Use r3dfox colors
 
-r3dfox-colors-desc = This enables or disables the r3dfox colors.
+r3dfox-colors-desc = This enables or disables all r3dfox colors.
+
+r3dfox-colors-plasmafox =
+    .label = Use Plasmafox colors
+
+r3dfox-colors-plasmafox-desc = This enables or disables the Plasmafox colors. Requires Use r3dfox colors to be ticked.
 
 r3dfox-menubar =
     .label = Transparent menubar

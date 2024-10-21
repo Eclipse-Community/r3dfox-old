@@ -17,6 +17,10 @@
 #include "mozilla/Telemetry.h"
 #include "mozilla/widget/WinRegistry.h"
 
+// -- native controls patch includes --
+#include "mozilla/StaticPrefs_widget.h"
+// -- end native controls patch includes --
+
 using namespace mozilla;
 using namespace mozilla::widget;
 
@@ -93,7 +97,10 @@ void nsLookAndFeel::RefreshImpl() {
 }
 
 static bool UseNonNativeMenuColors(ColorScheme aScheme) {
-  return !LookAndFeel::GetInt(LookAndFeel::IntID::UseAccessibilityTheme) ||
+  if (!LookAndFeel::WindowsNonNativeMenusEnabled()) {
+    return false;
+  }
+  return LookAndFeel::GetInt(LookAndFeel::IntID::WindowsDefaultTheme) ||
          aScheme == ColorScheme::Dark;
 }
 
@@ -130,6 +137,9 @@ nsresult nsLookAndFeel::NativeGetColor(ColorID aID, ColorScheme aScheme,
         if (UseNonNativeMenuColors(aScheme)) {
           return false;
         }
+        if (!nsUXThemeData::IsAppThemed()) {
+          return nsUXThemeData::AreFlatMenusEnabled();
+        }
         [[fallthrough]];
       case ColorID::MozMenuhovertext:
         if (UseNonNativeMenuColors(aScheme)) {
@@ -143,6 +153,7 @@ nsresult nsLookAndFeel::NativeGetColor(ColorID aID, ColorScheme aScheme,
         return aScheme != ColorScheme::Dark || mDarkHighlightText;
       case ColorID::IMESelectedRawTextForeground:
       case ColorID::IMESelectedConvertedTextForeground:
+      case ColorID::MozDragtargetzone:
         return true;
       default:
         return false;
@@ -260,6 +271,10 @@ nsresult nsLookAndFeel::NativeGetColor(ColorID aID, ColorScheme aScheme,
         aColor = kNonNativeMenuText;
         return NS_OK;
       }
+      if (!nsUXThemeData::IsAppThemed()) {
+        idx = COLOR_MENUTEXT;
+        break;
+      }
       [[fallthrough]];
     case ColorID::MozMenuhovertext:
       if (UseNonNativeMenuColors(aScheme)) {
@@ -363,6 +378,22 @@ nsresult nsLookAndFeel::NativeGetColor(ColorID aID, ColorScheme aScheme,
     case ColorID::Accentcolortext:
       aColor = mColorAccentText;
       return NS_OK;
+    case ColorID::MozWinMediatext:
+      if (mColorMediaText) {
+        aColor = *mColorMediaText;
+        return NS_OK;
+      }
+      // if we've gotten here just return -moz-dialogtext instead
+      idx = COLOR_WINDOWTEXT;
+      break;
+    case ColorID::MozWinCommunicationstext:
+      if (mColorCommunicationsText) {
+        aColor = *mColorCommunicationsText;
+        return NS_OK;
+      }
+      // if we've gotten here just return -moz-dialogtext instead
+      idx = COLOR_WINDOWTEXT;
+      break;
     case ColorID::MozHeaderbartext:
     case ColorID::MozHeaderbarinactivetext:
     case ColorID::MozDialogtext:
@@ -469,12 +500,40 @@ nsresult nsLookAndFeel::NativeGetInt(IntID aID, int32_t& aResult) {
     case IntID::TreeScrollLinesMax:
       aResult = 3;
       break;
+    case IntID::WindowsClassic:
+      aResult = !nsUXThemeData::IsAppThemed();
+      break;
+    case IntID::WindowsDefaultTheme:
+      aResult = nsUXThemeData::IsDefaultWindowTheme();
+      break;
+    case IntID::DWMCompositor:
+      if (StaticPrefs::widget_native_controls_force_dwm_report_off()) {
+        aResult = 0;
+        break;
+      }
+      aResult = gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled();
+      break;
     case IntID::WindowsAccentColorInTitlebar:
       aResult = mTitlebarColors.mUseAccent;
       break;
-    case IntID::WindowsMica:
-      aResult = WinUtils::MicaEnabled();
+    case IntID::WindowsGlass: {
+      int reportingPref =
+          StaticPrefs::widget_native_controls_force_glass_reporting();
+      if (reportingPref != 0) {
+        aResult = (reportingPref == 1) ? 1 : 0;
+        break;
+      }
+      if (StaticPrefs::widget_native_controls_force_dwm_report_off()) {
+        aResult = 0;
+        break;
+      }
+      // Aero Glass is only available prior to Windows 8 when DWM is used.
+      // Actually not, you can restore it with glass tools
+      // It's just that people don't research anymore... smh
+      aResult = (gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled());
       break;
+    }
+
     case IntID::AlertNotificationOrigin:
       aResult = 0;
       {
@@ -853,12 +912,6 @@ auto nsLookAndFeel::ComputeTitlebarColors() -> TitlebarColors {
   result.mAccentInactive = dwmKey.GetValueAsDword(u"AccentColorInactive"_ns);
   result.mAccentInactiveText = GetAccentColorText(result.mAccentInactive);
 
-  if (WinUtils::MicaEnabled()) {
-    // Use transparent titlebar backgrounds when using mica.
-    result.mActiveDark.mBg = result.mActiveLight.mBg =
-        result.mInactiveDark.mBg = result.mInactiveLight.mBg = NS_TRANSPARENT;
-  }
-
   // The ColorPrevalence value is set to 1 when the "Show color on title bar"
   // setting in the Color section of Window's Personalization settings is
   // turned on.
@@ -918,8 +971,14 @@ void nsLookAndFeel::EnsureInit() {
   }
   mInitialized = true;
 
-  mColorMenuHoverText =
-      ::GetColorFromTheme(eUXMenu, MENU_POPUPITEM, MPI_HOT, TMT_TEXTCOLOR);
+  if (nsUXThemeData::IsAppThemed()) {
+    mColorMenuHoverText =
+        ::GetColorFromTheme(eUXMenu, MENU_POPUPITEM, MPI_HOT, TMT_TEXTCOLOR);
+    mColorMediaText = ::GetColorFromTheme(eUXMediaToolbar, TP_BUTTON, TS_NORMAL,
+                                          TMT_TEXTCOLOR);
+    mColorCommunicationsText = ::GetColorFromTheme(
+        eUXCommunicationsToolbar, TP_BUTTON, TS_NORMAL, TMT_TEXTCOLOR);
+  }
 
   // Fill out the sys color table.
   for (int i = SYS_COLOR_MIN; i <= SYS_COLOR_MAX; ++i) {

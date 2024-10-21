@@ -30,6 +30,7 @@
 #include "mozilla/RefPtr.h"
 #include "mozilla/SchedulerGroup.h"
 #include "mozilla/WinHeaderOnlyUtils.h"
+#include "mozilla/WindowsVersion.h"
 #include "mozilla/Unused.h"
 #include "nsIContentPolicy.h"
 #include "WindowsUIUtils.h"
@@ -98,7 +99,7 @@ void WinUtils::Initialize() {
   // Dpi-Awareness is not supported with Win32k Lockdown enabled, so we don't
   // initialize DPI-related members and assert later that nothing accidently
   // uses these static members
-  if (!IsWin32kLockedDown()) {
+  if (IsWin10OrLater() && !IsWin32kLockedDown()) {
     HMODULE user32Dll = ::GetModuleHandleW(L"user32");
     if (user32Dll) {
       auto getThreadDpiAwarenessContext =
@@ -127,7 +128,9 @@ void WinUtils::Initialize() {
     }
   }
 
-  sHasPackageIdentity = mozilla::HasPackageIdentity();
+  if (IsWin8OrLater()) {
+    sHasPackageIdentity = mozilla::HasPackageIdentity();
+  }
 }
 
 // static
@@ -539,6 +542,17 @@ void WinUtils::SetNSWindowPtr(HWND aWnd, nsWindow* aWindow) {
 nsWindow* WinUtils::GetNSWindowPtr(HWND aWnd) {
   MOZ_ASSERT(NS_IsMainThread());
   return sExtantNSWindows.Get(aWnd);  // or nullptr
+}
+
+static BOOL CALLBACK AddMonitor(HMONITOR, HDC, LPRECT, LPARAM aParam) {
+  (*(int32_t*)aParam)++;
+  return TRUE;
+}
+/* static */
+int32_t WinUtils::GetMonitorCount() {
+  int32_t monitorCount = 0;
+  EnumDisplayMonitors(nullptr, nullptr, AddMonitor, (LPARAM)&monitorCount);
+  return monitorCount;
 }
 
 /* static */
@@ -1301,7 +1315,7 @@ LayoutDeviceIntRegion WinUtils::ConvertHRGNToRegion(HRGN aRgn) {
 }
 
 /* static */
-nsAutoRegion WinUtils::RegionToHRGN(const LayoutDeviceIntRegion& aRegion) {
+HRGN WinUtils::RegionToHRGN(const LayoutDeviceIntRegion& aRegion) {
   const uint32_t count = aRegion.GetNumRects();
   const size_t regionBytes = count * sizeof(RECT);
   const size_t regionDataBytes = sizeof(RGNDATAHEADER) + regionBytes;
@@ -1319,7 +1333,7 @@ nsAutoRegion WinUtils::RegionToHRGN(const LayoutDeviceIntRegion& aRegion) {
   for (auto iter = aRegion.RectIter(); !iter.Done(); iter.Next()) {
     *buf++ = ToWinRect(iter.Get());
   }
-  return nsAutoRegion(::ExtCreateRegion(nullptr, regionDataBytes, data));
+  return ::ExtCreateRegion(nullptr, regionDataBytes, data);
 }
 
 LayoutDeviceIntRect WinUtils::ToIntRect(const RECT& aRect) {
@@ -1581,6 +1595,10 @@ static bool IsTabletDevice() {
   // Guarantees that:
   // - The device has a touch screen.
   // - It is used as a tablet which means that it has no keyboard connected.
+
+  if (!IsWin8OrLater()) {
+    return false;
+  }
 
   if (WindowsUIUtils::GetInWin10TabletMode()) {
     return true;
@@ -2114,6 +2132,10 @@ static LONG SetRelativeScaleStep(LUID aAdapterId, int32_t aRelativeScaleStep) {
 }
 
 nsresult WinUtils::SetHiDPIMode(bool aHiDPI) {
+  if (!IsWin10OrLater()) {
+    return NS_ERROR_NOT_AVAILABLE;
+  }
+
   auto config = GetDisplayConfig();
   if (!config) {
     return NS_ERROR_NOT_AVAILABLE;
@@ -2169,6 +2191,10 @@ nsresult WinUtils::SetHiDPIMode(bool aHiDPI) {
 }
 
 nsresult WinUtils::RestoreHiDPIMode() {
+  if (!IsWin10OrLater()) {
+    return NS_ERROR_NOT_AVAILABLE;
+  }
+
   if (sCurRelativeScaleStep == std::numeric_limits<int>::max()) {
     // The DPI setting hasn't been changed.
     return NS_ERROR_UNEXPECTED;

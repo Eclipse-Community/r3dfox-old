@@ -301,6 +301,11 @@ bool nsNativeThemeGTK::GetGtkWidgetAndState(StyleAppearance aAppearance,
         *aWidgetFlags =
             IsFrameContentNodeInNamespace(aFrame, kNameSpaceID_XHTML);
       break;
+    case StyleAppearance::MenulistText:
+      return false;  // nothing to do, but prevents the bg from being drawn
+    case StyleAppearance::MozMenulistArrowButton:
+      aGtkWidgetType = MOZ_GTK_DROPDOWN_ARROW;
+      break;
     case StyleAppearance::ToolbarbuttonDropdown:
     case StyleAppearance::ButtonArrowDown:
     case StyleAppearance::ButtonArrowUp:
@@ -859,13 +864,14 @@ CSSIntMargin nsNativeThemeGTK::GetCachedWidgetBorder(
 
 LayoutDeviceIntMargin nsNativeThemeGTK::GetWidgetBorder(
     nsDeviceContext* aContext, nsIFrame* aFrame, StyleAppearance aAppearance) {
-  if (IsWidgetAlwaysNonNative(aFrame, aAppearance)) {
-    return Theme::GetWidgetBorder(aContext, aFrame, aAppearance);
-  }
-
   CSSIntMargin result;
   GtkTextDirection direction = GetTextDirection(aFrame);
   switch (aAppearance) {
+    case StyleAppearance::Toolbox:
+      // gtk has no toolbox equivalent.  So, although we map toolbox to
+      // gtk's 'toolbar' for purposes of painting the widget background,
+      // we don't use the toolbar border for toolbox.
+      break;
     case StyleAppearance::Dualbutton:
       // TOOLBAR_DUAL_BUTTON is an interesting case.  We want a border to draw
       // around the entire button + dropdown, and also an inner border if you're
@@ -898,9 +904,6 @@ bool nsNativeThemeGTK::GetWidgetPadding(nsDeviceContext* aContext,
                                         nsIFrame* aFrame,
                                         StyleAppearance aAppearance,
                                         LayoutDeviceIntMargin* aResult) {
-  if (IsWidgetAlwaysNonNative(aFrame, aAppearance)) {
-    return Theme::GetWidgetPadding(aContext, aFrame, aAppearance, aResult);
-  }
   switch (aAppearance) {
     case StyleAppearance::Toolbarbutton:
     case StyleAppearance::Tooltip:
@@ -947,9 +950,11 @@ bool nsNativeThemeGTK::GetWidgetOverflow(nsDeviceContext* aContext,
   return true;
 }
 
-auto nsNativeThemeGTK::IsWidgetNonNative(
-    nsIFrame* aFrame, StyleAppearance aAppearance) -> NonNative {
-  if (IsWidgetAlwaysNonNative(aFrame, aAppearance)) {
+auto nsNativeThemeGTK::IsWidgetNonNative(nsIFrame* aFrame,
+                                         StyleAppearance aAppearance)
+    -> NonNative {
+  if (IsWidgetScrollbarPart(aAppearance) ||
+      aAppearance == StyleAppearance::FocusOutline) {
     return NonNative::Always;
   }
 
@@ -992,7 +997,7 @@ bool nsNativeThemeGTK::IsWidgetAlwaysNonNative(nsIFrame* aFrame,
 LayoutDeviceIntSize nsNativeThemeGTK::GetMinimumWidgetSize(
     nsPresContext* aPresContext, nsIFrame* aFrame,
     StyleAppearance aAppearance) {
-  if (IsWidgetAlwaysNonNative(aFrame, aAppearance)) {
+  if (IsWidgetNonNative(aFrame, aAppearance) == NonNative::Always) {
     return Theme::GetMinimumWidgetSize(aPresContext, aFrame, aAppearance);
   }
 
@@ -1130,7 +1135,9 @@ LayoutDeviceIntSize nsNativeThemeGTK::GetMinimumWidgetSize(
 bool nsNativeThemeGTK::WidgetAttributeChangeRequiresRepaint(
     StyleAppearance aAppearance, nsAtom* aAttribute) {
   // Some widget types just never change state.
-  if (aAppearance == StyleAppearance::Progresschunk ||
+  if (aAppearance == StyleAppearance::Toolbox ||
+      aAppearance == StyleAppearance::Toolbar ||
+      aAppearance == StyleAppearance::Progresschunk ||
       aAppearance == StyleAppearance::ProgressBar ||
       aAppearance == StyleAppearance::Tooltip ||
       aAppearance == StyleAppearance::MozWindowDecorations) {
@@ -1155,7 +1162,7 @@ nsNativeThemeGTK::ThemeSupportsWidget(nsPresContext* aPresContext,
     return false;
   }
 
-  if (IsWidgetAlwaysNonNative(aFrame, aAppearance)) {
+  if (IsWidgetNonNative(aFrame, aAppearance) == NonNative::Always) {
     return Theme::ThemeSupportsWidget(aPresContext, aFrame, aAppearance);
   }
 
@@ -1163,6 +1170,7 @@ nsNativeThemeGTK::ThemeSupportsWidget(nsPresContext* aPresContext,
     // Combobox dropdowns don't support native theming in vertical mode.
     case StyleAppearance::Menulist:
     case StyleAppearance::MenulistButton:
+    case StyleAppearance::MenulistText:
       if (aFrame && aFrame->GetWritingMode().IsVertical()) {
         return false;
       }
@@ -1171,6 +1179,7 @@ nsNativeThemeGTK::ThemeSupportsWidget(nsPresContext* aPresContext,
     case StyleAppearance::Button:
     case StyleAppearance::Radio:
     case StyleAppearance::Checkbox:
+    case StyleAppearance::Toolbox:  // N/A
     case StyleAppearance::Toolbarbutton:
     case StyleAppearance::Dualbutton:  // so we can override the border with 0
     case StyleAppearance::ToolbarbuttonDropdown:

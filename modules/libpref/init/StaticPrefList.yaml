@@ -6444,6 +6444,11 @@
   value: true # Match naive behavior, but hopefully we can stop soon!
   mirror: always
 
+- name: gfx.compositor.clearstate
+  type: RelaxedAtomicBool
+  value: false
+  mirror: always
+
 # Whether GL contexts can be migrated to a different GPU (to match the one the
 # OS is using for composition).
 #
@@ -16069,6 +16074,7 @@
   # Run content processes in headless mode and disallow
   # connections to the X server.  Requires:
   # * `webgl.out-of-process` (or else WebGL breaks)
+  # * `widget.non-native-theme.enabled` (scrollbars & form controls)
   # Changing it requires a restart because sandbox policy information
   # dependent on it is cached.  See bug 1640345 for details.
 - name: security.sandbox.content.headless
@@ -17740,6 +17746,46 @@
 # Prefs starting with "widget."
 #---------------------------------------------------------------------------
 
+- name: widget.native-controls.force-dwm-report-off
+  type: bool
+  value: false
+  mirror: always
+  
+- name: widget.native-controls.force-glass-reporting
+  type: int32_t
+  value: 0
+  mirror: always
+  
+- name: widget.native-controls.override-aero-caption-buttons-mask-width
+  type: int32_t
+  value: 0
+  mirror: always
+  
+- name: widget.native-controls.override-aero-caption-buttons-mask-height
+  type: int32_t
+  value: 0
+  mirror: always
+  
+- name: widget.native-controls.scrollbar-style
+  type: int32_t
+  value: 0
+  mirror: always
+  
+- name: widget.native-controls.tooltip-style
+  type: int32_t
+  value: 0
+  mirror: always
+
+# Global user preference for disabling native theme in content processes.
+#
+# NOTE(emilio): When changing this make sure to update the non_native_theme
+# entry in python/mozbuild/mozbuild/mozinfo.py and test_fission_autostart.py
+# erm no LOLOLOLOLOLO -eriz
+- name: widget.non-native-theme.enabled
+  type: RelaxedAtomicBool
+  value: false
+  mirror: always
+
 # Whether the non-native theme should always use system colors. Useful mostly
 # for testing forced colors mode.
 - name: widget.non-native-theme.always-high-contrast
@@ -18257,6 +18303,19 @@
 #  *  3: remotely, falling back to locally except on crashes
 #  * -1: locally, no fallback
 - name: widget.windows.utility_process_file_picker
+  type: RelaxedAtomicInt32
+  value: 0
+  mirror: always
+
+# Whether to apply a workaround intended to prevent Windows from treating
+# non-foreground-marked fullscreen windows as fullscreen on Windows 7 and
+# earlier. (See bug 1732517.)
+#
+# Valid values:
+#  * -1: the workaround is never used.
+#  *  1: the workaround is always used.
+#  *  0: the workaround is used if we think it should be. (Default.)
+- name: widget.windows.fullscreen_marking_workaround
   type: RelaxedAtomicInt32
   value: 0
   mirror: always

@@ -51,19 +51,23 @@ NS_IMPL_ISUPPORTS(nsNativeTheme, nsITimerCallback, nsINamed)
 
   const bool isXULElement = frameContent->IsXULElement();
   if (isXULElement) {
-    if (aAppearance == StyleAppearance::Checkbox ||
-        aAppearance == StyleAppearance::Radio ||
-        aAppearance == StyleAppearance::ToolbarbuttonDropdown ||
-        aAppearance == StyleAppearance::ButtonArrowPrevious ||
-        aAppearance == StyleAppearance::ButtonArrowNext ||
-        aAppearance == StyleAppearance::ButtonArrowUp ||
+    if (aAppearance == StyleAppearance::CheckboxLabel ||
+        aAppearance == StyleAppearance::RadioLabel) {
+      aFrame = aFrame->GetParent()->GetParent();
+      frameContent = aFrame->GetContent();
+    } else if (aAppearance == StyleAppearance::Checkbox ||
+               aAppearance == StyleAppearance::Radio ||
+               aAppearance == StyleAppearance::ToolbarbuttonDropdown ||
+               aAppearance == StyleAppearance::ButtonArrowPrevious ||
+               aAppearance == StyleAppearance::ButtonArrowNext ||
+               aAppearance == StyleAppearance::ButtonArrowUp ||
 #ifdef MOZ_WIDGET_GTK
-        aAppearance == StyleAppearance::MozWindowButtonClose ||
-        aAppearance == StyleAppearance::MozWindowButtonMinimize ||
-        aAppearance == StyleAppearance::MozWindowButtonRestore ||
-        aAppearance == StyleAppearance::MozWindowButtonMaximize ||
+               aAppearance == StyleAppearance::MozWindowButtonClose ||
+               aAppearance == StyleAppearance::MozWindowButtonMinimize ||
+               aAppearance == StyleAppearance::MozWindowButtonRestore ||
+               aAppearance == StyleAppearance::MozWindowButtonMaximize ||
 #endif
-        aAppearance == StyleAppearance::ButtonArrowDown) {
+               aAppearance == StyleAppearance::ButtonArrowDown) {
       aFrame = aFrame->GetParent();
       frameContent = aFrame->GetContent();
     }
@@ -88,6 +92,7 @@ NS_IMPL_ISUPPORTS(nsNativeTheme, nsITimerCallback, nsINamed)
   }
 
   switch (aAppearance) {
+    case StyleAppearance::RadioLabel:
     case StyleAppearance::Radio: {
       if (CheckBooleanAttr(aFrame, nsGkAtoms::focused)) {
         flags |= ElementState::FOCUS;
@@ -103,6 +108,7 @@ NS_IMPL_ISUPPORTS(nsNativeTheme, nsITimerCallback, nsINamed)
       }
       break;
     }
+    case StyleAppearance::CheckboxLabel:
     case StyleAppearance::Checkbox: {
       if (CheckBooleanAttr(aFrame, nsGkAtoms::checked)) {
         flags |= ElementState::CHECKED;
@@ -211,6 +217,31 @@ bool nsNativeTheme::IsWidgetStyled(nsPresContext* aPresContext,
   // Check for specific widgets to see if HTML has overridden the style.
   if (!aFrame) {
     return false;
+  }
+
+  // Resizers have some special handling, dependent on whether in a scrollable
+  // container or not. If so, use the scrollable container's to determine
+  // whether the style is overriden instead of the resizer. This allows a
+  // non-native transparent resizer to be used instead. Otherwise, we just
+  // fall through and return false.
+  if (aAppearance == StyleAppearance::Resizer) {
+    nsIFrame* parentFrame = aFrame->GetParent();
+    if (parentFrame && parentFrame->IsScrollContainerFrame()) {
+      // if the parent is a scrollframe, the resizer should be native themed
+      // only if the scrollable area doesn't override the widget style.
+      //
+      // note that the condition below looks a bit suspect but it's the right
+      // one. If there's no valid appearance, then we should return true, it's
+      // effectively the same as if it had overridden the appearance.
+      parentFrame = parentFrame->GetParent();
+      if (!parentFrame) {
+        return false;
+      }
+      auto parentAppearance =
+          parentFrame->StyleDisplay()->EffectiveAppearance();
+      return parentAppearance == StyleAppearance::None ||
+             IsWidgetStyled(aPresContext, parentFrame, parentAppearance);
+    }
   }
 
   /**
@@ -574,12 +605,4 @@ bool nsNativeTheme::IsWidgetScrollbarPart(StyleAppearance aAppearance) {
     default:
       return false;
   }
-}
-
-/*static*/
-bool nsNativeTheme::IsWidgetAlwaysNonNative(nsIFrame* aFrame,
-                                            StyleAppearance aAppearance) {
-  return IsWidgetScrollbarPart(aAppearance) ||
-         aAppearance == StyleAppearance::FocusOutline ||
-         (aFrame && aFrame->StyleUI()->mMozTheme == StyleMozTheme::NonNative);
 }

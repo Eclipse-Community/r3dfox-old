@@ -10,16 +10,15 @@
 #include "mozilla/PresShell.h"
 #include "nsIFrameInlines.h"
 #include "nsContainerFrame.h"
-#include "nsPresContextInlines.h"
+#include "nsIFormControlFrame.h"
 #include "nsPresContext.h"
 #include "nsLayoutUtils.h"
 #include "nsGkAtoms.h"
+#include "nsButtonFrameRenderer.h"
 #include "nsDisplayList.h"
-#include "nsCSSRendering.h"
 #include <algorithm>
 
 using namespace mozilla;
-using namespace mozilla::image;
 
 nsContainerFrame* NS_NewHTMLButtonControlFrame(PresShell* aPresShell,
                                                ComputedStyle* aStyle) {
@@ -40,17 +39,12 @@ void nsHTMLButtonControlFrame::Init(nsIContent* aContent,
                                     nsContainerFrame* aParent,
                                     nsIFrame* aPrevInFlow) {
   nsContainerFrame::Init(aContent, aParent, aPrevInFlow);
-
-  // get all the styles
-  ServoStyleSet* styleSet = PresContext()->StyleSet();
-
-  // Get styles assigned to -moz-focus-inner (i.e. dotted border on Windows)
-  mInnerFocusStyle = styleSet->ProbePseudoElementStyle(
-      *mContent->AsElement(), PseudoStyleType::mozFocusInner, nullptr, Style());
+  mRenderer.SetFrame(this, PresContext());
 }
 
 NS_QUERYFRAME_HEAD(nsHTMLButtonControlFrame)
   NS_QUERYFRAME_ENTRY(nsHTMLButtonControlFrame)
+  NS_QUERYFRAME_ENTRY(nsIFormControlFrame)
 NS_QUERYFRAME_TAIL_INHERITING(nsContainerFrame)
 
 #ifdef ACCESSIBILITY
@@ -59,11 +53,13 @@ a11y::AccType nsHTMLButtonControlFrame::AccessibleType() {
 }
 #endif
 
+void nsHTMLButtonControlFrame::SetFocus(bool aOn, bool aRepaint) {}
+
 nsresult nsHTMLButtonControlFrame::HandleEvent(nsPresContext* aPresContext,
                                                WidgetGUIEvent* aEvent,
                                                nsEventStatus* aEventStatus) {
-  if (mContent->AsElement()->IsDisabled()) {
-    // If disabled do nothing
+  // if disabled do nothing
+  if (mRenderer.isDisabled()) {
     return NS_OK;
   }
 
@@ -72,126 +68,14 @@ nsresult nsHTMLButtonControlFrame::HandleEvent(nsPresContext* aPresContext,
   return nsIFrame::HandleEvent(aPresContext, aEvent, aEventStatus);
 }
 
-bool nsHTMLButtonControlFrame::ShouldClipPaintingToBorderBox() const {
+bool nsHTMLButtonControlFrame::ShouldClipPaintingToBorderBox() {
   // FIXME(emilio): probably should account for per-axis clipping...
   return StyleDisplay()->mOverflowX != StyleOverflow::Visible;
 }
 
-namespace mozilla {
-
-class nsDisplayButtonForeground final : public nsPaintedDisplayItem {
- public:
-  nsDisplayButtonForeground(nsDisplayListBuilder* aBuilder, nsIFrame* aFrame)
-      : nsPaintedDisplayItem(aBuilder, aFrame) {
-    MOZ_COUNT_CTOR(nsDisplayButtonForeground);
-  }
-
-  MOZ_COUNTED_DTOR_FINAL(nsDisplayButtonForeground)
-
-  void Paint(nsDisplayListBuilder* aBuilder, gfxContext* aCtx) override;
-  bool CreateWebRenderCommands(
-      mozilla::wr::DisplayListBuilder& aBuilder,
-      mozilla::wr::IpcResourceUpdateQueue& aResources,
-      const StackingContextHelper& aSc,
-      mozilla::layers::RenderRootStateManager* aManager,
-      nsDisplayListBuilder* aDisplayListBuilder) override;
-  NS_DISPLAY_DECL_NAME("ButtonForeground", TYPE_BUTTON_FOREGROUND)
-};
-
-void nsDisplayButtonForeground::Paint(nsDisplayListBuilder* aBuilder,
-                                      gfxContext* aCtx) {
-  static_cast<nsHTMLButtonControlFrame*>(mFrame)->PaintInnerFocusBorder(
-      aBuilder, *aCtx, GetPaintRect(aBuilder, aCtx),
-      nsRect(ToReferenceFrame(), mFrame->GetSize()));
-}
-
-bool nsDisplayButtonForeground::CreateWebRenderCommands(
-    mozilla::wr::DisplayListBuilder& aBuilder,
-    mozilla::wr::IpcResourceUpdateQueue& aResources,
-    const StackingContextHelper& aSc,
-    mozilla::layers::RenderRootStateManager* aManager,
-    nsDisplayListBuilder* aDisplayListBuilder) {
-  bool borderIsEmpty = false;
-  bool dummy;
-  Maybe<nsCSSBorderRenderer> br =
-      static_cast<nsHTMLButtonControlFrame*>(mFrame)
-          ->CreateInnerFocusBorderRenderer(
-              aDisplayListBuilder, nullptr,
-              GetBounds(aDisplayListBuilder, &dummy),
-              nsRect(ToReferenceFrame(), mFrame->GetSize()), &borderIsEmpty);
-
-  if (!br) {
-    return borderIsEmpty;
-  }
-
-  aBuilder.StartGroup(this);
-  br->CreateWebRenderCommands(this, aBuilder, aResources, aSc);
-  aBuilder.FinishGroup();
-
-  return true;
-}
-
-}  // namespace mozilla
-
-static nsRect GetButtonInnerFocusRect(const nsIFrame* aFrame,
-                                      const ComputedStyle& aFocusStyle,
-                                      const nsRect& aRect) {
-  nsRect result = aRect;
-  result.Deflate(aFrame->GetUsedBorderAndPadding());
-
-  nsMargin innerFocusPadding;
-  aFocusStyle.StylePadding()->GetPadding(innerFocusPadding);
-
-  nsMargin framePadding = aFrame->GetUsedPadding();
-  innerFocusPadding.top = std::min(innerFocusPadding.top, framePadding.top);
-  innerFocusPadding.right =
-      std::min(innerFocusPadding.right, framePadding.right);
-  innerFocusPadding.bottom =
-      std::min(innerFocusPadding.bottom, framePadding.bottom);
-  innerFocusPadding.left = std::min(innerFocusPadding.left, framePadding.left);
-
-  result.Inflate(innerFocusPadding);
-  return result;
-}
-
-void nsHTMLButtonControlFrame::PaintInnerFocusBorder(
-    nsDisplayListBuilder* aBuilder, gfxContext& aRenderingContext,
-    const nsRect& aDirtyRect, const nsRect& aRect) {
-  if (!mInnerFocusStyle) {
-    return;
-  }
-
-  // we draw the -moz-focus-inner border just inside the button's
-  // normal border and padding, to match Windows themes.
-  PaintBorderFlags flags = aBuilder->ShouldSyncDecodeImages()
-                               ? PaintBorderFlags::SyncDecodeImages
-                               : PaintBorderFlags();
-
-  nsRect rect = GetButtonInnerFocusRect(this, *mInnerFocusStyle, aRect);
-  // We don't paint border images here, so the ImgDrawResult is useless.
-  Unused << nsCSSRendering::PaintBorder(PresContext(), aRenderingContext, this,
-                                        aDirtyRect, rect, mInnerFocusStyle,
-                                        flags);
-}
-
-Maybe<nsCSSBorderRenderer>
-nsHTMLButtonControlFrame::CreateInnerFocusBorderRenderer(
-    nsDisplayListBuilder* aBuilder, gfxContext* aRenderingContext,
-    const nsRect& aDirtyRect, const nsRect& aRect, bool* aBorderIsEmpty) {
-  if (!mInnerFocusStyle) {
-    return Nothing();
-  }
-
-  nsRect rect = GetButtonInnerFocusRect(this, *mInnerFocusStyle, aRect);
-  gfx::DrawTarget* dt =
-      aRenderingContext ? aRenderingContext->GetDrawTarget() : nullptr;
-  return nsCSSRendering::CreateBorderRenderer(PresContext(), dt, this,
-                                              aDirtyRect, rect,
-                                              mInnerFocusStyle, aBorderIsEmpty);
-}
-
 void nsHTMLButtonControlFrame::BuildDisplayList(
     nsDisplayListBuilder* aBuilder, const nsDisplayListSet& aLists) {
+  nsDisplayList onTop(aBuilder);
   if (IsVisibleForPainting()) {
     // Clip the button itself to its border area for event hit testing.
     Maybe<DisplayListClipState::AutoSaveRestore> eventClipState;
@@ -204,8 +88,10 @@ void nsHTMLButtonControlFrame::BuildDisplayList(
           rect, hasRadii ? radii : nullptr);
     }
 
-    DisplayBorderBackgroundOutline(aBuilder, aLists);
+    mRenderer.DisplayButton(aBuilder, aLists.BorderBackground(), &onTop);
   }
+
+  nsDisplayListCollection set(aBuilder);
 
   {
     DisplayListClipState::AutoSaveRestore clipState(aBuilder);
@@ -215,23 +101,22 @@ void nsHTMLButtonControlFrame::BuildDisplayList(
       nsRect rect(aBuilder->ToReferenceFrame(this), GetSize());
       rect.Deflate(border);
       nscoord radii[8];
-      const bool hasRadii = GetPaddingBoxBorderRadii(radii);
+      bool hasRadii = GetPaddingBoxBorderRadii(radii);
       clipState.ClipContainingBlockDescendants(rect,
                                                hasRadii ? radii : nullptr);
     }
 
-    BuildDisplayListForChild(aBuilder, mFrames.FirstChild(), aLists,
+    BuildDisplayListForChild(aBuilder, mFrames.FirstChild(), set,
                              DisplayChildFlag::ForcePseudoStackingContext);
   }
 
-  // Put the foreground outline on top of the children.
-  if (IsVisibleForPainting() && mInnerFocusStyle &&
-      mInnerFocusStyle->StyleBorder()->HasBorder() && IsThemed() &&
-      PresContext()->Theme()->ThemeWantsButtonInnerFocusRing()) {
-    aLists.Content()->AppendNewToTop<nsDisplayButtonForeground>(aBuilder, this);
-  }
+  // Put the foreground outline and focus rects on top of the children
+  set.Content()->AppendToTop(&onTop);
+  set.MoveTo(aLists);
 
-  // To draw border when selected in editor
+  DisplayOutline(aBuilder, aLists);
+
+  // to draw border when selected in editor
   DisplaySelectionOverlay(aBuilder, aLists.Content());
 }
 
@@ -336,14 +221,12 @@ void nsHTMLButtonControlFrame::ReflowButtonContents(
     // Button has a fixed block-size -- that's its content-box bSize.
     buttonContentBox.BSize(wm) = aButtonReflowInput.ComputedBSize();
   } else {
-    // Button is intrinsically sized -- it should shrinkwrap the contents'
-    // bSize.
-    // If we have size containment in block axis, ignore the contents and use
-    // contain-intrinsic-block-size. The combobox content size with no content
-    // is one line-height, not zero.
-    const Maybe<nscoord> containBSize = ContainIntrinsicBSize(
-        IsComboboxControlFrame() ? aButtonReflowInput.GetLineHeight() : 0);
-    const nscoord bSize = containBSize.valueOr(contentsDesiredSize.BSize(wm));
+    // Button is intrinsically sized -- it should shrinkwrap the
+    // button-contents' bSize. But if it has size containment in block axis,
+    // ignore the contents and use contain-intrinsic-block-size.
+    nscoord bSize = aButtonReflowInput.mFrame->ContainIntrinsicBSize().valueOr(
+        contentsDesiredSize.BSize(wm));
+
     // Make sure we obey min/max-bSize in the case when we're doing intrinsic
     // sizing (we get it for free when we have a non-intrinsic
     // aButtonReflowInput.ComputedBSize()).  Note that we do this before
@@ -449,19 +332,23 @@ nscoord nsHTMLButtonControlFrame::SynthesizeFallbackBaseline(
   return Baseline::SynthesizeBOffsetFromMarginBox(this, aWM, aBaselineGroup);
 }
 
+nsresult nsHTMLButtonControlFrame::SetFormProperty(nsAtom* aName,
+                                                   const nsAString& aValue) {
+  if (nsGkAtoms::value == aName) {
+    return mContent->AsElement()->SetAttr(kNameSpaceID_None, nsGkAtoms::value,
+                                          aValue, true);
+  }
+  return NS_OK;
+}
+
 ComputedStyle* nsHTMLButtonControlFrame::GetAdditionalComputedStyle(
     int32_t aIndex) const {
-  if (aIndex == 0) {
-    return mInnerFocusStyle;
-  }
-  return nullptr;
+  return mRenderer.GetComputedStyle(aIndex);
 }
 
 void nsHTMLButtonControlFrame::SetAdditionalComputedStyle(
     int32_t aIndex, ComputedStyle* aComputedStyle) {
-  if (aIndex == 0) {
-    mInnerFocusStyle = aComputedStyle;
-  }
+  mRenderer.SetComputedStyle(aIndex, aComputedStyle);
 }
 
 void nsHTMLButtonControlFrame::AppendDirectlyOwnedAnonBoxes(

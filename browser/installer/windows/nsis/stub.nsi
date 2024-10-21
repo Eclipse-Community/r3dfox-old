@@ -24,6 +24,7 @@ ManifestDPIAware true
 
 !addplugindir ./
 
+Var CheckboxSetAsDefault
 Var CheckboxShortcuts
 Var CheckboxInstallMaintSvc
 Var CheckboxCleanupProfile
@@ -39,6 +40,7 @@ Var ExistingTopDir
 Var SpaceAvailableBytes
 Var InitialInstallDir
 Var HandleDownload
+Var CanSetAsDefault
 Var InstallCounterStep
 Var InstallTotalSteps
 Var ProgressCompleted
@@ -324,8 +326,8 @@ Function .onInit
   ; SSE2 instruction set is available.
   System::Call "kernel32::IsProcessorFeaturePresent(i 10)i .R7"
 
-  ; Windows 8.1/Server 2012 R2 and lower are not supported.
-  ${Unless} ${AtLeastWin10}
+  ; At least let it try to install on anything.
+  ${Unless} ${AtLeastWin95}
     StrCpy $ExitCode "${ERR_PREINSTALL_SYS_OS_REQ}"
     ${If} "$R7" == "0"
       strCpy $R7 "$(WARN_MIN_SUPPORTED_OSVER_CPU_MSG)"
@@ -385,6 +387,21 @@ Function .onInit
 
   ; Used to determine if the default installation directory was used.
   StrCpy $InitialInstallDir "$INSTDIR"
+
+  ClearErrors
+  WriteRegStr HKLM "Software\Mozilla" "${BrandShortName}InstallerTest" \
+                   "Write Test"
+
+  ; Only display set as default when there is write access to HKLM and on Win7
+  ; and below.
+  ${If} ${Errors}
+  ${OrIf} ${AtLeastWin8}
+    StrCpy $CanSetAsDefault "false"
+  ${Else}
+    DeleteRegValue HKLM "Software\Mozilla" "${BrandShortName}InstallerTest"
+    StrCpy $CanSetAsDefault "true"
+  ${EndIf}
+  StrCpy $CheckboxSetAsDefault "0"
 
   ; Initialize the majority of variables except those that need to be reset
   ; when a page is displayed.
@@ -940,6 +957,8 @@ Function LaunchFullInstaller
   ; install in case it needs to perform operations that the stub doesn't
   ; know about.
   WriteINIStr "$PLUGINSDIR\${CONFIG_INI}" "Install" "InstallDirectoryPath" "$INSTDIR"
+  ; Don't create the QuickLaunch or Taskbar shortcut from the launched installer
+  WriteINIStr "$PLUGINSDIR\${CONFIG_INI}" "Install" "QuickLaunchShortcut" "false"
 
   ; Always create a start menu shortcut, so the user always has some way
   ; to access the application.
@@ -1177,7 +1196,19 @@ Function SendPing
       ${EndIf}
     ${EndIf}
 
-    StrCpy $R3 "1"
+    ${If} $CanSetAsDefault == "true"
+      ${If} $CheckboxSetAsDefault == "1"
+        StrCpy $R3 "2"
+      ${Else}
+        StrCpy $R3 "3"
+      ${EndIf}
+    ${Else}
+      ${If} ${AtLeastWin8}
+        StrCpy $R3 "1"
+      ${Else}
+        StrCpy $R3 "0"
+      ${EndIf}
+    ${EndIf}
 
 ; Note: ExitCode gets parsed here to determine values for "succeeded",
 ; "user_cancelled", etc.

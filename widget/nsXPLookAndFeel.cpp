@@ -151,6 +151,10 @@ static const char sIntPrefs[][45] = {
     "ui.chosenMenuItemsShouldBlink",
     "ui.windowsAccentColorInTitlebar",
     "ui.windowsMica",
+    "ui.windowsDefaultTheme",
+    "ui.dwmCompositor",
+    "ui.windowsClassic",
+    "ui.windowsGlass",
     "ui.macBigSurTheme",
     "ui.macRTL",
     "ui.macTitlebarHeight",
@@ -258,6 +262,7 @@ static const char sColorPrefs[][41] = {
     "ui.-moz-default-background-color",
     "ui.-moz-dialog",
     "ui.-moz-dialogtext",
+    "ui.-moz-dragtargetzone",
     "ui.-moz-cellhighlight",
     "ui.-moz_cellhighlighttext",
     "ui.selecteditem",
@@ -286,6 +291,8 @@ static const char sColorPrefs[][41] = {
     "ui.accentcolor",
     "ui.accentcolortext",
     "ui.-moz-autofill-background",
+    "ui.-moz-win-mediatext",
+    "ui.-moz-win-communicationstext",
     "ui.-moz-nativehyperlinktext",
     "ui.-moz-nativevisitedhyperlinktext",
     "ui.-moz-hyperlinktext",
@@ -485,11 +492,23 @@ void nsXPLookAndFeel::OnPrefChanged(const char* aPref, void* aClosure) {
   }
 }
 
+bool LookAndFeel::WindowsNonNativeMenusEnabled() {
+  switch (StaticPrefs::browser_display_windows_non_native_menus()) {
+    case 0:
+      return false;
+    case 1:
+      return true;
+    default:
+      return false;
+  }
+}
+
 static constexpr struct {
   nsLiteralCString mName;
   widget::ThemeChangeKind mChangeKind =
       widget::ThemeChangeKind::MediaQueriesOnly;
 } kMediaQueryPrefs[] = {
+    {"browser.display.windows.non_native_menus"_ns},
     // Affects whether standins are used for the accent color.
     {"widget.non-native-theme.use-theme-accent"_ns,
      widget::ThemeChangeKind::Style},
@@ -664,6 +683,7 @@ nscolor nsXPLookAndFeel::GetStandinForNativeColor(ColorID aID,
       COLOR(MozDialogtext, 0x00, 0x00, 0x00)
       COLOR(MozColheadertext, 0x00, 0x00, 0x00)
       COLOR(MozColheaderhovertext, 0x00, 0x00, 0x00)
+      COLOR(MozDragtargetzone, 0xFF, 0xFF, 0xFF)
       COLOR(MozCellhighlight, 0xF0, 0xF0, 0xF0)
       COLOR(MozCellhighlighttext, 0x00, 0x00, 0x00)
       COLOR(Selecteditem, 0x33, 0x99, 0xFF)
@@ -681,6 +701,8 @@ nscolor nsXPLookAndFeel::GetStandinForNativeColor(ColorID aID,
       COLOR(MozMacFocusring, 0x60, 0x9D, 0xD7)
       COLOR(MozMacDisabledtoolbartext, 0x3F, 0x3F, 0x3F)
       // Seems to be the default color (hardcoded because of bug 1065998)
+      COLOR(MozWinMediatext, 0xFF, 0xFF, 0xFF)
+      COLOR(MozWinCommunicationstext, 0xFF, 0xFF, 0xFF)
       COLOR(MozNativehyperlinktext, 0x00, 0x66, 0xCC)
       COLOR(MozNativevisitedhyperlinktext, 0x55, 0x1A, 0x8B)
       COLOR(MozAutofillBackground, 0xff, 0xfc, 0xc8)
@@ -1210,7 +1232,8 @@ void LookAndFeel::DoHandleGlobalThemeChange() {
   //
   // We can use the *DoNotUseDirectly functions directly here, because we want
   // to notify all possible themes in a given process (but just once).
-  if (XRE_IsParentProcess()) {
+  if (XRE_IsParentProcess() ||
+      !StaticPrefs::widget_non_native_theme_enabled()) {
     if (nsCOMPtr<nsITheme> theme = do_GetNativeThemeDoNotUseDirectly()) {
       theme->ThemeChanged();
     }

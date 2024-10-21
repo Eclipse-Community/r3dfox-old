@@ -777,9 +777,6 @@ class nsIWidget : public nsISupports {
    */
   virtual void SuppressAnimation(bool aSuppress) {}
 
-  /** Sets windows-specific mica backdrop on this widget. */
-  virtual void SetMicaBackdrop(bool) {}
-
   /**
    * Return size mode (minimized, maximized, normalized).
    * Returns a value from nsSizeMode (see nsIWidgetListener.h)
@@ -863,15 +860,24 @@ class nsIWidget : public nsISupports {
    */
   virtual LayoutDeviceIntRect GetClientBounds() = 0;
 
-  /** Whether to extend the client area into the titlebar. */
-  virtual void SetCustomTitlebar(bool) {}
+  /**
+   * Sets the non-client area dimensions of the window. Pass -1 to restore
+   * the system default frame size for that border. Pass zero to remove
+   * a border, or pass a specific value adjust a border. Units are in
+   * pixels. (DPI dependent)
+   *
+   * Platform notes:
+   *  Windows: shrinking top non-client height will remove application
+   *  icon and window title text. Glass desktops will refuse to set
+   *  dimensions between zero and size < system default.
+   */
+  virtual nsresult SetNonClientMargins(const LayoutDeviceIntMargin&) = 0;
 
   /**
    * Sets the region around the edges of the window that can be dragged to
    * resize the window. All four sides of the window will get the same margin.
    */
-  virtual void SetResizeMargin(mozilla::LayoutDeviceIntCoord) {}
-
+  virtual void SetResizeMargin(mozilla::LayoutDeviceIntCoord aResizeMargin) = 0;
   /**
    * Get the client offset from the window origin.
    *
@@ -895,9 +901,7 @@ class nsIWidget : public nsISupports {
   }
 
   /**
-   * Set the native background color for this widget.
-   *
-   * Deprecated. Currently only implemented for iOS. (See bug 1901896.)
+   * Set the background color for this widget
    *
    * @param aColor the new background color
    */
@@ -1150,6 +1154,14 @@ class nsIWidget : public nsISupports {
   virtual void PrepareWindowEffects() = 0;
 
   /**
+   * Called on the main thread at the end of WebRender display list building.
+   */
+  virtual void AddWindowOverlayWebRenderCommands(
+      mozilla::layers::WebRenderBridgeChild* aWrBridge,
+      mozilla::wr::DisplayListBuilder& aBuilder,
+      mozilla::wr::IpcResourceUpdateQueue& aResources) {}
+
+  /**
    * Called when Gecko knows which themed widgets exist in this window.
    * The passed array contains an entry for every themed widget of the right
    * type (currently only StyleAppearance::Toolbar) within the window, except
@@ -1169,7 +1181,6 @@ class nsIWidget : public nsISupports {
    * @param aOpaqueRegion the region of the window that is opaque.
    */
   virtual void UpdateOpaqueRegion(const LayoutDeviceIntRegion& aOpaqueRegion) {}
-  virtual LayoutDeviceIntRegion GetOpaqueRegionForTesting() const { return {}; }
 
   /**
    * Informs the widget about the region of the window that is draggable.

@@ -2818,8 +2818,12 @@ let gShareUtils = {
       return;
     }
 
-    // We only support "share URL" on macOS and on Windows:
-    if (AppConstants.platform != "macosx" && AppConstants.platform != "win") {
+    // We only support "share URL" on macOS and on Windows 10:
+    if (
+      AppConstants.platform != "macosx" &&
+      // Windows 10's internal NT version number was initially 6.4
+      !AppConstants.isPlatformAndVersionAtLeast("win", "6.4")
+    ) {
       return;
     }
 
@@ -4661,14 +4665,14 @@ function updateToggleControlLabel(control) {
 // more like non-tablet mode and has no need for this.)
 const Win10TabletModeUpdater = {
   init() {
-    if (AppConstants.platform == "win") {
+    if (AppConstants.isPlatformAndVersionAtLeast("win", "10")) {
       this.update(WindowsUIUtils.inWin10TabletMode);
       Services.obs.addObserver(this, "tablet-mode-change");
     }
   },
 
   uninit() {
-    if (AppConstants.platform == "win") {
+    if (AppConstants.isPlatformAndVersionAtLeast("win", "10")) {
       Services.obs.removeObserver(this, "tablet-mode-change");
     }
   },
@@ -4732,7 +4736,7 @@ var gUIDensity = {
   getCurrentDensity() {
     // Automatically override the uidensity to touch in Windows tablet mode
     // (either Win10 or Win11).
-    if (AppConstants.platform == "win") {
+    if (AppConstants.isPlatformAndVersionAtLeast("win", "10")) {
       const inTablet =
         WindowsUIUtils.inWin10TabletMode || WindowsUIUtils.inWin11TabletMode;
       if (inTablet && Services.prefs.getBoolPref(this.autoTouchModePref)) {
@@ -6666,7 +6670,7 @@ var ToolbarIconColor = {
   _windowState: {
     active: false,
     fullscreen: false,
-    customtitlebar: false,
+    tabsintitlebar: false,
   },
   init() {
     this._initialized = true;
@@ -6733,8 +6737,8 @@ var ToolbarIconColor = {
       case "toolbarvisibilitychange":
         // toolbar changes dont require reset of the cached color values
         break;
-      case "customtitlebar":
-        this._windowState.customtitlebar = reasonValue;
+      case "tabsintitlebar":
+        this._windowState.tabsintitlebar = reasonValue;
         break;
     }
 

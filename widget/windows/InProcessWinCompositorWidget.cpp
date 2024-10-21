@@ -51,6 +51,7 @@ InProcessWinCompositorWidget::InProcessWinCompositorWidget(
       mWindow(aWindow),
       mWnd(reinterpret_cast<HWND>(aInitData.hWnd())),
       mTransparentSurfaceLock("mTransparentSurfaceLock"),
+      mTransparencyMode(uint32_t(aInitData.transparencyMode())),
       mMemoryDC(nullptr),
       mCompositeDC(nullptr),
       mLockedBackBufferData(nullptr) {
@@ -76,9 +77,7 @@ bool InProcessWinCompositorWidget::OnWindowResize(
   return true;
 }
 
-bool InProcessWinCompositorWidget::DrawsToMemoryDC() const {
-  return ::GetWindowLongPtrW(mWnd, GWL_EXSTYLE) & WS_EX_LAYERED;
-}
+void InProcessWinCompositorWidget::OnWindowModeChange(nsSizeMode aSizeMode) {}
 
 bool InProcessWinCompositorWidget::PreRender(WidgetRenderingContext* aContext) {
   // This can block waiting for WM_SETTEXT to finish
@@ -109,7 +108,7 @@ InProcessWinCompositorWidget::StartRemoteDrawing() {
   MOZ_ASSERT(!mCompositeDC);
 
   RefPtr<gfxASurface> surf;
-  if (DrawsToMemoryDC()) {
+  if (TransparencyModeIs(TransparencyMode::Transparent)) {
     surf = EnsureTransparentSurface();
   }
 
@@ -149,7 +148,7 @@ InProcessWinCompositorWidget::StartRemoteDrawing() {
 void InProcessWinCompositorWidget::EndRemoteDrawing() {
   MOZ_ASSERT(!mLockedBackBufferData);
 
-  if (DrawsToMemoryDC()) {
+  if (TransparencyModeIs(TransparencyMode::Transparent)) {
     MOZ_ASSERT(mTransparentSurface);
     RedrawTransparentWindow();
   }
@@ -238,7 +237,7 @@ void InProcessWinCompositorWidget::LeavePresentLock() { mPresentLock.Leave(); }
 
 RefPtr<gfxASurface> InProcessWinCompositorWidget::EnsureTransparentSurface() {
   mTransparentSurfaceLock.AssertCurrentThreadOwns();
-  MOZ_ASSERT(DrawsToMemoryDC());
+  MOZ_ASSERT(TransparencyModeIs(TransparencyMode::Transparent));
 
   IntSize size = GetClientSize().ToUnknownSize();
   if (!mTransparentSurface || mTransparentSurface->GetSize() != size) {
@@ -268,23 +267,35 @@ void InProcessWinCompositorWidget::UpdateTransparency(TransparencyMode aMode) {
     return;
   }
 
-  SetTransparencyMode(aMode);
+  mTransparencyMode = uint32_t(aMode);
   mTransparentSurface = nullptr;
   mMemoryDC = nullptr;
 
-  if (DrawsToMemoryDC()) {
+  if (aMode == TransparencyMode::Transparent) {
     EnsureTransparentSurface();
   }
 }
 
 void InProcessWinCompositorWidget::NotifyVisibilityUpdated(
-    bool aIsFullyOccluded) {
+    nsSizeMode aSizeMode, bool aIsFullyOccluded) {
+  mSizeMode = aSizeMode;
   mIsFullyOccluded = aIsFullyOccluded;
+}
+
+nsSizeMode InProcessWinCompositorWidget::GetWindowSizeMode() const {
+  nsSizeMode sizeMode = mSizeMode;
+  return sizeMode;
 }
 
 bool InProcessWinCompositorWidget::GetWindowIsFullyOccluded() const {
   bool isFullyOccluded = mIsFullyOccluded;
   return isFullyOccluded;
+}
+
+bool InProcessWinCompositorWidget::HasGlass() const {
+  MOZ_ASSERT(layers::CompositorThreadHolder::IsInCompositorThread() ||
+             wr::RenderThread::IsInRenderThread());
+  return TransparencyModeIs(TransparencyMode::BorderlessGlass);
 }
 
 void InProcessWinCompositorWidget::ClearTransparentWindow() {
@@ -309,7 +320,7 @@ void InProcessWinCompositorWidget::ClearTransparentWindow() {
 }
 
 bool InProcessWinCompositorWidget::RedrawTransparentWindow() {
-  MOZ_ASSERT(DrawsToMemoryDC());
+  MOZ_ASSERT(TransparencyModeIs(TransparencyMode::Transparent));
 
   LayoutDeviceIntSize size = GetClientSize();
 
@@ -328,11 +339,12 @@ bool InProcessWinCompositorWidget::RedrawTransparentWindow() {
 }
 
 HDC InProcessWinCompositorWidget::GetWindowSurface() {
-  return DrawsToMemoryDC() ? mMemoryDC : ::GetDC(mWnd);
+  return TransparencyModeIs(TransparencyMode::Transparent) ? mMemoryDC
+                                                           : ::GetDC(mWnd);
 }
 
 void InProcessWinCompositorWidget::FreeWindowSurface(HDC dc) {
-  if (!DrawsToMemoryDC()) {
+  if (!TransparencyModeIs(TransparencyMode::Transparent)) {
     ::ReleaseDC(mWnd, dc);
   }
 }

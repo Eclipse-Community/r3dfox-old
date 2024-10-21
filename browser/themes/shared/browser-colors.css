@@ -8,7 +8,7 @@
   --toolbox-bgcolor-inactive: -moz-headerbarinactive;
   --toolbox-textcolor-inactive: -moz-headerbarinactivetext;
 
-  &:where([customtitlebar]) {
+  &:where([tabsintitlebar]) {
     --toolbox-bgcolor: ActiveCaption;
     --toolbox-textcolor: CaptionText;
     --toolbox-bgcolor-inactive: InactiveCaption;
@@ -19,6 +19,8 @@
   --sidebar-text-color: -moz-sidebartext;
   --sidebar-border-color: -moz-sidebarborder;
 
+  --panel-separator-color: color-mix(in srgb, currentColor 25%, transparent);
+  --panel-shortcut-color: inherit;
   --tabs-navbar-separator-color: ThreeDShadow;
   --tabs-navbar-separator-style: solid;
 
@@ -34,6 +36,8 @@
   --urlbar-box-hover-text-color: var(--urlbar-box-text-color);
   --urlbar-icon-fill-opacity: 0.9;
   @media (prefers-contrast) {
+    --autocomplete-popup-separator-color: color-mix(in srgb, currentColor 86%, transparent);
+    --panel-separator-color: currentColor;
     --urlbar-icon-fill-opacity: 1;
   }
 
@@ -112,7 +116,7 @@
       --toolbox-textcolor: light-dark(rgb(21, 20, 26), rgb(251, 251, 254));
       --toolbox-bgcolor-inactive: var(--toolbox-bgcolor);
       --toolbox-textcolor-inactive: var(--toolbox-textcolor);
-      &:where([customtitlebar]) {
+      &:where([tabsintitlebar]) {
         --toolbox-bgcolor-inactive: light-dark(rgb(235, 235, 239), rgb(31, 30, 37));
       }
     }

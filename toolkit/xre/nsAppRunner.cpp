@@ -123,7 +123,6 @@
 #  include "mozilla/WindowsMsctfInitialization.h"
 #  include "mozilla/WindowsOleAut32Initialization.h"
 #  include "mozilla/WindowsProcessMitigations.h"
-#  include "mozilla/WindowsVersion.h"
 #  include "mozilla/WinHeaderOnlyUtils.h"
 #  include "mozilla/mscom/ProcessRuntime.h"
 #  include "mozilla/mscom/ProfilerMarkers.h"
@@ -785,6 +784,11 @@ nsIXULRuntime::ContentWin32kLockdownState GetLiveWin32kLockdownState() {
       return nsIXULRuntime::ContentWin32kLockdownState::
           IncompatibleMitigationPolicy;
     }
+  }
+
+  // Non-native theming is required as well
+  if (!StaticPrefs::widget_non_native_theme_enabled()) {
+    return nsIXULRuntime::ContentWin32kLockdownState::MissingNonNativeTheming;
   }
 
   // Win32k Lockdown requires Remote WebGL, but it may be disabled on

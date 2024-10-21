@@ -1,11 +1,13 @@
 const CHROME_ONLY_TOGGLES = [
   "-moz-is-glyph",
   "-moz-print-preview",
+  "-moz-non-native-content-theme",
   "-moz-scrollbar-start-backward",
   "-moz-scrollbar-start-forward",
   "-moz-scrollbar-end-backward",
   "-moz-scrollbar-end-forward",
   "-moz-overlay-scrollbars",
+  "-moz-windows-default-theme",
   "-moz-mac-big-sur-theme",
   "-moz-menubar-drag",
   "-moz-windows-accent-color-in-titlebar",

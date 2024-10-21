@@ -327,7 +327,7 @@ pref("browser.startup.couldRestoreSession.count", 0);
 // Show a skeleton UI window prior to loading libxul. Only visible for windows
 // users as it is not implemented anywhere else.
 #if defined(XP_WIN)
-pref("browser.startup.preXulSkeletonUI", true);
+pref("browser.startup.preXulSkeletonUI", false);
 
 // Whether the checkbox to enable Windows launch on login is shown
 pref("browser.startup.windowsLaunchOnLogin.enabled", true);
@@ -356,7 +356,7 @@ pref("browser.warnOnQuit", true);
   pref("browser.fullscreen.autohide", true);
 #endif
 
-pref("browser.overlink-delay", 80);
+pref("browser.overlink-delay", 25);
 
 pref("browser.theme.colorway-closet", true);
 
@@ -569,6 +569,9 @@ pref("browser.urlbar.richSuggestions.tail", true);
 
 // If true, top sites may include sponsored ones.
 pref("browser.urlbar.oneOffsInstant", true);
+
+// If true, adds a button to add custom search engines.
+pref("browser.urlbar.update2.engineAliasRefresh", true);
 
 // If true, top sites may include sponsored ones.
 pref("browser.urlbar.sponsoredTopSites", false);
@@ -2252,13 +2255,8 @@ pref("browser.protections_panel.infoMessage.seen", false);
 // Always enable newtab segregation using containers
 pref("privacy.usercontext.about_newtab_segregation.enabled", true);
 // Enable Contextual Identity Containers
-#ifdef NIGHTLY_BUILD
-  pref("privacy.userContext.enabled", true);
-  pref("privacy.userContext.ui.enabled", true);
-#else
-  pref("privacy.userContext.enabled", false);
-  pref("privacy.userContext.ui.enabled", false);
-#endif
+pref("privacy.userContext.enabled", true);
+pref("privacy.userContext.ui.enabled", true);
 pref("privacy.userContext.extension", "");
 // allows user to open container menu on a left click instead of a new
 // tab in the default container

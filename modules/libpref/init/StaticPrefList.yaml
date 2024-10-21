@@ -1667,7 +1667,7 @@
 # Minimal interval between two save operations in milliseconds (while the user is active).
 - name: browser.sessionstore.interval
   type: RelaxedAtomicUint32
-  value: 15000
+  value: 60000
   mirror: always
 
 # Disable collection of data for session store using the native collector code,
@@ -7141,7 +7141,7 @@
 # Chunk size for calls to the image decoders.
 - name: image.mem.decode_bytes_at_a_time
   type: uint32_t
-  value: 16384
+  value: 32768
   mirror: once
 
 # Discards inactive image frames and re-decodes them on demand from
@@ -11887,7 +11887,7 @@
 # If we should attempt to race the cache and network.
 - name: network.http.rcwn.enabled
   type: bool
-  value: true
+  value: false
   mirror: always
 
 - name: network.http.rcwn.cache_queue_normal_threshold
@@ -13440,7 +13440,7 @@
 # 1 => Cubic
 - name: network.http.http3.cc_algorithm
   type: RelaxedAtomicUint32
-  value: 1
+  value: 0
   mirror: always
   rust: true
 
@@ -13459,7 +13459,7 @@
 #ifdef ANDROID
   value: false
 #else
-  value: @IS_NIGHTLY_BUILD@
+  value: true
 #endif
   mirror: always
   rust: true
@@ -13798,12 +13798,12 @@
 
 - name: nglayout.initialpaint.delay
   type: int32_t
-  value: 5
+  value: 100
   mirror: always
 
 - name: nglayout.initialpaint.delay_in_oopif
   type: int32_t
-  value: 5
+  value: 100
   mirror: always
 
 #---------------------------------------------------------------------------
@@ -15248,7 +15248,7 @@
 #ifdef ANDROID
   value: false
 #else
-  value: @IS_NIGHTLY_BUILD@
+  value: true
 #endif
   mirror: always
   rust: true
@@ -15851,7 +15851,7 @@
 # Delay in milliseconds for tooltips
 - name: ui.tooltip.delay_ms
   type: uint32_t
-  value: 500
+  value: 100
   mirror: always
 
 # If the user puts a finger down on an element and we think the user might be

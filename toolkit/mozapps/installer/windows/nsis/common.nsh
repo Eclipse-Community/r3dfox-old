@@ -5379,8 +5379,13 @@
         Quit
       ${EndIf}
 
+<<<<<<< HEAD
       ; Windows NT 6.0 (Vista/Server 2008) and lower are not supported.
       ${Unless} ${AtLeastWin7}
+=======
+      ; At least let it try to install on anything.
+      ${Unless} ${AtLeastWin95}
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
         MessageBox MB_OK|MB_ICONSTOP "$R9"
         ; Nothing initialized so no need to call OnEndCommon
         Quit

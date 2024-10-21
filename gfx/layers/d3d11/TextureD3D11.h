@@ -209,7 +209,10 @@ class DXGIYCbCrTextureData : public TextureData {
 
  protected:
   RefPtr<ID3D11Texture2D> mD3D11Textures[3];
+<<<<<<< HEAD
   RefPtr<IDirect3DTexture9> mD3D9Textures[3];
+=======
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
   HANDLE mHandles[3];
   gfx::IntSize mSize;
   gfx::IntSize mSizeY;
@@ -384,7 +387,11 @@ class DXGITextureHostD3D11 : public TextureHost {
 
   DXGITextureHostD3D11* AsDXGITextureHostD3D11() override { return this; }
 
+<<<<<<< HEAD
   HANDLE mHandle;
+=======
+  const HANDLE mHandle;
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
   const Maybe<GpuProcessTextureId> mGpuProcessTextureId;
   const uint32_t mArrayIndex;
   const Maybe<GpuProcessQueryId> mGpuProcessQueryId;

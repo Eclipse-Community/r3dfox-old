@@ -58,15 +58,18 @@ NS_IMPL_ISUPPORTS(nsNativeTheme, nsITimerCallback, nsINamed)
     } else if (aAppearance == StyleAppearance::Checkbox ||
                aAppearance == StyleAppearance::Radio ||
                aAppearance == StyleAppearance::ToolbarbuttonDropdown ||
+<<<<<<< HEAD
                aAppearance == StyleAppearance::Treeheadersortarrow ||
+=======
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
                aAppearance == StyleAppearance::ButtonArrowPrevious ||
                aAppearance == StyleAppearance::ButtonArrowNext ||
                aAppearance == StyleAppearance::ButtonArrowUp ||
 #ifdef MOZ_WIDGET_GTK
-        aAppearance == StyleAppearance::MozWindowButtonClose ||
-        aAppearance == StyleAppearance::MozWindowButtonMinimize ||
-        aAppearance == StyleAppearance::MozWindowButtonRestore ||
-        aAppearance == StyleAppearance::MozWindowButtonMaximize ||
+               aAppearance == StyleAppearance::MozWindowButtonClose ||
+               aAppearance == StyleAppearance::MozWindowButtonMinimize ||
+               aAppearance == StyleAppearance::MozWindowButtonRestore ||
+               aAppearance == StyleAppearance::MozWindowButtonMaximize ||
 #endif
                aAppearance == StyleAppearance::ButtonArrowDown) {
       aFrame = aFrame->GetParent();
@@ -218,6 +221,31 @@ bool nsNativeTheme::IsWidgetStyled(nsPresContext* aPresContext,
   // Check for specific widgets to see if HTML has overridden the style.
   if (!aFrame) {
     return false;
+  }
+
+  // Resizers have some special handling, dependent on whether in a scrollable
+  // container or not. If so, use the scrollable container's to determine
+  // whether the style is overriden instead of the resizer. This allows a
+  // non-native transparent resizer to be used instead. Otherwise, we just
+  // fall through and return false.
+  if (aAppearance == StyleAppearance::Resizer) {
+    nsIFrame* parentFrame = aFrame->GetParent();
+    if (parentFrame && parentFrame->IsScrollContainerFrame()) {
+      // if the parent is a scrollframe, the resizer should be native themed
+      // only if the scrollable area doesn't override the widget style.
+      //
+      // note that the condition below looks a bit suspect but it's the right
+      // one. If there's no valid appearance, then we should return true, it's
+      // effectively the same as if it had overridden the appearance.
+      parentFrame = parentFrame->GetParent();
+      if (!parentFrame) {
+        return false;
+      }
+      auto parentAppearance =
+          parentFrame->StyleDisplay()->EffectiveAppearance();
+      return parentAppearance == StyleAppearance::None ||
+             IsWidgetStyled(aPresContext, parentFrame, parentAppearance);
+    }
   }
 
   /**

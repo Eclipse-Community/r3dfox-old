@@ -571,7 +571,11 @@
   display: inline;
 }
 
+<<<<<<< HEAD
 @media (-moz-platform: windows) and not (-moz-windows-default-theme) {
+=======
+@media (-moz-platform: windows) and (not (-moz-windows-default-theme)) {
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
   .controlsSpacer,
   .clickToPlay {
     background-color: transparent;

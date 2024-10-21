@@ -10,6 +10,7 @@
 
 #include "mozilla/ArrayUtils.h"
 #include "mozilla/CmdLineAndEnvUtils.h"
+#include "mozilla/DynamicallyLinkedFunctionPtr.h"
 #include "mozilla/RefPtr.h"
 #include "mozilla/Result.h"
 #include "mozilla/UniquePtr.h"
@@ -764,6 +765,7 @@ function Set-DefaultHandlerRegistry($Association, $Path, $ProgID, $Hash, $RegRen
 nsresult SetDefaultExtensionHandlersUserChoiceImpl(
     const wchar_t* aAumi, const wchar_t* const aSid, const bool aRegRename,
     const nsTArray<nsString>& aFileExtensions) {
+<<<<<<< HEAD
   static LONG (*plat_fn)(UINT32*, PWSTR);
   if (!plat_fn) {
     if (auto* module = GetModuleHandle(L"Kernel32.dll"); module) {
@@ -774,6 +776,20 @@ nsresult SetDefaultExtensionHandlersUserChoiceImpl(
   UINT32 pfnLen = 0;
   bool inMsix =plat_fn ? 
       ((*plat_fn)(&pfnLen, nullptr) != APPMODEL_ERROR_NO_PACKAGE) : false;
+=======
+	
+  // `GetCurrentPackageFullName` added in Windows 8.
+  DynamicallyLinkedFunctionPtr<decltype(&GetCurrentPackageFullName)>
+      pGetCurrentPackageFullName(L"kernel32.dll",
+                                        "GetCurrentPackageFullName");
+  if (!pGetCurrentPackageFullName) {
+    return NS_OK;
+  }
+  
+  UINT32 pfnLen = 0;
+  bool inMsix =
+      pGetCurrentPackageFullName(&pfnLen, nullptr) != APPMODEL_ERROR_NO_PACKAGE;
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
 
   if (inMsix) {
     return SetDefaultExtensionHandlersUserChoiceImplMsix(

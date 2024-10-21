@@ -6703,6 +6703,12 @@ widget::TransparencyMode nsLayoutUtils::GetFrameTransparency(
     return TransparencyMode::Transparent;
   }
 
+  StyleAppearance appearance =
+      aCSSRootFrame->StyleDisplay()->EffectiveAppearance();
+  if (appearance == StyleAppearance::MozWinBorderlessGlass) {
+    return TransparencyMode::BorderlessGlass;
+  }
+
   if (HasNonZeroCorner(aCSSRootFrame->StyleBorder()->mBorderRadius)) {
     return TransparencyMode::Transparent;
   }

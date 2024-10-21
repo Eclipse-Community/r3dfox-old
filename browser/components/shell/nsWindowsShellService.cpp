@@ -63,6 +63,7 @@
 #include <propkey.h>
 #include <propvarutil.h>
 #include <shellapi.h>
+#include <shlobj.h>
 #include <strsafe.h>
 #include <windows.h>
 #include <windows.foundation.h>
@@ -1837,6 +1838,7 @@ static nsresult PinShortcutToTaskbarImpl(bool aCheckOnly,
     return NS_ERROR_FILE_NOT_FOUND;
   }
 
+  if (IsWin11OrLater()) {
   auto pinWithWin11TaskbarAPIResults =
       PinCurrentAppToTaskbarWin11(aCheckOnly, aAppUserModelId);
   switch (pinWithWin11TaskbarAPIResults.result) {
@@ -1858,6 +1860,7 @@ static nsresult PinShortcutToTaskbarImpl(bool aCheckOnly,
       // an error occurs or for when pinning is not allowed
       // with the Win 11 APIs.
       break;
+  }
   }
 
   return PinCurrentAppToTaskbarWin10(aCheckOnly, aAppUserModelId,
@@ -2258,8 +2261,12 @@ static nsresult PinCurrentAppToTaskbarImpl(
     }
   }
   if (IsWin10OrLater()) {
+<<<<<<< HEAD
     return PinShortcutToTaskbarImpl(aCheckOnly, aAppUserModelId,
                                        shortcutPath);
+=======
+    return PinShortcutToTaskbarImpl(aCheckOnly, aAppUserModelId, shortcutPath);
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
   } else {
     return PinCurrentAppToTaskbarWin7(aCheckOnly, shortcutPath);
   }
@@ -2274,7 +2281,7 @@ static nsresult PinCurrentAppToTaskbarAsyncImpl(bool aCheckOnly,
   }
 
   // First available on 1809
-  if (!IsWin10Sep2018UpdateOrLater()) {
+  if (IsWin10OrLater() && !IsWin10Sep2018UpdateOrLater()) {
     return NS_ERROR_NOT_AVAILABLE;
   }
 

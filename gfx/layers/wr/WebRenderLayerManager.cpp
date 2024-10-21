@@ -387,7 +387,11 @@ void WebRenderLayerManager::EndTransactionWithoutLayer(
   if (dumpEnabled) {
     printf_stderr("(window overlay)\n");
     Unused << mDLBuilder->Dump(/*indent*/ 1, Some(builderDumpIndex), Nothing());
+<<<<<<< HEAD
   }
+=======
+  }  
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
 
   if (AsyncPanZoomEnabled()) {
     if (mIsFirstPaint) {

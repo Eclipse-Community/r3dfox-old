@@ -14,8 +14,6 @@
 #include "mozilla/webrender/RenderCompositor.h"
 #include "mozilla/webrender/RenderThread.h"
 
-struct IDXGIDevice;
-struct IDXGIFactory;
 struct ID3D11DeviceContext;
 struct ID3D11Device;
 struct ID3D11Query;
@@ -122,16 +120,23 @@ class RenderCompositorANGLE : public RenderCompositor {
   void DestroyEGLSurface();
   ID3D11Device* GetDeviceOfEGLDisplay(nsACString& aError);
   bool CreateSwapChain(nsACString& aError);
+<<<<<<< HEAD
   void CreateSwapChainForDCompIfPossible();
   bool CreateSwapChainForHWND();
+=======
+  void CreateSwapChainForDCompIfPossible(IDXGIFactory2* aDXGIFactory2);
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
   RefPtr<IDXGISwapChain1> CreateSwapChainForDComp(bool aUseTripleBuffering,
                                                   bool aUseAlpha);
   RefPtr<ID3D11Query> GetD3D11Query();
   void ReleaseNativeCompositorResources();
   HWND GetCompositorHwnd();
+<<<<<<< HEAD
 
   RefPtr<IDXGIDevice> DXGIDevice();
   RefPtr<IDXGIFactory> DXGIFactory();
+=======
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
 
   RefPtr<gl::GLContext> mGL;
 

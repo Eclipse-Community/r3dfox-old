@@ -623,6 +623,13 @@ fn eval_scripting(context: &Context, query_value: Option<Scripting>) -> bool {
     }
 }
 
+<<<<<<< HEAD
+=======
+fn eval_moz_native_controls(_context: &Context) -> bool {
+    true
+}
+
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
 fn eval_moz_windows_non_native_menus(context: &Context) -> bool {
     unsafe { bindings::Gecko_MediaFeatures_WindowsNonNativeMenus(context.device().document()) }
 }
@@ -968,6 +975,13 @@ pub static MEDIA_FEATURES: [QueryFeatureDescription; 68] = [
         Evaluator::String(eval_moz_bool_pref),
         FeatureFlags::CHROME_AND_UA_ONLY,
     ),
+    // Custom feature for native controls patch for userstyles to detect it:
+    feature!(
+        atom!("-moz-native-controls"),
+        AllowsRanges::No,
+        Evaluator::BoolInteger(eval_moz_native_controls),
+        FeatureFlags::CHROME_AND_UA_ONLY,
+    ),
     lnf_int_feature!(
         atom!("-moz-scrollbar-start-backward"),
         ScrollArrowStyle,
@@ -990,7 +1004,10 @@ pub static MEDIA_FEATURES: [QueryFeatureDescription; 68] = [
     ),
     lnf_int_feature!(atom!("-moz-menubar-drag"), MenuBarDrag),
     lnf_int_feature!(atom!("-moz-windows-default-theme"), WindowsDefaultTheme),
+<<<<<<< HEAD
     lnf_int_feature!(atom!("-moz-mac-graphite-theme"), MacGraphiteTheme),
+=======
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
     lnf_int_feature!(atom!("-moz-mac-big-sur-theme"), MacBigSurTheme),
     lnf_int_feature!(atom!("-moz-mac-rtl"), MacRTL),
     lnf_int_feature!(
@@ -1001,6 +1018,9 @@ pub static MEDIA_FEATURES: [QueryFeatureDescription; 68] = [
     lnf_int_feature!(atom!("-moz-windows-classic"), WindowsClassic),
     lnf_int_feature!(atom!("-moz-windows-glass"), WindowsGlass),
     lnf_int_feature!(atom!("-moz-windows-mica"), WindowsMica),
+    lnf_int_feature!(atom!("-moz-windows-compositor"), DWMCompositor),
+    lnf_int_feature!(atom!("-moz-windows-classic"), WindowsClassic),
+    lnf_int_feature!(atom!("-moz-windows-glass"), WindowsGlass),
     lnf_int_feature!(atom!("-moz-swipe-animation-enabled"), SwipeAnimationEnabled),
     lnf_int_feature!(atom!("-moz-gtk-csd-available"), GTKCSDAvailable),
     lnf_int_feature!(atom!("-moz-gtk-csd-transparency-available"), GTKCSDTransparencyAvailable),

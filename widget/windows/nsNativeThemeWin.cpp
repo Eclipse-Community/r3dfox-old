@@ -40,6 +40,7 @@
 #include "nsWindow.h"
 #include "prinrval.h"
 #include "WinUtils.h"
+#include "ScrollbarDrawingWin.h"
 
 using namespace mozilla;
 using namespace mozilla::gfx;
@@ -65,11 +66,40 @@ nsNativeThemeWin::nsNativeThemeWin()
 
 nsNativeThemeWin::~nsNativeThemeWin() { nsUXThemeData::Invalidate(); }
 
+<<<<<<< HEAD
 auto nsNativeThemeWin::IsWidgetNonNative(
     nsIFrame* aFrame, StyleAppearance aAppearance) -> NonNative {
   if (IsWidgetScrollbarPart(aAppearance) ||
       aAppearance == StyleAppearance::FocusOutline) {
     return NonNative::Always;
+=======
+auto nsNativeThemeWin::IsWidgetNonNative(nsIFrame* aFrame,
+                                         StyleAppearance aAppearance)
+    -> NonNative {
+  if (IsWidgetScrollbarPart(aAppearance)) {
+    if (StaticPrefs::widget_native_controls_scrollbar_style() == 0) {
+      return NonNative::No;
+    } else if (StaticPrefs::widget_native_controls_scrollbar_style() ==
+               1) {
+      return NonNative::Always;
+    } else /* >= 2, < 0 */
+    {
+      // Photon behaviour: native on light, non-native on dark or custom styles:
+      if (GetCustomScrollbarStyle(aFrame) == nullptr) {
+        return NonNative::No;
+      } else {
+        return NonNative::Always;
+      }
+    }
+  }
+  if (aAppearance == StyleAppearance::Tooltip &&
+      StaticPrefs::widget_native_controls_tooltip_style() == 0) {
+    return NonNative::No;
+  }
+  if (aAppearance == StyleAppearance::FocusOutline &&
+      StaticPrefs::widget_native_controls_tooltip_style() == 0) {
+    return NonNative::No;
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
   }
 
   // We only know how to draw light widgets, so we defer to the non-native
@@ -104,6 +134,10 @@ static int32_t GetTopLevelWindowActiveState(nsIFrame* aFrame) {
 
   if (window->GetWindowHandle() == ::GetActiveWindow())
     return mozilla::widget::themeconst::FS_ACTIVE;
+<<<<<<< HEAD
+=======
+
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
   return mozilla::widget::themeconst::FS_INACTIVE;
 }
 
@@ -121,6 +155,10 @@ static int32_t GetWindowFrameButtonState(nsIFrame* aFrame,
       return mozilla::widget::themeconst::BS_PUSHED;
     return mozilla::widget::themeconst::BS_HOT;
   }
+<<<<<<< HEAD
+=======
+
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
   return mozilla::widget::themeconst::BS_NORMAL;
 }
 
@@ -131,6 +169,10 @@ static int32_t GetClassicWindowFrameButtonState(ElementState elementState) {
   return DFCS_BUTTONPUSH;
 }
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
 static bool IsTopLevelMenu(nsIFrame* aFrame) {
   auto* menu = dom::XULButtonElement::FromNodeOrNull(aFrame->GetContent());
   return menu && menu->IsOnMenuBar();
@@ -259,25 +301,39 @@ static HRESULT DrawThemeBGRTLAware(HANDLE aTheme, HDC aHdc, int aPart,
   NS_ASSERTION(aHdc, "Bad hdc.");
   NS_ASSERTION(aWidgetRect, "Bad rect.");
   NS_ASSERTION(aClipRect, "Bad clip rect.");
+<<<<<<< HEAD
 
+=======
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
   if (!aIsRtl) {
     return DrawThemeBackground(aTheme, aHdc, aPart, aState, aWidgetRect,
                                aClipRect);
   }
+<<<<<<< HEAD
 
   HGDIOBJ hObj = GetCurrentObject(aHdc, OBJ_BITMAP);
   BITMAP bitmap;
   POINT vpOrg;
 
+=======
+  HGDIOBJ hObj = GetCurrentObject(aHdc, OBJ_BITMAP);
+  BITMAP bitmap;
+  POINT vpOrg;
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
   if (hObj && GetObject(hObj, sizeof(bitmap), &bitmap) &&
       GetViewportOrgEx(aHdc, &vpOrg)) {
     RECT newWRect(*aWidgetRect);
     newWRect.left = bitmap.bmWidth - (aWidgetRect->right + 2 * vpOrg.x);
     newWRect.right = bitmap.bmWidth - (aWidgetRect->left + 2 * vpOrg.x);
+<<<<<<< HEAD
 
     RECT newCRect;
     RECT* newCRectPtr = nullptr;
 
+=======
+    RECT newCRect;
+    RECT* newCRectPtr = nullptr;
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
     if (aClipRect) {
       newCRect.top = aClipRect->top;
       newCRect.bottom = aClipRect->bottom;
@@ -285,7 +341,10 @@ static HRESULT DrawThemeBGRTLAware(HANDLE aTheme, HDC aHdc, int aPart,
       newCRect.right = bitmap.bmWidth - (aClipRect->left + 2 * vpOrg.x);
       newCRectPtr = &newCRect;
     }
+<<<<<<< HEAD
 
+=======
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
     SetLayout(aHdc, LAYOUT_RTL);
     HRESULT hr = DrawThemeBackground(aTheme, aHdc, aPart, aState, &newWRect,
                                      newCRectPtr);
@@ -667,7 +726,10 @@ nsresult nsNativeThemeWin::GetCachedMinimumWidgetSize(
       aResult->width += gutterSize.cx;
       break;
     }
+<<<<<<< HEAD
 
+=======
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
     case StyleAppearance::Menuarrow:
       // Use the width of the arrow glyph as padding. See the drawing
       // code for details.
@@ -698,7 +760,13 @@ mozilla::Maybe<nsUXThemeClass> nsNativeThemeWin::GetThemeClass(
     case StyleAppearance::PasswordInput:
     case StyleAppearance::Textfield:
     case StyleAppearance::Textarea:
+    case StyleAppearance::FocusOutline:
       return Some(eUXEdit);
+<<<<<<< HEAD
+=======
+    case StyleAppearance::Tooltip:
+      return Some(eUXTooltip);
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
     case StyleAppearance::Toolbox:
       return Some(eUXRebar);
     case StyleAppearance::MozWinMediaToolbox:
@@ -718,18 +786,39 @@ mozilla::Maybe<nsUXThemeClass> nsNativeThemeWin::GetThemeClass(
     case StyleAppearance::Tabpanel:
     case StyleAppearance::Tabpanels:
       return Some(eUXTab);
+    case StyleAppearance::ScrollbarVertical:
+    case StyleAppearance::ScrollbarHorizontal:
+    case StyleAppearance::ScrollbarbuttonUp:
+    case StyleAppearance::ScrollbarbuttonDown:
+    case StyleAppearance::ScrollbarbuttonLeft:
+    case StyleAppearance::ScrollbarbuttonRight:
+    case StyleAppearance::ScrollbarthumbVertical:
+    case StyleAppearance::ScrollbarthumbHorizontal:
+    case StyleAppearance::Scrollcorner:
+      return Some(eUXScrollbar);
     case StyleAppearance::Range:
     case StyleAppearance::RangeThumb:
       return Some(eUXTrackbar);
     case StyleAppearance::SpinnerUpbutton:
     case StyleAppearance::SpinnerDownbutton:
       return Some(eUXSpin);
+<<<<<<< HEAD
+=======
+    case StyleAppearance::Statusbar:
+    case StyleAppearance::Statusbarpanel:
+    case StyleAppearance::Resizerpanel:
+    case StyleAppearance::Resizer:
+      return Some(eUXStatus);
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
     case StyleAppearance::Menulist:
     case StyleAppearance::MenulistButton:
     case StyleAppearance::MozMenulistArrowButton:
       return Some(eUXCombobox);
     case StyleAppearance::Treeheadercell:
+<<<<<<< HEAD
     case StyleAppearance::Treeheadersortarrow:
+=======
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
       return Some(eUXHeader);
     case StyleAppearance::Listbox:
     case StyleAppearance::Treeview:
@@ -913,6 +1002,17 @@ nsresult nsNativeThemeWin::GetThemePartAndState(nsIFrame* aFrame,
 
       return NS_OK;
     }
+    case StyleAppearance::FocusOutline: {
+      // XXX the EDITBORDER values don't respect DTBG_OMITCONTENT
+      aPart = TFP_TEXTFIELD;  // TFP_EDITBORDER_NOSCROLL;
+      aState = TS_FOCUSED;    // TFS_EDITBORDER_FOCUSED;
+      return NS_OK;
+    }
+    case StyleAppearance::Tooltip: {
+      aPart = TTP_STANDARD;
+      aState = TS_NORMAL;
+      return NS_OK;
+    }
     case StyleAppearance::ProgressBar: {
       bool vertical = IsVerticalProgress(aFrame);
       aPart = vertical ? PP_BARVERT : PP_BAR;
@@ -968,6 +1068,66 @@ nsresult nsNativeThemeWin::GetThemePartAndState(nsIFrame* aFrame,
       aState = TS_NORMAL;
       return NS_OK;
     }
+    case StyleAppearance::ScrollbarbuttonUp:
+    case StyleAppearance::ScrollbarbuttonDown:
+    case StyleAppearance::ScrollbarbuttonLeft:
+    case StyleAppearance::ScrollbarbuttonRight: {
+      aPart = SP_BUTTON;
+      aState = (int(aAppearance) - int(StyleAppearance::ScrollbarbuttonUp)) * 4;
+      ElementState eventState = GetContentState(aFrame, aAppearance);
+      if (!aFrame)
+        aState += TS_NORMAL;
+      else if (eventState.HasState(ElementState::DISABLED))
+        aState += TS_DISABLED;
+      else {
+        nsIFrame* parent = aFrame->GetParent();
+        ElementState parentState = GetContentState(
+            parent, parent->StyleDisplay()->EffectiveAppearance());
+        if (eventState.HasAllStates(ElementState::HOVER | ElementState::ACTIVE))
+          aState += TS_ACTIVE;
+        else if (eventState.HasState(ElementState::HOVER))
+          aState += TS_HOVER;
+        else if (parentState.HasState(ElementState::HOVER))
+          aState =
+              (int(aAppearance) - int(StyleAppearance::ScrollbarbuttonUp)) +
+              SP_BUTTON_IMPLICIT_HOVER_BASE;
+        else
+          aState += TS_NORMAL;
+      }
+      return NS_OK;
+    }
+    case StyleAppearance::ScrollbarHorizontal:
+    case StyleAppearance::ScrollbarVertical: {
+      aPart = (aAppearance == StyleAppearance::ScrollbarHorizontal)
+                  ? SP_TRACKSTARTHOR
+                  : SP_TRACKSTARTVERT;
+      aState = TS_NORMAL;
+      return NS_OK;
+    }
+    case StyleAppearance::ScrollbarthumbHorizontal:
+    case StyleAppearance::ScrollbarthumbVertical: {
+      aPart = (aAppearance == StyleAppearance::ScrollbarthumbHorizontal)
+                  ? SP_THUMBHOR
+                  : SP_THUMBVERT;
+      ElementState eventState = GetContentState(aFrame, aAppearance);
+      if (!aFrame)
+        aState = TS_NORMAL;
+      else if (eventState.HasState(ElementState::DISABLED))
+        aState = TS_DISABLED;
+      else {
+        if (eventState.HasState(
+                ElementState::ACTIVE))  // Hover is not also a requirement for
+                                        // the thumb, since the drag is not
+                                        // canceled when you move outside the
+                                        // thumb.
+          aState = TS_ACTIVE;
+        else if (eventState.HasState(ElementState::HOVER))
+          aState = TS_HOVER;
+        else
+          aState = TS_NORMAL;
+      }
+      return NS_OK;
+    }
     case StyleAppearance::Range: {
       if (IsRangeHorizontal(aFrame)) {
         aPart = TKP_TRACK;
@@ -1005,6 +1165,14 @@ nsresult nsNativeThemeWin::GetThemePartAndState(nsIFrame* aFrame,
       }
       return NS_OK;
     }
+<<<<<<< HEAD
+=======
+    case StyleAppearance::Scrollcorner: {
+      aState = 0;
+      aPart = RP_BACKGROUND;
+      return NS_OK;
+    }
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
     case StyleAppearance::SpinnerUpbutton:
     case StyleAppearance::SpinnerDownbutton: {
       aPart = (aAppearance == StyleAppearance::SpinnerUpbutton) ? SPNP_UP
@@ -1022,7 +1190,12 @@ nsresult nsNativeThemeWin::GetThemePartAndState(nsIFrame* aFrame,
     case StyleAppearance::Toolbox:
     case StyleAppearance::MozWinMediaToolbox:
     case StyleAppearance::MozWinCommunicationsToolbox:
+<<<<<<< HEAD
     case StyleAppearance::MozWinBrowsertabbarToolbox: {
+=======
+    case StyleAppearance::MozWinBrowsertabbarToolbox:
+    case StyleAppearance::Statusbar: {
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
       aState = 0;
       aPart = RP_BACKGROUND;
       return NS_OK;
@@ -1043,6 +1216,29 @@ nsresult nsNativeThemeWin::GetThemePartAndState(nsIFrame* aFrame,
       }
       return NS_OK;
     }
+<<<<<<< HEAD
+=======
+    case StyleAppearance::Statusbarpanel:
+    case StyleAppearance::Resizerpanel:
+    case StyleAppearance::Resizer: {
+      switch (aAppearance) {
+        case StyleAppearance::Statusbarpanel:
+          aPart = 1;
+          break;
+        case StyleAppearance::Resizerpanel:
+          aPart = 2;
+          break;
+        case StyleAppearance::Resizer:
+          aPart = 3;
+          break;
+        default:
+          MOZ_ASSERT_UNREACHABLE("Oops, we're missing a case");
+          aPart = 1;  // just something valid
+      }
+      aState = TS_NORMAL;
+      return NS_OK;
+    }
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
     case StyleAppearance::Treeview:
     case StyleAppearance::Listbox: {
       aPart = TREEVIEW_BODY;
@@ -1080,12 +1276,15 @@ nsresult nsNativeThemeWin::GetThemePartAndState(nsIFrame* aFrame,
 
       return NS_OK;
     }
+<<<<<<< HEAD
     case StyleAppearance::Treeheadersortarrow: {
       // XXX Probably will never work due to a bug in the Luna theme.
       aPart = 4;
       aState = 1;
       return NS_OK;
     }
+=======
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
     case StyleAppearance::Treeheadercell: {
       aPart = 1;
       if (!aFrame) {
@@ -1200,6 +1399,7 @@ nsresult nsNativeThemeWin::GetThemePartAndState(nsIFrame* aFrame,
       }
       return NS_OK;
     }
+<<<<<<< HEAD
     case StyleAppearance::Menupopup: {
       aPart = MENU_POPUPBACKGROUND;
       aState = MB_ACTIVE;
@@ -1280,6 +1480,8 @@ nsresult nsNativeThemeWin::GetThemePartAndState(nsIFrame* aFrame,
       aState = 0;
       return NS_OK;
 
+=======
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
     case StyleAppearance::MozWindowTitlebar:
       aPart = mozilla::widget::themeconst::WP_CAPTION;
       aState = GetTopLevelWindowActiveState(aFrame);
@@ -1314,6 +1516,76 @@ nsresult nsNativeThemeWin::GetThemePartAndState(nsIFrame* aFrame,
       aPart = -1;
       aState = 0;
       return NS_OK;
+<<<<<<< HEAD
+=======
+    case StyleAppearance::Menupopup: {
+      aPart = MENU_POPUPBACKGROUND;
+      aState = MB_ACTIVE;
+      return NS_OK;
+    }
+    case StyleAppearance::Menuitem:
+    case StyleAppearance::Checkmenuitem:
+    case StyleAppearance::Radiomenuitem: {
+      ElementState elementState = GetContentState(aFrame, aAppearance);
+      auto* menu = dom::XULButtonElement::FromNodeOrNull(aFrame->GetContent());
+      const bool isTopLevel = IsTopLevelMenu(aFrame);
+      const bool isOpen = menu && menu->IsMenuPopupOpen();
+      const bool isHover = IsMenuActive(aFrame, aAppearance);
+      if (isTopLevel) {
+        aPart = MENU_BARITEM;
+        if (isOpen)
+          aState = MBI_PUSHED;
+        else if (isHover)
+          aState = MBI_HOT;
+        else
+          aState = MBI_NORMAL;
+        // the disabled states are offset by 3
+        if (elementState.HasState(ElementState::DISABLED)) {
+          aState += 3;
+        }
+      } else {
+        aPart = MENU_POPUPITEM;
+        if (isHover)
+          aState = MPI_HOT;
+        else
+          aState = MPI_NORMAL;
+        // the disabled states are offset by 2
+        if (elementState.HasState(ElementState::DISABLED)) {
+          aState += 2;
+        }
+      }
+      return NS_OK;
+    }
+    case StyleAppearance::Menuseparator:
+      aPart = MENU_POPUPSEPARATOR;
+      aState = 0;
+      return NS_OK;
+    case StyleAppearance::Menuarrow: {
+      aPart = MENU_POPUPSUBMENU;
+      ElementState elementState = GetContentState(aFrame, aAppearance);
+      aState = elementState.HasState(ElementState::DISABLED) ? MSM_DISABLED
+                                                             : MSM_NORMAL;
+      return NS_OK;
+    }
+    case StyleAppearance::Menucheckbox:
+    case StyleAppearance::Menuradio: {
+      ElementState elementState = GetContentState(aFrame, aAppearance);
+      aPart = MENU_POPUPCHECK;
+      aState = MC_CHECKMARKNORMAL;
+      // Radio states are offset by 2
+      if (aAppearance == StyleAppearance::Menuradio) aState += 2;
+      // the disabled states are offset by 1
+      if (elementState.HasState(ElementState::DISABLED)) {
+        aState += 1;
+      }
+      return NS_OK;
+    }
+    case StyleAppearance::Menuitemtext:
+    case StyleAppearance::Menuimage:
+      aPart = -1;
+      aState = 0;
+      return NS_OK;
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
     default:
       aPart = 0;
       aState = 0;
@@ -1356,6 +1628,11 @@ nsNativeThemeWin::DrawWidgetBackground(gfxContext* aContext, nsIFrame* aFrame,
                                        const nsRect& aRect,
                                        const nsRect& aDirtyRect,
                                        DrawOverflow aDrawOverflow) {
+  bool dwmCompositionEnabled =
+      StaticPrefs::widget_native_controls_force_dwm_report_off()
+          ? false
+          : gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled();
+
   if (IsWidgetNonNative(aFrame, aAppearance) != NonNative::No) {
     return Theme::DrawWidgetBackground(aContext, aFrame, aAppearance, aRect,
                                        aDirtyRect, aDrawOverflow);
@@ -1367,7 +1644,11 @@ nsNativeThemeWin::DrawWidgetBackground(gfxContext* aContext, nsIFrame* aFrame,
                                        aDirtyRect);
 
   // ^^ without the right sdk, assume xp theming and fall through.
+<<<<<<< HEAD
   if (gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled()) {
+=======
+  if (dwmCompositionEnabled) {
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
     switch (aAppearance) {
       case StyleAppearance::MozWindowTitlebar:
       case StyleAppearance::MozWindowTitlebarMaximized:
@@ -1519,33 +1800,51 @@ RENDER_AGAIN:
              aAppearance == StyleAppearance::Menuradio) {
     bool isChecked = false;
     isChecked = CheckBooleanAttr(aFrame, nsGkAtoms::checked);
+<<<<<<< HEAD
 
     if (isChecked) {
       int bgState = MCB_NORMAL;
       ElementState elementState = GetContentState(aFrame, aAppearance);
 
+=======
+    if (isChecked) {
+      int bgState = MCB_NORMAL;
+      ElementState elementState = GetContentState(aFrame, aAppearance);
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
       // the disabled states are offset by 1
       if (elementState.HasState(ElementState::DISABLED)) {
         bgState += 1;
       }
+<<<<<<< HEAD
 
       SIZE checkboxBGSize(GetCheckboxBGSize(theme, hdc));
 
+=======
+      SIZE checkboxBGSize(GetCheckboxBGSize(theme, hdc));
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
       RECT checkBGRect = widgetRect;
       if (IsFrameRTL(aFrame)) {
         checkBGRect.left = checkBGRect.right - checkboxBGSize.cx;
       } else {
         checkBGRect.right = checkBGRect.left + checkboxBGSize.cx;
       }
+<<<<<<< HEAD
 
+=======
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
       // Center the checkbox background vertically in the menuitem
       checkBGRect.top +=
           (checkBGRect.bottom - checkBGRect.top) / 2 - checkboxBGSize.cy / 2;
       checkBGRect.bottom = checkBGRect.top + checkboxBGSize.cy;
+<<<<<<< HEAD
 
       DrawThemeBackground(theme, hdc, MENU_POPUPCHECKBACKGROUND, bgState,
                           &checkBGRect, &clipRect);
 
+=======
+      DrawThemeBackground(theme, hdc, MENU_POPUPCHECKBACKGROUND, bgState,
+                          &checkBGRect, &clipRect);
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
       MARGINS checkMargins = GetCheckboxMargins(theme, hdc);
       RECT checkRect = checkBGRect;
       checkRect.left += checkMargins.cxLeftWidth;
@@ -1561,18 +1860,27 @@ RENDER_AGAIN:
     SIZE borderSize;
     GetThemePartSize(theme, hdc, MENU_POPUPBORDERS, 0, nullptr, TS_TRUE,
                      &borderSize);
+<<<<<<< HEAD
 
+=======
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
     RECT bgRect = widgetRect;
     bgRect.top += borderSize.cy;
     bgRect.bottom -= borderSize.cy;
     bgRect.left += borderSize.cx;
     bgRect.right -= borderSize.cx;
+<<<<<<< HEAD
 
     DrawThemeBackground(theme, hdc, MENU_POPUPBACKGROUND, /* state */ 0,
                         &bgRect, &clipRect);
 
     SIZE gutterSize(GetGutterSize(theme, hdc));
 
+=======
+    DrawThemeBackground(theme, hdc, MENU_POPUPBACKGROUND, /* state */ 0,
+                        &bgRect, &clipRect);
+    SIZE gutterSize(GetGutterSize(theme, hdc));
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
     RECT gutterRect;
     gutterRect.top = bgRect.top;
     gutterRect.bottom = bgRect.bottom;
@@ -1583,18 +1891,27 @@ RENDER_AGAIN:
       gutterRect.left = bgRect.left;
       gutterRect.right = gutterRect.left + gutterSize.cx;
     }
+<<<<<<< HEAD
 
+=======
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
     DrawThemeBGRTLAware(theme, hdc, MENU_POPUPGUTTER, /* state */ 0,
                         &gutterRect, &clipRect, IsFrameRTL(aFrame));
   } else if (aAppearance == StyleAppearance::Menuseparator) {
     SIZE gutterSize(GetGutterSize(theme, hdc));
+<<<<<<< HEAD
 
+=======
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
     RECT sepRect = widgetRect;
     if (IsFrameRTL(aFrame))
       sepRect.right -= gutterSize.cx;
     else
       sepRect.left += gutterSize.cx;
+<<<<<<< HEAD
 
+=======
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
     DrawThemeBackground(theme, hdc, MENU_POPUPSEPARATOR, /* state */ 0,
                         &sepRect, &clipRect);
   } else if (aAppearance == StyleAppearance::Menuarrow) {
@@ -1603,6 +1920,7 @@ RENDER_AGAIN:
     // For StyleAppearance::Menuarrow, layout may hand us a widget rect larger
     // than the glyph rect we request in GetMinimumWidgetSize. To prevent
     // distortion we have to position and scale what we draw.
+<<<<<<< HEAD
 
     SIZE glyphSize;
     GetThemePartSize(theme, hdc, part, state, nullptr, TS_TRUE, &glyphSize);
@@ -1611,6 +1929,12 @@ RENDER_AGAIN:
 
     RECT renderRect = widgetRect;
 
+=======
+    SIZE glyphSize;
+    GetThemePartSize(theme, hdc, part, state, nullptr, TS_TRUE, &glyphSize);
+    int32_t widgetHeight = widgetRect.bottom - widgetRect.top;
+    RECT renderRect = widgetRect;
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
     // We request (glyph width * 2, glyph height) in GetMinimumWidgetSize. In
     // Firefox some menu items provide the full height of the item to us, in
     // others our widget rect is the exact dims of our arrow glyph. Adjust the
@@ -1632,7 +1956,12 @@ RENDER_AGAIN:
                         IsFrameRTL(aFrame));
   }
   // The following widgets need to be RTL-aware
+<<<<<<< HEAD
   else if (aAppearance == StyleAppearance::MozMenulistArrowButton) {
+=======
+  else if (aAppearance == StyleAppearance::Resizer ||
+           aAppearance == StyleAppearance::MozMenulistArrowButton) {
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
     DrawThemeBGRTLAware(theme, hdc, part, state, &widgetRect, &clipRect,
                         IsFrameRTL(aFrame));
   } else if (aAppearance == StyleAppearance::NumberInput ||
@@ -1659,6 +1988,17 @@ RENDER_AGAIN:
   } else if (aAppearance == StyleAppearance::Progresschunk) {
     DrawThemedProgressMeter(aFrame, aAppearance, theme, hdc, part, state,
                             &widgetRect, &clipRect);
+  } else if (aAppearance == StyleAppearance::FocusOutline) {
+    // Inflate 'widgetRect' with the focus outline size.
+    LayoutDeviceIntMargin border = GetWidgetBorder(
+        aFrame->PresContext()->DeviceContext(), aFrame, aAppearance);
+    widgetRect.left -= border.left;
+    widgetRect.right += border.right;
+    widgetRect.top -= border.top;
+    widgetRect.bottom += border.bottom;
+    DTBGOPTS opts = {sizeof(DTBGOPTS), DTBG_OMITCONTENT | DTBG_CLIPRECT,
+                     clipRect};
+    DrawThemeBackgroundEx(theme, hdc, part, state, &widgetRect, &opts);
   }
   // If part is negative, the element wishes us to not render a themed
   // background, instead opting to be drawn specially below.
@@ -1698,6 +2038,27 @@ RENDER_AGAIN:
     widgetRect.bottom = widgetRect.top + TB_SEPARATOR_HEIGHT;
     DrawThemeEdge(theme, hdc, RP_BAND, 0, &widgetRect, EDGE_ETCHED, BF_TOP,
                   nullptr);
+<<<<<<< HEAD
+=======
+  } else if (aAppearance == StyleAppearance::ScrollbarthumbHorizontal ||
+             aAppearance == StyleAppearance::ScrollbarthumbVertical) {
+    // Draw the decorative gripper for the scrollbar thumb button, if it fits
+    SIZE gripSize;
+    MARGINS thumbMgns;
+    int gripPart = (aAppearance == StyleAppearance::ScrollbarthumbHorizontal)
+                       ? SP_GRIPPERHOR
+                       : SP_GRIPPERVERT;
+    if (GetThemePartSize(theme, hdc, gripPart, state, nullptr, TS_TRUE,
+                         &gripSize) == S_OK &&
+        GetThemeMargins(theme, hdc, part, state, TMT_CONTENTMARGINS, nullptr,
+                        &thumbMgns) == S_OK &&
+        gripSize.cx + thumbMgns.cxLeftWidth + thumbMgns.cxRightWidth <=
+            widgetRect.right - widgetRect.left &&
+        gripSize.cy + thumbMgns.cyTopHeight + thumbMgns.cyBottomHeight <=
+            widgetRect.bottom - widgetRect.top) {
+      DrawThemeBackground(theme, hdc, gripPart, state, &widgetRect, &clipRect);
+    }
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
   }
 
   nativeDrawing.EndNativeDrawing();
@@ -1747,18 +2108,31 @@ LayoutDeviceIntMargin nsNativeThemeWin::GetWidgetBorder(
   if (!themeClass.isNothing()) {
     theme = nsUXThemeData::GetTheme(themeClass.value());
   }
-  if (!theme) {
+  // Classic scrollbar thumbs require classic borders. The theme procedure will
+  // break horizontal scrollbar thumbs otherwise.
+  if (aAppearance == StyleAppearance::ScrollbarthumbVertical ||
+      aAppearance == StyleAppearance::ScrollbarthumbHorizontal || !theme) {
     result = ClassicGetWidgetBorder(aContext, aFrame, aAppearance);
     ScaleForFrameDPI(&result, aFrame);
     return result;
   }
 
+  //TODO: RESTORE ALL OF THESE!
   if (!WidgetIsContainer(aAppearance) ||
       aAppearance == StyleAppearance::Toolbox ||
       aAppearance == StyleAppearance::MozWinMediaToolbox ||
       aAppearance == StyleAppearance::MozWinCommunicationsToolbox ||
       aAppearance == StyleAppearance::MozWinBrowsertabbarToolbox ||
+<<<<<<< HEAD
       aAppearance == StyleAppearance::Tabpanel ||
+=======
+      aAppearance == StyleAppearance::Statusbar ||
+      aAppearance == StyleAppearance::Resizer ||
+      aAppearance == StyleAppearance::Tabpanel ||
+      aAppearance == StyleAppearance::ScrollbarHorizontal ||
+      aAppearance == StyleAppearance::ScrollbarVertical ||
+      aAppearance == StyleAppearance::Scrollcorner ||
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
       aAppearance == StyleAppearance::Menuitem ||
       aAppearance == StyleAppearance::Checkmenuitem ||
       aAppearance == StyleAppearance::Radiomenuitem ||
@@ -1817,6 +2191,14 @@ bool nsNativeThemeWin::GetWidgetPadding(nsDeviceContext* aContext,
                                         nsIFrame* aFrame,
                                         StyleAppearance aAppearance,
                                         LayoutDeviceIntMargin* aResult) {
+<<<<<<< HEAD
+=======
+  bool dwmCompositionEnabled =
+      StaticPrefs::widget_native_controls_force_dwm_report_off()
+          ? false
+          : gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled();
+
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
   switch (aAppearance) {
     // Radios and checkboxes return a fixed size in GetMinimumWidgetSize
     // and have a meaningful baseline, so they can't have
@@ -1834,10 +2216,15 @@ bool nsNativeThemeWin::GetWidgetPadding(nsDeviceContext* aContext,
   if (aAppearance == StyleAppearance::MozWindowButtonBox ||
       aAppearance == StyleAppearance::MozWindowButtonBoxMaximized) {
     aResult->SizeTo(0, 0, 0, 0);
+<<<<<<< HEAD
 
     // aero glass doesn't display custom buttons
     if (gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled()) return true;
 
+=======
+    // aero glass doesn't display custom buttons
+    if (dwmCompositionEnabled) return true;
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
     // button padding for standard windows
     if (aAppearance == StyleAppearance::MozWindowButtonBox) {
       aResult->top = GetSystemMetrics(SM_CXFRAME);
@@ -1855,8 +2242,12 @@ bool nsNativeThemeWin::GetWidgetPadding(nsDeviceContext* aContext,
     // adding padding to the top of the window that is the size of the caption
     // area and then "removing" it when calculating the client area for
     // WM_NCCALCSIZE.  See bug 618353,
+<<<<<<< HEAD
     if (!IsWin10OrLater() &&
         aAppearance == StyleAppearance::MozWindowTitlebarMaximized) {
+=======
+    if (aAppearance == StyleAppearance::MozWindowTitlebarMaximized) {
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
       nsCOMPtr<nsIWidget> rootWidget;
       if (WinUtils::HasSystemMetricsForDpi()) {
         rootWidget = aFrame->PresContext()->GetRootWidget();
@@ -2004,12 +2395,32 @@ bool nsNativeThemeWin::GetWidgetOverflow(nsDeviceContext* aContext,
   }
 #endif
 
+  if (aAppearance == StyleAppearance::FocusOutline) {
+    LayoutDeviceIntMargin border =
+        GetWidgetBorder(aContext, aFrame, aAppearance);
+    int32_t p2a = aContext->AppUnitsPerDevPixel();
+    nsMargin m(NSIntPixelsToAppUnits(border.top, p2a),
+               NSIntPixelsToAppUnits(border.right, p2a),
+               NSIntPixelsToAppUnits(border.bottom, p2a),
+               NSIntPixelsToAppUnits(border.left, p2a));
+    aOverflowRect->Inflate(m);
+    return true;
+  }
+
   return false;
 }
 
 LayoutDeviceIntSize nsNativeThemeWin::GetMinimumWidgetSize(
     nsPresContext* aPresContext, nsIFrame* aFrame,
     StyleAppearance aAppearance) {
+<<<<<<< HEAD
+=======
+  bool dwmCompositionEnabled =
+      StaticPrefs::widget_native_controls_force_dwm_report_off()
+          ? false
+          : gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled();
+
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
   if (IsWidgetNonNative(aFrame, aAppearance) == NonNative::Always) {
     return Theme::GetMinimumWidgetSize(aPresContext, aFrame, aAppearance);
   }
@@ -2035,6 +2446,10 @@ LayoutDeviceIntSize nsNativeThemeWin::GetMinimumWidgetSize(
     case StyleAppearance::MozWinCommunicationsToolbox:
     case StyleAppearance::MozWinBrowsertabbarToolbox:
     case StyleAppearance::Toolbar:
+<<<<<<< HEAD
+=======
+    case StyleAppearance::Statusbar:
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
     case StyleAppearance::Progresschunk:
     case StyleAppearance::Tabpanels:
     case StyleAppearance::Tabpanel:
@@ -2043,6 +2458,56 @@ LayoutDeviceIntSize nsNativeThemeWin::GetMinimumWidgetSize(
     case StyleAppearance::Menuitemtext:
     case StyleAppearance::MozWinBorderlessGlass:
       return {};  // Don't worry about it.
+
+    case StyleAppearance::MozWindowButtonMaximize:
+    case StyleAppearance::MozWindowButtonRestore: {
+      // The only way to get accurate titlebar button info is to query a
+      // window w/buttons when it's visible. nsWindow takes care of this and
+      // stores that info in nsUXThemeData.
+      SIZE sz = nsUXThemeData::GetCommandButtonMetrics(CMDBUTTONIDX_RESTORE);
+      LayoutDeviceIntSize result(sz.cx, sz.cy);
+      AddPaddingRect(&result, CAPTIONBUTTON_RESTORE);
+      return result;
+    }
+    case StyleAppearance::MozWindowButtonMinimize: {
+      SIZE sz = nsUXThemeData::GetCommandButtonMetrics(CMDBUTTONIDX_MINIMIZE);
+      LayoutDeviceIntSize result(sz.cx, sz.cy);
+      AddPaddingRect(&result, CAPTIONBUTTON_MINIMIZE);
+      return result;
+    }
+    case StyleAppearance::MozWindowButtonClose: {
+      SIZE sz = nsUXThemeData::GetCommandButtonMetrics(CMDBUTTONIDX_CLOSE);
+      LayoutDeviceIntSize result(sz.cx, sz.cy);
+      AddPaddingRect(&result, CAPTIONBUTTON_CLOSE);
+      return result;
+    }
+
+    case StyleAppearance::MozWindowTitlebar:
+    case StyleAppearance::MozWindowTitlebarMaximized: {
+      LayoutDeviceIntSize result;
+      result.height = GetSystemMetrics(SM_CYCAPTION);
+      result.height += GetSystemMetrics(SM_CYFRAME);
+      result.height += GetSystemMetrics(SM_CXPADDEDBORDER);
+      ScaleForFrameDPI(&result, aFrame);
+      return result;
+    }
+
+    case StyleAppearance::MozWindowButtonBox:
+    case StyleAppearance::MozWindowButtonBoxMaximized: {
+      if (dwmCompositionEnabled) {
+        SIZE sz = nsUXThemeData::GetCommandButtonBoxMetrics();
+        LayoutDeviceIntSize result(sz.cx,
+                                   sz.cy - GetSystemMetrics(SM_CYFRAME) -
+                                       GetSystemMetrics(SM_CXPADDEDBORDER));
+        if (aAppearance == StyleAppearance::MozWindowButtonBoxMaximized) {
+          result.width += 1;
+          result.height -= 2;
+        }
+        return result;
+      }
+      break;
+    }
+
     default:
       break;
   }
@@ -2056,6 +2521,17 @@ LayoutDeviceIntSize nsNativeThemeWin::GetMinimumWidgetSize(
   //  Windows appears to always use metrics when drawing standard scrollbars)
   THEMESIZE sizeReq = TS_TRUE;  // Best-fit size
   switch (aAppearance) {
+<<<<<<< HEAD
+=======
+    case StyleAppearance::ScrollbarthumbHorizontal:
+    case StyleAppearance::ScrollbarthumbVertical:
+    case StyleAppearance::ScrollbarbuttonUp:
+    case StyleAppearance::ScrollbarbuttonDown:
+    case StyleAppearance::ScrollbarbuttonLeft:
+    case StyleAppearance::ScrollbarbuttonRight:
+    case StyleAppearance::ScrollbarHorizontal:
+    case StyleAppearance::ScrollbarVertical:
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
     case StyleAppearance::MozMenulistArrowButton: {
       auto result = ClassicGetMinimumWidgetSize(aFrame, aAppearance);
       ScaleForFrameDPI(&result, aFrame);
@@ -2071,7 +2547,10 @@ LayoutDeviceIntSize nsNativeThemeWin::GetMinimumWidgetSize(
         return result;
       }
       break;
+<<<<<<< HEAD
 
+=======
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
     case StyleAppearance::Menuimage:
     case StyleAppearance::Menucheckbox:
     case StyleAppearance::Menuradio: {
@@ -2080,15 +2559,22 @@ LayoutDeviceIntSize nsNativeThemeWin::GetMinimumWidgetSize(
       ScaleForFrameDPI(&result, aFrame);
       return result;
     }
+<<<<<<< HEAD
 
     case StyleAppearance::Menuitemtext:
       return {};
 
+=======
+    case StyleAppearance::Menuitemtext:
+      return {};
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
     case StyleAppearance::ProgressBar:
       // Best-fit size for progress meters is too large for most
       // themes. We want these widgets to be able to really shrink
       // down, so use the min-size request value (of 0).
       sizeReq = TS_MIN;
+      break;
+    case StyleAppearance::Resizer:
       break;
 
     case StyleAppearance::RangeThumb: {
@@ -2098,6 +2584,24 @@ LayoutDeviceIntSize nsNativeThemeWin::GetMinimumWidgetSize(
       }
       ScaleForFrameDPI(&result, aFrame);
       return result;
+    }
+
+    case StyleAppearance::Scrollcorner: {
+      if (nsLookAndFeel::GetInt(nsLookAndFeel::IntID::UseOverlayScrollbars) !=
+          0) {
+        LayoutDeviceIntSize result(::GetSystemMetrics(SM_CXHSCROLL),
+                                   ::GetSystemMetrics(SM_CYVSCROLL));
+        ScaleForFrameDPI(&result, aFrame);
+        return result;
+      }
+      break;
+    }
+
+    case StyleAppearance::SpinnerUpbutton:
+    case StyleAppearance::SpinnerDownbutton: {
+        LayoutDeviceIntSize result(16, 9);
+        ScaleForFrameDPI(&result, aFrame);
+        return result;
     }
 
     case StyleAppearance::Separator: {
@@ -2202,7 +2706,15 @@ bool nsNativeThemeWin::WidgetAttributeChangeRequiresRepaint(
       aAppearance == StyleAppearance::MozWinCommunicationsToolbox ||
       aAppearance == StyleAppearance::MozWinBrowsertabbarToolbox ||
       aAppearance == StyleAppearance::Toolbar ||
+<<<<<<< HEAD
       aAppearance == StyleAppearance::Progresschunk ||
+=======
+      aAppearance == StyleAppearance::Statusbar ||
+      aAppearance == StyleAppearance::Statusbarpanel ||
+      aAppearance == StyleAppearance::Resizerpanel ||
+      aAppearance == StyleAppearance::Progresschunk ||
+      aAppearance == StyleAppearance::Tooltip ||
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
       aAppearance == StyleAppearance::ProgressBar ||
       aAppearance == StyleAppearance::Tabpanels ||
       aAppearance == StyleAppearance::Tabpanel ||
@@ -2216,9 +2728,18 @@ bool nsNativeThemeWin::WidgetAttributeChangeRequiresRepaint(
       aAppearance == StyleAppearance::MozWindowButtonClose ||
       aAppearance == StyleAppearance::MozWindowButtonMinimize ||
       aAppearance == StyleAppearance::MozWindowButtonMaximize ||
+<<<<<<< HEAD
       aAppearance == StyleAppearance::MozWindowButtonRestore) {
     return true;
   }
+=======
+      aAppearance == StyleAppearance::MozWindowButtonRestore ||
+      aAppearance == StyleAppearance::Menulist ||
+      aAppearance == StyleAppearance::MenulistButton ||
+      aAppearance == StyleAppearance::MozMenulistArrowButton) {
+    return true;
+  }  
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
 
   return Theme::WidgetAttributeChangeRequiresRepaint(aAppearance, aAttribute);
 }
@@ -2238,6 +2759,13 @@ bool nsNativeThemeWin::ThemeSupportsWidget(nsPresContext* aPresContext,
   // XXXdwh We can go even further and call the API to ask if support exists for
   // specific widgets.
 
+<<<<<<< HEAD
+=======
+  if (aAppearance == StyleAppearance::FocusOutline) {
+    return true;
+  }
+
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
   if (IsWidgetNonNative(aFrame, aAppearance) == NonNative::Always) {
     return Theme::ThemeSupportsWidget(aPresContext, aFrame, aAppearance);
   }
@@ -2250,6 +2778,11 @@ bool nsNativeThemeWin::ThemeSupportsWidget(nsPresContext* aPresContext,
   else
     theme = GetTheme(aAppearance);
 
+<<<<<<< HEAD
+=======
+  if (theme && aAppearance == StyleAppearance::Resizer) return true;
+
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
   if (theme || ClassicThemeSupportsWidget(aFrame, aAppearance))
     // turn off theming for some HTML widgets styled by the page
     return (!IsWidgetStyled(aPresContext, aFrame, aAppearance));
@@ -2319,6 +2852,17 @@ nsITheme::Transparency nsNativeThemeWin::GetWidgetTransparency(
   }
 
   switch (aAppearance) {
+<<<<<<< HEAD
+=======
+    case StyleAppearance::Resizer: {
+      // The classic native resizer has an opaque grey background which doesn't
+      // match the usually white background of the scrollable container, so
+      // only support the native resizer if not in a scrollframe.
+      nsIFrame* parentFrame = aFrame->GetParent();
+      return (!parentFrame || !parentFrame->IsScrollContainerFrame()) ? eTransparent
+                                                             : eOpaque;
+    }
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
     case StyleAppearance::MozWinBorderlessGlass:
     case StyleAppearance::ProgressBar:
     case StyleAppearance::Progresschunk:
@@ -2332,7 +2876,12 @@ nsITheme::Transparency nsNativeThemeWin::GetWidgetTransparency(
   // For the classic theme we don't really have a way of knowing
   if (!theme) {
     // menu backgrounds which can't be themed are opaque
+<<<<<<< HEAD
     if (aAppearance == StyleAppearance::Menupopup) {
+=======
+    if (aAppearance == StyleAppearance::Tooltip ||
+        aAppearance == StyleAppearance::Menupopup) {
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
       return eOpaque;
     }
     return eUnknownTransparency;
@@ -2359,6 +2908,16 @@ nsITheme::Transparency nsNativeThemeWin::GetWidgetTransparency(
 bool nsNativeThemeWin::ClassicThemeSupportsWidget(nsIFrame* aFrame,
                                                   StyleAppearance aAppearance) {
   switch (aAppearance) {
+<<<<<<< HEAD
+=======
+    case StyleAppearance::Resizer: {
+      // The classic native resizer has an opaque grey background which doesn't
+      // match the usually white background of the scrollable container, so
+      // only support the native resizer if not in a scrollframe.
+      nsIFrame* parentFrame = aFrame->GetParent();
+      return !parentFrame || !parentFrame->IsScrollContainerFrame();
+    }
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
     case StyleAppearance::Menubar:
     case StyleAppearance::Menupopup:
       // Classic non-flat menus are handled almost entirely through CSS.
@@ -2374,6 +2933,18 @@ bool nsNativeThemeWin::ClassicThemeSupportsWidget(nsIFrame* aFrame,
     case StyleAppearance::Range:
     case StyleAppearance::RangeThumb:
     case StyleAppearance::Groupbox:
+<<<<<<< HEAD
+=======
+    case StyleAppearance::ScrollbarbuttonUp:
+    case StyleAppearance::ScrollbarbuttonDown:
+    case StyleAppearance::ScrollbarbuttonLeft:
+    case StyleAppearance::ScrollbarbuttonRight:
+    case StyleAppearance::ScrollbarthumbVertical:
+    case StyleAppearance::ScrollbarthumbHorizontal:
+    case StyleAppearance::ScrollbarVertical:
+    case StyleAppearance::ScrollbarHorizontal:
+    case StyleAppearance::Scrollcorner:
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
     case StyleAppearance::Menulist:
     case StyleAppearance::MenulistButton:
     case StyleAppearance::MozMenulistArrowButton:
@@ -2381,6 +2952,13 @@ bool nsNativeThemeWin::ClassicThemeSupportsWidget(nsIFrame* aFrame,
     case StyleAppearance::SpinnerDownbutton:
     case StyleAppearance::Listbox:
     case StyleAppearance::Treeview:
+<<<<<<< HEAD
+=======
+    case StyleAppearance::Tooltip:
+    case StyleAppearance::Statusbar:
+    case StyleAppearance::Statusbarpanel:
+    case StyleAppearance::Resizerpanel:
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
     case StyleAppearance::ProgressBar:
     case StyleAppearance::Progresschunk:
     case StyleAppearance::Tab:
@@ -2416,6 +2994,10 @@ LayoutDeviceIntMargin nsNativeThemeWin::ClassicGetWidgetBorder(
     case StyleAppearance::Button:
       result.top = result.left = result.bottom = result.right = 2;
       break;
+    case StyleAppearance::Statusbar:
+      result.bottom = result.left = result.right = 0;
+      result.top = 2;
+      break;
     case StyleAppearance::Listbox:
     case StyleAppearance::Treeview:
     case StyleAppearance::Menulist:
@@ -2425,7 +3007,19 @@ LayoutDeviceIntMargin nsNativeThemeWin::ClassicGetWidgetBorder(
     case StyleAppearance::PasswordInput:
     case StyleAppearance::Textfield:
     case StyleAppearance::Textarea:
+    case StyleAppearance::FocusOutline:
       result.top = result.left = result.bottom = result.right = 2;
+      break;
+    case StyleAppearance::Statusbarpanel:
+    case StyleAppearance::Resizerpanel: {
+      result.top = 1;
+      result.left = 1;
+      result.bottom = 1;
+      result.right = aFrame->GetNextSibling() ? 3 : 1;
+      break;
+    }
+    case StyleAppearance::Tooltip:
+      result.top = result.left = result.bottom = result.right = 1;
       break;
     case StyleAppearance::ProgressBar:
       result.top = result.left = result.bottom = result.right = 1;
@@ -2501,6 +3095,25 @@ LayoutDeviceIntSize nsNativeThemeWin::ClassicGetMinimumWidgetSize(
       result.width = ::GetSystemMetrics(SM_CXVSCROLL);
       result.height = 8;  // No good metrics available for this
       break;
+<<<<<<< HEAD
+=======
+    case StyleAppearance::ScrollbarbuttonUp:
+    case StyleAppearance::ScrollbarbuttonDown:
+      result.width = ::GetSystemMetrics(SM_CXVSCROLL);
+      result.height = ::GetSystemMetrics(SM_CYVSCROLL);
+      break;
+    case StyleAppearance::ScrollbarbuttonLeft:
+    case StyleAppearance::ScrollbarbuttonRight:
+      result.width = ::GetSystemMetrics(SM_CYHSCROLL);
+      result.height = ::GetSystemMetrics(SM_CYHSCROLL);
+      break;
+    case StyleAppearance::ScrollbarVertical:
+    case StyleAppearance::ScrollbarHorizontal:
+      // Sizing code needed after removal of XUL layout (around ESR 115)
+      result.width = ::GetSystemMetrics(SM_CYHSCROLL);
+      result.height = ::GetSystemMetrics(SM_CYHSCROLL);
+      break;
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
     case StyleAppearance::RangeThumb: {
       if (IsRangeHorizontal(aFrame)) {
         result.width = 12;
@@ -2511,6 +3124,37 @@ LayoutDeviceIntSize nsNativeThemeWin::ClassicGetMinimumWidgetSize(
       }
       break;
     }
+<<<<<<< HEAD
+=======
+    case StyleAppearance::ScrollbarthumbVertical:
+      result.width = ::GetSystemMetrics(SM_CXVSCROLL);
+      result.height = ::GetSystemMetrics(SM_CYVTHUMB);
+      // Without theming, divide the thumb size by two in order to look more
+      // native
+      if (!GetTheme(aAppearance)) {
+        result.height >>= 1;
+      }
+      // If scrollbar-width is thin, divide the thickness by two to make
+      // it look more compact.
+      if (ScrollbarDrawing::IsScrollbarWidthThin(aFrame)) {
+        result.width >>= 1;
+      }
+      break;
+    case StyleAppearance::ScrollbarthumbHorizontal:
+      result.width = ::GetSystemMetrics(SM_CXHTHUMB);
+      result.height = ::GetSystemMetrics(SM_CYHSCROLL);
+      // Without theming, divide the thumb size by two in order to look more
+      // native
+      if (TRUE || !GetTheme(aAppearance)) {
+        result.width >>= 1;
+      }
+      // If scrollbar-width is thin, divide the thickness by two to make
+      // it look more compact.
+      if (ScrollbarDrawing::IsScrollbarWidthThin(aFrame)) {
+        result.height >>= 1;
+      }
+      break;
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
     case StyleAppearance::MozMenulistArrowButton:
       result.width = ::GetSystemMetrics(SM_CXVSCROLL);
       break;
@@ -2522,21 +3166,38 @@ LayoutDeviceIntSize nsNativeThemeWin::ClassicGetMinimumWidgetSize(
     case StyleAppearance::Treeview:
     case StyleAppearance::NumberInput:
     case StyleAppearance::PasswordInput:
+    case StyleAppearance::FocusOutline:
     case StyleAppearance::Textfield:
     case StyleAppearance::Textarea:
     case StyleAppearance::Progresschunk:
     case StyleAppearance::ProgressBar:
+    case StyleAppearance::Tooltip:
     case StyleAppearance::Tab:
     case StyleAppearance::Tabpanel:
     case StyleAppearance::Tabpanels:
       // no minimum widget size
       break;
+<<<<<<< HEAD
+=======
+    case StyleAppearance::Resizer: {
+      NONCLIENTMETRICS nc;
+      nc.cbSize = sizeof(nc);
+      if (SystemParametersInfo(SPI_GETNONCLIENTMETRICS, sizeof(nc), &nc, 0))
+        result.width = result.height = abs(nc.lfStatusFont.lfHeight) + 4;
+      else
+        result.width = result.height = 15;
+      break;
+    }
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
     case StyleAppearance::Menuseparator: {
       result.width = 0;
       result.height = 10;
       break;
     }
+<<<<<<< HEAD
 
+=======
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
     case StyleAppearance::MozWindowTitlebarMaximized:
     case StyleAppearance::MozWindowTitlebar:
       result.height =
@@ -2651,33 +3312,51 @@ nsresult nsNativeThemeWin::ClassicGetThemePartAndState(
     case StyleAppearance::Checkmenuitem:
     case StyleAppearance::Radiomenuitem: {
       ElementState elementState = GetContentState(aFrame, aAppearance);
+<<<<<<< HEAD
 
       auto* menu = dom::XULButtonElement::FromNodeOrNull(aFrame->GetContent());
 
       const bool isTopLevel = IsTopLevelMenu(aFrame);
       const bool isOpen = menu && menu->IsMenuPopupOpen();
 
+=======
+      auto* menu = dom::XULButtonElement::FromNodeOrNull(aFrame->GetContent());
+      const bool isTopLevel = IsTopLevelMenu(aFrame);
+      const bool isOpen = menu && menu->IsMenuPopupOpen();
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
       // We indicate top-level-ness using aPart. 0 is a normal menu item,
       // 1 is a top-level menu item. The state of the item is composed of
       // DFCS_* flags only.
       aPart = 0;
       aState = 0;
+<<<<<<< HEAD
 
       if (elementState.HasState(ElementState::DISABLED)) {
         aState |= DFCS_INACTIVE;
       }
 
+=======
+      if (elementState.HasState(ElementState::DISABLED)) {
+        aState |= DFCS_INACTIVE;
+      }
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
       if (isTopLevel) {
         aPart = 1;
         if (isOpen) {
           aState |= DFCS_PUSHED;
         }
       }
+<<<<<<< HEAD
 
       if (IsMenuActive(aFrame, aAppearance)) {
         aState |= DFCS_HOT;
       }
 
+=======
+      if (IsMenuActive(aFrame, aAppearance)) {
+        aState |= DFCS_HOT;
+      }
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
       return NS_OK;
     }
     case StyleAppearance::Menucheckbox:
@@ -2685,12 +3364,18 @@ nsresult nsNativeThemeWin::ClassicGetThemePartAndState(
     case StyleAppearance::Menuarrow: {
       aState = 0;
       ElementState elementState = GetContentState(aFrame, aAppearance);
+<<<<<<< HEAD
 
+=======
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
       if (elementState.HasState(ElementState::DISABLED)) {
         aState |= DFCS_INACTIVE;
       }
       if (IsMenuActive(aFrame, aAppearance)) aState |= DFCS_HOT;
+<<<<<<< HEAD
 
+=======
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
       if (aAppearance == StyleAppearance::Menucheckbox ||
           aAppearance == StyleAppearance::Menuradio) {
         if (IsCheckedButton(aFrame)) aState |= DFCS_CHECKED;
@@ -2709,7 +3394,16 @@ nsresult nsNativeThemeWin::ClassicGetThemePartAndState(
     case StyleAppearance::MenulistButton:
     case StyleAppearance::Range:
     case StyleAppearance::RangeThumb:
+    case StyleAppearance::Statusbar:
+    case StyleAppearance::Statusbarpanel:
+    case StyleAppearance::Resizerpanel:
+    case StyleAppearance::ScrollbarthumbVertical:
+    case StyleAppearance::ScrollbarthumbHorizontal:
+    case StyleAppearance::ScrollbarVertical:
+    case StyleAppearance::ScrollbarHorizontal:
+    case StyleAppearance::Scrollcorner:
     case StyleAppearance::Progresschunk:
+    case StyleAppearance::Tooltip:
     case StyleAppearance::ProgressBar:
     case StyleAppearance::Tab:
     case StyleAppearance::Tabpanel:
@@ -2754,6 +3448,39 @@ nsresult nsNativeThemeWin::ClassicGetThemePartAndState(
 
       return NS_OK;
     }
+<<<<<<< HEAD
+=======
+    case StyleAppearance::ScrollbarbuttonUp:
+    case StyleAppearance::ScrollbarbuttonDown:
+    case StyleAppearance::ScrollbarbuttonLeft:
+    case StyleAppearance::ScrollbarbuttonRight: {
+      ElementState contentState = GetContentState(aFrame, aAppearance);
+      aPart = DFC_SCROLL;
+      switch (aAppearance) {
+        case StyleAppearance::ScrollbarbuttonUp:
+          aState = DFCS_SCROLLUP;
+          break;
+        case StyleAppearance::ScrollbarbuttonDown:
+          aState = DFCS_SCROLLDOWN;
+          break;
+        case StyleAppearance::ScrollbarbuttonLeft:
+          aState = DFCS_SCROLLLEFT;
+          break;
+        case StyleAppearance::ScrollbarbuttonRight:
+          aState = DFCS_SCROLLRIGHT;
+          break;
+        default:
+          break;
+      }
+      if (contentState.HasState(ElementState::DISABLED)) {
+        aState |= DFCS_INACTIVE;
+      } else if (contentState.HasAllStates(ElementState::HOVER |
+                                           ElementState::ACTIVE)) {
+        aState |= DFCS_PUSHED | DFCS_FLAT;
+      }
+      return NS_OK;
+    }
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
     case StyleAppearance::SpinnerUpbutton:
     case StyleAppearance::SpinnerDownbutton: {
       ElementState contentState = GetContentState(aFrame, aAppearance);
@@ -2780,6 +3507,14 @@ nsresult nsNativeThemeWin::ClassicGetThemePartAndState(
 
       return NS_OK;
     }
+<<<<<<< HEAD
+=======
+    case StyleAppearance::Resizer:
+      aPart = DFC_SCROLL;
+      aState =
+          (IsFrameRTL(aFrame) ? DFCS_SCROLLSIZEGRIPRIGHT : DFCS_SCROLLSIZEGRIP);
+      return NS_OK;
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
     case StyleAppearance::Menuseparator:
       aPart = 0;
       aState = 0;
@@ -2922,7 +3657,10 @@ static void DrawMenuImage(HDC hdc, const RECT& rc, int32_t aComponent,
     // they change currently, so we can't do so easily. Same for the bitmap.
     int checkW = ::GetSystemMetrics(SM_CXMENUCHECK);
     int checkH = ::GetSystemMetrics(SM_CYMENUCHECK);
+<<<<<<< HEAD
 
+=======
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
     HBITMAP hMonoBitmap = ::CreateBitmap(checkW, checkH, 1, 1, nullptr);
     if (hMonoBitmap) {
       HBITMAP hPrevBitmap = (HBITMAP)::SelectObject(hMemoryDC, hMonoBitmap);
@@ -2932,11 +3670,17 @@ static void DrawMenuImage(HDC hdc, const RECT& rc, int32_t aComponent,
         RECT imgRect = {0, 0, checkW, checkH};
         POINT imgPos = {rc.left + (rc.right - rc.left - checkW) / 2,
                         rc.top + (rc.bottom - rc.top - checkH) / 2};
+<<<<<<< HEAD
 
         // XXXzeniko Windows renders these 1px lower than you'd expect
         if (aComponent == DFCS_MENUCHECK || aComponent == DFCS_MENUBULLET)
           imgPos.y++;
 
+=======
+        // XXXzeniko Windows renders these 1px lower than you'd expect
+        if (aComponent == DFCS_MENUCHECK || aComponent == DFCS_MENUBULLET)
+          imgPos.y++;
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
         ::DrawFrameControl(hMemoryDC, &imgRect, DFC_MENU, aComponent);
         COLORREF oldTextCol = ::SetTextColor(hdc, 0x00000000);
         COLORREF oldBackCol = ::SetBkColor(hdc, 0x00FFFFFF);
@@ -3032,9 +3776,20 @@ RENDER_AGAIN:
     // Draw controls supported by DrawFrameControl
     case StyleAppearance::Checkbox:
     case StyleAppearance::Radio:
+<<<<<<< HEAD
     case StyleAppearance::SpinnerUpbutton:
     case StyleAppearance::SpinnerDownbutton:
     case StyleAppearance::MozMenulistArrowButton: {
+=======
+    case StyleAppearance::ScrollbarbuttonUp:
+    case StyleAppearance::ScrollbarbuttonDown:
+    case StyleAppearance::ScrollbarbuttonLeft:
+    case StyleAppearance::ScrollbarbuttonRight:
+    case StyleAppearance::SpinnerUpbutton:
+    case StyleAppearance::SpinnerDownbutton:
+    case StyleAppearance::MozMenulistArrowButton:
+    case StyleAppearance::Resizer: {
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
       int32_t oldTA;
       // setup DC to make DrawFrameControl draw correctly
       oldTA = ::SetTextAlign(hdc, TA_TOP | TA_LEFT | TA_NOUPDATECP);
@@ -3068,12 +3823,25 @@ RENDER_AGAIN:
     case StyleAppearance::Treeview: {
       // Draw inset edge
       ::DrawEdge(hdc, &widgetRect, EDGE_SUNKEN, BF_RECT | BF_ADJUST);
+<<<<<<< HEAD
 
       // Fill in window color background
       ::FillRect(hdc, &widgetRect, (HBRUSH)(COLOR_WINDOW + 1));
 
       break;
     }
+=======
+      // Fill in window color background
+      ::FillRect(hdc, &widgetRect, (HBRUSH)(COLOR_WINDOW + 1));
+      break;
+    }
+      // Draw ToolTip background
+    case StyleAppearance::Tooltip:
+      ::FrameRect(hdc, &widgetRect, ::GetSysColorBrush(COLOR_WINDOWFRAME));
+      InflateRect(&widgetRect, -1, -1);
+      ::FillRect(hdc, &widgetRect, ::GetSysColorBrush(COLOR_INFOBK));
+      break;
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
     case StyleAppearance::Groupbox:
       ::DrawEdge(hdc, &widgetRect, EDGE_ETCHED, BF_RECT | BF_ADJUST);
       ::FillRect(hdc, &widgetRect, (HBRUSH)(COLOR_BTNFACE + 1));
@@ -3084,8 +3852,22 @@ RENDER_AGAIN:
       ::DrawEdge(hdc, &widgetRect, BDR_SUNKENOUTER, BF_RECT | BF_MIDDLE);
       InflateRect(&widgetRect, -1, -1);
       [[fallthrough]];
-    case StyleAppearance::Tabpanel: {
+    case StyleAppearance::Tabpanel:
+    case StyleAppearance::Statusbar:
+    case StyleAppearance::Resizerpanel: {
       ::FillRect(hdc, &widgetRect, (HBRUSH)(COLOR_BTNFACE + 1));
+      break;
+    }
+    // Draw scrollbar thumb
+    case StyleAppearance::ScrollbarthumbVertical:
+    case StyleAppearance::ScrollbarthumbHorizontal:
+      ::DrawEdge(hdc, &widgetRect, EDGE_RAISED, BF_RECT | BF_MIDDLE);
+      break;
+      // Draw 3D inset statusbar panel
+    case StyleAppearance::Statusbarpanel: {
+      if (aFrame->GetNextSibling())
+        widgetRect.right -= 2;  // space between sibling status panels
+      ::DrawEdge(hdc, &widgetRect, BDR_SUNKENOUTER, BF_RECT | BF_MIDDLE);
       break;
     }
     case StyleAppearance::RangeThumb: {
@@ -3123,6 +3905,33 @@ RENDER_AGAIN:
       ::DrawEdge(hdc, &widgetRect, EDGE_SUNKEN, BF_RECT | BF_ADJUST);
       ::FillRect(hdc, &widgetRect, (HBRUSH)GetStockObject(GRAY_BRUSH));
 
+      break;
+    }
+      // Draw scrollbar track background
+    case StyleAppearance::ScrollbarVertical:
+    case StyleAppearance::ScrollbarHorizontal: {
+      // Windows fills in the scrollbar track differently
+      // depending on whether these are equal
+      DWORD color3D, colorScrollbar, colorWindow;
+      color3D = ::GetSysColor(COLOR_3DFACE);
+      colorWindow = ::GetSysColor(COLOR_WINDOW);
+      colorScrollbar = ::GetSysColor(COLOR_SCROLLBAR);
+      if ((color3D != colorScrollbar) && (colorWindow != colorScrollbar))
+        // Use solid brush
+        ::FillRect(hdc, &widgetRect, (HBRUSH)(COLOR_SCROLLBAR + 1));
+      else {
+        DrawCheckedRect(hdc, widgetRect, COLOR_3DHILIGHT, COLOR_3DFACE,
+                        (HBRUSH)COLOR_SCROLLBAR + 1);
+      }
+      // XXX should invert the part of the track being clicked here
+      // but the track is never :active
+      break;
+    }
+    case StyleAppearance::Scrollcorner: {
+      ::FillRect(hdc, &widgetRect, (HBRUSH)(COLOR_SCROLLBAR + 1));
+      // Are Mozilla fucking retarded? They added this in 2018
+      // (https://github.com/mozilla/gecko-dev/blob/7038d5f94456dcb558f7c7f6fe66d913070001c5/widget/windows/nsNativeThemeWin.cpp#L3793-L3795)
+      // and never fixed this fallthrough.
       break;
     }
     case StyleAppearance::Progresschunk: {
@@ -3311,6 +4120,146 @@ RENDER_AGAIN:
       break;
     }
 
+    case StyleAppearance::Menubar:
+      break;
+    case StyleAppearance::Menupopup:
+      NS_ASSERTION(nsUXThemeData::AreFlatMenusEnabled(),
+                   "Classic menus are styled entirely through CSS");
+      ::FillRect(hdc, &widgetRect, (HBRUSH)(COLOR_MENU + 1));
+      ::FrameRect(hdc, &widgetRect, ::GetSysColorBrush(COLOR_BTNSHADOW));
+      break;
+    case StyleAppearance::Menuitem:
+    case StyleAppearance::Checkmenuitem:
+    case StyleAppearance::Radiomenuitem:
+      // part == 0 for normal items
+      // part == 1 for top-level menu items
+      if (nsUXThemeData::AreFlatMenusEnabled()) {
+        // Not disabled and hot/pushed.
+        if ((state & (DFCS_HOT | DFCS_PUSHED)) != 0) {
+          ::FillRect(hdc, &widgetRect, (HBRUSH)(COLOR_MENUHILIGHT + 1));
+          ::FrameRect(hdc, &widgetRect, ::GetSysColorBrush(COLOR_HIGHLIGHT));
+        }
+      } else {
+        if (part == 1) {
+          if ((state & DFCS_INACTIVE) == 0) {
+            if ((state & DFCS_PUSHED) != 0) {
+              ::DrawEdge(hdc, &widgetRect, BDR_SUNKENOUTER, BF_RECT);
+            } else if ((state & DFCS_HOT) != 0) {
+              ::DrawEdge(hdc, &widgetRect, BDR_RAISEDINNER, BF_RECT);
+            }
+          }
+        } else {
+          if ((state & (DFCS_HOT | DFCS_PUSHED)) != 0) {
+            ::FillRect(hdc, &widgetRect, (HBRUSH)(COLOR_HIGHLIGHT + 1));
+          }
+        }
+      }
+      break;
+    case StyleAppearance::Menucheckbox:
+    case StyleAppearance::Menuradio:
+      if (!(state & DFCS_CHECKED)) break;  // nothin' to do
+      [[fallthrough]];
+    case StyleAppearance::Menuarrow: {
+      uint32_t color = COLOR_MENUTEXT;
+      if ((state & DFCS_INACTIVE))
+        color = COLOR_GRAYTEXT;
+      else if ((state & DFCS_HOT))
+        color = COLOR_HIGHLIGHTTEXT;
+      if (aAppearance == StyleAppearance::Menucheckbox)
+        DrawMenuImage(hdc, widgetRect, DFCS_MENUCHECK, color);
+      else if (aAppearance == StyleAppearance::Menuradio)
+        DrawMenuImage(hdc, widgetRect, DFCS_MENUBULLET, color);
+      else if (aAppearance == StyleAppearance::Menuarrow)
+        DrawMenuImage(hdc, widgetRect,
+                      (state & DFCS_RTL) ? DFCS_MENUARROWRIGHT : DFCS_MENUARROW,
+                      color);
+      break;
+    }
+    case StyleAppearance::Menuseparator: {
+      // separators are offset by a bit (see menu.css)
+      widgetRect.left++;
+      widgetRect.right--;
+
+      // This magic number is brought to you by the value in menu.css
+      widgetRect.top += 4;
+      // Our rectangles are 1 pixel high (see border size in menu.css)
+      widgetRect.bottom = widgetRect.top + 1;
+      ::FillRect(hdc, &widgetRect, (HBRUSH)(COLOR_3DSHADOW + 1));
+      widgetRect.top++;
+      widgetRect.bottom++;
+      ::FillRect(hdc, &widgetRect, (HBRUSH)(COLOR_3DHILIGHT + 1));
+      break;
+    }
+
+    case StyleAppearance::MozWindowTitlebar:
+    case StyleAppearance::MozWindowTitlebarMaximized: {
+      RECT rect = widgetRect;
+      int32_t offset = GetSystemMetrics(SM_CXFRAME);
+      // first fill the area to the color of the window background
+      ::FillRect(hdc, &rect, (HBRUSH)(COLOR_3DFACE + 1));
+      // inset the caption area so it doesn't overflow.
+      rect.top += offset;
+      // if enabled, draw a gradient titlebar background, otherwise
+      // fill with a solid color.
+      BOOL bFlag = TRUE;
+      SystemParametersInfo(SPI_GETGRADIENTCAPTIONS, 0, &bFlag, 0);
+      if (!bFlag) {
+        if (state == mozilla::widget::themeconst::FS_ACTIVE)
+          ::FillRect(hdc, &rect, (HBRUSH)(COLOR_ACTIVECAPTION + 1));
+        else
+          ::FillRect(hdc, &rect, (HBRUSH)(COLOR_INACTIVECAPTION + 1));
+      } else {
+        DWORD startColor, endColor;
+        if (state == mozilla::widget::themeconst::FS_ACTIVE) {
+          startColor = GetSysColor(COLOR_ACTIVECAPTION);
+          endColor = GetSysColor(COLOR_GRADIENTACTIVECAPTION);
+        } else {
+          startColor = GetSysColor(COLOR_INACTIVECAPTION);
+          endColor = GetSysColor(COLOR_GRADIENTINACTIVECAPTION);
+        }
+        TRIVERTEX vertex[2];
+        vertex[0].x = rect.left;
+        vertex[0].y = rect.top;
+        vertex[0].Red = GetRValue(startColor) << 8;
+        vertex[0].Green = GetGValue(startColor) << 8;
+        vertex[0].Blue = GetBValue(startColor) << 8;
+        vertex[0].Alpha = 0;
+        vertex[1].x = rect.right;
+        vertex[1].y = rect.bottom;
+        vertex[1].Red = GetRValue(endColor) << 8;
+        vertex[1].Green = GetGValue(endColor) << 8;
+        vertex[1].Blue = GetBValue(endColor) << 8;
+        vertex[1].Alpha = 0;
+        GRADIENT_RECT gRect;
+        gRect.UpperLeft = 0;
+        gRect.LowerRight = 1;
+        // available on win2k & up
+        GradientFill(hdc, vertex, 2, &gRect, 1, GRADIENT_FILL_RECT_H);
+      }
+      if (aAppearance == StyleAppearance::MozWindowTitlebar) {
+        // frame things up with a top raised border.
+        DrawEdge(hdc, &widgetRect, EDGE_RAISED, BF_TOP);
+      }
+      break;
+    }
+    case StyleAppearance::MozWindowButtonClose:
+    case StyleAppearance::MozWindowButtonMinimize:
+    case StyleAppearance::MozWindowButtonMaximize:
+    case StyleAppearance::MozWindowButtonRestore: {
+      if (aAppearance == StyleAppearance::MozWindowButtonMinimize) {
+        OffsetBackgroundRect(widgetRect, CAPTIONBUTTON_MINIMIZE);
+      } else if (aAppearance == StyleAppearance::MozWindowButtonMaximize ||
+                 aAppearance == StyleAppearance::MozWindowButtonRestore) {
+        OffsetBackgroundRect(widgetRect, CAPTIONBUTTON_RESTORE);
+      } else if (aAppearance == StyleAppearance::MozWindowButtonClose) {
+        OffsetBackgroundRect(widgetRect, CAPTIONBUTTON_CLOSE);
+      }
+      int32_t oldTA = SetTextAlign(hdc, TA_TOP | TA_LEFT | TA_NOUPDATECP);
+      DrawFrameControl(hdc, &widgetRect, part, state);
+      SetTextAlign(hdc, oldTA);
+      break;
+    }
+
     default:
       rv = NS_ERROR_FAILURE;
       break;
@@ -3333,6 +4282,7 @@ uint32_t nsNativeThemeWin::GetWidgetNativeDrawingFlags(
     case StyleAppearance::Button:
     case StyleAppearance::NumberInput:
     case StyleAppearance::PasswordInput:
+    case StyleAppearance::FocusOutline:
     case StyleAppearance::Textfield:
     case StyleAppearance::Textarea:
     case StyleAppearance::Menulist:

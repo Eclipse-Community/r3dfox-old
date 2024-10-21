@@ -33,6 +33,10 @@ var gFileMigrators = null;
 var gProfileStartup = null;
 var gL10n = null;
 var gPreviousDefaultBrowserKey = "";
+<<<<<<< HEAD
+=======
+var gHasOpenedLegacyWizard = false;
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
 
 let gForceExitSpinResolve = false;
 let gKeepUndoData = false;

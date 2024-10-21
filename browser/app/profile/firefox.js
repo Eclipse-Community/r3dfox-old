@@ -1611,7 +1611,13 @@ pref("browser.bookmarks.editDialog.maxRecentFolders", 7);
   pref("browser.taskbar.previews.enable", false);
   pref("browser.taskbar.previews.max", 20);
   pref("browser.taskbar.previews.cachetime", 5);
+<<<<<<< HEAD
   pref("browser.taskbar.lists.legacyBackend", true);
+=======
+
+  pref("browser.taskbar.lists.legacyBackend", true);
+
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
   pref("browser.taskbar.lists.enabled", true);
   pref("browser.taskbar.lists.frequent.enabled", true);
   pref("browser.taskbar.lists.recent.enabled", false);

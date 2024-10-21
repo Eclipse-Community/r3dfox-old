@@ -18,6 +18,10 @@
 #include "mozilla/WindowsVersion.h"
 #include "mozilla/widget/WinRegistry.h"
 
+// -- native controls patch includes --
+#include "mozilla/StaticPrefs_widget.h"
+// -- end native controls patch includes --
+
 using namespace mozilla;
 using namespace mozilla::widget;
 
@@ -501,11 +505,19 @@ nsresult nsLookAndFeel::NativeGetInt(IntID aID, int32_t& aResult) {
       aResult = nsUXThemeData::IsDefaultWindowTheme();
       break;
     case IntID::DWMCompositor:
+<<<<<<< HEAD
+=======
+      if (StaticPrefs::widget_native_controls_force_dwm_report_off()) {
+        aResult = 0;
+        break;
+      }
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
       aResult = gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled();
       break;
     case IntID::WindowsAccentColorInTitlebar:
       aResult = mTitlebarColors.mUseAccent;
       break;
+<<<<<<< HEAD
     case IntID::WindowsGlass:
       // Aero Glass is only available prior to Windows 8 when DWM is used.
       aResult = (gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled() &&
@@ -513,7 +525,26 @@ nsresult nsLookAndFeel::NativeGetInt(IntID aID, int32_t& aResult) {
       break;
     case IntID::WindowsMica:
       aResult = WinUtils::MicaEnabled();
+=======
+    case IntID::WindowsGlass: {
+      int reportingPref =
+          StaticPrefs::widget_native_controls_force_glass_reporting();
+      if (reportingPref != 0) {
+        aResult = (reportingPref == 1) ? 1 : 0;
+        break;
+      }
+      if (StaticPrefs::widget_native_controls_force_dwm_report_off()) {
+        aResult = 0;
+        break;
+      }
+      // Aero Glass is only available prior to Windows 8 when DWM is used.
+      // Actually not, you can restore it with glass tools
+      // It's just that people don't research anymore... smh
+      aResult = (gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled());
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
       break;
+    }
+
     case IntID::AlertNotificationOrigin:
       aResult = 0;
       {
@@ -876,12 +907,6 @@ auto nsLookAndFeel::ComputeTitlebarColors() -> TitlebarColors {
 
   result.mAccentInactive = dwmKey.GetValueAsDword(u"AccentColorInactive"_ns);
   result.mAccentInactiveText = GetAccentColorText(result.mAccentInactive);
-
-  if (WinUtils::MicaEnabled()) {
-    // Use transparent titlebar backgrounds when using mica.
-    result.mActiveDark.mBg = result.mActiveLight.mBg =
-        result.mInactiveDark.mBg = result.mInactiveLight.mBg = NS_TRANSPARENT;
-  }
 
   // The ColorPrevalence value is set to 1 when the "Show color on title bar"
   // setting in the Color section of Window's Personalization settings is

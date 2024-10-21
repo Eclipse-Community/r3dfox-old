@@ -674,6 +674,9 @@ pref("r3dfox.force.transparency", false);
 pref("r3dfox.transparent.menubar", true);
 // Translucent navbar design
 pref("r3dfox.translucent.navbar", false);
+// Disable other customizations by default
+pref("r3dfox.browser.plasmafox", false);
+pref("r3dfox.colors.plasmafox", false);
 
 // Enable JS dump() function.
 // IMPORTANT: These prefs must be here even though they're also defined in

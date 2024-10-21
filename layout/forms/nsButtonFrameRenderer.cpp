@@ -214,7 +214,11 @@ void nsButtonFrameRenderer::SetComputedStyle(int32_t aIndex,
 
 namespace mozilla {
 
+<<<<<<< HEAD
 class nsDisplayButtonBoxShadowOuter : public nsPaintedDisplayItem {
+=======
+class nsDisplayButtonBoxShadowOuter final : public nsPaintedDisplayItem {
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
  public:
   nsDisplayButtonBoxShadowOuter(nsDisplayListBuilder* aBuilder,
                                 nsIFrame* aFrame)

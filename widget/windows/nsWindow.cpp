@@ -351,7 +351,11 @@ static SystemTimeConverter<DWORD>& TimeConverter() {
 // Global event hook for window cloaking. Never deregistered.
 //  - `Nothing` if not yet set.
 //  - `Some(nullptr)` if no attempt should be made to set it.
+<<<<<<< HEAD
 static mozilla::Maybe<HWINEVENTHOOK> sWinCloakEventHook =
+=======
+MOZ_RUNINIT static mozilla::Maybe<HWINEVENTHOOK> sWinCloakEventHook =
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
     IsWin8OrLater() ? Nothing() : Some(HWINEVENTHOOK(nullptr));
 static mozilla::LazyLogModule sCloakingLog("DWMCloaking");
 
@@ -531,44 +535,29 @@ class TIPMessageHandler {
     }
   }
 
-  class MOZ_RAII A11yInstantiationBlocker {
-   public:
-    A11yInstantiationBlocker() {
-      if (!TIPMessageHandler::sInstance) {
-        return;
-      }
-      ++TIPMessageHandler::sInstance->mA11yBlockCount;
-    }  // namespace mozilla
+  class MOZ_RAII A11yInstantiationBlocker{public : A11yInstantiationBlocker(){
+      if (!TIPMessageHandler::sInstance){return;
+} ++TIPMessageHandler::sInstance->mA11yBlockCount;
+}  // namespace mozilla
 
-    ~A11yInstantiationBlocker() {
-      if (!TIPMessageHandler::sInstance) {
-        return;
-      }
-      MOZ_ASSERT(TIPMessageHandler::sInstance->mA11yBlockCount > 0);
-      --TIPMessageHandler::sInstance->mA11yBlockCount;
-    }
-  };
+~A11yInstantiationBlocker() {
+  if (!TIPMessageHandler::sInstance) {
+    return;
+  }
+  MOZ_ASSERT(TIPMessageHandler::sInstance->mA11yBlockCount > 0);
+  --TIPMessageHandler::sInstance->mA11yBlockCount;
+}
+}
+;
 
-  friend class A11yInstantiationBlocker;
+friend class A11yInstantiationBlocker;
 
-  static LRESULT CALLBACK TIPHook(int aCode, WPARAM aWParam, LPARAM aLParam) {
-    if (aCode < 0 || !sInstance) {
-      return ::CallNextHookEx(nullptr, aCode, aWParam, aLParam);
-    }
-
-    MSG* msg = reinterpret_cast<MSG*>(aLParam);
-    UINT& msgCode = msg->message;
-
-    for (uint32_t i = 0; i < std::size(sInstance->mMessages); ++i) {
-      if (msgCode == sInstance->mMessages[i]) {
-        A11yInstantiationBlocker block;
-        return ::CallNextHookEx(nullptr, aCode, aWParam, aLParam);
-      }
-    }
-
+static LRESULT CALLBACK TIPHook(int aCode, WPARAM aWParam, LPARAM aLParam) {
+  if (aCode < 0 || !sInstance) {
     return ::CallNextHookEx(nullptr, aCode, aWParam, aLParam);
   }
 
+<<<<<<< HEAD
   static void CALLBACK ProcessCaretEventsHook(HWINEVENTHOOK aWinEventHook,
                                               DWORD aEvent, HWND aHwnd,
                                               LONG aObjectId, LONG aChildId,
@@ -591,29 +580,79 @@ class TIPMessageHandler {
         !WinUtils::GetNSWindowPtr(aHwnd) || !IsA11yBlocked()) {
       return sSendMessageTimeoutWStub(aHwnd, aMsgCode, aWParam, aLParam, aFlags,
                                       aTimeout, aMsgResult);
+=======
+  MSG* msg = reinterpret_cast<MSG*>(aLParam);
+  UINT& msgCode = msg->message;
+
+  for (uint32_t i = 0; i < std::size(sInstance->mMessages); ++i) {
+    if (msgCode == sInstance->mMessages[i]) {
+      A11yInstantiationBlocker block;
+      return ::CallNextHookEx(nullptr, aCode, aWParam, aLParam);
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
     }
-
-    // In this case we want to fake the result that would happen if we had
-    // decided not to handle WM_GETOBJECT in our WndProc. We hand the message
-    // off to DefWindowProc to accomplish this.
-    *aMsgResult = static_cast<DWORD_PTR>(
-        ::DefWindowProcW(aHwnd, aMsgCode, aWParam, aLParam));
-
-    return static_cast<LRESULT>(TRUE);
   }
 
+<<<<<<< HEAD
   static WindowsDllInterceptor sTipTsfInterceptor;
   static WindowsDllInterceptor::FuncHookType<WINEVENTPROC>
       sProcessCaretEventsStub;
   static WindowsDllInterceptor::FuncHookType<decltype(&SendMessageTimeoutW)>
       sSendMessageTimeoutWStub;
   static StaticAutoPtr<TIPMessageHandler> sInstance;
+=======
+  return ::CallNextHookEx(nullptr, aCode, aWParam, aLParam);
+}
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
 
-  HHOOK mHook;
-  UINT mMessages[7];
-  uint32_t mA11yBlockCount;
-};
+static void CALLBACK ProcessCaretEventsHook(HWINEVENTHOOK aWinEventHook,
+                                            DWORD aEvent, HWND aHwnd,
+                                            LONG aObjectId, LONG aChildId,
+                                            DWORD aGeneratingTid,
+                                            DWORD aEventTime) {
+  A11yInstantiationBlocker block;
+  sProcessCaretEventsStub(aWinEventHook, aEvent, aHwnd, aObjectId, aChildId,
+                          aGeneratingTid, aEventTime);
+}
 
+<<<<<<< HEAD
+=======
+static LRESULT WINAPI SendMessageTimeoutWHook(HWND aHwnd, UINT aMsgCode,
+                                              WPARAM aWParam, LPARAM aLParam,
+                                              UINT aFlags, UINT aTimeout,
+                                              PDWORD_PTR aMsgResult) {
+  // We don't want to handle this unless the message is a WM_GETOBJECT that we
+  // want to block, and the aHwnd is a nsWindow that belongs to the current
+  // (i.e., main) thread.
+  if (!aMsgResult || aMsgCode != WM_GETOBJECT ||
+      static_cast<LONG>(aLParam) != OBJID_CLIENT || !::NS_IsMainThread() ||
+      !WinUtils::GetNSWindowPtr(aHwnd) || !IsA11yBlocked()) {
+    return sSendMessageTimeoutWStub(aHwnd, aMsgCode, aWParam, aLParam, aFlags,
+                                    aTimeout, aMsgResult);
+  }
+
+  // In this case we want to fake the result that would happen if we had
+  // decided not to handle WM_GETOBJECT in our WndProc. We hand the message
+  // off to DefWindowProc to accomplish this.
+  *aMsgResult = static_cast<DWORD_PTR>(
+      ::DefWindowProcW(aHwnd, aMsgCode, aWParam, aLParam));
+
+  return static_cast<LRESULT>(TRUE);
+}
+
+static WindowsDllInterceptor sTipTsfInterceptor;
+static WindowsDllInterceptor::FuncHookType<WINEVENTPROC>
+    sProcessCaretEventsStub;
+static WindowsDllInterceptor::FuncHookType<decltype(&SendMessageTimeoutW)>
+    sSendMessageTimeoutWStub;
+static StaticAutoPtr<TIPMessageHandler> sInstance;
+
+HHOOK mHook;
+UINT mMessages[7];
+uint32_t mA11yBlockCount;
+}
+;
+
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
 WindowsDllInterceptor TIPMessageHandler::sTipTsfInterceptor;
 WindowsDllInterceptor::FuncHookType<WINEVENTPROC>
     TIPMessageHandler::sProcessCaretEventsStub;
@@ -701,6 +740,7 @@ static bool IsCloaked(HWND hwnd) {
 
 nsWindow::nsWindow(bool aIsChildWindow)
     : nsBaseWidget(BorderStyle::Default),
+      mBrush(::CreateSolidBrush(NSRGB_2_COLOREF(::GetSysColor(COLOR_BTNFACE)))),
       mFrameState(std::in_place, this),
       mIsChildWindow(aIsChildWindow),
       mLastPaintEndTime(TimeStamp::Now()),
@@ -936,14 +976,28 @@ nsresult nsWindow::Create(nsIWidget* aParent, const LayoutDeviceIntRect& aRect,
   }
 
   if (mWindowType == WindowType::Popup) {
+<<<<<<< HEAD
+=======
+    if (!aParent) {
+      parent = nullptr;
+    }
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
 
     if (!IsWin8OrLater() && HasBogusPopupsDropShadowOnMultiMonitor() &&
         ShouldUseOffMainThreadCompositing()) {
       extendedStyle |= WS_EX_COMPOSITED;
     }
+<<<<<<< HEAD
   }
   if (mWindowType != WindowType::Popup) {
     // See if the caller wants to explicitly set clip children and clip siblings
+=======
+  } else if (mWindowType == WindowType::Invisible) {
+    // Make sure CreateWindowEx succeeds at creating a toplevel window
+    style &= ~0x40000000;  // WS_CHILDWINDOW
+  } else {
+    // See if the caller wants to explictly set clip children and clip siblings
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
     if (aInitData->mClipChildren) {
       style |= WS_CLIPCHILDREN;
     } else {
@@ -981,12 +1035,15 @@ nsresult nsWindow::Create(nsIWidget* aParent, const LayoutDeviceIntRect& aRect,
       mIsCloaked = mozilla::IsCloaked(mWnd);
       mFrameState->ConsumePreXULSkeletonState(WasPreXULSkeletonUIMaximized());
 
+<<<<<<< HEAD
       MOZ_ASSERT(BoundsUseDesktopPixels());
       auto scale = GetDesktopToDeviceScale();
       mBounds = mLastPaintBounds = LayoutDeviceIntRect::FromUnknownRect(
           DesktopIntRect::Round(LayoutDeviceRect(GetBounds()) / scale)
               .ToUnknownRect());
 
+=======
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
       // These match the margins set in browser-tabsintitlebar.js with
       // default prefs on Windows. Bug 1673092 tracks lining this up with
       // that more correctly instead of hard-coding it.
@@ -1063,10 +1120,18 @@ nsresult nsWindow::Create(nsIWidget* aParent, const LayoutDeviceIntRect& aRect,
       Unused << NS_WARN_IF(!mozilla::widget::WinTaskbar::GenerateAppUserModelID(
           aumid, usePrivateAumid));
       if (!usePrivateAumid && widget::WinUtils::HasPackageIdentity()) {
+        // `GetCurrentApplicationUserModelId` added in Windows 8.
+        DynamicallyLinkedFunctionPtr<decltype(&GetCurrentApplicationUserModelId)>
+            pGetCurrentApplicationUserModelId(L"kernel32.dll",
+                                              "GetCurrentApplicationUserModelId");
+        if (!pGetCurrentApplicationUserModelId) {
+          return NS_OK;
+        }
         // On MSIX we should always have a provided process AUMID
         // that we can explicitly assign to a regular window.
         UINT32 maxLength = MAX_PATH;
         aumid.SetLength(maxLength);
+<<<<<<< HEAD
         // `GetCurrentApplicationUserModelId` added in Windows 8.
         DynamicallyLinkedFunctionPtr<decltype(&GetCurrentApplicationUserModelId)>
             pGetCurrentApplicationUserModelId(L"kernel32.dll",
@@ -1075,6 +1140,10 @@ nsresult nsWindow::Create(nsIWidget* aParent, const LayoutDeviceIntRect& aRect,
           Unused << NS_WARN_IF(
               pGetCurrentApplicationUserModelId(&maxLength, aumid.get()));
         }
+=======
+        Unused << NS_WARN_IF(
+            pGetCurrentApplicationUserModelId(&maxLength, aumid.get()));
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
       }
       if (!FAILED(InitPropVariantFromString(aumid.get(), &pv))) {
         if (!FAILED(pPropStore->SetValue(PKEY_AppUserModel_ID, pv))) {
@@ -1288,6 +1357,7 @@ const wchar_t* nsWindow::RegisterWindowClass(const wchar_t* aClassName,
   wc.lpszMenuName = nullptr;
   wc.lpszClassName = aClassName;
 
+<<<<<<< HEAD
   // Since we discard WM_ERASEBKGND events, the window-class background brush is
   // mostly not used -- it shows up when resizing, but scarcely ever otherwise.
   //
@@ -1305,6 +1375,10 @@ const wchar_t* nsWindow::RegisterWindowClass(const wchar_t* aClassName,
     ::RegisterClassW(&wc);
   }
   return aClassName;
+=======
+  // Failures are ignored as they are handled when ::CreateWindow fails
+  ::RegisterClassW(&wc);
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
 }
 
 static LPWSTR const gStockApplicationIcon = MAKEINTRESOURCEW(32512);
@@ -1600,14 +1674,16 @@ nsWindow* nsWindow::GetParentWindowBase(bool aIncludeOwner) {
  **************************************************************/
 
 void nsWindow::Show(bool aState) {
+  bool dwmCompositionEnabled =
+      StaticPrefs::widget_native_controls_force_dwm_report_off()
+          ? false
+          : gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled();
+
   if (aState && mIsShowingPreXULSkeletonUI) {
     // The first time we decide to actually show the window is when we decide
     // that we've taken over the window from the skeleton UI, and we should
     // no longer treat resizes / moves specially.
     mIsShowingPreXULSkeletonUI = false;
-    // Concomitantly, this is also when we change the cursor away from the
-    // default "wait" cursor.
-    SetCursor(Cursor{eCursor_standard});
 #if defined(ACCESSIBILITY)
     // If our HWND has focus and the a11y engine hasn't started yet, fire a
     // focus win event. Windows already did this when the skeleton UI appeared,
@@ -1629,8 +1705,12 @@ void nsWindow::Show(bool aState) {
         return false;
       }
       if (HasBogusPopupsDropShadowOnMultiMonitor() &&
+<<<<<<< HEAD
           WinUtils::GetMonitorCount() > 1 &&
           !gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled()) {
+=======
+          WinUtils::GetMonitorCount() > 1 && !dwmCompositionEnabled) {
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
         // See bug 603793. When we try to draw D3D9/10 windows with a drop
         // shadow without the DWM on a secondary monitor, windows fails to
         // composite our windows correctly. We therefor switch off the drop
@@ -1791,7 +1871,11 @@ bool nsWindow::IsVisible() const { return mIsVisible; }
 // XXX this is apparently still needed in Windows 7 and later
 void nsWindow::ClearThemeRegion() {
   if (!HasGlass() &&
+<<<<<<< HEAD
       (mWindowType == WindowType::Popup && !IsPopupWithTitleBar() &&
+=======
+      (mWindowType == WindowType::Popup &&
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
        (mPopupType == PopupType::Tooltip || mPopupType == PopupType::Panel))) {
     SetWindowRgn(mWnd, nullptr, false);
   }
@@ -1916,46 +2000,14 @@ void nsWindow::Move(double aX, double aY) {
     return;
   }
 
-  // Normally, when the skeleton UI is disabled, we resize+move the window
-  // before showing it in order to ensure that it restores to the correct
-  // position when the user un-maximizes it. However, when we are using the
-  // skeleton UI, this results in the skeleton UI window being moved around
-  // undesirably before being locked back into the maximized position. To
-  // avoid this, we simply set the placement to restore to via
-  // SetWindowPlacement. It's a little bit more of a dance, though, since we
-  // need to convert the workspace coords that SetWindowPlacement uses to the
-  // screen space coordinates we normally use with SetWindowPos.
-  if (mIsShowingPreXULSkeletonUI && WasPreXULSkeletonUIMaximized()) {
-    WINDOWPLACEMENT pl = {sizeof(WINDOWPLACEMENT)};
-    VERIFY(::GetWindowPlacement(mWnd, &pl));
-
-    HMONITOR monitor = ::MonitorFromWindow(mWnd, MONITOR_DEFAULTTONULL);
-    if (NS_WARN_IF(!monitor)) {
-      return;
-    }
-    MONITORINFO mi = {sizeof(MONITORINFO)};
-    VERIFY(::GetMonitorInfo(monitor, &mi));
-
-    int32_t deltaX =
-        x + mi.rcWork.left - mi.rcMonitor.left - pl.rcNormalPosition.left;
-    int32_t deltaY =
-        y + mi.rcWork.top - mi.rcMonitor.top - pl.rcNormalPosition.top;
-    pl.rcNormalPosition.left += deltaX;
-    pl.rcNormalPosition.right += deltaX;
-    pl.rcNormalPosition.top += deltaY;
-    pl.rcNormalPosition.bottom += deltaY;
-    VERIFY(::SetWindowPlacement(mWnd, &pl));
-    return;
-  }
-
   mBounds.MoveTo(x, y);
 
   if (mWnd) {
 #ifdef DEBUG
     // complain if a window is moved offscreen (legal, but potentially
     // worrisome)
-    if (IsTopLevelWidget()) {  // only a problem for top-level windows
-      // Make sure this window is actually on the screen before we move it
+    if (mIsTopWidgetWindow) {  // only a problem for top-level windows
+    // Make sure this window is actually on the screen before we move it
       // XXX: Needs multiple monitor support
       HDC dc = ::GetDC(mWnd);
       if (dc) {
@@ -1972,6 +2024,7 @@ void nsWindow::Move(double aX, double aY) {
       }
     }
 #endif
+<<<<<<< HEAD
       ClearThemeRegion();
 
     UINT flags = SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOSIZE;
@@ -1981,6 +2034,49 @@ void nsWindow::Move(double aX, double aY) {
     mResizeState = NOT_RESIZING;
     if (WinUtils::LogToPhysFactor(mWnd) != oldScale) {
       ChangedDPI();
+=======
+
+    // Normally, when the skeleton UI is disabled, we resize+move the window
+    // before showing it in order to ensure that it restores to the correct
+    // position when the user un-maximizes it. However, when we are using the
+    // skeleton UI, this results in the skeleton UI window being moved around
+    // undesirably before being locked back into the maximized position. To
+    // avoid this, we simply set the placement to restore to via
+    // SetWindowPlacement. It's a little bit more of a dance, though, since we
+    // need to convert the workspace coords that SetWindowPlacement uses to the
+    // screen space coordinates we normally use with SetWindowPos.
+    if (mIsShowingPreXULSkeletonUI && WasPreXULSkeletonUIMaximized()) {
+      WINDOWPLACEMENT pl = {sizeof(WINDOWPLACEMENT)};
+      VERIFY(::GetWindowPlacement(mWnd, &pl));
+
+      HMONITOR monitor = ::MonitorFromWindow(mWnd, MONITOR_DEFAULTTONULL);
+      if (NS_WARN_IF(!monitor)) {
+        return;
+      }
+      MONITORINFO mi = {sizeof(MONITORINFO)};
+      VERIFY(::GetMonitorInfo(monitor, &mi));
+
+      int32_t deltaX =
+          x + mi.rcWork.left - mi.rcMonitor.left - pl.rcNormalPosition.left;
+      int32_t deltaY =
+          y + mi.rcWork.top - mi.rcMonitor.top - pl.rcNormalPosition.top;
+      pl.rcNormalPosition.left += deltaX;
+      pl.rcNormalPosition.right += deltaX;
+      pl.rcNormalPosition.top += deltaY;
+      pl.rcNormalPosition.bottom += deltaY;
+      VERIFY(::SetWindowPlacement(mWnd, &pl));
+    } else {
+      ClearThemeRegion();
+
+      UINT flags = SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOSIZE;
+      double oldScale = mDefaultScale;
+      mResizeState = IN_SIZEMOVE;
+      VERIFY(::SetWindowPos(mWnd, nullptr, x, y, 0, 0, flags));
+      mResizeState = NOT_RESIZING;
+      if (WinUtils::LogToPhysFactor(mWnd) != oldScale) {
+        ChangedDPI();
+      }
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
     }
 
     ResizeDirectManipulationViewport();
@@ -2013,18 +2109,6 @@ void nsWindow::Resize(double aWidth, double aHeight, bool aRepaint) {
     return;
   }
 
-  // Refer to the comment above a similar check in nsWindow::Move
-  if (mIsShowingPreXULSkeletonUI && WasPreXULSkeletonUIMaximized()) {
-    WINDOWPLACEMENT pl = {sizeof(WINDOWPLACEMENT)};
-    VERIFY(::GetWindowPlacement(mWnd, &pl));
-    pl.rcNormalPosition.right = pl.rcNormalPosition.left + width;
-    pl.rcNormalPosition.bottom = pl.rcNormalPosition.top + height;
-    mResizeState = RESIZING;
-    VERIFY(::SetWindowPlacement(mWnd, &pl));
-    mResizeState = NOT_RESIZING;
-    return;
-  }
-
   // Set cached value for lightweight and printing
   bool wasLocking = mAspectRatio != 0.0;
   mBounds.SizeTo(width, height);
@@ -2033,6 +2117,7 @@ void nsWindow::Resize(double aWidth, double aHeight, bool aRepaint) {
   }
 
   if (mWnd) {
+<<<<<<< HEAD
     UINT flags = SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOMOVE;
     if (!aRepaint) {
       flags |= SWP_NOREDRAW;
@@ -2044,6 +2129,32 @@ void nsWindow::Resize(double aWidth, double aHeight, bool aRepaint) {
     mResizeState = NOT_RESIZING;
     if (WinUtils::LogToPhysFactor(mWnd) != oldScale) {
       ChangedDPI();
+=======
+    // Refer to the comment above a similar check in nsWindow::Move
+    if (mIsShowingPreXULSkeletonUI && WasPreXULSkeletonUIMaximized()) {
+      WINDOWPLACEMENT pl = {sizeof(WINDOWPLACEMENT)};
+      VERIFY(::GetWindowPlacement(mWnd, &pl));
+      pl.rcNormalPosition.right = pl.rcNormalPosition.left + width;
+      pl.rcNormalPosition.bottom = pl.rcNormalPosition.top + height;
+      mResizeState = RESIZING;
+      VERIFY(::SetWindowPlacement(mWnd, &pl));
+      mResizeState = NOT_RESIZING;
+    } else {
+      UINT flags = SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOMOVE;
+
+      if (!aRepaint) {
+        flags |= SWP_NOREDRAW;
+      }
+
+      ClearThemeRegion();
+      double oldScale = mDefaultScale;
+      mResizeState = RESIZING;
+      VERIFY(::SetWindowPos(mWnd, nullptr, 0, 0, width, height, flags));
+      mResizeState = NOT_RESIZING;
+      if (WinUtils::LogToPhysFactor(mWnd) != oldScale) {
+        ChangedDPI();
+      }
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
     }
     ResizeDirectManipulationViewport();
   }
@@ -2081,39 +2192,16 @@ void nsWindow::Resize(double aX, double aY, double aWidth, double aHeight,
     return;
   }
 
-  // Refer to the comment above a similar check in nsWindow::Move
-  if (mIsShowingPreXULSkeletonUI && WasPreXULSkeletonUIMaximized()) {
-    WINDOWPLACEMENT pl = {sizeof(WINDOWPLACEMENT)};
-    VERIFY(::GetWindowPlacement(mWnd, &pl));
-
-    HMONITOR monitor = ::MonitorFromWindow(mWnd, MONITOR_DEFAULTTONULL);
-    if (NS_WARN_IF(!monitor)) {
-      return;
-    }
-    MONITORINFO mi = {sizeof(MONITORINFO)};
-    VERIFY(::GetMonitorInfo(monitor, &mi));
-
-    int32_t deltaX =
-        x + mi.rcWork.left - mi.rcMonitor.left - pl.rcNormalPosition.left;
-    int32_t deltaY =
-        y + mi.rcWork.top - mi.rcMonitor.top - pl.rcNormalPosition.top;
-    pl.rcNormalPosition.left += deltaX;
-    pl.rcNormalPosition.right = pl.rcNormalPosition.left + width;
-    pl.rcNormalPosition.top += deltaY;
-    pl.rcNormalPosition.bottom = pl.rcNormalPosition.top + height;
-    VERIFY(::SetWindowPlacement(mWnd, &pl));
-    return;
-  }
-
   // Set cached value for lightweight and printing
   mBounds.SetRect(x, y, width, height);
 
   if (mWnd) {
-    UINT flags = SWP_NOZORDER | SWP_NOACTIVATE;
-    if (!aRepaint) {
-      flags |= SWP_NOREDRAW;
-    }
+    // Refer to the comment above a similar check in nsWindow::Move
+    if (mIsShowingPreXULSkeletonUI && WasPreXULSkeletonUIMaximized()) {
+      WINDOWPLACEMENT pl = {sizeof(WINDOWPLACEMENT)};
+      VERIFY(::GetWindowPlacement(mWnd, &pl));
 
+<<<<<<< HEAD
       ClearThemeRegion();
 
     double oldScale = mDefaultScale;
@@ -2123,13 +2211,46 @@ void nsWindow::Resize(double aX, double aY, double aWidth, double aHeight,
     if (WinUtils::LogToPhysFactor(mWnd) != oldScale) {
       ChangedDPI();
     }
+=======
+      HMONITOR monitor = ::MonitorFromWindow(mWnd, MONITOR_DEFAULTTONULL);
+      if (NS_WARN_IF(!monitor)) {
+        return;
+      }
+      MONITORINFO mi = {sizeof(MONITORINFO)};
+      VERIFY(::GetMonitorInfo(monitor, &mi));
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
 
-    if (mTransitionWnd) {
-      // If we have a fullscreen transition window, we need to make
-      // it topmost again, otherwise the taskbar may be raised by
-      // the system unexpectedly when we leave fullscreen state.
-      ::SetWindowPos(mTransitionWnd, HWND_TOPMOST, 0, 0, 0, 0,
-                     SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
+      int32_t deltaX =
+          x + mi.rcWork.left - mi.rcMonitor.left - pl.rcNormalPosition.left;
+      int32_t deltaY =
+          y + mi.rcWork.top - mi.rcMonitor.top - pl.rcNormalPosition.top;
+      pl.rcNormalPosition.left += deltaX;
+      pl.rcNormalPosition.right = pl.rcNormalPosition.left + width;
+      pl.rcNormalPosition.top += deltaY;
+      pl.rcNormalPosition.bottom = pl.rcNormalPosition.top + height;
+      VERIFY(::SetWindowPlacement(mWnd, &pl));
+    } else {
+      UINT flags = SWP_NOZORDER | SWP_NOACTIVATE;
+      if (!aRepaint) {
+        flags |= SWP_NOREDRAW;
+      }
+
+      ClearThemeRegion();
+      double oldScale = mDefaultScale;
+      mResizeState = RESIZING;
+      VERIFY(::SetWindowPos(mWnd, nullptr, x, y, width, height, flags));
+      mResizeState = NOT_RESIZING;
+      if (WinUtils::LogToPhysFactor(mWnd) != oldScale) {
+        ChangedDPI();
+      }
+
+      if (mTransitionWnd) {
+        // If we have a fullscreen transition window, we need to make
+        // it topmost again, otherwise the taskbar may be raised by
+        // the system unexpectedly when we leave fullscreen state.
+        ::SetWindowPos(mTransitionWnd, HWND_TOPMOST, 0, 0, 0, 0,
+                       SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
+      }
     }
 
     ResizeDirectManipulationViewport();
@@ -2582,7 +2703,10 @@ static const wchar_t kManageWindowInfoProperty[] = L"ManageWindowInfoProperty";
 typedef BOOL(WINAPI* GetWindowInfoPtr)(HWND hwnd, PWINDOWINFO pwi);
 static WindowsDllInterceptor::FuncHookType<GetWindowInfoPtr>
     sGetWindowInfoPtrStub;
+<<<<<<< HEAD
 
+=======
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
 BOOL WINAPI GetWindowInfoHook(HWND hWnd, PWINDOWINFO pwi) {
   if (!sGetWindowInfoPtrStub) {
     NS_ASSERTION(FALSE, "Something is horribly wrong in GetWindowInfoHook!");
@@ -2599,17 +2723,25 @@ BOOL WINAPI GetWindowInfoHook(HWND hWnd, PWINDOWINFO pwi) {
     pwi->dwWindowStatus = (windowStatus == 1 ? 0 : WS_ACTIVECAPTION);
   return result;
 }
+<<<<<<< HEAD
 
 void nsWindow::UpdateGetWindowInfoCaptionStatus(bool aActiveCaption) {
   if (!mWnd) return;
 
+=======
+void nsWindow::UpdateGetWindowInfoCaptionStatus(bool aActiveCaption) {
+  if (!mWnd) return;
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
   sUser32Intercept.Init("user32.dll");
   sGetWindowInfoPtrStub.Set(sUser32Intercept, "GetWindowInfo",
                             &GetWindowInfoHook);
   if (!sGetWindowInfoPtrStub) {
     return;
   }
+<<<<<<< HEAD
 
+=======
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
   // Update our internally tracked caption status
   SetPropW(mWnd, kManageWindowInfoProperty,
            reinterpret_cast<HANDLE>(static_cast<INT_PTR>(aActiveCaption) + 1));
@@ -2631,7 +2763,14 @@ void nsWindow::SetColorScheme(const Maybe<ColorScheme>& aScheme) {
 }
 
 LayoutDeviceIntMargin nsWindow::NormalWindowNonClientOffset() const {
+<<<<<<< HEAD
   bool glass = gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled();
+=======
+  bool glass =
+      StaticPrefs::widget_native_controls_force_dwm_report_off()
+          ? false
+          : gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled();
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
 
   LayoutDeviceIntMargin nonClientOffset;
 
@@ -2644,34 +2783,58 @@ LayoutDeviceIntMargin nsWindow::NormalWindowNonClientOffset() const {
   // size by that amount.
 
   if (mNonClientMargins.top > 0 && glass) {
+<<<<<<< HEAD
     nonClientOffset.top = std::min(mCustomNonClientMetrics.mCaptionHeight, mNonClientMargins.top);
   } else if (mNonClientMargins.top == 0) {
     nonClientOffset.top = mCustomNonClientMetrics.mCaptionHeight;
+=======
+    nonClientOffset.top = std::min(mCaptionHeight, mNonClientMargins.top);
+  } else if (mNonClientMargins.top == 0) {
+    nonClientOffset.top = mCaptionHeight;
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
   } else {
     nonClientOffset.top = 0;
   }
 
   if (mNonClientMargins.bottom > 0 && glass) {
     nonClientOffset.bottom =
+<<<<<<< HEAD
         std::min(mCustomNonClientMetrics.mVertResizeMargin, mNonClientMargins.bottom);
   } else if (mNonClientMargins.bottom == 0) {
     nonClientOffset.bottom = mCustomNonClientMetrics.mVertResizeMargin;
+=======
+        std::min(mVertResizeMargin, mNonClientMargins.bottom);
+  } else if (mNonClientMargins.bottom == 0) {
+    nonClientOffset.bottom = mVertResizeMargin;
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
   } else {
     nonClientOffset.bottom = 0;
   }
 
   if (mNonClientMargins.left > 0 && glass) {
+<<<<<<< HEAD
     nonClientOffset.left = std::min(mCustomNonClientMetrics.mHorResizeMargin, mNonClientMargins.left);
   } else if (mNonClientMargins.left == 0) {
     nonClientOffset.left = mCustomNonClientMetrics.mHorResizeMargin;
+=======
+    nonClientOffset.left = std::min(mHorResizeMargin, mNonClientMargins.left);
+  } else if (mNonClientMargins.left == 0) {
+    nonClientOffset.left = mHorResizeMargin;
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
   } else {
     nonClientOffset.left = 0;
   }
 
   if (mNonClientMargins.right > 0 && glass) {
+<<<<<<< HEAD
     nonClientOffset.right = std::min(mCustomNonClientMetrics.mHorResizeMargin, mNonClientMargins.right);
   } else if (mNonClientMargins.right == 0) {
     nonClientOffset.right = mCustomNonClientMetrics.mHorResizeMargin;
+=======
+    nonClientOffset.right = std::min(mHorResizeMargin, mNonClientMargins.right);
+  } else if (mNonClientMargins.right == 0) {
+    nonClientOffset.right = mHorResizeMargin;
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
   } else {
     nonClientOffset.right = 0;
   }
@@ -2710,14 +2873,17 @@ bool nsWindow::UpdateNonClientMargins(bool aReflowWindow) {
 
   const nsSizeMode sizeMode = mFrameState->GetSizeMode();
 
-  const bool hasCaption =
+  bool hasCaption =
       bool(mBorderStyle & (BorderStyle::All | BorderStyle::Title |
                            BorderStyle::Menu | BorderStyle::Default));
 
   float dpi = GetDPI();
 
+<<<<<<< HEAD
   auto& metrics = mCustomNonClientMetrics;
 
+=======
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
   // mCaptionHeight is the default size of the NC area at
   // the top of the window. If the window has a caption,
   // the size is calculated as the sum of:
@@ -2729,7 +2895,11 @@ bool nsWindow::UpdateNonClientMargins(bool aReflowWindow) {
   //
   // If the window does not have a caption, mCaptionHeight will be equal to
   // `WinUtils::GetSystemMetricsForDpi(SM_CYFRAME, dpi)`
+<<<<<<< HEAD
   metrics.mCaptionHeight =
+=======
+  mCaptionHeight =
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
       WinUtils::GetSystemMetricsForDpi(SM_CYFRAME, dpi) +
       (hasCaption ? WinUtils::GetSystemMetricsForDpi(SM_CYCAPTION, dpi) +
                         WinUtils::GetSystemMetricsForDpi(SM_CXPADDEDBORDER, dpi)
@@ -2744,7 +2914,11 @@ bool nsWindow::UpdateNonClientMargins(bool aReflowWindow) {
     //
     // If the window does not have a caption, mHorResizeMargin will be equal to
     // `WinUtils::GetSystemMetricsForDpi(SM_CXFRAME, dpi)`
+<<<<<<< HEAD
     metrics.mHorResizeMargin =
+=======
+    mHorResizeMargin =
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
         WinUtils::GetSystemMetricsForDpi(SM_CXFRAME, dpi) +
         (hasCaption ? WinUtils::GetSystemMetricsForDpi(SM_CXPADDEDBORDER, dpi)
                     : 0);
@@ -2757,22 +2931,36 @@ bool nsWindow::UpdateNonClientMargins(bool aReflowWindow) {
     //
     // If the window does not have a caption, mVertResizeMargin will be equal to
     // `WinUtils::GetSystemMetricsForDpi(SM_CYFRAME, dpi)`
+<<<<<<< HEAD
     metrics.mVertResizeMargin =
+=======
+    mVertResizeMargin =
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
         WinUtils::GetSystemMetricsForDpi(SM_CYFRAME, dpi) +
         (hasCaption ? WinUtils::GetSystemMetricsForDpi(SM_CXPADDEDBORDER, dpi)
                     : 0);
   }
 
-  metrics.mOffset = {};
   if (sizeMode == nsSizeMode_Minimized) {
-    // Use default frame size for minimized windows (so, do nothing).
+    // Use default frame size for minimized windows
+    mNonClientOffset.top = 0;
+    mNonClientOffset.left = 0;
+    mNonClientOffset.right = 0;
+    mNonClientOffset.bottom = 0;
   } else if (sizeMode == nsSizeMode_Fullscreen) {
     // Remove the default frame from the top of our fullscreen window.  This
     // makes the whole caption part of our client area, allowing us to draw
     // in the whole caption area.  Additionally remove the default frame from
     // the left, right, and bottom.
+<<<<<<< HEAD
     metrics.mOffset = metrics.DefaultMargins();
     metrics.mOffset.top = metrics.mCaptionHeight;
+=======
+    mNonClientOffset.top = mCaptionHeight;
+    mNonClientOffset.bottom = mVertResizeMargin;
+    mNonClientOffset.left = mHorResizeMargin;
+    mNonClientOffset.right = mHorResizeMargin;
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
   } else if (sizeMode == nsSizeMode_Maximized) {
     // On Windows 10+, we make the entire frame part of the client area. We
     // leave the default frame sizes for left, right and bottom since Windows
@@ -2796,19 +2984,27 @@ bool nsWindow::UpdateNonClientMargins(bool aReflowWindow) {
                       : 0);
     }
 
+<<<<<<< HEAD
     metrics.mOffset.top = metrics.mCaptionHeight - verticalResize;
+=======
+    mNonClientOffset.top = mCaptionHeight - verticalResize;
+    mNonClientOffset.bottom = 0;
+    mNonClientOffset.left = 0;
+    mNonClientOffset.right = 0;
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
 
     mozilla::Maybe<UINT> maybeEdge = GetHiddenTaskbarEdge();
     if (maybeEdge) {
       auto edge = maybeEdge.value();
       if (ABE_LEFT == edge) {
-        metrics.mOffset.left -= kHiddenTaskbarSize;
+        mNonClientOffset.left -= kHiddenTaskbarSize;
       } else if (ABE_RIGHT == edge) {
-        metrics.mOffset.right -= kHiddenTaskbarSize;
+        mNonClientOffset.right -= kHiddenTaskbarSize;
       } else if (ABE_BOTTOM == edge || ABE_TOP == edge) {
-        metrics.mOffset.bottom -= kHiddenTaskbarSize;
+        mNonClientOffset.bottom -= kHiddenTaskbarSize;
       }
 
+<<<<<<< HEAD
       // On Windows 10+, when we are drawing the non-client region, we need
       // to clear the portion of the NC region that is exposed by the
       // hidden taskbar.  As above, we clear the bottom of the NC region
@@ -2818,8 +3014,23 @@ bool nsWindow::UpdateNonClientMargins(bool aReflowWindow) {
         mClearNCEdge = Some(clearEdge);
       }
     }
+=======
+      // When we are drawing the non-client region, we need
+      // to clear the portion of the NC region that is exposed by the
+      // hidden taskbar.  As above, we clear the bottom of the NC region
+      // when the taskbar is at the top of the screen.
+      UINT clearEdge = (edge == ABE_TOP) ? ABE_BOTTOM : edge;
+      mClearNCEdge = Some(clearEdge);
+    }
+  } else if (mPIPWindow &&
+             !StaticPrefs::widget_windows_pip_decorations_enabled()) {
+    mNonClientOffset.top = mVertResizeMargin + mCaptionHeight;
+    mNonClientOffset.bottom = mVertResizeMargin;
+    mNonClientOffset.left = mHorResizeMargin;
+    mNonClientOffset.right = mHorResizeMargin;
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
   } else {
-    metrics.mOffset = NormalWindowNonClientOffset();
+    mNonClientOffset = NormalWindowNonClientOffset();
   }
 
   if (aReflowWindow) {
@@ -2843,6 +3054,11 @@ nsresult nsWindow::SetNonClientMargins(const LayoutDeviceIntMargin& margins) {
   }
   mFutureMarginsToUse = false;
 
+<<<<<<< HEAD
+=======
+  mFutureMarginsToUse = false;
+
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
   // Request for a reset
   if (margins.top == -1 && margins.left == -1 && margins.right == -1 &&
       margins.bottom == -1) {
@@ -2850,7 +3066,10 @@ nsresult nsWindow::SetNonClientMargins(const LayoutDeviceIntMargin& margins) {
     mNonClientMargins = margins;
     // Force a reflow of content based on the new client
     // dimensions.
+<<<<<<< HEAD
     mCustomNonClientMetrics = {};
+=======
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
     ResetLayout();
 
     int windowStatus =
@@ -2879,8 +3098,13 @@ nsresult nsWindow::SetNonClientMargins(const LayoutDeviceIntMargin& margins) {
 
 void nsWindow::SetResizeMargin(mozilla::LayoutDeviceIntCoord aResizeMargin) {
   mUseResizeMarginOverrides = true;
+<<<<<<< HEAD
   mCustomNonClientMetrics.mHorResizeMargin = aResizeMargin;
   mCustomNonClientMetrics.mVertResizeMargin = aResizeMargin;
+=======
+  mHorResizeMargin = aResizeMargin;
+  mVertResizeMargin = aResizeMargin;
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
   UpdateNonClientMargins();
 }
 
@@ -2906,10 +3130,17 @@ void nsWindow::InvalidateNonClientRegion() {
   // windows non-client chrome and app non-client chrome
   // in winRgn.
   GetWindowRect(mWnd, &rect);
+<<<<<<< HEAD
   rect.top += mCustomNonClientMetrics.mCaptionHeight;
   rect.right -= mCustomNonClientMetrics.mHorResizeMargin;
   rect.bottom -= mCustomNonClientMetrics.mVertResizeMargin;
   rect.left += mCustomNonClientMetrics.mHorResizeMargin;
+=======
+  rect.top += mCaptionHeight;
+  rect.right -= mHorResizeMargin;
+  rect.bottom -= mVertResizeMargin;
+  rect.left += mHorResizeMargin;
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
   MapWindowPoints(nullptr, mWnd, (LPPOINT)&rect, 2);
   HRGN clientRgn = CreateRectRgnIndirect(&rect);
   CombineRgn(winRgn, winRgn, clientRgn, RGN_DIFF);
@@ -2935,6 +3166,24 @@ HRGN nsWindow::ExcludeNonClientFromPaintRegion(HRGN aRegion) {
   CombineRgn(rgn, rgn, nonClientRgn, RGN_DIFF);
   DeleteObject(nonClientRgn);
   return rgn;
+<<<<<<< HEAD
+=======
+}
+
+/**************************************************************
+ *
+ * SECTION: nsIWidget::SetBackgroundColor
+ *
+ * Sets the window background paint color.
+ *
+ **************************************************************/
+void nsWindow::SetBackgroundColor(const nscolor& aColor) {
+  if (mBrush) ::DeleteObject(mBrush);
+  mBrush = ::CreateSolidBrush(NSRGB_2_COLOREF(aColor));
+  if (mWnd != nullptr) {
+    ::SetClassLongPtrW(mWnd, GCLP_HBRBACKGROUND, (LONG_PTR)mBrush);
+  }
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
 }
 
 /**************************************************************
@@ -3138,6 +3387,11 @@ TransparencyMode nsWindow::GetTransparencyMode() {
 }
 
 void nsWindow::SetTransparencyMode(TransparencyMode aMode) {
+  bool dwmCompositionEnabled =
+      StaticPrefs::widget_native_controls_force_dwm_report_off()
+          ? false
+          : gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled();
+
   nsWindow* window = GetTopLevelWindow(true);
   MOZ_ASSERT(window);
 
@@ -3146,8 +3400,12 @@ void nsWindow::SetTransparencyMode(TransparencyMode aMode) {
   }
 
   if (WindowType::TopLevel == window->mWindowType &&
+<<<<<<< HEAD
       mTransparencyMode != aMode &&
       !gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled()) {
+=======
+      mTransparencyMode != aMode && !dwmCompositionEnabled) {
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
     NS_WARNING("Cannot set transparency mode on top-level windows.");
     return;
   }
@@ -3157,7 +3415,10 @@ void nsWindow::SetTransparencyMode(TransparencyMode aMode) {
 
 void nsWindow::UpdateOpaqueRegion(const LayoutDeviceIntRegion& aOpaqueRegion) {
   if (!HasGlass() || GetParent()) return;
+<<<<<<< HEAD
 
+=======
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
   // If there is no opaque region or hidechrome=true, set margins
   // to support a full sheet of glass. Comments in MSDN indicate
   // all values must be set to -1 to get a full sheet of glass.
@@ -3177,7 +3438,10 @@ void nsWindow::UpdateOpaqueRegion(const LayoutDeviceIntRegion& aOpaqueRegion) {
     }
     margins.cyTopHeight = largest.Y();
   }
+<<<<<<< HEAD
 
+=======
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
   // Only update glass area if there are changes
   if (memcmp(&mGlassMargins, &margins, sizeof mGlassMargins)) {
     mGlassMargins = margins;
@@ -3200,8 +3464,17 @@ void nsWindow::UpdateWindowDraggingRegion(
 }
 
 void nsWindow::UpdateGlass() {
+<<<<<<< HEAD
   MARGINS margins = mGlassMargins;
 
+=======
+  bool dwmCompositionEnabled =
+      StaticPrefs::widget_native_controls_force_dwm_report_off()
+          ? false
+          : gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled();
+
+  MARGINS margins = mGlassMargins;
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
   // DWMNCRP_USEWINDOWSTYLE - The non-client rendering area is
   //                          rendered based on the window style.
   // DWMNCRP_ENABLED        - The non-client area rendering is
@@ -3221,14 +3494,22 @@ void nsWindow::UpdateGlass() {
     default:
       break;
   }
+<<<<<<< HEAD
 
+=======
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
   MOZ_LOG(gWindowsLog, LogLevel::Info,
           ("glass margins: left:%d top:%d right:%d bottom:%d\n",
            margins.cxLeftWidth, margins.cyTopHeight, margins.cxRightWidth,
            margins.cyBottomHeight));
+<<<<<<< HEAD
 
   // Extends the window frame behind the client area
   if (gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled()) {
+=======
+  // Extends the window frame behind the client area
+  if (dwmCompositionEnabled) {
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
     DwmExtendFrameIntoClientArea(mWnd, &margins);
     DwmSetWindowAttribute(mWnd, DWMWA_NCRENDERING_POLICY, &policy,
                           sizeof policy);
@@ -3501,10 +3782,22 @@ NS_IMPL_ISUPPORTS0(FullscreenTransitionData)
 
 /* virtual */
 bool nsWindow::PrepareForFullscreenTransition(nsISupports** aData) {
+<<<<<<< HEAD
   // We don't support fullscreen transition when composition is not
   // enabled, which could make the transition broken and annoying.
   // See bug 1184201.
   if (!gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled()) {
+=======
+  bool dwmCompositionEnabled =
+      StaticPrefs::widget_native_controls_force_dwm_report_off()
+          ? false
+          : gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled();
+
+  // We don't support fullscreen transition when composition is not
+  // enabled, which could make the transition broken and annoying.
+  // See bug 1184201.
+  if (!dwmCompositionEnabled) {
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
     return false;
   }
 
@@ -4199,11 +4492,20 @@ nsresult nsWindow::OnDefaultButtonLoaded(
 
 void nsWindow::UpdateThemeGeometries(
     const nsTArray<ThemeGeometry>& aThemeGeometries) {
+<<<<<<< HEAD
+=======
+  bool dwmCompositionEnabled =
+      StaticPrefs::widget_native_controls_force_dwm_report_off()
+          ? false
+          : gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled();
+
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
   RefPtr<WebRenderLayerManager> layerManager =
       GetWindowRenderer() ? GetWindowRenderer()->AsWebRender() : nullptr;
   if (!layerManager) {
     return;
   }
+<<<<<<< HEAD
 
   if (!HasGlass() ||
       !gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled()) {
@@ -4224,6 +4526,22 @@ void nsWindow::UpdateThemeGeometries(
         if (!mWindowButtonsRect) {
           mWindowButtonsRect = Some(bounds);
         }
+=======
+  if (!HasGlass() || !dwmCompositionEnabled) {
+    return;
+  }
+  mWindowButtonsRect = Nothing();
+  for (size_t i = 0; i < aThemeGeometries.Length(); i++) {
+    if (aThemeGeometries[i].mType ==
+        nsNativeThemeWin::eThemeGeometryTypeWindowButtons) {
+      LayoutDeviceIntRect bounds = aThemeGeometries[i].mRect;
+      // Extend the bounds by one pixel to the right, because that's how much
+      // the actual window button shape extends past the client area of the
+      // window (and overlaps the right window frame).
+      bounds.SetWidth(bounds.Width() + 1);
+      if (!mWindowButtonsRect) {
+        mWindowButtonsRect = Some(bounds);
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
       }
     }
   }
@@ -4243,7 +4561,19 @@ uint32_t nsWindow::GetMaxTouchPoints() const {
 }
 
 void nsWindow::SetIsEarlyBlankWindow(bool aIsEarlyBlankWindow) {
+<<<<<<< HEAD
   mIsEarlyBlankWindow = aIsEarlyBlankWindow;
+=======
+//  if (mIsEarlyBlankWindow == aIsEarlyBlankWindow) {
+//    return;
+//  }
+  mIsEarlyBlankWindow = aIsEarlyBlankWindow;
+//  if (!aIsEarlyBlankWindow && mNeedsNCAreaClear) {
+    // We skip processing WM_PAINT messages while we're the blank window;
+    // ensure we get one to do any work we might have missed.
+//    ::RedrawWindow(mWnd, nullptr, nullptr, RDW_INVALIDATE | RDW_INTERNALPAINT);
+//  }
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
 }
 
 /**************************************************************
@@ -5066,6 +5396,11 @@ bool nsWindow::ProcessMessage(UINT msg, WPARAM& wParam, LPARAM& lParam,
 // The main windows message processing method. Called by ProcessMessage.
 bool nsWindow::ProcessMessageInternal(UINT msg, WPARAM& wParam, LPARAM& lParam,
                                       LRESULT* aRetValue) {
+  bool dwmCompositionEnabled =
+      StaticPrefs::widget_native_controls_force_dwm_report_off()
+          ? false
+          : gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled();
+
   MSGResult msgResult(aRetValue);
   if (ExternalHandlerProcessMessage(msg, wParam, lParam, msgResult)) {
     return (msgResult.mConsumed || !mWnd);
@@ -5087,11 +5422,17 @@ bool nsWindow::ProcessMessageInternal(UINT msg, WPARAM& wParam, LPARAM& lParam,
 
   // Glass hit testing w/custom transparent margins
   LRESULT dwmHitResult;
+<<<<<<< HEAD
   if (mCustomNonClient &&
       gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled() &&
       /* We don't do this for win10 glass with a custom titlebar,
        * in order to avoid the caption buttons breaking. */
       !(IsWin10OrLater() && HasGlass()) &&
+=======
+  if (mCustomNonClient && dwmCompositionEnabled  &&
+      /* We don't do this for win10 glass with a custom titlebar,
+       * in order to avoid the caption buttons breaking. */
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
       DwmDefWindowProc(mWnd, msg, wParam, lParam, &dwmHitResult)) {
     *aRetValue = dwmHitResult;
     return true;
@@ -5341,8 +5682,12 @@ bool nsWindow::ProcessMessageInternal(UINT msg, WPARAM& wParam, LPARAM& lParam,
        * sending the message with an updated title
        */
 
+<<<<<<< HEAD
       if ((mSendingSetText &&
            gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled()) ||
+=======
+        if ((mSendingSetText && dwmCompositionEnabled) ||
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
           !mCustomNonClient || mNonClientMargins.top == -1)
         break;
 
@@ -5382,7 +5727,11 @@ bool nsWindow::ProcessMessageInternal(UINT msg, WPARAM& wParam, LPARAM& lParam,
 
       // There is a case that rendered result is not kept. Bug 1237617
       if (wParam == TRUE && !gfxEnv::MOZ_DISABLE_FORCE_PRESENT() &&
+<<<<<<< HEAD
           gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled()) {
+=======
+          dwmCompositionEnabled) {
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
         NS_DispatchToMainThread(NewRunnableMethod(
             "nsWindow::ForcePresent", this, &nsWindow::ForcePresent));
       }
@@ -5390,7 +5739,11 @@ bool nsWindow::ProcessMessageInternal(UINT msg, WPARAM& wParam, LPARAM& lParam,
       // let the dwm handle nc painting on glass
       // Never allow native painting if we are on fullscreen
       if (mFrameState->GetSizeMode() != nsSizeMode_Fullscreen &&
+<<<<<<< HEAD
           gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled())
+=======
+          dwmCompositionEnabled)
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
         break;
 
       if (wParam == TRUE) {
@@ -5422,12 +5775,18 @@ bool nsWindow::ProcessMessageInternal(UINT msg, WPARAM& wParam, LPARAM& lParam,
        * non-client areas we paint manually. Then call defwndproc
        * to do the actual painting.
        */
+<<<<<<< HEAD
 
       if (!mCustomNonClient) break;
 
       // let the dwm handle nc painting on glass
       if (gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled()) break;
 
+=======
+      if (!mCustomNonClient) break;
+      // let the dwm handle nc painting on glass
+      if (dwmCompositionEnabled) break;
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
       HRGN paintRgn = ExcludeNonClientFromPaintRegion((HRGN)wParam);
       LRESULT res = CallWindowProcW(GetPrevWindowProc(), mWnd, msg,
                                     (WPARAM)paintRgn, lParam);
@@ -6371,7 +6730,10 @@ void nsWindow::FinishLiveResizing(ResizeState aNewState) {
  * Broadcast messages to all windows.
  *
  **************************************************************/
+<<<<<<< HEAD
 
+=======
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
 // Enumerate all child windows sending aMsg to each of them
 BOOL CALLBACK nsWindow::BroadcastMsgToChildren(HWND aWnd, LPARAM aMsg) {
   WNDPROC winProc = (WNDPROC)::GetWindowLongPtrW(aWnd, GWLP_WNDPROC);
@@ -6381,7 +6743,10 @@ BOOL CALLBACK nsWindow::BroadcastMsgToChildren(HWND aWnd, LPARAM aMsg) {
   }
   return TRUE;
 }
+<<<<<<< HEAD
 
+=======
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
 // Enumerate all top level windows specifying that the children of each
 // top level window should be enumerated. Do *not* send the message to
 // each top level window since it is assumed that the toolkit will send
@@ -6404,10 +6769,17 @@ BOOL CALLBACK nsWindow::BroadcastMsg(HWND aTopWindow, LPARAM aMsg) {
 
 LayoutDeviceIntMargin nsWindow::NonClientSizeMargin(
     const LayoutDeviceIntMargin& aNonClientOffset) const {
+<<<<<<< HEAD
   return LayoutDeviceIntMargin(mCustomNonClientMetrics.mCaptionHeight - aNonClientOffset.top,
                                mCustomNonClientMetrics.mHorResizeMargin - aNonClientOffset.right,
                                mCustomNonClientMetrics.mVertResizeMargin - aNonClientOffset.bottom,
                                mCustomNonClientMetrics.mHorResizeMargin - aNonClientOffset.left);
+=======
+  return LayoutDeviceIntMargin(mCaptionHeight - aNonClientOffset.top,
+                               mHorResizeMargin - aNonClientOffset.right,
+                               mVertResizeMargin - aNonClientOffset.bottom,
+                               mHorResizeMargin - aNonClientOffset.left);
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
 }
 
 int32_t nsWindow::ClientMarginHitTestPoint(int32_t aX, int32_t aY) {
@@ -6457,7 +6829,13 @@ int32_t nsWindow::ClientMarginHitTestPoint(int32_t aX, int32_t aY) {
   // E.g., user must expect that Firefox button always opens the popup menu
   // even when the user clicks on the above edge of it.
   LayoutDeviceIntMargin borderSize = nonClientSizeMargin;
+<<<<<<< HEAD
   borderSize.EnsureAtLeast(mCustomNonClientMetrics.ResizeMargins());
+=======
+  borderSize.EnsureAtLeast(
+      LayoutDeviceIntMargin(mVertResizeMargin, mHorResizeMargin,
+                            mVertResizeMargin, mHorResizeMargin));
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
 
   bool top = false;
   bool bottom = false;
@@ -6535,15 +6913,24 @@ int32_t nsWindow::ClientMarginHitTestPoint(int32_t aX, int32_t aY) {
 
   auto pt = mCachedHitTestPoint;
 
+  // If DWM composition is disabled, then under no circumstances do we want to
+  // run the following code. Doing so will only cause the caption buttons to
+  // flicker. It seems this was broken during a refactor sometime after
+  // Australis.
+  bool dwmCompositionEnabled =
+      StaticPrefs::widget_native_controls_force_dwm_report_off()
+          ? false
+          : gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled();
+
   if (mWindowBtnRect[WindowButtonType::Minimize].Contains(pt)) {
-    testResult = HTMINBUTTON;
+    testResult = dwmCompositionEnabled ? HTMINBUTTON : HTCLIENT;
   } else if (mWindowBtnRect[WindowButtonType::Maximize].Contains(pt)) {
 #ifdef ACCESSIBILITY
     a11y::Compatibility::SuppressA11yForSnapLayouts();
 #endif
-    testResult = HTMAXBUTTON;
+    testResult = dwmCompositionEnabled ? HTMAXBUTTON : HTCLIENT;
   } else if (mWindowBtnRect[WindowButtonType::Close].Contains(pt)) {
-    testResult = HTCLOSE;
+    testResult = dwmCompositionEnabled ? HTCLOSE : HTCLIENT;
   } else if (!inResizeRegion) {
     // If we're in the resize region, avoid overriding that with either a
     // drag or a client result; resize takes priority over either (but not
@@ -7348,6 +7735,12 @@ void nsWindow::OnDestroy() {
 
   IMEHandler::OnDestroyWindow(this);
 
+  // Free GDI window class objects
+  if (mBrush) {
+    VERIFY(::DeleteObject(mBrush));
+    mBrush = nullptr;
+  }
+
   // Destroy any custom cursor resources.
   if (mCursor.IsCustom()) {
     SetCursor(Cursor{eCursor_standard});
@@ -7683,6 +8076,7 @@ void nsWindow::SetWindowTranslucencyInner(TransparencyMode aMode) {
     return;
   }
 
+<<<<<<< HEAD
   // stop on dialogs and popups!
   HWND hWnd = WinUtils::GetTopLevelHWND(mWnd, true);
   nsWindow* parent = WinUtils::GetNSWindowPtr(hWnd);
@@ -7690,8 +8084,18 @@ void nsWindow::SetWindowTranslucencyInner(TransparencyMode aMode) {
   if (!parent) {
     NS_WARNING("Trying to use transparent chrome in an embedded context");
     return;
+=======
+  MOZ_ASSERT(WinUtils::GetTopLevelHWND(mWnd, true) == mWnd);
+  LONG_PTR exStyle = ::GetWindowLongPtr(mWnd, GWL_EXSTYLE);
+  if (aMode == TransparencyMode::Transparent) {
+    exStyle |= WS_EX_LAYERED;
+  } else {
+    exStyle &= ~WS_EX_LAYERED;
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
   }
+  ::SetWindowLongPtrW(mWnd, GWL_EXSTYLE, exStyle);
 
+<<<<<<< HEAD
   if (parent != this) {
     NS_WARNING(
         "Setting SetWindowTranslucencyInner on a parent this is not us!");
@@ -7732,6 +8136,11 @@ void nsWindow::SetWindowTranslucencyInner(TransparencyMode aMode) {
   if (HasGlass()) memset(&mGlassMargins, 0, sizeof mGlassMargins);
   mTransparencyMode = aMode;
 
+=======
+  if (HasGlass()) memset(&mGlassMargins, 0, sizeof mGlassMargins);
+  mTransparencyMode = aMode;
+
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
   if (mCompositorWidgetDelegate) {
     mCompositorWidgetDelegate->UpdateTransparency(aMode);
   }
@@ -8808,7 +9217,16 @@ void nsWindow::GetCompositorWidgetInitData(
 }
 
 bool nsWindow::SynchronouslyRepaintOnResize() {
+<<<<<<< HEAD
   return !gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled();
+=======
+  bool dwmCompositionEnabled =
+      StaticPrefs::widget_native_controls_force_dwm_report_off()
+          ? false
+          : gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled();
+
+  return !dwmCompositionEnabled;
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
 }
 
 void nsWindow::MaybeDispatchInitialFocusEvent() {

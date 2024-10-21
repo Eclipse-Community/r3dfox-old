@@ -27,7 +27,12 @@ namespace wr {
 class RenderDXGITextureHost final : public RenderTextureHostSWGL {
  public:
   RenderDXGITextureHost(
+<<<<<<< HEAD
       const HANDLE aHandle, const Maybe<layers::GpuProcessTextureId>& aGpuProcessTextureId,
+=======
+      const HANDLE aHandle,
+      const Maybe<layers::GpuProcessTextureId>& aGpuProcessTextureId,
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
       const uint32_t aArrayIndex, const gfx::SurfaceFormat aFormat,
       const gfx::ColorSpace2 aColorSpace, const gfx::ColorRange aColorRange,
       const gfx::IntSize aSize, const bool aHasKeyedMutex,

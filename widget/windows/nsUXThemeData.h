@@ -19,6 +19,10 @@
 enum nsUXThemeClass {
   eUXButton = 0,
   eUXEdit,
+<<<<<<< HEAD
+=======
+  eUXTooltip,
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
   eUXRebar,
   eUXMediaRebar,
   eUXCommunicationsRebar,
@@ -28,8 +32,13 @@ enum nsUXThemeClass {
   eUXCommunicationsToolbar,
   eUXProgress,
   eUXTab,
+  eUXScrollbar,
   eUXTrackbar,
   eUXSpin,
+<<<<<<< HEAD
+=======
+  eUXStatus,
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
   eUXCombobox,
   eUXHeader,
   eUXListview,

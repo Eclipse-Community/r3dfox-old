@@ -437,6 +437,9 @@ UTILITY_PROCESSES += [
 
     # Causes crashes in the LPAC utility process for PlayReady, bug 1895174
     DllBlocklistEntry("WRusr.dll", ALL_VERSIONS),
+
+    # Messes with user32 and breaks Utility on Win7 x86
+    DllBlocklistEntry("aswhook.dll", ALL_VERSIONS, BLOCK_WIN7_AND_OLDER),
 ]
 
 UTILITY_PROCESSES_TESTS += [

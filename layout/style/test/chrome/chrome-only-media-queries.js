@@ -7,10 +7,14 @@ const CHROME_ONLY_TOGGLES = [
   "-moz-scrollbar-end-backward",
   "-moz-scrollbar-end-forward",
   "-moz-overlay-scrollbars",
+<<<<<<< HEAD
   "-moz-windows-classic",
   "-moz-windows-compositor",
   "-moz-windows-default-theme",
   "-moz-mac-graphite-theme",
+=======
+  "-moz-windows-default-theme",
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
   "-moz-mac-big-sur-theme",
   "-moz-menubar-drag",
   "-moz-windows-accent-color-in-titlebar",

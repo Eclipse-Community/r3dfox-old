@@ -310,8 +310,13 @@ nsresult nsTextControlFrame::EnsureEditorInitialized() {
      public:
       explicit EnsureSetFocus(nsTextControlFrame* aFrame) : mFrame(aFrame) {}
       ~EnsureSetFocus() {
+<<<<<<< HEAD
         if (nsFocusManager::GetFocusedElementStatic() == mFrame->GetContent())
           mFrame->SetFocus(true, false);
+=======
+        if (nsFocusManager::GetFocusedElementStatic() == (mFrame->GetContent()))
+        mFrame->SetFocus(true, false);
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
       }
 
      private:

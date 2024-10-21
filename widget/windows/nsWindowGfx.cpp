@@ -219,12 +219,25 @@ bool nsWindow::OnPaint(HDC aDC, uint32_t aNestingLevel) {
   }
   mLastPaintBounds = mBounds;
 
+<<<<<<< HEAD
   if (!aDC && IsPopup() && renderer->GetBackendType() == LayersBackend::LAYERS_NONE &&
       TransparencyMode::Transparent == mTransparencyMode) {
     // For layered translucent windows all drawing should go to memory DC and no
     // WM_PAINT messages are normally generated. To support asynchronous
     // painting we force generation of WM_PAINT messages by invalidating window
     // areas with RedrawWindow, InvalidateRect or InvalidateRgn function calls.
+=======
+  // For layered translucent windows all drawing should go to memory DC and no
+  // WM_PAINT messages are normally generated. To support asynchronous painting
+  // we force generation of WM_PAINT messages by invalidating window areas with
+  // RedrawWindow, InvalidateRect or InvalidateRgn function calls.
+  const bool usingMemoryDC =
+      renderer->GetBackendType() == LayersBackend::LAYERS_NONE &&
+      mTransparencyMode == TransparencyMode::Transparent;
+
+  HDC hDC = nullptr;
+  if (usingMemoryDC) {
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
     // BeginPaint/EndPaint must be called to make Windows think that invalid
     // area is painted. Otherwise it will continue sending the same message
     // endlessly.
@@ -233,6 +246,7 @@ bool nsWindow::OnPaint(HDC aDC, uint32_t aNestingLevel) {
 
     // We're guaranteed to have a widget proxy since we called
     // GetLayerManager().
+<<<<<<< HEAD
     aDC = mBasicLayersSurface->GetTransparentDC();
   }
 
@@ -240,6 +254,15 @@ bool nsWindow::OnPaint(HDC aDC, uint32_t aNestingLevel) {
 
   bool forceRepaint = aDC || TransparencyMode::Transparent == mTransparencyMode;
   LayoutDeviceIntRegion region = GetRegionToPaint(forceRepaint, ps, hDC);
+=======
+    hDC = mBasicLayersSurface->GetTransparentDC();
+  } else {
+    hDC = ::BeginPaint(mWnd, &ps);
+  }
+
+  const bool forceRepaint = mTransparencyMode == TransparencyMode::Transparent;
+  const LayoutDeviceIntRegion region = GetRegionToPaint(forceRepaint, ps, hDC);
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
 
   RefPtr<nsWindow> strongThis(this);
 
@@ -286,7 +309,11 @@ bool nsWindow::OnPaint(HDC aDC, uint32_t aNestingLevel) {
       RefPtr<gfxASurface> targetSurface;
 
       // don't support transparency for non-GDI rendering, for now
+<<<<<<< HEAD
       if (IsPopup() && TransparencyMode::Transparent == mTransparencyMode) {
+=======
+      if (TransparencyMode::Transparent == mTransparencyMode) {
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
         // This mutex needs to be held when EnsureTransparentSurface is
         // called.
         MutexAutoLock lock(mBasicLayersSurface->GetTransparentSurfaceLock());
@@ -326,6 +353,14 @@ bool nsWindow::OnPaint(HDC aDC, uint32_t aNestingLevel) {
           // rendering the whole window; make sure we clear it first
           dt->ClearRect(Rect(dt->GetRect()));
           break;
+<<<<<<< HEAD
+=======
+        case TransparencyMode::BorderlessGlass:
+        default:
+          // If we're not doing translucency, then double buffer
+          doubleBuffering = mozilla::layers::BufferMode::BUFFERED;
+          break;
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
       }
 
       gfxContext thebesContext(dt);
@@ -338,7 +373,11 @@ bool nsWindow::OnPaint(HDC aDC, uint32_t aNestingLevel) {
         }
       }
 
+<<<<<<< HEAD
       if (IsPopup() && TransparencyMode::Transparent == mTransparencyMode) {
+=======
+      if (TransparencyMode::Transparent == mTransparencyMode) {
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
         // Data from offscreen drawing surface was copied to memory bitmap of
         // transparent bitmap. Now it can be read from memory bitmap to apply
         // alpha channel and after that displayed on the screen.
@@ -349,8 +388,13 @@ bool nsWindow::OnPaint(HDC aDC, uint32_t aNestingLevel) {
       if (nsIWidgetListener* listener = GetPaintListener()) {
         result = listener->PaintWindow(this, region);
       }
+<<<<<<< HEAD
         if (!gfxEnv::MOZ_DISABLE_FORCE_PRESENT() &&
             gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled()) {
+=======
+      if (!gfxEnv::MOZ_DISABLE_FORCE_PRESENT() &&
+          gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled()) {
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
         nsCOMPtr<nsIRunnable> event = NewRunnableMethod(
             "nsWindow::ForcePresent", this, &nsWindow::ForcePresent);
         NS_DispatchToMainThread(event);

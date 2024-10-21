@@ -1591,6 +1591,13 @@ pub enum Appearance {
     Range,
     #[parse(condition = "ParserContext::chrome_rules_enabled")]
     RangeThumb,
+    /// The resizer background area in a status bar for the resizer widget in
+    /// the corner of a window.
+    #[parse(condition = "ParserContext::chrome_rules_enabled")]
+    Resizerpanel,
+    /// The resizer itself.
+    #[parse(condition = "ParserContext::chrome_rules_enabled")]
+    Resizer,
     /// The scrollbar slider
     #[parse(condition = "ParserContext::chrome_rules_enabled")]
     ScrollbarHorizontal,
@@ -1636,6 +1643,9 @@ pub enum Appearance {
     /// A status bar in a main application window.
     #[parse(condition = "ParserContext::chrome_rules_enabled")]
     Statusbar,
+    /// A single pane of a status bar.
+    #[parse(condition = "ParserContext::chrome_rules_enabled")]
+    Statusbarpanel,
     /// A single tab in a tab widget.
     #[parse(condition = "ParserContext::chrome_rules_enabled")]
     Tab,
@@ -1659,19 +1669,44 @@ pub enum Appearance {
     /// The dropdown portion of a toolbar button
     #[parse(condition = "ParserContext::chrome_rules_enabled")]
     ToolbarbuttonDropdown,
+<<<<<<< HEAD
     /// The gripper for a toolbar.
     #[parse(condition = "ParserContext::chrome_rules_enabled")]
     Toolbargripper,
+=======
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
     /// The toolbox that contains the toolbars.
     #[parse(condition = "ParserContext::chrome_rules_enabled")]
     Toolbox,
     /// A tooltip.
     #[parse(condition = "ParserContext::chrome_rules_enabled")]
     Tooltip,
+    /// A listbox or tree widget header
+    #[parse(condition = "ParserContext::chrome_rules_enabled")]
+    Treeheader,
+    /// An individual header cell
+    #[parse(condition = "ParserContext::chrome_rules_enabled")]
+    Treeheadercell,
+    /// A tree item.
+    #[parse(condition = "ParserContext::chrome_rules_enabled")]
+    Treeitem,
+    /// A tree widget branch line
+    #[parse(condition = "ParserContext::chrome_rules_enabled")]
+    Treeline,
+    /// A tree widget twisty.
+    #[parse(condition = "ParserContext::chrome_rules_enabled")]
+    Treetwisty,
+    /// Open tree widget twisty.
+    #[parse(condition = "ParserContext::chrome_rules_enabled")]
+    Treetwistyopen,
+    /// A tree widget.
+    #[parse(condition = "ParserContext::chrome_rules_enabled")]
+    Treeview,
 
     /// Sidebar appearance.
     #[parse(condition = "ParserContext::chrome_rules_enabled")]
     MozSidebar,
+<<<<<<< HEAD
     /// A listbox or tree widget header
     #[parse(condition = "ParserContext::chrome_rules_enabled")]
     Treeheader,
@@ -1696,6 +1731,13 @@ pub enum Appearance {
     /// A tree widget.
     #[parse(condition = "ParserContext::chrome_rules_enabled")]
     Treeview,
+=======
+    #[parse(condition = "ParserContext::chrome_rules_enabled")]
+    MozWinBorderlessGlass,
+    /// -moz-apperance style used in setting proper glass margins.
+    #[parse(condition = "ParserContext::chrome_rules_enabled")]
+    MozWinExcludeGlass,
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
 
     /// Vista Rebars.
     #[parse(condition = "ParserContext::chrome_rules_enabled")]
@@ -1704,11 +1746,14 @@ pub enum Appearance {
     MozWinMediaToolbox,
     #[parse(condition = "ParserContext::chrome_rules_enabled")]
     MozWinBrowsertabbarToolbox,
+<<<<<<< HEAD
     #[parse(condition = "ParserContext::chrome_rules_enabled")]
     MozWinBorderlessGlass,
     /// -moz-apperance style used in setting proper glass margins.
     #[parse(condition = "ParserContext::chrome_rules_enabled")]
     MozWinExcludeGlass,
+=======
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
 
     /// Mac help button.
     #[parse(condition = "ParserContext::chrome_rules_enabled")]

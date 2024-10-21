@@ -11,6 +11,7 @@ menupopup::part(drop-indicator) {
   margin-inline-start: 5px;
 }
 
+<<<<<<< HEAD
 @media not (-moz-windows-non-native-menus) {
   .toolbar-menupopup {
     --panel-shadow-margin: 4px;
@@ -18,5 +19,20 @@ menupopup::part(drop-indicator) {
 
   .toolbar-menupopup menupopup {
     margin-inline-start: var(--nested-margin);
+=======
+.toolbar-menupopup {
+  --nested-margin: calc(-1 * (var(--arrowpanel-menuitem-padding-inline) + var(--panel-shadow-margin)));
+}
+
+@media (-moz-bool-pref: "widget.non-native-theme.enabled") {
+  @media not (-moz-windows-non-native-menus) {
+    .toolbar-menupopup {
+      --panel-shadow-margin: 4px;
+    }
+
+    .toolbar-menupopup menupopup {
+      margin-inline-start: var(--nested-margin);
+    }
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
   }
 }

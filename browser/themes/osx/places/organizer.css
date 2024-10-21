@@ -154,6 +154,7 @@
   border: none;
 }
 
+<<<<<<< HEAD
 #placeContent > treechildren::-moz-tree-cell,
 #placeContent > treechildren::-moz-tree-column {
   border-inline-end: 1px solid color-mix(in srgb, FieldText 30%, transparent);
@@ -161,6 +162,16 @@
 
 #placeContent > treechildren::-moz-tree-cell(separator) {
   border-color: transparent;
+=======
+  > treechildren::-moz-tree-cell,
+  > treechildren::-moz-tree-column {
+    border-inline-end: 1px solid color-mix(in srgb, FieldText 30%, transparent);
+  }
+
+  > treechildren::-moz-tree-cell(separator) {
+    border-color: transparent;
+  }
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
 }
 
 /**

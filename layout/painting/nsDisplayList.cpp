@@ -839,7 +839,10 @@ void nsDisplayListBuilder::SetGlassDisplayItem(nsDisplayItem* aItem) {
   // own elements (as long as they are root frames, which is rare as each doc
   // only gets one near the root). We only care about the first one, since that
   // will be the background of the root window.
+<<<<<<< HEAD
 
+=======
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
   if (IsPartialUpdate()) {
     if (aItem->Frame()->Style()->IsRootElementStyle()) {
 #ifdef DEBUG
@@ -854,7 +857,10 @@ void nsDisplayListBuilder::SetGlassDisplayItem(nsDisplayItem* aItem) {
     }
     return;
   }
+<<<<<<< HEAD
 
+=======
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
   if (aItem->Frame()->Style()->IsRootElementStyle()) {
 #ifdef DEBUG
     if (mGlassDisplayItem) {
@@ -867,7 +873,10 @@ void nsDisplayListBuilder::SetGlassDisplayItem(nsDisplayItem* aItem) {
     }
   }
 }
+<<<<<<< HEAD
 
+=======
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
 bool nsDisplayListBuilder::NeedToForceTransparentSurfaceForItem(
     nsDisplayItem* aItem) {
   return aItem == mGlassDisplayItem;

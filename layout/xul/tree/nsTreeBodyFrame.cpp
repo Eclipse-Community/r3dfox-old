@@ -1712,14 +1712,23 @@ void nsTreeBodyFrame::PrefillPropertyArray(int32_t aRowIndex,
   mScratchArray.Clear();
 
   // focus
+<<<<<<< HEAD
   if (mFocused)
     mScratchArray.AppendElement((nsStaticAtom*)nsGkAtoms::focus);
   else
     mScratchArray.AppendElement((nsStaticAtom*)nsGkAtoms::blur);
+=======
+  if (mFocused) {
+    mScratchArray.AppendElement((nsStaticAtom*)nsGkAtoms::focus);
+  } else {
+    mScratchArray.AppendElement((nsStaticAtom*)nsGkAtoms::blur);
+  }
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
 
   // sort
   bool sorted = false;
   mView->IsSorted(&sorted);
+<<<<<<< HEAD
   if (sorted) mScratchArray.AppendElement((nsStaticAtom*)nsGkAtoms::sorted);
 
   // drag session
@@ -1729,20 +1738,47 @@ void nsTreeBodyFrame::PrefillPropertyArray(int32_t aRowIndex,
   if (aRowIndex != -1) {
     if (aRowIndex == mMouseOverRow)
       mScratchArray.AppendElement((nsStaticAtom*)nsGkAtoms::hover);
+=======
+  if (sorted) {
+    mScratchArray.AppendElement((nsStaticAtom*)nsGkAtoms::sorted);
+  }
+
+  // drag session
+  if (mSlots && mSlots->mIsDragging) {
+    mScratchArray.AppendElement((nsStaticAtom*)nsGkAtoms::dragSession);
+  }
+
+  if (aRowIndex != -1) {
+    if (aRowIndex == mMouseOverRow) {
+      mScratchArray.AppendElement((nsStaticAtom*)nsGkAtoms::hover);
+    }
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
 
     nsCOMPtr<nsITreeSelection> selection = GetSelection();
     if (selection) {
       // selected
       bool isSelected;
       selection->IsSelected(aRowIndex, &isSelected);
+<<<<<<< HEAD
       if (isSelected)
         mScratchArray.AppendElement((nsStaticAtom*)nsGkAtoms::selected);
+=======
+      if (isSelected) {
+        mScratchArray.AppendElement((nsStaticAtom*)nsGkAtoms::selected);
+      }
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
 
       // current
       int32_t currentIndex;
       selection->GetCurrentIndex(&currentIndex);
+<<<<<<< HEAD
       if (aRowIndex == currentIndex)
         mScratchArray.AppendElement((nsStaticAtom*)nsGkAtoms::current);
+=======
+      if (aRowIndex == currentIndex) {
+        mScratchArray.AppendElement((nsStaticAtom*)nsGkAtoms::current);
+      }
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
     }
 
     // container or leaf
@@ -1754,16 +1790,25 @@ void nsTreeBodyFrame::PrefillPropertyArray(int32_t aRowIndex,
       // open or closed
       bool isOpen = false;
       mView->IsContainerOpen(aRowIndex, &isOpen);
+<<<<<<< HEAD
       if (isOpen)
         mScratchArray.AppendElement((nsStaticAtom*)nsGkAtoms::open);
       else
         mScratchArray.AppendElement((nsStaticAtom*)nsGkAtoms::closed);
+=======
+      if (isOpen) {
+        mScratchArray.AppendElement((nsStaticAtom*)nsGkAtoms::open);
+      } else {
+        mScratchArray.AppendElement((nsStaticAtom*)nsGkAtoms::closed);
+      }
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
     } else {
       mScratchArray.AppendElement((nsStaticAtom*)nsGkAtoms::leaf);
     }
 
     // drop orientation
     if (mSlots && mSlots->mDropAllowed && mSlots->mDropRow == aRowIndex) {
+<<<<<<< HEAD
       if (mSlots->mDropOrient == nsITreeView::DROP_BEFORE)
         mScratchArray.AppendElement((nsStaticAtom*)nsGkAtoms::dropBefore);
       else if (mSlots->mDropOrient == nsITreeView::DROP_ON)
@@ -1777,6 +1822,23 @@ void nsTreeBodyFrame::PrefillPropertyArray(int32_t aRowIndex,
       mScratchArray.AppendElement((nsStaticAtom*)nsGkAtoms::odd);
     else
       mScratchArray.AppendElement((nsStaticAtom*)nsGkAtoms::even);
+=======
+      if (mSlots->mDropOrient == nsITreeView::DROP_BEFORE) {
+        mScratchArray.AppendElement((nsStaticAtom*)nsGkAtoms::dropBefore);
+      } else if (mSlots->mDropOrient == nsITreeView::DROP_ON) {
+        mScratchArray.AppendElement((nsStaticAtom*)nsGkAtoms::dropOn);
+      } else if (mSlots->mDropOrient == nsITreeView::DROP_AFTER) {
+        mScratchArray.AppendElement((nsStaticAtom*)nsGkAtoms::dropAfter);
+      }
+    }
+
+    // odd or even
+    if (aRowIndex % 2) {
+      mScratchArray.AppendElement((nsStaticAtom*)nsGkAtoms::odd);
+    } else {
+      mScratchArray.AppendElement((nsStaticAtom*)nsGkAtoms::even);
+    }
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
 
     XULTreeElement* tree = GetBaseElement();
     if (tree && tree->HasAttr(nsGkAtoms::editing)) {
@@ -1784,15 +1846,27 @@ void nsTreeBodyFrame::PrefillPropertyArray(int32_t aRowIndex,
     }
 
     // multiple columns
+<<<<<<< HEAD
     if (mColumns->GetColumnAt(1))
       mScratchArray.AppendElement((nsStaticAtom*)nsGkAtoms::multicol);
+=======
+    if (mColumns->GetColumnAt(1)) {
+      mScratchArray.AppendElement((nsStaticAtom*)nsGkAtoms::multicol);
+    }
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
   }
 
   if (aCol) {
     mScratchArray.AppendElement(aCol->GetAtom());
 
+<<<<<<< HEAD
     if (aCol->IsPrimary())
       mScratchArray.AppendElement((nsStaticAtom*)nsGkAtoms::primary);
+=======
+    if (aCol->IsPrimary()) {
+      mScratchArray.AppendElement((nsStaticAtom*)nsGkAtoms::primary);
+    }
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
 
     if (aCol->GetType() == TreeColumn_Binding::TYPE_CHECKBOX) {
       mScratchArray.AppendElement((nsStaticAtom*)nsGkAtoms::checkbox);
@@ -1800,18 +1874,34 @@ void nsTreeBodyFrame::PrefillPropertyArray(int32_t aRowIndex,
       if (aRowIndex != -1) {
         nsAutoString value;
         mView->GetCellValue(aRowIndex, aCol, value);
+<<<<<<< HEAD
         if (value.EqualsLiteral("true"))
           mScratchArray.AppendElement((nsStaticAtom*)nsGkAtoms::checked);
+=======
+        if (value.EqualsLiteral("true")) {
+          mScratchArray.AppendElement((nsStaticAtom*)nsGkAtoms::checked);
+        }
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
       }
     }
 
     // Read special properties from attributes on the column content node
     if (aCol->mContent->AttrValueIs(kNameSpaceID_None, nsGkAtoms::insertbefore,
+<<<<<<< HEAD
                                     nsGkAtoms::_true, eCaseMatters))
       mScratchArray.AppendElement((nsStaticAtom*)nsGkAtoms::insertbefore);
     if (aCol->mContent->AttrValueIs(kNameSpaceID_None, nsGkAtoms::insertafter,
                                     nsGkAtoms::_true, eCaseMatters))
       mScratchArray.AppendElement((nsStaticAtom*)nsGkAtoms::insertafter);
+=======
+                                    nsGkAtoms::_true, eCaseMatters)) {
+      mScratchArray.AppendElement((nsStaticAtom*)nsGkAtoms::insertbefore);
+    }
+    if (aCol->mContent->AttrValueIs(kNameSpaceID_None, nsGkAtoms::insertafter,
+                                    nsGkAtoms::_true, eCaseMatters)) {
+      mScratchArray.AppendElement((nsStaticAtom*)nsGkAtoms::insertafter);
+    }
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
   }
 }
 
@@ -1845,7 +1935,21 @@ nsITheme* nsTreeBodyFrame::GetTwistyRect(int32_t aRowIndex,
     if (theme->ThemeSupportsWidget(aPresContext, nullptr, appearance))
       useTheme = true;
   }
+<<<<<<< HEAD
 
+=======
+  
+  bool useTheme = false;
+  nsITheme* theme = nullptr;
+  StyleAppearance appearance =
+      aTwistyContext->StyleDisplay()->EffectiveAppearance();
+  if (appearance != StyleAppearance::None) {
+    theme = aPresContext->Theme();
+    if (theme->ThemeSupportsWidget(aPresContext, nullptr, appearance))
+      useTheme = true;
+  }
+  
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
   if (useTheme) {
     LayoutDeviceIntSize minTwistySizePx =
         theme->GetMinimumWidgetSize(aPresContext, this, appearance);
@@ -1856,7 +1960,11 @@ nsITheme* nsTreeBodyFrame::GetTwistyRect(int32_t aRowIndex,
         aPresContext->DevPixelsToAppUnits(minTwistySizePx.width);
     minTwistySize.height =
         aPresContext->DevPixelsToAppUnits(minTwistySizePx.height);
+<<<<<<< HEAD
 
+=======
+        
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
     if (aTwistyRect.width < minTwistySize.width) {
       aTwistyRect.width = minTwistySize.width;
     }
@@ -2655,7 +2763,10 @@ ImgDrawResult nsTreeBodyFrame::PaintRow(int32_t aRowIndex,
   if (appearance != StyleAppearance::None) {
     theme = aPresContext->Theme();
   }
+<<<<<<< HEAD
 
+=======
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
   if (theme && theme->ThemeSupportsWidget(aPresContext, nullptr, appearance)) {
     nsRect dirty;
     dirty.IntersectRect(rowRect, aDirtyRect);
@@ -3116,6 +3227,70 @@ ImgDrawResult nsTreeBodyFrame::PaintTwisty(
     }
   }
 
+<<<<<<< HEAD
+=======
+  ImgDrawResult result = ImgDrawResult::SUCCESS;
+
+  if (shouldPaint) {
+    // Paint our borders and background for our image rect.
+    result &= PaintBackgroundLayer(twistyContext, aPresContext,
+                                   aRenderingContext, twistyRect, aDirtyRect);
+    if (theme) {
+      if (isRTL) {
+        twistyRect.x = rightEdge - twistyRect.width;
+      }
+      // yeah, I know it says we're drawing a background, but a twisty is really
+      // a fg object since it doesn't have anything that gecko would want to
+      // draw over it. Besides, we have to prevent imagelib from drawing it.
+      nsRect dirty;
+      dirty.IntersectRect(twistyRect, aDirtyRect);
+      theme->DrawWidgetBackground(
+          &aRenderingContext, this,
+          twistyContext->StyleDisplay()->EffectiveAppearance(), twistyRect,
+          dirty);
+    } else {
+      // Time to paint the twisty.
+      // Adjust the rect for its border and padding.
+      nsMargin bp(0, 0, 0, 0);
+      GetBorderPadding(twistyContext, bp);
+      twistyRect.Deflate(bp);
+      if (isRTL) {
+        twistyRect.x = rightEdge - twistyRect.width;
+      }
+      imageSize.Deflate(bp);
+
+      // Get the image for drawing.
+      nsCOMPtr<imgIContainer> image =
+          GetImage(aRowIndex, aColumn, true, twistyContext);
+      if (image) {
+        nsPoint anchorPoint = twistyRect.TopLeft();
+
+      // Get the image for drawing.
+      nsCOMPtr<imgIContainer> image;
+      GetImage(aRowIndex, aColumn, true, twistyContext, getter_AddRefs(image));
+      if (image) {
+        nsPoint anchorPoint = twistyRect.TopLeft();
+        
+        // Center the image. XXX Obey vertical-align style prop?
+        if (imageSize.height < twistyRect.height) {
+          anchorPoint.y += (twistyRect.height - imageSize.height) / 2;
+        }
+
+        // Apply context paint if applicable
+        SVGImageContext svgContext;
+        SVGImageContext::MaybeStoreContextPaint(svgContext, *aPresContext,
+                                                *twistyContext, image);
+
+        // Paint the image.
+        result &= nsLayoutUtils::DrawSingleUnscaledImage(
+            aRenderingContext, aPresContext, image, SamplingFilter::POINT,
+            anchorPoint, &aDirtyRect, svgContext, imgIContainer::FLAG_NONE,
+            &imageSize);
+      }
+    }
+  }
+
+>>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
   return result;
 }
 

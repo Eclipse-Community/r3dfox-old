@@ -76,6 +76,26 @@ menulist > menupopup > :is(menuitem, menucaption, menu) {
   height: 16px;
 }
 
+.menu-right {
+  margin-top: 0;
+  margin-bottom: 0;
+  margin-inline-start: 6px;
+  margin-inline-end: 0;
+  width: 2ex;
+  height: 2ex;
+  /* These next two rules are needed to prevent inheritance and thus ugliness */
+  list-style-image: none;
+  appearance: auto;
+  -moz-default-appearance: menuarrow;
+}
+
+.menubar-left {
+  margin-top: 0;
+  margin-bottom: 0;
+  margin-inline-start: 0;
+  margin-inline-end: 2px;
+}
+
 .menubar-text {
   margin: 0 1px;
 }
@@ -92,4 +112,15 @@ menuitem:is([type="checkbox"], [checked="true"]) .menu-iconic-icon {
 menuitem[type="radio"] .menu-iconic-icon {
   appearance: auto;
   -moz-default-appearance: radio;
+}
+
+menuseparator {
+  margin-block: 2px;
+  border-top: 1px solid color-mix(in srgb, currentColor 20%, transparent);
+}
+
+@media (prefers-contrast) {
+  menuseparator {
+    border-top-color: var(--panel-border-color);
+  }
 }

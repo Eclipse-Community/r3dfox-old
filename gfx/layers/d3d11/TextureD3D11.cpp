@@ -834,7 +834,7 @@ static RefPtr<ID3D11Texture2D> OpenSharedD3D11Texture(
       (HANDLE)handle, __uuidof(ID3D11Texture2D),
       (void**)(ID3D11Texture2D**)getter_AddRefs(tex));
   if (FAILED(hr)) {
-    gfxCriticalNote << "Error code from OpenSharedResource1: " << gfx::hexa(hr);
+    gfxCriticalNote << "Error code from OpenSharedResource: " << gfx::hexa(hr);
     return nullptr;
   }
 

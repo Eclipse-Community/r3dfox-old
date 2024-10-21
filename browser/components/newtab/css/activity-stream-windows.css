@@ -1294,6 +1294,11 @@ main section {
   height: 82px;
   margin-inline-start: 16px;
   width: 134px;
+
+  @media (-moz-bool-pref: "r3dfox.browser.plasmafox") {
+    background-size: 222px;
+    width: 225px;
+  }
 }
 .lightWallpaper .search-wrapper .logo-and-wordmark .wordmark {
   color-scheme: light;

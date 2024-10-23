@@ -45,6 +45,48 @@
       list-style-image: url(chrome://browser/skin/r3d-toolbar-drag-indicator.svg) !important;
     }
 
+    @media (-moz-bool-pref: "r3dfox.colors.esr") {
+      --arrowpanel-border-color: light-dark(rgb(255, 111, 63), rgb(183, 98, 69)) !important;
+      --toolbar-field-focus-border-color: light-dark(rgb(255, 96, 42), rgb(183, 98, 69)) !important;
+      --sidebar-border-color: light-dark(rgb(255, 111, 63), rgb(183, 98, 69)) !important;
+      --lwt-toolbar-field-highlight: light-dark(rgb(255, 96, 42), rgb(183, 98, 69)) !important;
+      --newtab-primary-action-background: light-dark(rgb(255, 81, 23), rgb(255, 125, 82)) !important;
+      --newtab-primary-action-background-hover: light-dark(rgb(255, 96, 42), rgb(255, 111, 63)) !important;
+      --newtab-primary-action-background-active: light-dark(rgb(255, 96, 42), rgb(255, 96, 42)) !important;
+      --in-content-primary-button-background: light-dark(rgb(255, 81, 23), rgb(255, 125, 82)) !important;
+      --in-content-primary-button-background-hover: light-dark(rgb(255, 96, 42), rgb(255, 111, 63)) !important;
+      --in-content-primary-button-background-active: light-dark(rgb(255, 96, 42), rgb(255, 96, 42)) !important;
+      --color-accent-primary: light-dark(rgb(255, 81, 23), rgb(255, 141, 102)) !important;
+      --color-accent-primary-hover: light-dark(rgb(255, 111, 63), rgb(255, 125, 82)) !important;
+      --color-accent-primary-active: light-dark(rgb(255, 111, 63), rgb(255, 111, 63)) !important;
+      --link-color: light-dark(rgb(255, 81, 23), rgb(255, 125, 82)) !important;
+      --link-color-hover: light-dark(rgb(255, 81, 23), rgb(255, 125, 82)) !important;
+      --link-color-active: light-dark(rgb(255, 111, 63), rgb(255, 111, 63)) !important;
+      --link-color-visited: light-dark(rgb(255, 81, 23), rgb(255, 125, 82)) !important;
+      --button-primary-bgcolor: light-dark(rgb(255, 81, 23), rgb(255, 141, 102)) !important;
+      --button-primary-hover-bgcolor: light-dark(rgb(255, 111, 63), rgb(255, 125, 82)) !important;
+      --button-primary-active-bgcolor: light-dark(rgb(255, 111, 63), rgb(255, 111, 63)) !important;
+      --toolbarbutton-icon-fill-attention: light-dark(rgb(255, 81, 23), rgb(255, 125, 82)) !important;
+      --download-progress-fill-color: light-dark(rgb(255, 96, 42), rgb(255, 125, 82)) !important;
+      --lwt-tab-line-color: light-dark(rgb(255, 96, 42), rgb(255, 125, 82)) !important;
+  
+      ::selection {
+        background: light-dark(rgb(255, 125, 82), rgb(183, 98, 69)) !important;
+      }
+  
+      .bookmark-item:is(toolbarbutton)[dragover="true"][open="true"] {
+        background: light-dark(rgb(255, 125, 82), rgb(183, 98, 69)) !important;
+      }
+
+      .tab-drop-indicator {
+        background: url(chrome://browser/skin/tabbrowser/esr-tab-drag-indicator.svg) no-repeat center !important;
+      }
+
+      #PlacesToolbarDropIndicator {
+        list-style-image: url(chrome://browser/skin/esr-toolbar-drag-indicator.svg) !important;
+      }
+    }
+
     @media (-moz-bool-pref: "r3dfox.colors.plasmafox") {
       --arrowpanel-border-color: light-dark(rgb(255, 60, 206), rgb(160, 60, 135)) !important;
       --toolbar-field-focus-border-color: light-dark(rgb(255, 40, 201), rgb(160, 60, 135)) !important;

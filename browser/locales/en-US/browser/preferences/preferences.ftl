@@ -170,6 +170,11 @@ r3dfox-colors =
 
 r3dfox-colors-desc = This enables or disables all r3dfox colors.
 
+r3dfox-colors-esr =
+    .label = Use r3dfox ESR colors
+
+r3dfox-colors-esr-desc = This enables or disables the r3dfox ESR colors. Requires Use r3dfox colors to be ticked.
+
 r3dfox-colors-plasmafox =
     .label = Use Plasmafox colors
 

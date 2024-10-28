@@ -32,6 +32,7 @@
 #include "nsAppRunner.h"
 #include "nsXREDirProvider.h"
 #include "mozilla/widget/WinRegistry.h"
+#include "mozilla/WindowsVersion.h"
 #include <io.h>
 #include <propvarutil.h>
 #include <propkey.h>
@@ -281,7 +282,8 @@ bool WinTaskbar::GenerateAppUserModelID(nsAString& aAppUserModelId,
 // static
 bool WinTaskbar::GetAppUserModelID(nsAString& aAppUserModelId,
                                    bool aPrivateBrowsing) {
-  // If an ID has already been set then use that.
+  if (!IsWin7OrLater()) return false;
+
   PWSTR id;
   if (SUCCEEDED(GetCurrentProcessExplicitAppUserModelID(&id))) {
     aAppUserModelId.Assign(id);
@@ -318,7 +320,7 @@ NS_IMETHODIMP
 WinTaskbar::GetAvailable(bool* aAvailable) {
   // ITaskbarList4::HrInit() may fail with shell extensions like blackbox
   // installed. Initialize early to return available=false in those cases.
-  *aAvailable = Initialize();
+  *aAvailable = IsWin7OrLater() && Initialize();
 
   return NS_OK;
 }

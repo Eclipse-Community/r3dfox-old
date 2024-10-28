@@ -862,7 +862,7 @@ void SandboxBroker::SetSecurityLevelForContentProcess(int32_t aSandboxLevel,
   // avoid changing their meaning.
   MOZ_RELEASE_ASSERT(aSandboxLevel >= 1,
                      "Should not be called with aSandboxLevel < 1");
-  if (aSandboxLevel >= 20) {
+  if ((aSandboxLevel >= 20) && (IsWin7OrLater())) {
     jobLevel = sandbox::JOB_LOCKDOWN;
     accessTokenLevel = sandbox::USER_LOCKDOWN;
     initialIntegrityLevel = sandbox::INTEGRITY_LEVEL_LOW;
@@ -1056,7 +1056,7 @@ void SandboxBroker::SetSecurityLevelForContentProcess(int32_t aSandboxLevel,
       sandbox::SBOX_ALL_OK == result,
       "With these static arguments AddRule should never fail, what happened?");
 
-  if (aSandboxLevel >= 20) {
+  if ((aSandboxLevel >= 20) && (IsWin7OrLater())) {
     // Content process still needs to be able to read fonts.
     wchar_t* fontsPath;
     if (SUCCEEDED(

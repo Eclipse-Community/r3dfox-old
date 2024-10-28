@@ -751,6 +751,9 @@ pref("browser.search.serpEventTelemetry.enabled", false);
 // Enables search SERP telemetry page categorization.
 pref("browser.search.serpEventTelemetryCategorization.enabled", false);
 
+// Enables search SERP telemetry page categorization.
+pref("browser.search.serpEventTelemetryCategorization.enabled", false);
+
 // Search Bar removal from the toolbar for users who haven’t used it in 120
 // days
 pref("browser.search.widget.removeAfterDaysUnused", 120);
@@ -1843,6 +1846,9 @@ pref("browser.newtabpage.activity-stream.discoverystream.spocs.personalized", tr
 // Flip this once the user has dismissed the Pocket onboarding experience,
 pref("browser.newtabpage.activity-stream.discoverystream.onboardingExperience.dismissed", false);
 pref("browser.newtabpage.activity-stream.discoverystream.onboardingExperience.enabled", false);
+
+// Disabling telemetry on feeds
+pref("browser.newtabpage.activity-stream.feeds.telemetry", false);
 
 // Disabling telemetry on feeds
 pref("browser.newtabpage.activity-stream.feeds.telemetry", false);

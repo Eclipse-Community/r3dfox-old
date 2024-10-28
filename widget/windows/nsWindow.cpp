@@ -1079,7 +1079,7 @@ nsresult nsWindow::Create(nsIWidget* aParent, const LayoutDeviceIntRect& aRect,
         (aInitData->mIsPrivate) &&
         !StaticPrefs::browser_privatebrowsing_autostart();
     RefPtr<IPropertyStore> pPropStore;
-    if (!FAILED(SHGetPropertyStoreForWindow(mWnd, IID_IPropertyStore,
+    if (IsWin7OrLater() && !FAILED(SHGetPropertyStoreForWindow(mWnd, IID_IPropertyStore,
                                             getter_AddRefs(pPropStore)))) {
       PROPVARIANT pv;
       nsAutoString aumid;

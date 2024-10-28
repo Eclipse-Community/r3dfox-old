@@ -214,7 +214,7 @@ function init_all() {
 
   NimbusFeatures.moreFromMozilla.recordExposureEvent({ once: true });
   if (NimbusFeatures.moreFromMozilla.getVariable("enabled")) {
-    document.getElementById("category-more-from-mozilla").hidden = false;
+    document.getElementById("category-more-from-mozilla").hidden = true;
     gMoreFromMozillaPane.option =
       NimbusFeatures.moreFromMozilla.getVariable("template");
     register_module("paneMoreFromMozilla", gMoreFromMozillaPane);

@@ -710,7 +710,7 @@ home-prefs-shortcuts-by-option-sponsored =
 
 home-prefs-recommended-by-header-generic =
     .label = Recommended stories
-home-prefs-recommended-by-description-generic = Exceptional content curated by the { -brand-product-name } family
+home-prefs-recommended-by-description-generic = Exceptional content curated by Mozilla
 
 ##
 
@@ -1437,33 +1437,33 @@ permissions-addon-exceptions =
 
 ## Privacy Section - Data Collection
 
-collection-header2 = { -brand-short-name } Data Collection and Use
+collection-header2 = Mozilla Data Collection and Use
     .searchkeywords = telemetry
 
-collection-description = We strive to provide you with choices and collect only what we need to provide and improve { -brand-short-name } for everyone. We always ask permission before receiving personal information.
+collection-description = Mozilla wants your data.
 collection-privacy-notice = Privacy Notice
 
-collection-health-report-telemetry-disabled = You’re no longer allowing { -vendor-short-name } to capture technical and interaction data. All past data will be deleted within 30 days.
+collection-health-report-telemetry-disabled = You’re no longer allowing Mozilla to capture technical and interaction data. All past data will be deleted within 30 days.
 collection-health-report-telemetry-disabled-link = Learn more
 
 collection-health-report =
-    .label = Allow { -brand-short-name } to send technical and interaction data to { -vendor-short-name }
+    .label = Allow Mozilla to collect technical and interaction data
     .accesskey = r
 collection-health-report-link = Learn more
 
 collection-studies =
-    .label = Allow { -brand-short-name } to install and run studies
-collection-studies-link = View { -brand-short-name } studies
+    .label = Allow Mozilla to install and run studies
+collection-studies-link = View Mozilla studies
 
 addon-recommendations =
-    .label = Allow { -brand-short-name } to make personalized extension recommendations
+    .label = Allow Mozilla to make personalized extension recommendations
 addon-recommendations-link = Learn more
 
 # This message is displayed above disabled data sharing options in developer builds
 # or builds with no Telemetry support available.
 collection-health-report-disabled = Data reporting is disabled for this build configuration
 
-collection-backlogged-crash-reports = Allow { -brand-short-name } to send backlogged crash reports on your behalf
+collection-backlogged-crash-reports = Allow Mozilla to send backlogged crash reports on your behalf
     .accesskey = c
 
 privacy-segmentation-section-header = New features that enhance your browsing
@@ -1471,7 +1471,7 @@ privacy-segmentation-section-header = New features that enhance your browsing
 privacy-segmentation-section-description = When we offer features that use your data to give you a more personal experience:
 
 privacy-segmentation-radio-off =
-    .label = Use { -brand-product-name } recommendations
+    .label = Use Mozilla recommendations
 
 privacy-segmentation-radio-on =
     .label = Show detailed information

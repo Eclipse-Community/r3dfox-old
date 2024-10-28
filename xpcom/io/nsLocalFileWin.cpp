@@ -10,6 +10,7 @@
 #include "mozilla/TextUtils.h"
 #include "mozilla/UniquePtrExtensions.h"
 #include "mozilla/Utf8.h"
+#include "mozilla/WindowsVersion.h"
 #include "mozilla/WinHeaderOnlyUtils.h"
 
 #include "nsCOMPtr.h"
@@ -1825,11 +1826,13 @@ nsresult nsLocalFile::CopySingleFile(nsIFile* aSourceFile, nsIFile* aDestParent,
     // without COPY_FILE_NO_BUFFERING takes < 1ms. So we only use
     // COPY_FILE_NO_BUFFERING when we have a remote drive.
     DWORD dwCopyFlags = COPY_FILE_ALLOW_DECRYPTED_DESTINATION;
-    bool path1Remote, path2Remote;
-    if (!IsRemoteFilePath(filePath.get(), path1Remote) ||
-        !IsRemoteFilePath(destPath.get(), path2Remote) || path1Remote ||
-        path2Remote) {
-      dwCopyFlags |= COPY_FILE_NO_BUFFERING;
+    if (IsVistaOrLater()) {
+      bool path1Remote, path2Remote;
+      if (!IsRemoteFilePath(filePath.get(), path1Remote) ||
+          !IsRemoteFilePath(destPath.get(), path2Remote) ||
+          path1Remote || path2Remote) {
+        dwCopyFlags |= COPY_FILE_NO_BUFFERING;
+      }
     }
 
     copyOK = ::CopyFileExW(filePath.get(), destPath.get(), nullptr, nullptr,

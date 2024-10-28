@@ -1088,12 +1088,19 @@ nsresult nsWindow::Create(nsIWidget* aParent, const LayoutDeviceIntRect& aRect,
       Unused << NS_WARN_IF(!mozilla::widget::WinTaskbar::GenerateAppUserModelID(
           aumid, usePrivateAumid));
       if (!usePrivateAumid && widget::WinUtils::HasPackageIdentity()) {
+        // `GetCurrentApplicationUserModelId` added in Windows 8.
+        DynamicallyLinkedFunctionPtr<decltype(&GetCurrentApplicationUserModelId)>
+            pGetCurrentApplicationUserModelId(L"kernel32.dll",
+                                              "GetCurrentApplicationUserModelId");
+        if (!pGetCurrentApplicationUserModelId) {
+          return NS_OK;
+        }
         // On MSIX we should always have a provided process AUMID
         // that we can explicitly assign to a regular window.
         UINT32 maxLength = MAX_PATH;
         aumid.SetLength(maxLength);
         Unused << NS_WARN_IF(
-            GetCurrentApplicationUserModelId(&maxLength, aumid.get()));
+            pGetCurrentApplicationUserModelId(&maxLength, aumid.get()));
       }
       if (!FAILED(InitPropVariantFromString(aumid.get(), &pv))) {
         if (!FAILED(pPropStore->SetValue(PKEY_AppUserModel_ID, pv))) {

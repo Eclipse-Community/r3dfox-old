@@ -1566,7 +1566,7 @@ uint32_t WinUtils::IsTouchDeviceSupportPresent() {
 
 /* static */
 uint32_t WinUtils::GetMaxTouchPoints() {
-  if (IsTouchDeviceSupportPresent()) {
+  if (IsWin7OrLater() && IsTouchDeviceSupportPresent()) {
     return GetSystemMetrics(SM_MAXIMUMTOUCHES);
   }
   return 0;

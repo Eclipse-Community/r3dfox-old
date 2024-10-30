@@ -267,7 +267,7 @@
     --tab-scroll-animation-inline-margin: calc(-1 * var(--tab-first-last-inline-margin));
     --tab-scroll-animation-inline-padding: var(--tab-first-last-inline-margin);
     --tab-bg-block-margin: 0px;
-    --tab-inline-padding: 0px;
+    --my-tab-inline-padding: 0px;
     --tab-separator-offset: 0px;
     --arrowpanel-background: light-dark(rgba(255, 255, 255, 0.975), rgba(66, 65, 77, 0.975)) !important;
     --toolbar-field-focus-background-color: light-dark(rgba(255, 255, 255, 0.975), rgba(66, 65, 77, 0.975)) !important;
@@ -421,87 +421,122 @@
           background-color: var(--toolbarbutton-active-background) !important;
       }
   }
-  
-  .tabbrowser-tab {
-      --tab-label-mask-size: 0px !important;
-      overflow-x: clip !important;
-      overflow-y: visible !important;
-      overflow-clip-margin: var(--tab-overflow-clip-margin) !important;
-      clip-path: inset(var(--tab-inset-clip-path)) !important;
-      padding-inline: var(--tab-inline-padding) !important;
-  
-      &[visuallyselected]
-      {
-          position: relative;
-          z-index: 2 !important;
-          filter: var(--additional-outer-drop-shadow)
-                  var(--outer-drop-shadow);
-      }
-  
-      &:not([visuallyselected])
-      {
-          color: inherit !important;
-  
-          &:hover .tab-background
-          {
-              background-color: var(--toolbarbutton-hover-background) !important;
-          }
-  
-          &[multiselected] .tab-background
-          {
-              background-color: var(--toolbarbutton-active-background) !important;
-          }
-      }
-  
-      .tab-background
-      {
-          mask-image: url("r3d_left_corner.svg"), url("r3d_center.svg"), url("r3d_right_corner.svg");
-          mask-size: auto 100%, calc(100% - var(--tab-min-height) * 2) 100%, auto 100%;
-          mask-position: left center, center center, right center;
-          mask-repeat: no-repeat, no-repeat, no-repeat;
-          box-shadow: none !important;
-          outline: none !important;
-          margin-block: var(--tab-bg-block-margin) !important;
-          margin-inline: calc(-1 * (var(--tab-min-height) / 2)) !important;
-          border-radius: 0px !important;
-          pointer-events: none !important;
-      }
-  
-      &[pinned] .tab-content
-      {
-          padding-inline: calc((var(--tab-min-height) - 16px) / 2 + var(--pinned-tabs-width-offset, 0px)) !important;
-      }
-  
-      &:not([pinned]) .tab-content
-      {
-          padding-inline: 10px !important;
-      }
-  }
 
-  #tabbrowser-tabs[movingtab] .tabbrowser-tab:not([visuallyselected]) {
-      z-index: auto !important;
-  }
-  
-  .tabbrowser-tab[pending] .tab-icon-image {
-      filter: saturate(0) !important;
-  }
-  
-  .tab-close-button {
-      width: 16px !important;
-      height: 16px !important;
-      border-radius: 50% !important;
-      padding: 2px !important;
-      margin: 0px !important;
-  }
-  
-  .tab-close-button:hover {
-      background-color: var(--toolbarbutton-hover-background) !important;
-  }
-  
-  .tab-close-button:hover:active {
-      background-color: var(--toolbarbutton-active-background) !important;
-  }
-  
+.tabbrowser-tab
+{
+    --tab-label-mask-size: 0px !important;
+    overflow-clip-margin: var(--tab-min-height) !important;
+    padding-inline: var(--my-tab-inline-padding) !important;
+
+    &[visuallyselected]
+    {
+        color: var(--toolbar-color) !important;
+        position: relative;
+        z-index: 2 !important;
+
+        .tab-background
+        {
+            --gradient-background-image: linear-gradient(var(--toolbar-bgcolor), var(--toolbar-bgcolor));
+            --gradient-background-attachment: fixed;
+            --gradient-background-size: auto auto;
+            --gradient-background-position: left top;
+            --gradient-background-repeat: no-repeat;
+
+            --amo-background-image-1: var(--lwt-header-image, none);
+            --amo-background-attachment-1: fixed;
+            --amo-background-size-1: auto auto;
+            --amo-background-position-1: right top;
+            --amo-background-repeat-1: no-repeat;
+
+            --amo-background-image-2: var(--lwt-additional-images, none);
+            --amo-background-attachment-2: fixed, fixed, fixed;
+            --amo-background-size-2: auto auto, auto auto, auto auto;
+            --amo-background-position-2: var(--lwt-background-alignment);
+            --amo-background-repeat-2: var(--lwt-background-tiling);
+
+            background-color: transparent !important;
+            background-image: var(--gradient-background-image), var(--amo-background-image-1), var(--amo-background-image-2) !important;
+            background-attachment: var(--gradient-background-attachment), var(--amo-background-attachment-1), var(--amo-background-attachment-2) !important;
+            background-size: var(--gradient-background-size), var(--amo-background-size-1), var(--amo-background-size-2) !important;
+            background-position: var(--gradient-background-position), var(--amo-background-position-1), var(--amo-background-position-2) !important;
+            background-repeat: var(--gradient-background-repeat), var(--amo-background-repeat-1), var(--amo-background-repeat-2) !important;
+        }
+    }
+
+    &:not([visuallyselected])
+    {
+        color: inherit !important;
+
+        &:hover .tab-background
+        {
+            background-color: var(--toolbarbutton-hover-background) !important;
+        }
+
+        &[multiselected] .tab-background
+        {
+            background-color: var(--toolbarbutton-active-background) !important;
+        }
+
+        #tabbrowser-tabs[movingtab] &
+        {
+            z-index: 0 !important;
+        }
+    }
+
+    .tab-background
+    {
+        mask-image: url("r3d_left_corner.svg"), url("r3d_center.svg"), url("r3d_right_corner.svg");
+        mask-size: auto 100%, calc(100% - var(--tab-min-height) * 2) 100%, auto 100%;
+        mask-position: left center, center center, right center;
+        mask-repeat: no-repeat, no-repeat, no-repeat;
+        box-shadow: none !important;
+        outline: none !important;
+        margin-block: var(--tab-bg-block-margin) !important;
+        margin-inline: calc(-1 * (var(--tab-min-height) / 2)) !important;
+        border-radius: 0px !important;
+        pointer-events: none !important;
+    }
+
+    &[pinned] .tab-content
+    {
+        padding-inline: calc((var(--tab-min-height) - 16px) / 2 + var(--pinned-tabs-width-offset, 0px)) !important;
+    }
+
+    &:not([pinned]) .tab-content
+    {
+        padding-inline: 10px !important;
+    }
+}
+
+#tabbrowser-tabs[overflow] .tab-drop-indicator
+{
+    inset-inline-start: var(--tab-first-last-inline-margin) !important;
+}
+
+.tabbrowser-tab[pending] .tab-icon-image
+{
+    filter: saturate(0) !important;
+}
+
+.tab-close-button
+{
+    width: 16px !important;
+    height: 16px !important;
+    border-radius: 50% !important;
+    padding: 2px !important;
+    margin: 0px !important;
+}
+
+.tab-close-button:hover
+{
+    background-color: var(--toolbarbutton-hover-background) !important;
+}
+
+.tab-close-button:hover:active
+{
+    background-color: var(--toolbarbutton-active-background) !important;
+}
+
   /* -------------------- Selected Tab Indicator -------------------- */
 
   @media not (-moz-bool-pref: "r3dfox.colors.enabled") {

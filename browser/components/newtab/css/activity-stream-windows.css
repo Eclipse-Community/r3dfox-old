@@ -1296,8 +1296,8 @@ main section {
   width: 134px;
 
   @media (-moz-bool-pref: "r3dfox.browser.plasmafox") {
-    background-size: 222px;
-    width: 225px;
+    background-size: 220px;
+    width: 220px;
   }
 }
 .lightWallpaper .search-wrapper .logo-and-wordmark .wordmark {

@@ -4,6 +4,10 @@ r3dfox is a fork of the open source web browser Mozilla Firefox made specificall
 
 Limited compatibility with One Core API on Windows XP is offered at the current time, however this is not tested consistently. Any issues that may arise that are hard to diagnose may be left to the extended kernel provider to fix.
 
+Local (GitHub) Downloads: [![Github All Releases](https://img.shields.io/github/downloads/Eclipse-Community/r3dfox/total.svg)]()
+
+SourceForge Downloads: ![SourceForge Downloads](https://img.shields.io/sourceforge/dt/r3dfox)
+
 # Original repository readme
 
 An explanation of the Firefox Source Code Directory Structure and links to

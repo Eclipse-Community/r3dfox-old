@@ -46,36 +46,36 @@
     }
 
     @media (-moz-bool-pref: "r3dfox.colors.esr") {
-      --arrowpanel-border-color: light-dark(rgb(255, 111, 63), rgb(183, 98, 69)) !important;
-      --toolbar-field-focus-border-color: light-dark(rgb(255, 96, 42), rgb(183, 98, 69)) !important;
-      --sidebar-border-color: light-dark(rgb(255, 111, 63), rgb(183, 98, 69)) !important;
-      --lwt-toolbar-field-highlight: light-dark(rgb(255, 96, 42), rgb(183, 98, 69)) !important;
-      --newtab-primary-action-background: light-dark(rgb(255, 81, 23), rgb(255, 125, 82)) !important;
-      --newtab-primary-action-background-hover: light-dark(rgb(255, 96, 42), rgb(255, 111, 63)) !important;
-      --newtab-primary-action-background-active: light-dark(rgb(255, 96, 42), rgb(255, 96, 42)) !important;
-      --in-content-primary-button-background: light-dark(rgb(255, 81, 23), rgb(255, 125, 82)) !important;
-      --in-content-primary-button-background-hover: light-dark(rgb(255, 96, 42), rgb(255, 111, 63)) !important;
-      --in-content-primary-button-background-active: light-dark(rgb(255, 96, 42), rgb(255, 96, 42)) !important;
-      --color-accent-primary: light-dark(rgb(255, 81, 23), rgb(255, 141, 102)) !important;
-      --color-accent-primary-hover: light-dark(rgb(255, 111, 63), rgb(255, 125, 82)) !important;
-      --color-accent-primary-active: light-dark(rgb(255, 111, 63), rgb(255, 111, 63)) !important;
-      --link-color: light-dark(rgb(255, 81, 23), rgb(255, 125, 82)) !important;
-      --link-color-hover: light-dark(rgb(255, 81, 23), rgb(255, 125, 82)) !important;
-      --link-color-active: light-dark(rgb(255, 111, 63), rgb(255, 111, 63)) !important;
-      --link-color-visited: light-dark(rgb(255, 81, 23), rgb(255, 125, 82)) !important;
-      --button-primary-bgcolor: light-dark(rgb(255, 81, 23), rgb(255, 141, 102)) !important;
-      --button-primary-hover-bgcolor: light-dark(rgb(255, 111, 63), rgb(255, 125, 82)) !important;
-      --button-primary-active-bgcolor: light-dark(rgb(255, 111, 63), rgb(255, 111, 63)) !important;
-      --toolbarbutton-icon-fill-attention: light-dark(rgb(255, 81, 23), rgb(255, 125, 82)) !important;
-      --download-progress-fill-color: light-dark(rgb(255, 96, 42), rgb(255, 125, 82)) !important;
-      --lwt-tab-line-color: light-dark(rgb(255, 96, 42), rgb(255, 125, 82)) !important;
-  
+      --arrowpanel-border-color: light-dark(rgb(255, 102, 51), rgb(183, 98, 69)) !important;
+      --toolbar-field-focus-border-color: light-dark(rgb(255, 86, 30), rgb(183, 98, 69)) !important;
+      --sidebar-border-color: light-dark(rgb(255, 102, 51), rgb(183, 98, 69)) !important;
+      --lwt-toolbar-field-highlight: light-dark(rgb(255, 86, 30), rgb(183, 98, 69)) !important;
+      --newtab-primary-action-background: light-dark(rgb(255, 71, 9), rgb(255, 118, 72)) !important;
+      --newtab-primary-action-background-hover: light-dark(rgb(255, 86, 30), rgb(255, 102, 51)) !important;
+      --newtab-primary-action-background-active: light-dark(rgb(255, 86, 30), rgb(255, 86, 30)) !important;
+      --in-content-primary-button-background: light-dark(rgb(255, 71, 9), rgb(255, 118, 72)) !important;
+      --in-content-primary-button-background-hover: light-dark(rgb(255, 86, 30), rgb(255, 102, 51)) !important;
+      --in-content-primary-button-background-active: light-dark(rgb(255, 86, 30), rgb(255, 86, 30)) !important;
+      --color-accent-primary: light-dark(rgb(255, 71, 9), rgb(255, 100, 100)) !important;
+      --color-accent-primary-hover: light-dark(rgb(255, 102, 51), rgb(255, 118, 72)) !important;
+      --color-accent-primary-active: light-dark(rgb(255, 102, 51), rgb(255, 102, 51)) !important;
+      --link-color: light-dark(rgb(255, 71, 9), rgb(255, 118, 72)) !important;
+      --link-color-hover: light-dark(rgb(255, 71, 9), rgb(255, 118, 72)) !important;
+      --link-color-active: light-dark(rgb(255, 102, 51), rgb(255, 102, 51)) !important;
+      --link-color-visited: light-dark(rgb(255, 71, 9), rgb(255, 118, 72)) !important;
+      --button-primary-bgcolor: light-dark(rgb(255, 71, 9), rgb(255, 100, 100)) !important;
+      --button-primary-hover-bgcolor: light-dark(rgb(255, 102, 51), rgb(255, 118, 72)) !important;
+      --button-primary-active-bgcolor: light-dark(rgb(255, 102, 51), rgb(255, 102, 51)) !important;
+      --toolbarbutton-icon-fill-attention: light-dark(rgb(255, 71, 9), rgb(255, 118, 72)) !important;
+      --download-progress-fill-color: light-dark(rgb(255, 86, 30), rgb(255, 118, 72)) !important;
+      --lwt-tab-line-color: light-dark(rgb(255, 86, 30), rgb(255, 118, 72)) !important;
+
       ::selection {
-        background: light-dark(rgb(255, 125, 82), rgb(183, 98, 69)) !important;
+        background: light-dark(rgb(255, 118, 72), rgb(183, 98, 69)) !important;
       }
-  
+
       .bookmark-item:is(toolbarbutton)[dragover="true"][open="true"] {
-        background: light-dark(rgb(255, 125, 82), rgb(183, 98, 69)) !important;
+        background: light-dark(rgb(255, 118, 72), rgb(183, 98, 69)) !important;
       }
 
       .tab-drop-indicator {

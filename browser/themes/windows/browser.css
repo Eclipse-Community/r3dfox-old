@@ -55,13 +55,6 @@
         --toolbarbutton-active-background: color-mix(in srgb, currentColor 30%, transparent);
       }
     }
-
-    &[sizemode="normal"] #navigator-toolbox {
-      border-top: .5px solid ActiveBorder;
-      &:-moz-window-inactive {
-        border-top-color: InactiveBorder;
-      }
-    }
   }
 }
 

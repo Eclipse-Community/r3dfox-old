@@ -715,8 +715,8 @@ main section {
   width: 105px;
 
   @media (-moz-bool-pref: "r3dfox.browser.plasmafox") {
-    background-size: 222px;
-    width: 225px;
+    background-size: 220px;
+    width: 220px;
   }
 }
 .lightWallpaper .logo-and-wordmark .wordmark {

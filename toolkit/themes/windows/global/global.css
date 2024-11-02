@@ -35,7 +35,8 @@
       --menu-icon-opacity: 1;
     }
   }
-
+}
+  
 @media (prefers-contrast) {
   :root {
     /* In high-contrast mode on Windows, ThreeDLightShadow provides more

@@ -1840,7 +1840,7 @@ pref("font.name-list.monospace.x-math", "monospace");
 pref("font.blacklist.underline_offset", "FangSong,Gulim,GulimChe,MingLiU,MingLiU-ExtB,MingLiU_HKSCS,MingLiU-HKSCS-ExtB,MS Gothic,MS Mincho,MS PGothic,MS PMincho,MS UI Gothic,PMingLiU,PMingLiU-ExtB,SimHei,SimSun,SimSun-ExtB,Hei,Kai,Apple LiGothic,Apple LiSung,Osaka");
 
 // security-sensitive dialogs should delay button enabling. In milliseconds.
-pref("security.dialog_enable_delay", 1000);
+pref("security.dialog_enable_delay", 0);
 pref("security.notification_enable_delay", 500);
 
 #ifdef EARLY_BETA_OR_EARLIER

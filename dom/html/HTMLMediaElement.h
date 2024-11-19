@@ -21,8 +21,8 @@
 #include "mozilla/CORSMode.h"
 #include "DecoderTraits.h"
 #include "mozilla/Attributes.h"
-#include "mozilla/AwakeTimeStamp.h"
 #include "mozilla/StateWatching.h"
+#include "mozilla/TimeStamp.h"
 #include "mozilla/WeakPtr.h"
 #include "mozilla/dom/DecoderDoctorNotificationBinding.h"
 #include "mozilla/dom/HTMLMediaElementBinding.h"
@@ -1940,7 +1940,7 @@ class HTMLMediaElement : public nsGenericHTMLElement,
   bool mIsUsingWMFCDM = false;
 #endif
 
-  Maybe<DelayedScheduler<AwakeTimeStamp>> mAudioWakelockReleaseScheduler;
+  Maybe<DelayedScheduler<TimeStamp>> mAudioWakelockReleaseScheduler;
 };
 
 // Check if the context is chrome or has the debugger or tabs permission

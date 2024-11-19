@@ -8,7 +8,6 @@ FINAL_LIBRARY = "mozglue"
 
 EXPORTS.mozilla += [
     "AutoProfilerLabel.h",
-    "AwakeTimeStamp.h",
     "decimal/Decimal.h",
     "decimal/DoubleConversion.h",
     "IntegerPrintfMacros.h",
@@ -43,7 +42,6 @@ if CONFIG["OS_ARCH"] == "WINNT":
 
 SOURCES += [
     "AutoProfilerLabel.cpp",
-    "AwakeTimeStamp.cpp",
     "Debug.cpp",
     "LoggingCore.cpp",
     "MmapFaultHandler.cpp",
@@ -101,7 +99,7 @@ if CONFIG["OS_ARCH"] == "WINNT":
         "WindowsUnicode.cpp",
     ]
 
-    OS_LIBS += ["dbghelp", "oleaut32", "ole32", "mincore"]
+    OS_LIBS += ["dbghelp", "oleaut32", "ole32"]
 
     if not CONFIG["JS_STANDALONE"]:
         SOURCES += [

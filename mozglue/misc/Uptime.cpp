@@ -48,11 +48,18 @@ Maybe<uint64_t> NowIncludingSuspendMs() {
 static constexpr uint64_t kHNSperMS = 10000;
 
 Maybe<uint64_t> NowExcludingSuspendMs() {
-  ULONGLONG interrupt_time;
-  if (!QueryUnbiasedInterruptTime(&interrupt_time)) {
+  LARGE_INTEGER performance_count;
+  if (!QueryPerformanceCounter(&performance_count)) {
     return Nothing();
   }
-  return Some(interrupt_time / kHNSperMS);
+
+  LARGE_INTEGER performance_frequency;
+  if (!QueryPerformanceFrequency(&performance_frequency)) {
+    return Nothing();
+  }
+
+  uint64_t milliseconds = (performance_count.QuadPart * 1000) / performance_frequency.QuadPart;
+  return Some(milliseconds);
 }
 
 Maybe<uint64_t> NowIncludingSuspendMs() {

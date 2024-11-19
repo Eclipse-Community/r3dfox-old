@@ -6,10 +6,10 @@
 
 #include "MediaTimer.h"
 
-#include "mozilla/AwakeTimeStamp.h"
 #include "mozilla/DebugOnly.h"
 #include "mozilla/RefPtr.h"
 #include "mozilla/SharedThreadPool.h"
+#include "mozilla/TimeStamp.h"
 #include "mozilla/Unused.h"
 #include "nsComponentManagerUtils.h"
 #include "nsThreadUtils.h"
@@ -217,7 +217,6 @@ void MediaTimer<T>::CancelTimerIfArmed() {
   }
 }
 
-template class MediaTimer<AwakeTimeStamp>;
 template class MediaTimer<TimeStamp>;
 
 }  // namespace mozilla

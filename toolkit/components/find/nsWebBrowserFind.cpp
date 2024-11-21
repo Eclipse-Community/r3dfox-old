@@ -19,6 +19,7 @@
 #include "mozilla/dom/Document.h"
 #include "nsISelectionController.h"
 #include "nsIFrame.h"
+#include "nsITextControlFrame.h"
 #include "nsReadableUtils.h"
 #include "nsIContent.h"
 #include "nsIObserverService.h"
@@ -31,6 +32,7 @@
 #include "mozilla/Services.h"
 #include "mozilla/dom/Element.h"
 #include "mozilla/dom/Selection.h"
+#include "nsISimpleEnumerator.h"
 #include "nsComponentManagerUtils.h"
 #include "nsContentUtils.h"
 #include "nsGenericHTMLElement.h"
@@ -324,16 +326,14 @@ void nsWebBrowserFind::SetSelectionAndScroll(nsPIDOMWindowOuter* aWindow,
 
   // since the match could be an anonymous textnode inside a
   // <textarea> or text <input>, we need to get the outer frame
-  nsIFrame* tcFrame = nullptr;
+  nsITextControlFrame* tcFrame = nullptr;
   for (; content; content = content->GetParent()) {
     if (!content->IsInNativeAnonymousSubtree()) {
       nsIFrame* f = content->GetPrimaryFrame();
       if (!f) {
         return;
       }
-      if (f->IsTextInputFrame()) {
-        tcFrame = f;
-      }
+      tcFrame = do_QueryFrame(f);
       break;
     }
   }

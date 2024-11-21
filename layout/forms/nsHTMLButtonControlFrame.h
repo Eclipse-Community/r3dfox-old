@@ -9,6 +9,7 @@
 
 #include "mozilla/Attributes.h"
 #include "nsContainerFrame.h"
+#include "nsIFormControlFrame.h"
 #include "nsButtonFrameRenderer.h"
 
 class gfxContext;

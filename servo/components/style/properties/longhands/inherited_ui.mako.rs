@@ -116,16 +116,4 @@ ${helpers.predefined_type(
     spec="https://drafts.csswg.org/css-scrollbars-1/#scrollbar-color",
     boxed=True,
     ignored_when_colors_disabled=True,
-    affects="paint",
-)}
-
-${helpers.predefined_type(
-    "-moz-theme",
-    "MozTheme",
-    "specified::MozTheme::Auto",
-    engines="gecko",
-    enabled_in="chrome",
-    animation_type="discrete",
-    spec="Internal",
-    affects="paint",
 )}

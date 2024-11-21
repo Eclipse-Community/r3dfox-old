@@ -9,10 +9,8 @@ use crate::values::computed::image::Image;
 use crate::values::computed::Number;
 use crate::values::generics::ui as generics;
 
-pub use crate::values::specified::ui::{
-    BoolInteger, CursorKind, Inert, MozTheme, PointerEvents, UserFocus, UserInput, UserModify,
-    UserSelect,
-};
+pub use crate::values::specified::ui::CursorKind;
+pub use crate::values::specified::ui::{BoolInteger, UserSelect};
 
 /// A computed value for the `cursor` property.
 pub type Cursor = generics::GenericCursor<CursorImage>;

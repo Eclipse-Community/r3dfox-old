@@ -23,6 +23,18 @@
   margin: 1px 3px;
 }
 
-:host([native]) dropmarker {
+/* Label box */
+
+#label-box[native] {
+  appearance: auto;
+  -moz-default-appearance: menulist-text;
+  align-items: center;
+  justify-content: center;
+  color: inherit;
+}
+
+/* Dropmarker */
+
+dropmarker[native] {
   display: none;
 }

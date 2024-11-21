@@ -90,7 +90,6 @@
   --card-outline-color: var(--grey-30);
   --card-shadow-hover: var(--card-shadow), 0 0 0 5px var(--card-outline-color);
 
-  -moz-theme: non-native;
   accent-color: var(--in-content-accent-color);
   color-scheme: light dark;
 }
@@ -530,7 +529,7 @@ xul|menulist > xul|menupopup {
 
   --panel-border-color: var(--in-content-box-border-color);
   --panel-border-radius: 2px;
-  --panel-background: var(--in-content-box-background);
+  --panel-background: var(--in-content-table-background);
   --panel-color: var(--in-content-text-color);
   --panel-padding: 0;
 }

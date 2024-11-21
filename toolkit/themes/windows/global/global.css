@@ -22,6 +22,7 @@
       --menu-icon-opacity: 1;
     }
   }
+}
 
 @media (prefers-contrast) {
   :root {
@@ -102,6 +103,7 @@ xul|separator.groove[orient="vertical"] {
 }
 
 /* Windows classic disabled labels */
+
 @media (-moz-windows-classic) {
   xul|label[disabled="true"] {
     color: ThreeDShadow;

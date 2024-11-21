@@ -31,19 +31,45 @@
   }
 }
 
+ @media (-moz-windows-accent-color-in-titlebar) {
+  @media (-moz-windows-modern) {
+    :root[tabsintitlebar] {
+      /* stylelint-disable-next-line media-query-no-invalid */
+      @media (-moz-bool-pref: "browser.theme.windows.accent-color-in-tabs.enabled") {
+        &:not([lwtheme]) #TabsToolbar {
+          /* These colors match the Linux/HCM default button colors. We need to
+           * override these on the tabs toolbar because the accent color is
+           * arbitrary, so the hardcoded colors from browser-custom-colors might
+           * not provide sufficient contrast. */
+          --toolbarbutton-icon-fill: currentColor;
+          --toolbarbutton-hover-background: color-mix(in srgb, currentColor 17%, transparent);
+          --toolbarbutton-active-background: color-mix(in srgb, currentColor 30%, transparent);
+        }
+      }
+  
+      &[sizemode="normal"] #navigator-toolbox {
+        border-top: .5px solid ActiveBorder;
+        &:-moz-window-inactive {
+          border-top-color: InactiveBorder;
+        }
+      }
+    }
+  }
+}
+
 /* Use a different color only on Windows 8 and higher in inactive windows.
  * On Win 7, the menubar fog disappears for inactive windows, and renders gray
  * illegible.
  */
 @media (-moz-windows-default-theme) {
-  @media not (-moz-platform: windows-modern) {
+  @media not (-moz-windows-modern) {
     #toolbar-menubar:not([lwtheme]):-moz-window-inactive {
       color: ThreeDShadow;
     }
   }
 }
 
-@media not (-moz-platform: windows-modern) {
+@media (-moz-windows-modern) {
    /* On Windows 10, when temporarily showing the menu bar, make it at least as
    * tall as the tab bar such that the window controls don't appear to move up. */
    :root[tabsintitlebar] #toolbar-menubar[autohide="true"] {
@@ -59,9 +85,7 @@
   }
 }
 
-@media not (-moz-windows-compositor),
-       not (-moz-windows-default-theme),
-       (-moz-platform: windows-modern) {
+@media (-moz-windows-modern) {
   /* Please keep the menu text colors in this media block in sync with
    * light-dark-overrides.css, minus the :not([lwtheme]) condition - see Bug 1165718.
    */

@@ -95,6 +95,7 @@ nsresult HeadlessLookAndFeel::NativeGetInt(IntID aID, int32_t& aResult) {
       break;
     case IntID::WindowsClassic:
     case IntID::WindowsGlass:
+    case IntID::WindowsModern:
       aResult = 0;
       res = NS_ERROR_FAILURE;
       break;

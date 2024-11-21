@@ -54,9 +54,14 @@ FRAME_CLASSES = [
     Frame("nsCheckboxRadioFrame", "CheckboxRadio", REPLACED | LEAF),
     Frame("nsColorControlFrame", "ColorControl", REPLACED | LEAF),
     Frame("nsColumnSetFrame", "ColumnSet", COMMON),
-    Frame("ColumnSetWrapperFrame", "ColumnSetWrapper", BLOCK | BFC),
-    Frame("nsComboboxControlFrame", "ComboboxControl", REPLACED | LEAF),
-    Frame("ComboboxLabelFrame", "Block", BLOCK),
+    Frame("ColumnSetWrapperFrame", "ColumnSetWrapper", BLOCK),
+    Frame("nsComboboxControlFrame", "ComboboxControl", BLOCK | REPLACED_WITH_BLOCK),
+    # FIXME(emilio, bug 1362907): Revisit these after that bug, this is the
+    # only frame that has ReplacedContainsBlock but not Replaced, which is
+    # sketchy.
+    Frame(
+        "nsComboboxDisplayFrame", "ComboboxDisplay", REPLACED_WITH_BLOCK - {"Replaced"}
+    ),
     Frame("nsContinuingTextFrame", "Text", TEXT),
     Frame("nsDateTimeControlFrame", "DateTimeControl", REPLACED),
     Frame("nsFieldSetFrame", "FieldSet", BLOCK),

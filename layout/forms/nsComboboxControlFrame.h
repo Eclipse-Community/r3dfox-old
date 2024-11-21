@@ -76,9 +76,8 @@ class nsComboboxControlFrame final : public nsBlockFrame,
   mozilla::a11y::AccType AccessibleType() final;
 #endif
 
-  nscoord GetMinISize(gfxContext* aRenderingContext) final;
-
-  nscoord GetPrefISize(gfxContext* aRenderingContext) final;
+  nscoord IntrinsicISize(const mozilla::IntrinsicSizeInput& aInput,
+                         mozilla::IntrinsicISizeType aType) final;
 
   void Reflow(nsPresContext* aCX, ReflowOutput& aDesiredSize,
               const ReflowInput& aReflowInput, nsReflowStatus& aStatus) final;

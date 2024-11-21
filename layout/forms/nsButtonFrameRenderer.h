@@ -28,8 +28,8 @@ class nsButtonFrameRenderer {
   using nsDisplayList = mozilla::nsDisplayList;
   using nsDisplayListBuilder = mozilla::nsDisplayListBuilder;
 
-  using ImgDrawResult = mozilla::image::ImgDrawResult;
-  using ComputedStyle = mozilla::ComputedStyle;
+  typedef mozilla::image::ImgDrawResult ImgDrawResult;
+  typedef mozilla::ComputedStyle ComputedStyle;
 
  public:
   nsButtonFrameRenderer();
@@ -59,6 +59,11 @@ class nsButtonFrameRenderer {
                             const nsRect& aDirtyRect, const nsRect& aRect);
 
   void SetFrame(nsIFrame* aFrame, nsPresContext* aPresContext);
+
+  void SetDisabled(bool aDisabled, bool notify);
+
+  bool isActive();
+  bool isDisabled();
 
   void GetButtonInnerFocusRect(const nsRect& aRect, nsRect& aResult);
 

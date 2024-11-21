@@ -42,6 +42,10 @@ a:link:read-write {
   color: -moz-hyperlinktext;
 }
 
+*|*::-moz-display-comboboxcontrol-frame {
+  user-select: text;
+}
+
 option:read-write {
   user-select: text;
 }

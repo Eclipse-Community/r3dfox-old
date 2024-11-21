@@ -117,6 +117,21 @@ body {
 #navigator-toolbox {
   appearance: none;
 
+   @media not (-moz-platform: windows-win7) {
+     @media not (-moz-platform: windows-win8) {
+       background-color: var(--toolbox-non-lwt-bgcolor);
+       color: var(--toolbox-non-lwt-textcolor);
+ 
+       will-change: background-color;
+       transition: background-color var(--inactive-window-transition);
+ 
+       &:-moz-window-inactive {
+         background-color: var(--toolbox-non-lwt-bgcolor-inactive);
+         color: var(--toolbox-non-lwt-textcolor-inactive);
+       }
+     }
+   }
+ 
   &[fullscreenShouldAnimate] {
     transition: 0.8s margin-top ease-out;
   }

@@ -59,17 +59,6 @@
   }
 }
 
-/* Add a fog for background tabs to be visible on Windows 7 glass window background */
-@media (-moz-platform: windows) {
-  @media (-moz-windows-default-theme) {
-   @media (-moz-windows-glass) {
-     #TabsToolbar:not([lwtheme]) {
-       background-image: radial-gradient(ellipse at bottom, rgba(255,255,255,0.8), rgba(255,255,255,0.5) 40%, transparent);
-     }
-   }
-  }
-}
-
 @media not (-moz-windows-compositor),
        not (-moz-windows-default-theme),
        (-moz-platform: windows-modern) {

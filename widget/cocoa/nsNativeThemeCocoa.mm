@@ -2723,12 +2723,9 @@ static const LayoutDeviceIntMargin kAquaComboboxBorder(3, 20, 3, 4);
 static const LayoutDeviceIntMargin kAquaSearchfieldBorder(3, 5, 2, 19);
 static const LayoutDeviceIntMargin kAquaSearchfieldBorderBigSur(5, 5, 4, 26);
 
-LayoutDeviceIntMargin nsNativeThemeCocoa::GetWidgetBorder(
-    nsDeviceContext* aContext, nsIFrame* aFrame, StyleAppearance aAppearance) {
-  if (IsWidgetAlwaysNonNative(aFrame, aAppearance)) {
-    return Theme::GetWidgetBorder(aContext, aFrame, aAppearance);
-  }
-
+LayoutDeviceIntMargin nsNativeThemeCocoa::GetWidgetBorder(nsDeviceContext* aContext,
+                                                          nsIFrame* aFrame,
+                                                          StyleAppearance aAppearance) {
   LayoutDeviceIntMargin result;
 
   NS_OBJC_BEGIN_TRY_BLOCK_RETURN;
@@ -2817,10 +2814,6 @@ bool nsNativeThemeCocoa::GetWidgetPadding(nsDeviceContext* aContext,
                                           nsIFrame* aFrame,
                                           StyleAppearance aAppearance,
                                           LayoutDeviceIntMargin* aResult) {
-  if (IsWidgetAlwaysNonNative(aFrame, aAppearance)) {
-    return Theme::GetWidgetPadding(aContext, aFrame, aAppearance, aResult);
-  }
-
   // We don't want CSS padding being used for certain widgets.
   // See bug 381639 for an example of why.
   switch (aAppearance) {

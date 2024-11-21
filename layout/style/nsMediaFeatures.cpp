@@ -94,6 +94,11 @@ static nsSize GetDeviceSize(const Document& aDocument) {
   return size;
 }
 
+bool Gecko_MediaFeatures_WindowsNonNativeMenus(const Document* aDocument) {
+  return LookAndFeel::WindowsNonNativeMenusEnabled() ||
+         aDocument->ShouldAvoidNativeTheme();
+}
+
 bool Gecko_MediaFeatures_IsResourceDocument(const Document* aDocument) {
   return aDocument->IsResourceDoc();
 }

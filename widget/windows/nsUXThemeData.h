@@ -19,16 +19,30 @@
 enum nsUXThemeClass {
   eUXButton = 0,
   eUXEdit,
+  eUXRebar,
+  eUXMediaRebar,
+  eUXCommunicationsRebar,
+  eUXBrowserTabBarRebar,
   eUXToolbar,
+  eUXMediaToolbar,
+  eUXCommunicationsToolbar,
   eUXProgress,
   eUXTab,
   eUXTrackbar,
+  eUXSpin,
   eUXCombobox,
   eUXHeader,
   eUXListview,
   eUXMenu,
   eUXWindowFrame,
   eUXNumClasses
+};
+
+enum CmdButtonIdx {
+  CMDBUTTONIDX_MINIMIZE = 0,
+  CMDBUTTONIDX_RESTORE,
+  CMDBUTTONIDX_CLOSE,
+  CMDBUTTONIDX_BUTTONBOX
 };
 
 class nsUXThemeData {
@@ -53,10 +67,25 @@ class nsUXThemeData {
     void Close();
   };
 
+  static HMODULE sThemeDLL;
   static ThemeHandle sThemes[eUXNumClasses];
+
+  // We initialize sCommandButtonBoxMetrics separately as a performance
+  // optimization to avoid fetching dummy values for sCommandButtonMetrics
+  // when we don't need those.
+  static SIZE sCommandButtonMetrics[3];
+  static bool sCommandButtonMetricsInitialized;
+  static SIZE sCommandButtonBoxMetrics;
+  static bool sCommandButtonBoxMetricsInitialized;
+
   static const wchar_t* GetClassName(nsUXThemeClass);
+  static void EnsureCommandButtonMetrics();
+  static void EnsureCommandButtonBoxMetrics();
 
  public:
+  static const wchar_t kThemeLibraryName[];
+  static bool sTitlebarInfoPopulatedAero;
+  static bool sTitlebarInfoPopulatedThemed;
   static bool sIsDefaultWindowsTheme;
   static bool sIsHighContrastOn;
 
@@ -64,8 +93,22 @@ class nsUXThemeData {
   static HANDLE GetTheme(nsUXThemeClass cls);
   static HMODULE GetThemeDLL();
 
+  // nsWindow calls this to update desktop settings info
+  static void UpdateTitlebarInfo(HWND aWnd);
+
+  static SIZE GetCommandButtonMetrics(CmdButtonIdx aMetric) {
+    EnsureCommandButtonMetrics();
+    return sCommandButtonMetrics[aMetric];
+  }
+  static SIZE GetCommandButtonBoxMetrics() {
+    EnsureCommandButtonBoxMetrics();
+    return sCommandButtonBoxMetrics;
+  }
   static void UpdateNativeThemeInfo();
   static bool IsDefaultWindowTheme();
   static bool IsHighContrastOn();
+
+  static bool AreFlatMenusEnabled();
+  static bool IsAppThemed();
 };
 #endif  // __UXThemeData_h__

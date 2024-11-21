@@ -116,3 +116,41 @@ menulist > menupopup {
     --panel-border-color: ThreeDShadow;
   }
 }
+
+/* ::::: panel animations ::::: */
+.animatable-menupopup,
+panel[type="arrow"] {
+  transition-timing-function: var(--animation-easing-function), ease-out;
+  @media (-moz-panel-animations) and (prefers-reduced-motion: no-preference) {
+    &:not([animate="false"]) {
+      transition-duration: 0.18s;
+    }
+  }
+
+  @media not (-moz-platform: macos) {
+    transition-property: transform, opacity;
+    will-change: transform, opacity;
+    opacity: 0;
+    transform: translateY(-70px);
+    &[side="bottom"] {
+      transform: translateY(70px);
+    }
+  }
+
+  &[animate="cancel"] {
+    -moz-window-transform: none;
+    transform: none;
+  }
+
+  &:is([animate="false"], [animate="open"]) {
+    opacity: 1;
+    transform: none;
+    -moz-window-opacity: 1;
+    -moz-window-transform: none;
+    transition-timing-function: var(--animation-easing-function), ease-in-out;
+  }
+
+  &[animating] {
+    pointer-events: none;
+  }
+}

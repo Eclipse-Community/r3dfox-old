@@ -239,45 +239,55 @@
     }
   }
 
-  @media (-moz-platform: windows) {
-    :root {
-      background-color: transparent;
-      appearance: auto;
-      -moz-default-appearance: -moz-win-borderless-glass;
-    }
+  @media (-moz-windows-glass) {
+    @media not (-moz-windows-modern) {
+      :root {
+        background-color: transparent;
+        appearance: auto;
+        -moz-default-appearance: -moz-win-borderless-glass;
+      }
 
-    :root[sizemode="maximized"] .titlebar-buttonbox {
-      margin-inline-end: 3px;
-    }
+      :root[sizemode="maximized"] .titlebar-buttonbox {
+        margin-inline-end: 3px;
+      }
 
-    /* These should be hidden w/ glass enabled. Windows draws its own buttons. */
-    .titlebar-button {
-      display: none;
-    }
+      /* These should be hidden w/ glass enabled. Windows draws its own buttons. */
+      .titlebar-button {
+        display: none;
+      }
 
-    /* The borders on the glass frame are ours, and inside #browser, and on
-     * win7 we want to make sure they are "glassy", so we can't use #browser
-     * as the exclude-glass container. We use #appcontent instead. */
-    #appcontent {
-      appearance: auto;
-      -moz-default-appearance: -moz-win-exclude-glass;
+      @media (-moz-bool-pref: "browser.aero.fog") {
+        :root:not([lwtheme]) #TabsToolbar {
+          background-image: radial-gradient(ellipse at bottom, rgba(255,255,255,0.8), rgba(255,255,255,0.5) 40%, transparent) !important;
+        }
+      }
+
+      /* The borders on the glass frame are ours, and inside #browser, and on
+       * win7 we want to make sure they are "glassy", so we can't use #browser
+       * as the exclude-glass container. We use #appcontent instead. */
+      #appcontent {
+        appearance: auto;
+        -moz-default-appearance: -moz-win-exclude-glass;
+      }
     }
   }
 
   @media (-moz-platform: windows) {
-    /* Artificially draw window borders that are covered by lwtheme, see bug 591930.
-     * Borders for win7 are below, win10 only needs something like this when
-     * drawing in the titlebar (-moz-windows-accent-color-in-titlebar). */
-    #main-window[sizemode="normal"] #navigator-toolbox {
-      &[lwtheme] {
-        border-top: 1px solid var(--glass-shadow-color);
+    @media not (-moz-windows-modern) {
+      /* Artificially draw window borders that are covered by lwtheme, see bug 591930.
+      * Borders for win7 are below, win10 only needs something like this when
+      * drawing in the titlebar (-moz-windows-accent-color-in-titlebar). */
+      #main-window[sizemode="normal"] #navigator-toolbox {
+        &[lwtheme] {
+          border-top: 1px solid var(--glass-shadow-color);
+        }
       }
-    }
 
-    /* Allows seeing inactive stuffs on 8 */
-    #TabsToolbar {
-      color: black !important;
-      --toolbarbutton-icon-fill: currentColor !important;
+      /* Allows seeing inactive stuffs on 8 */
+      #TabsToolbar {
+        color: black !important;
+        --toolbarbutton-icon-fill: currentColor !important;
+      }
     }
   }
 

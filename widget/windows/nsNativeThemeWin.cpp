@@ -87,6 +87,63 @@ auto nsNativeThemeWin::IsWidgetNonNative(
   return NonNative::No;
 }
 
+static int32_t GetTopLevelWindowActiveState(nsIFrame* aFrame) {
+  // Used by window frame and button box rendering. We can end up in here in
+  // the content process when rendering one of these moz styles freely in a
+  // page. Bail in this case, there is no applicable window focus state.
+  if (!XRE_IsParentProcess()) {
+    return mozilla::widget::themeconst::FS_INACTIVE;
+  }
+  // All headless windows are considered active so they are painted.
+  if (gfxPlatform::IsHeadless()) {
+    return mozilla::widget::themeconst::FS_ACTIVE;
+  }
+  // Get the widget. nsIFrame's GetNearestWidget walks up the view chain
+  // until it finds a real window.
+  nsIWidget* widget = aFrame->GetNearestWidget();
+  nsWindow* window = static_cast<nsWindow*>(widget);
+  if (!window) return mozilla::widget::themeconst::FS_INACTIVE;
+  if (widget && !window->IsTopLevelWidget() &&
+      !(window = window->GetParentWindowBase(false)))
+    return mozilla::widget::themeconst::FS_INACTIVE;
+
+  if (window->GetWindowHandle() == ::GetActiveWindow())
+    return mozilla::widget::themeconst::FS_ACTIVE;
+
+  return mozilla::widget::themeconst::FS_INACTIVE;
+}
+
+static int32_t GetWindowFrameButtonState(nsIFrame* aFrame,
+                                         ElementState elementState) {
+  if (GetTopLevelWindowActiveState(aFrame) ==
+      mozilla::widget::themeconst::FS_INACTIVE) {
+    if (elementState.HasState(ElementState::HOVER))
+      return mozilla::widget::themeconst::BS_HOT;
+    return mozilla::widget::themeconst::BS_INACTIVE;
+  }
+
+  if (elementState.HasState(ElementState::HOVER)) {
+    if (elementState.HasState(ElementState::ACTIVE))
+      return mozilla::widget::themeconst::BS_PUSHED;
+    return mozilla::widget::themeconst::BS_HOT;
+  }
+
+  return mozilla::widget::themeconst::BS_NORMAL;
+}
+
+static int32_t GetClassicWindowFrameButtonState(ElementState elementState) {
+  if (elementState.HasState(ElementState::ACTIVE) &&
+      elementState.HasState(ElementState::HOVER))
+    return DFCS_BUTTONPUSH | DFCS_PUSHED;
+  return DFCS_BUTTONPUSH;
+}
+
+
+static bool IsTopLevelMenu(nsIFrame* aFrame) {
+  auto* menu = dom::XULButtonElement::FromNodeOrNull(aFrame->GetContent());
+  return menu && menu->IsOnMenuBar();
+}
+
 static MARGINS GetCheckboxMargins(HANDLE theme, HDC hdc) {
   MARGINS checkboxContent = {0};
   GetThemeMargins(theme, hdc, MENU_POPUPCHECK, MCB_NORMAL, TMT_CONTENTMARGINS,
@@ -182,6 +239,131 @@ SIZE nsNativeThemeWin::GetCachedGutterSize(HANDLE theme) {
   mGutterSizeCacheValid = true;
 
   return mGutterSizeCache;
+}
+
+/* DrawThemeBGRTLAware - render a theme part based on rtl state.
+ * Some widgets are not direction-neutral and need to be drawn reversed for
+ * RTL.  Windows provides a way to do this with SetLayout, but this reverses
+ * the entire drawing area of a given device context, which means that its
+ * use will also affect the positioning of the widget.  There are two ways
+ * to work around this:
+ *
+ * Option 1: Alter the position of the rect that we send so that we cancel
+ *           out the positioning effects of SetLayout
+ * Option 2: Create a memory DC with the widgetRect's dimensions, draw onto
+ *           that, and then transfer the results back to our DC
+ *
+ * This function tries to implement option 1, under the assumption that the
+ * correct way to reverse the effects of SetLayout is to translate the rect
+ * such that the offset from the DC bitmap's left edge to the old rect's
+ * left edge is equal to the offset from the DC bitmap's right edge to the
+ * new rect's right edge.  In other words,
+ * (oldRect.left + vpOrg.x) == ((dcBMP.width - vpOrg.x) - newRect.right)
+ */
+static HRESULT DrawThemeBGRTLAware(HANDLE aTheme, HDC aHdc, int aPart,
+                                   int aState, const RECT* aWidgetRect,
+                                   const RECT* aClipRect, bool aIsRtl) {
+  NS_ASSERTION(aTheme, "Bad theme handle.");
+  NS_ASSERTION(aHdc, "Bad hdc.");
+  NS_ASSERTION(aWidgetRect, "Bad rect.");
+  NS_ASSERTION(aClipRect, "Bad clip rect.");
+  if (!aIsRtl) {
+    return DrawThemeBackground(aTheme, aHdc, aPart, aState, aWidgetRect,
+                               aClipRect);
+  }
+  HGDIOBJ hObj = GetCurrentObject(aHdc, OBJ_BITMAP);
+  BITMAP bitmap;
+  POINT vpOrg;
+  if (hObj && GetObject(hObj, sizeof(bitmap), &bitmap) &&
+      GetViewportOrgEx(aHdc, &vpOrg)) {
+    RECT newWRect(*aWidgetRect);
+    newWRect.left = bitmap.bmWidth - (aWidgetRect->right + 2 * vpOrg.x);
+    newWRect.right = bitmap.bmWidth - (aWidgetRect->left + 2 * vpOrg.x);
+    RECT newCRect;
+    RECT* newCRectPtr = nullptr;
+    if (aClipRect) {
+      newCRect.top = aClipRect->top;
+      newCRect.bottom = aClipRect->bottom;
+      newCRect.left = bitmap.bmWidth - (aClipRect->right + 2 * vpOrg.x);
+      newCRect.right = bitmap.bmWidth - (aClipRect->left + 2 * vpOrg.x);
+      newCRectPtr = &newCRect;
+    }
+    SetLayout(aHdc, LAYOUT_RTL);
+    HRESULT hr = DrawThemeBackground(aTheme, aHdc, aPart, aState, &newWRect,
+                                     newCRectPtr);
+    SetLayout(aHdc, 0);
+    if (SUCCEEDED(hr)) {
+      return hr;
+    }
+  }
+  return DrawThemeBackground(aTheme, aHdc, aPart, aState, aWidgetRect,
+                             aClipRect);
+}
+
+/*
+ *  Caption button padding data - 'hot' button padding.
+ *  These areas are considered hot, in that they activate
+ *  a button when hovered or clicked. The button graphic
+ *  is drawn inside the padding border. Unrecognized themes
+ *  are treated as their recognized counterparts for now.
+ *                       left      top    right   bottom
+ *  classic min             1        2        0        1
+ *  classic max             0        2        1        1
+ *  classic close           1        2        2        1
+ *
+ *  aero basic min          1        2        0        2
+ *  aero basic max          0        2        1        2
+ *  aero basic close        1        2        1        2
+ *
+ *  'cold' button padding - generic button padding, should
+ *  be handled in css.
+ *                       left      top    right   bottom
+ *  classic min             0        0        0        0
+ *  classic max             0        0        0        0
+ *  classic close           0        0        0        0
+ *
+ *  aero basic min          0        0        1        0
+ *  aero basic max          1        0        0        0
+ *  aero basic close        0        0        0        0
+ */
+
+enum CaptionDesktopTheme {
+  CAPTION_CLASSIC = 0,
+  CAPTION_BASIC,
+};
+
+enum CaptionButton {
+  CAPTIONBUTTON_MINIMIZE = 0,
+  CAPTIONBUTTON_RESTORE,
+  CAPTIONBUTTON_CLOSE,
+};
+
+struct CaptionButtonPadding {
+  RECT hotPadding[3];
+};
+
+// RECT: left, top, right, bottom
+static CaptionButtonPadding buttonData[3] = {
+    {{{1, 2, 0, 1}, {0, 2, 1, 1}, {1, 2, 2, 1}}},
+    {{{1, 2, 0, 2}, {0, 2, 1, 2}, {1, 2, 2, 2}}},
+    {{{0, 2, 0, 2}, {0, 2, 1, 2}, {1, 2, 2, 2}}}};
+
+// Adds "hot" caption button padding to minimum widget size.
+static void AddPaddingRect(LayoutDeviceIntSize* aSize, CaptionButton button) {
+  if (!aSize) return;
+  RECT offset = buttonData[CAPTION_BASIC].hotPadding[button];
+  aSize->width += offset.left + offset.right;
+  aSize->height += offset.top + offset.bottom;
+}
+
+// If we've added padding to the minimum widget size, offset
+// the area we draw into to compensate.
+static void OffsetBackgroundRect(RECT& rect, CaptionButton button) {
+  RECT offset = buttonData[CAPTION_BASIC].hotPadding[button];
+  rect.left += offset.left;
+  rect.top += offset.top;
+  rect.right -= offset.right;
+  rect.bottom -= offset.bottom;
 }
 
 /*
@@ -501,8 +683,35 @@ mozilla::Maybe<nsUXThemeClass> nsNativeThemeWin::GetThemeClass(
     case StyleAppearance::Menulist:
     case StyleAppearance::MenulistButton:
       return Some(eUXCombobox);
+    case StyleAppearance::Treeheadercell:
+      return Some(eUXHeader);
     case StyleAppearance::Listbox:
+    case StyleAppearance::Treeview:
+    case StyleAppearance::Treetwistyopen:
+    case StyleAppearance::Treeitem:
       return Some(eUXListview);
+    case StyleAppearance::Menubar:
+    case StyleAppearance::Menupopup:
+    case StyleAppearance::Menuitem:
+    case StyleAppearance::Checkmenuitem:
+    case StyleAppearance::Radiomenuitem:
+    case StyleAppearance::Menucheckbox:
+    case StyleAppearance::Menuradio:
+    case StyleAppearance::Menuseparator:
+    case StyleAppearance::Menuarrow:
+    case StyleAppearance::Menuimage:
+    case StyleAppearance::Menuitemtext:
+      return Some(eUXMenu);
+    case StyleAppearance::MozWindowTitlebar:
+    case StyleAppearance::MozWindowTitlebarMaximized:
+    case StyleAppearance::MozWindowButtonClose:
+    case StyleAppearance::MozWindowButtonMinimize:
+    case StyleAppearance::MozWindowButtonMaximize:
+    case StyleAppearance::MozWindowButtonRestore:
+    case StyleAppearance::MozWindowButtonBox:
+    case StyleAppearance::MozWindowButtonBoxMaximized:
+    case StyleAppearance::MozWinBorderlessGlass:
+      return Some(eUXWindowFrame);
     default:
       return Nothing();
   }
@@ -713,6 +922,7 @@ nsresult nsNativeThemeWin::GetThemePartAndState(nsIFrame* aFrame,
       }
       return NS_OK;
     }
+    case StyleAppearance::Treeview:
     case StyleAppearance::Listbox: {
       aPart = TREEVIEW_BODY;
       aState = TS_NORMAL;
@@ -746,6 +956,17 @@ nsresult nsNativeThemeWin::GetThemePartAndState(nsIFrame* aFrame,
         aState = TS_ACTIVE;  // The selected tab is always "pressed".
       } else
         aState = StandardGetState(aFrame, aAppearance, true);
+
+      return NS_OK;
+    }
+    case StyleAppearance::Treeheadercell: {
+      aPart = 1;
+      if (!aFrame) {
+        aState = TS_NORMAL;
+        return NS_OK;
+      }
+
+      aState = StandardGetState(aFrame, aAppearance, true);
 
       return NS_OK;
     }
@@ -783,6 +1004,40 @@ nsresult nsNativeThemeWin::GetThemePartAndState(nsIFrame* aFrame,
 
       return NS_OK;
     }
+    case StyleAppearance::MozWindowTitlebar:
+      aPart = mozilla::widget::themeconst::WP_CAPTION;
+      aState = GetTopLevelWindowActiveState(aFrame);
+      return NS_OK;
+    case StyleAppearance::MozWindowTitlebarMaximized:
+      aPart = mozilla::widget::themeconst::WP_MAXCAPTION;
+      aState = GetTopLevelWindowActiveState(aFrame);
+      return NS_OK;
+    case StyleAppearance::MozWindowButtonClose:
+      aPart = mozilla::widget::themeconst::WP_CLOSEBUTTON;
+      aState = GetWindowFrameButtonState(aFrame,
+                                         GetContentState(aFrame, aAppearance));
+      return NS_OK;
+    case StyleAppearance::MozWindowButtonMinimize:
+      aPart = mozilla::widget::themeconst::WP_MINBUTTON;
+      aState = GetWindowFrameButtonState(aFrame,
+                                         GetContentState(aFrame, aAppearance));
+      return NS_OK;
+    case StyleAppearance::MozWindowButtonMaximize:
+      aPart = mozilla::widget::themeconst::WP_MAXBUTTON;
+      aState = GetWindowFrameButtonState(aFrame,
+                                         GetContentState(aFrame, aAppearance));
+      return NS_OK;
+    case StyleAppearance::MozWindowButtonRestore:
+      aPart = mozilla::widget::themeconst::WP_RESTOREBUTTON;
+      aState = GetWindowFrameButtonState(aFrame,
+                                         GetContentState(aFrame, aAppearance));
+      return NS_OK;
+    case StyleAppearance::MozWindowButtonBox:
+    case StyleAppearance::MozWindowButtonBoxMaximized:
+    case StyleAppearance::MozWinBorderlessGlass:
+      aPart = -1;
+      aState = 0;
+      return NS_OK;
     default:
       aPart = 0;
       aState = 0;
@@ -836,6 +1091,31 @@ nsNativeThemeWin::DrawWidgetBackground(gfxContext* aContext, nsIFrame* aFrame,
                                        aDirtyRect);
 
   // ^^ without the right sdk, assume xp theming and fall through.
+  switch (aAppearance) {
+    case StyleAppearance::MozWindowTitlebar:
+    case StyleAppearance::MozWindowTitlebarMaximized:
+      // Nothing to draw, these areas are glass. Minimum dimensions
+      // should be set, so xul content should be laid out correctly.
+      return NS_OK;
+    case StyleAppearance::MozWindowButtonClose:
+    case StyleAppearance::MozWindowButtonMinimize:
+    case StyleAppearance::MozWindowButtonMaximize:
+    case StyleAppearance::MozWindowButtonRestore:
+      // Not conventional bitmaps, can't be retrieved. If we fall
+      // through here and call the theme library we'll get aero
+      // basic bitmaps.
+      return NS_OK;
+    case StyleAppearance::MozWinBorderlessGlass:
+      // Nothing to draw, this is the glass background.
+      return NS_OK;
+    case StyleAppearance::MozWindowButtonBox:
+    case StyleAppearance::MozWindowButtonBoxMaximized:
+      // We handle these through nsIWidget::UpdateThemeGeometries
+      return NS_OK;
+    default:
+      break;
+  }
+
   int32_t part, state;
   nsresult rv = GetThemePartAndState(aFrame, aAppearance, part, state);
   if (NS_FAILED(rv)) return rv;
@@ -885,7 +1165,17 @@ RENDER_AGAIN:
   }
 #endif
 
-  if (aAppearance == StyleAppearance::Tab) {
+  if (aAppearance == StyleAppearance::MozWindowTitlebar) {
+    // Clip out the left and right corners of the frame, all we want in
+    // is the middle section.
+    widgetRect.left -= GetSystemMetrics(SM_CXFRAME);
+    widgetRect.right += GetSystemMetrics(SM_CXFRAME);
+  } else if (aAppearance == StyleAppearance::MozWindowTitlebarMaximized) {
+    // The origin of the window is off screen when maximized and windows
+    // doesn't compensate for this in rendering the background. Push the
+    // top of the bitmap down by SM_CYFRAME so we get the full graphic.
+    widgetRect.top += GetSystemMetrics(SM_CYFRAME);
+  } else if (aAppearance == StyleAppearance::Tab) {
     // For left edge and right edge tabs, we need to adjust the widget
     // rects and clip rects so that the edges don't get drawn.
     bool isLeft = IsLeftToSelectedTab(aFrame);
@@ -910,6 +1200,13 @@ RENDER_AGAIN:
         // back.
         widgetRect.left -= edgeSize;
     }
+  } else if (aAppearance == StyleAppearance::MozWindowButtonMinimize) {
+    OffsetBackgroundRect(widgetRect, CAPTIONBUTTON_MINIMIZE);
+  } else if (aAppearance == StyleAppearance::MozWindowButtonMaximize ||
+             aAppearance == StyleAppearance::MozWindowButtonRestore) {
+    OffsetBackgroundRect(widgetRect, CAPTIONBUTTON_RESTORE);
+  } else if (aAppearance == StyleAppearance::MozWindowButtonClose) {
+    OffsetBackgroundRect(widgetRect, CAPTIONBUTTON_CLOSE);
   }
 
   // widgetRect is the bounding box for a widget, yet the scale track is only
@@ -1052,8 +1349,23 @@ LayoutDeviceIntMargin nsNativeThemeWin::GetWidgetBorder(
     return result;
   }
 
+  //TODO: RESTORE ALL OF THESE!
   if (!WidgetIsContainer(aAppearance) ||
-      aAppearance == StyleAppearance::Tabpanel)
+      //aAppearance == StyleAppearance::Toolbox ||
+      //aAppearance == StyleAppearance::MozWinMediaToolbox ||
+      //aAppearance == StyleAppearance::MozWinCommunicationsToolbox ||
+      //aAppearance == StyleAppearance::MozWinBrowsertabbarToolbox ||
+      aAppearance == StyleAppearance::Tabpanel ||
+      //aAppearance == StyleAppearance::Menuitem ||
+      //aAppearance == StyleAppearance::Checkmenuitem ||
+      //aAppearance == StyleAppearance::Radiomenuitem ||
+      aAppearance == StyleAppearance::Menupopup ||
+      //aAppearance == StyleAppearance::Menuimage ||
+      //aAppearance == StyleAppearance::Menuitemtext ||
+      aAppearance == StyleAppearance::Separator ||
+      aAppearance == StyleAppearance::MozWindowTitlebar ||
+      aAppearance == StyleAppearance::MozWindowTitlebarMaximized ||
+      aAppearance == StyleAppearance::MozWinBorderlessGlass)
     return result;  // Don't worry about it.
 
   int32_t part, state;
@@ -1101,6 +1413,46 @@ bool nsNativeThemeWin::GetWidgetPadding(nsDeviceContext* aContext,
   }
 
   bool ok = true;
+
+  if (aAppearance == StyleAppearance::MozWindowButtonBox ||
+      aAppearance == StyleAppearance::MozWindowButtonBoxMaximized) {
+    aResult->SizeTo(0, 0, 0, 0);
+    // aero glass doesn't display custom buttons
+    if (gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled()) return true;
+    // button padding for standard windows
+    if (aAppearance == StyleAppearance::MozWindowButtonBox) {
+      aResult->top = GetSystemMetrics(SM_CXFRAME);
+    }
+    ScaleForFrameDPI(aResult, aFrame);
+    return ok;
+  }
+
+  // Content padding
+  if (aAppearance == StyleAppearance::MozWindowTitlebar ||
+      aAppearance == StyleAppearance::MozWindowTitlebarMaximized) {
+    aResult->SizeTo(0, 0, 0, 0);
+    // Prior to Windows 10, a bug in DwmDefWindowProc would cause window
+    // button presses/mouseovers to be missed.  This bug is circumvented by
+    // adding padding to the top of the window that is the size of the caption
+    // area and then "removing" it when calculating the client area for
+    // WM_NCCALCSIZE.  See bug 618353,
+    if (aAppearance == StyleAppearance::MozWindowTitlebarMaximized) {
+      nsCOMPtr<nsIWidget> rootWidget;
+      if (WinUtils::HasSystemMetricsForDpi()) {
+        rootWidget = aFrame->PresContext()->GetRootWidget();
+      }
+      if (rootWidget) {
+        double dpi = rootWidget->GetDPI();
+        aResult->top = WinUtils::GetSystemMetricsForDpi(SM_CYFRAME, dpi) +
+                       WinUtils::GetSystemMetricsForDpi(SM_CXPADDEDBORDER, dpi);
+      } else {
+        aResult->top =
+            GetSystemMetrics(SM_CYFRAME) + GetSystemMetrics(SM_CXPADDEDBORDER);
+      }
+    }
+    return ok;
+  }
+
   HANDLE theme = GetTheme(aAppearance);
   if (!theme) {
     ok = ClassicGetWidgetPadding(aContext, aFrame, aAppearance, aResult);
@@ -1230,7 +1582,18 @@ LayoutDeviceIntSize nsNativeThemeWin::GetMinimumWidgetSize(
     case StyleAppearance::Tabpanels:
     case StyleAppearance::Tabpanel:
     case StyleAppearance::Listbox:
+    case StyleAppearance::Treeview:
+    case StyleAppearance::MozWinBorderlessGlass:
       return {};  // Don't worry about it.
+    case StyleAppearance::MozWindowTitlebar:
+    case StyleAppearance::MozWindowTitlebarMaximized: {
+      LayoutDeviceIntSize result;
+      result.height = GetSystemMetrics(SM_CYCAPTION);
+      result.height += GetSystemMetrics(SM_CYFRAME);
+      result.height += GetSystemMetrics(SM_CXPADDEDBORDER);
+      ScaleForFrameDPI(&result, aFrame);
+      return result;
+    }
     default:
       break;
   }
@@ -1298,9 +1661,22 @@ bool nsNativeThemeWin::WidgetAttributeChangeRequiresRepaint(
       aAppearance == StyleAppearance::ProgressBar ||
       aAppearance == StyleAppearance::Tabpanels ||
       aAppearance == StyleAppearance::Tabpanel ||
-      aAppearance == StyleAppearance::Separator) {
+      aAppearance == StyleAppearance::Separator ||
+      aAppearance == StyleAppearance::MozWinBorderlessGlass) {
     return false;
   }
+
+  if (aAppearance == StyleAppearance::MozWindowTitlebar ||
+      aAppearance == StyleAppearance::MozWindowTitlebarMaximized ||
+      aAppearance == StyleAppearance::MozWindowButtonClose ||
+      aAppearance == StyleAppearance::MozWindowButtonMinimize ||
+      aAppearance == StyleAppearance::MozWindowButtonMaximize ||
+      aAppearance == StyleAppearance::MozWindowButtonRestore ||
+      aAppearance == StyleAppearance::Menulist ||
+      aAppearance == StyleAppearance::MenulistButton ||
+      aAppearance == StyleAppearance::MozMenulistArrowButton) {
+    return true;
+  }  
 
   return Theme::WidgetAttributeChangeRequiresRepaint(aAppearance, aAttribute);
 }
@@ -1327,7 +1703,7 @@ bool nsNativeThemeWin::ThemeSupportsWidget(nsPresContext* aPresContext,
   HANDLE theme = GetTheme(aAppearance);
   if (theme || ClassicThemeSupportsWidget(aFrame, aAppearance))
     // turn off theming for some HTML widgets styled by the page
-    return !IsWidgetStyled(aPresContext, aFrame, aAppearance);
+    return (!IsWidgetStyled(aPresContext, aFrame, aAppearance));
 
   return false;
 }
@@ -1352,6 +1728,32 @@ bool nsNativeThemeWin::ThemeDrawsFocusForWidget(nsIFrame* aFrame,
 
 bool nsNativeThemeWin::ThemeNeedsComboboxDropmarker() { return true; }
 
+bool nsNativeThemeWin::WidgetAppearanceDependsOnWindowFocus(
+    StyleAppearance aAppearance) {
+  switch (aAppearance) {
+    case StyleAppearance::MozWindowTitlebar:
+    case StyleAppearance::MozWindowTitlebarMaximized:
+    case StyleAppearance::MozWindowButtonClose:
+    case StyleAppearance::MozWindowButtonMinimize:
+    case StyleAppearance::MozWindowButtonMaximize:
+    case StyleAppearance::MozWindowButtonRestore:
+      return true;
+    default:
+      return false;
+  }
+}
+
+nsITheme::ThemeGeometryType nsNativeThemeWin::ThemeGeometryTypeForWidget(
+    nsIFrame* aFrame, StyleAppearance aAppearance) {
+  switch (aAppearance) {
+    case StyleAppearance::MozWindowButtonBox:
+    case StyleAppearance::MozWindowButtonBoxMaximized:
+      return eThemeGeometryTypeWindowButtons;
+    default:
+      return eThemeGeometryTypeUnknown;
+  }
+}
+
 nsITheme::Transparency nsNativeThemeWin::GetWidgetTransparency(
     nsIFrame* aFrame, StyleAppearance aAppearance) {
   if (IsWidgetNonNative(aFrame, aAppearance) != NonNative::No) {
@@ -1359,6 +1761,7 @@ nsITheme::Transparency nsNativeThemeWin::GetWidgetTransparency(
   }
 
   switch (aAppearance) {
+    case StyleAppearance::MozWinBorderlessGlass:
     case StyleAppearance::ProgressBar:
     case StyleAppearance::Progresschunk:
     case StyleAppearance::Range:
@@ -1404,11 +1807,20 @@ bool nsNativeThemeWin::ClassicThemeSupportsWidget(nsIFrame* aFrame,
     case StyleAppearance::Menulist:
     case StyleAppearance::MenulistButton:
     case StyleAppearance::Listbox:
+    case StyleAppearance::Treeview:
     case StyleAppearance::ProgressBar:
     case StyleAppearance::Progresschunk:
     case StyleAppearance::Tab:
     case StyleAppearance::Tabpanel:
     case StyleAppearance::Tabpanels:
+    case StyleAppearance::MozWindowTitlebar:
+    case StyleAppearance::MozWindowTitlebarMaximized:
+    case StyleAppearance::MozWindowButtonClose:
+    case StyleAppearance::MozWindowButtonMinimize:
+    case StyleAppearance::MozWindowButtonMaximize:
+    case StyleAppearance::MozWindowButtonRestore:
+    case StyleAppearance::MozWindowButtonBox:
+    case StyleAppearance::MozWindowButtonBoxMaximized:
       return true;
     default:
       return false;
@@ -1423,6 +1835,7 @@ LayoutDeviceIntMargin nsNativeThemeWin::ClassicGetWidgetBorder(
       result.top = result.left = result.bottom = result.right = 2;
       break;
     case StyleAppearance::Listbox:
+    case StyleAppearance::Treeview:
     case StyleAppearance::Menulist:
     case StyleAppearance::MenulistButton:
     case StyleAppearance::Tab:
@@ -1474,6 +1887,7 @@ LayoutDeviceIntSize nsNativeThemeWin::ClassicGetMinimumWidgetSize(
     case StyleAppearance::MenulistButton:
     case StyleAppearance::Button:
     case StyleAppearance::Listbox:
+    case StyleAppearance::Treeview:
     case StyleAppearance::NumberInput:
     case StyleAppearance::PasswordInput:
     case StyleAppearance::Textfield:
@@ -1484,6 +1898,31 @@ LayoutDeviceIntSize nsNativeThemeWin::ClassicGetMinimumWidgetSize(
     case StyleAppearance::Tabpanel:
     case StyleAppearance::Tabpanels:
       // no minimum widget size
+      break;
+
+    case StyleAppearance::MozWindowTitlebarMaximized:
+    case StyleAppearance::MozWindowTitlebar:
+      result.height =
+          GetSystemMetrics(SM_CYCAPTION) + GetSystemMetrics(SM_CYFRAME);
+      break;
+    case StyleAppearance::MozWindowButtonClose:
+    case StyleAppearance::MozWindowButtonMinimize:
+    case StyleAppearance::MozWindowButtonMaximize:
+    case StyleAppearance::MozWindowButtonRestore:
+      result.width = GetSystemMetrics(SM_CXSIZE);
+      result.height = GetSystemMetrics(SM_CYSIZE);
+      // XXX I have no idea why these caption metrics are always off,
+      // but they are.
+      result.width -= 2;
+      result.height -= 4;
+      if (aAppearance == StyleAppearance::MozWindowButtonMinimize) {
+        AddPaddingRect(&result, CAPTIONBUTTON_MINIMIZE);
+      } else if (aAppearance == StyleAppearance::MozWindowButtonMaximize ||
+                 aAppearance == StyleAppearance::MozWindowButtonRestore) {
+        AddPaddingRect(&result, CAPTIONBUTTON_RESTORE);
+      } else if (aAppearance == StyleAppearance::MozWindowButtonClose) {
+        AddPaddingRect(&result, CAPTIONBUTTON_CLOSE);
+      }
       break;
 
     default:
@@ -1532,6 +1971,7 @@ nsresult nsNativeThemeWin::ClassicGetThemePartAndState(
       return NS_OK;
     }
     case StyleAppearance::Listbox:
+    case StyleAppearance::Treeview:
     case StyleAppearance::NumberInput:
     case StyleAppearance::PasswordInput:
     case StyleAppearance::Textfield:
@@ -1546,6 +1986,34 @@ nsresult nsNativeThemeWin::ClassicGetThemePartAndState(
     case StyleAppearance::Tabpanel:
     case StyleAppearance::Tabpanels:
       // these don't use DrawFrameControl
+      return NS_OK;
+    case StyleAppearance::MozWindowTitlebar:
+      aPart = mozilla::widget::themeconst::WP_CAPTION;
+      aState = GetTopLevelWindowActiveState(aFrame);
+      return NS_OK;
+    case StyleAppearance::MozWindowTitlebarMaximized:
+      aPart = mozilla::widget::themeconst::WP_MAXCAPTION;
+      aState = GetTopLevelWindowActiveState(aFrame);
+      return NS_OK;
+    case StyleAppearance::MozWindowButtonClose:
+      aPart = DFC_CAPTION;
+      aState = DFCS_CAPTIONCLOSE | GetClassicWindowFrameButtonState(
+                                       GetContentState(aFrame, aAppearance));
+      return NS_OK;
+    case StyleAppearance::MozWindowButtonMinimize:
+      aPart = DFC_CAPTION;
+      aState = DFCS_CAPTIONMIN | GetClassicWindowFrameButtonState(
+                                     GetContentState(aFrame, aAppearance));
+      return NS_OK;
+    case StyleAppearance::MozWindowButtonMaximize:
+      aPart = DFC_CAPTION;
+      aState = DFCS_CAPTIONMAX | GetClassicWindowFrameButtonState(
+                                     GetContentState(aFrame, aAppearance));
+      return NS_OK;
+    case StyleAppearance::MozWindowButtonRestore:
+      aPart = DFC_CAPTION;
+      aState = DFCS_CAPTIONRESTORE | GetClassicWindowFrameButtonState(
+                                         GetContentState(aFrame, aAppearance));
       return NS_OK;
     default:
       return NS_ERROR_FAILURE;
@@ -1746,6 +2214,13 @@ RENDER_AGAIN:
 
       break;
     }
+    case StyleAppearance::Treeview: {
+      // Draw inset edge
+      ::DrawEdge(hdc, &widgetRect, EDGE_SUNKEN, BF_RECT | BF_ADJUST);
+      // Fill in window color background
+      ::FillRect(hdc, &widgetRect, (HBRUSH)(COLOR_WINDOW + 1));
+      break;
+    }
     // Draw 3D face background controls
     case StyleAppearance::ProgressBar:
       // Draw 3D border
@@ -1831,6 +2306,75 @@ RENDER_AGAIN:
                  BF_SOFT | BF_MIDDLE | BF_LEFT | BF_RIGHT | BF_BOTTOM);
 
       break;
+
+    case StyleAppearance::MozWindowTitlebar:
+    case StyleAppearance::MozWindowTitlebarMaximized: {
+      RECT rect = widgetRect;
+      int32_t offset = GetSystemMetrics(SM_CXFRAME);
+      // first fill the area to the color of the window background
+      ::FillRect(hdc, &rect, (HBRUSH)(COLOR_3DFACE + 1));
+      // inset the caption area so it doesn't overflow.
+      rect.top += offset;
+      // if enabled, draw a gradient titlebar background, otherwise
+      // fill with a solid color.
+      BOOL bFlag = TRUE;
+      SystemParametersInfo(SPI_GETGRADIENTCAPTIONS, 0, &bFlag, 0);
+      if (!bFlag) {
+        if (state == mozilla::widget::themeconst::FS_ACTIVE)
+          ::FillRect(hdc, &rect, (HBRUSH)(COLOR_ACTIVECAPTION + 1));
+        else
+          ::FillRect(hdc, &rect, (HBRUSH)(COLOR_INACTIVECAPTION + 1));
+      } else {
+        DWORD startColor, endColor;
+        if (state == mozilla::widget::themeconst::FS_ACTIVE) {
+          startColor = GetSysColor(COLOR_ACTIVECAPTION);
+          endColor = GetSysColor(COLOR_GRADIENTACTIVECAPTION);
+        } else {
+          startColor = GetSysColor(COLOR_INACTIVECAPTION);
+          endColor = GetSysColor(COLOR_GRADIENTINACTIVECAPTION);
+        }
+        TRIVERTEX vertex[2];
+        vertex[0].x = rect.left;
+        vertex[0].y = rect.top;
+        vertex[0].Red = GetRValue(startColor) << 8;
+        vertex[0].Green = GetGValue(startColor) << 8;
+        vertex[0].Blue = GetBValue(startColor) << 8;
+        vertex[0].Alpha = 0;
+        vertex[1].x = rect.right;
+        vertex[1].y = rect.bottom;
+        vertex[1].Red = GetRValue(endColor) << 8;
+        vertex[1].Green = GetGValue(endColor) << 8;
+        vertex[1].Blue = GetBValue(endColor) << 8;
+        vertex[1].Alpha = 0;
+        GRADIENT_RECT gRect;
+        gRect.UpperLeft = 0;
+        gRect.LowerRight = 1;
+        // available on win2k & up
+        GradientFill(hdc, vertex, 2, &gRect, 1, GRADIENT_FILL_RECT_H);
+      }
+      if (aAppearance == StyleAppearance::MozWindowTitlebar) {
+        // frame things up with a top raised border.
+        DrawEdge(hdc, &widgetRect, EDGE_RAISED, BF_TOP);
+      }
+      break;
+    }
+    case StyleAppearance::MozWindowButtonClose:
+    case StyleAppearance::MozWindowButtonMinimize:
+    case StyleAppearance::MozWindowButtonMaximize:
+    case StyleAppearance::MozWindowButtonRestore: {
+      if (aAppearance == StyleAppearance::MozWindowButtonMinimize) {
+        OffsetBackgroundRect(widgetRect, CAPTIONBUTTON_MINIMIZE);
+      } else if (aAppearance == StyleAppearance::MozWindowButtonMaximize ||
+                 aAppearance == StyleAppearance::MozWindowButtonRestore) {
+        OffsetBackgroundRect(widgetRect, CAPTIONBUTTON_RESTORE);
+      } else if (aAppearance == StyleAppearance::MozWindowButtonClose) {
+        OffsetBackgroundRect(widgetRect, CAPTIONBUTTON_CLOSE);
+      }
+      int32_t oldTA = SetTextAlign(hdc, TA_TOP | TA_LEFT | TA_NOUPDATECP);
+      DrawFrameControl(hdc, &widgetRect, part, state);
+      SetTextAlign(hdc, oldTA);
+      break;
+    }
 
     default:
       rv = NS_ERROR_FAILURE;

@@ -297,6 +297,9 @@ nsresult nsLookAndFeel::NativeGetColor(ColorID aID, ColorScheme aScheme,
     case ColorID::MozSidebartext:
       aColor = GetColorFromNSColor(NSColor.controlTextColor);
       break;
+    case ColorID::MozDragtargetzone:
+      color = GetColorFromNSColor(NSColor.selectedControlColor);
+      break;
     case ColorID::MozMacFocusring:
       aColor = GetColorFromNSColorWithCustomAlpha(
           NSColor.keyboardFocusIndicatorColor, 0.48);

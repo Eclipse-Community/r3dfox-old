@@ -158,7 +158,6 @@ class nsNativeTheme : public nsITimerCallback, public nsINamed {
   static bool IsDarkBackground(nsIFrame*);
 
   static bool IsWidgetScrollbarPart(mozilla::StyleAppearance);
-  static bool IsWidgetAlwaysNonNative(nsIFrame*, mozilla::StyleAppearance);
 
  private:
   uint32_t mAnimatedContentTimeout;

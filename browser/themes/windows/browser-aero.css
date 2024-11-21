@@ -28,14 +28,14 @@
      *   it in the restored window case.
      */
     :root[sizemode="normal"] .titlebar-buttonbox {
-      appearance: auto !important;
-      -moz-default-appearance: -moz-window-button-box !important;
+      appearance: auto;
+      -moz-default-appearance: -moz-window-button-box;
     }
 
     @media (-moz-windows-compositor) {
       :root[sizemode="maximized"] .titlebar-buttonbox {
-        appearance: auto !important;
-        -moz-default-appearance: -moz-window-button-box-maximized !important;
+        appearance: auto;
+        -moz-default-appearance: -moz-window-button-box-maximized;
       }
     }
   }

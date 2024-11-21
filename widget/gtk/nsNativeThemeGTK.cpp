@@ -945,9 +945,11 @@ bool nsNativeThemeGTK::GetWidgetOverflow(nsDeviceContext* aContext,
   return true;
 }
 
-auto nsNativeThemeGTK::IsWidgetNonNative(
-    nsIFrame* aFrame, StyleAppearance aAppearance) -> NonNative {
-  if (IsWidgetAlwaysNonNative(aFrame, aAppearance)) {
+auto nsNativeThemeGTK::IsWidgetNonNative(nsIFrame* aFrame,
+                                         StyleAppearance aAppearance)
+    -> NonNative {
+  if (IsWidgetScrollbarPart(aAppearance) ||
+      aAppearance == StyleAppearance::FocusOutline) {
     return NonNative::Always;
   }
 
@@ -990,7 +992,7 @@ bool nsNativeThemeGTK::IsWidgetAlwaysNonNative(nsIFrame* aFrame,
 LayoutDeviceIntSize nsNativeThemeGTK::GetMinimumWidgetSize(
     nsPresContext* aPresContext, nsIFrame* aFrame,
     StyleAppearance aAppearance) {
-  if (IsWidgetAlwaysNonNative(aFrame, aAppearance)) {
+  if (IsWidgetNonNative(aFrame, aAppearance) == NonNative::Always) {
     return Theme::GetMinimumWidgetSize(aPresContext, aFrame, aAppearance);
   }
 
@@ -1155,7 +1157,7 @@ nsNativeThemeGTK::ThemeSupportsWidget(nsPresContext* aPresContext,
     return false;
   }
 
-  if (IsWidgetAlwaysNonNative(aFrame, aAppearance)) {
+  if (IsWidgetNonNative(aFrame, aAppearance) == NonNative::Always) {
     return Theme::ThemeSupportsWidget(aPresContext, aFrame, aAppearance);
   }
 

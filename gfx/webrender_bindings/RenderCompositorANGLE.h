@@ -121,17 +121,19 @@ class RenderCompositorANGLE : public RenderCompositor {
   ID3D11Device* GetDeviceOfEGLDisplay(nsACString& aError);
   bool CreateSwapChain(nsACString& aError);
   void CreateSwapChainForDCompIfPossible(IDXGIFactory2* aDXGIFactory2);
-  RefPtr<IDXGISwapChain1> CreateSwapChainForDComp(bool aUseTripleBuffering);
+  RefPtr<IDXGISwapChain1> CreateSwapChainForDComp(bool aUseTripleBuffering,
+                                                  bool aUseAlpha);
   RefPtr<ID3D11Query> GetD3D11Query();
   void ReleaseNativeCompositorResources();
   HWND GetCompositorHwnd();
 
   RefPtr<gl::GLContext> mGL;
 
-  EGLConfig mEGLConfig = nullptr;
-  EGLSurface mEGLSurface = nullptr;
+  EGLConfig mEGLConfig;
+  EGLSurface mEGLSurface;
 
-  bool mUseTripleBuffering = false;
+  bool mUseTripleBuffering;
+  bool mUseAlpha;
 
   RefPtr<ID3D11Device> mDevice;
   RefPtr<ID3D11DeviceContext> mCtx;
@@ -146,11 +148,11 @@ class RenderCompositorANGLE : public RenderCompositor {
   RenderedFrameId mLastCompletedFrameId;
 
   Maybe<LayoutDeviceIntSize> mBufferSize;
-  bool mUseNativeCompositor = true;
-  bool mUsePartialPresent = false;
-  bool mFullRender = false;
+  bool mUseNativeCompositor;
+  bool mUsePartialPresent;
+  bool mFullRender;
   // Used to know a timing of disabling native compositor.
-  bool mDisablingNativeCompositor = false;
+  bool mDisablingNativeCompositor;
   bool mFirstPresent = true;
 };
 

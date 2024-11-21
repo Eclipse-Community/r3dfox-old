@@ -117,17 +117,6 @@ body {
 #navigator-toolbox {
   appearance: none;
 
-  background-color: var(--toolbox-non-lwt-bgcolor);
-  color: var(--toolbox-non-lwt-textcolor);
-
-  will-change: background-color;
-  transition: background-color var(--inactive-window-transition);
-
-  &:-moz-window-inactive {
-    background-color: var(--toolbox-non-lwt-bgcolor-inactive);
-    color: var(--toolbox-non-lwt-textcolor-inactive);
-  }
-
   &[fullscreenShouldAnimate] {
     transition: 0.8s margin-top ease-out;
   }
@@ -315,6 +304,17 @@ body {
   > :is(toolbarbutton, toolbaritem):first-child,
   > toolbarpaletteitem:first-child > :is(toolbarbutton, toolbaritem) {
     padding-inline-start: var(--toolbar-start-end-padding);
+  }
+}
+
+@media not (-moz-windows-default-theme) {
+  #nav-bar:not([lwtheme]) {
+    box-shadow: 0 calc(-1 * var(--tabs-navbar-shadow-size)) 0 ThreeDShadow;
+  }
+}
+@media not (-moz-windows-compositor) {
+  #nav-bar[tabs-hidden="true"] {
+    box-shadow: none;
   }
 }
 

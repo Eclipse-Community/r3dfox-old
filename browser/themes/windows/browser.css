@@ -5,6 +5,12 @@
 @import url("chrome://browser/skin/browser-shared.css");
 @import url("chrome://browser/skin/contextmenu.css");
 
+@namespace html url("http://www.w3.org/1999/xhtml");
+
+:root {
+  --sidebar-border-color: ThreeDLightShadow;
+}
+
 #menubar-items {
   flex-direction: column; /* for flex hack */
   justify-content: normal; /* align the menubar to the top also in customize mode */
@@ -25,39 +31,111 @@
   }
 }
 
-@media (-moz-windows-accent-color-in-titlebar) {
-  :root[tabsintitlebar] {
-    /* stylelint-disable-next-line media-query-no-invalid */
-    @media (-moz-bool-pref: "browser.theme.windows.accent-color-in-tabs.enabled") {
-      &:not([lwtheme]) #TabsToolbar {
-        /* These colors match the Linux/HCM default button colors. We need to
-         * override these on the tabs toolbar because the accent color is
-         * arbitrary, so the hardcoded colors from browser-custom-colors might
-         * not provide sufficient contrast. */
-        --toolbarbutton-icon-fill: currentColor;
-        --toolbarbutton-hover-background: color-mix(in srgb, currentColor 17%, transparent);
-        --toolbarbutton-active-background: color-mix(in srgb, currentColor 30%, transparent);
-      }
-    }
-
-    &[sizemode="normal"] #navigator-toolbox {
-      border-top: .5px solid ActiveBorder;
-      &:-moz-window-inactive {
-        border-top-color: InactiveBorder;
-      }
+/* Use a different color only on Windows 8 and higher in inactive windows.
+ * On Win 7, the menubar fog disappears for inactive windows, and renders gray
+ * illegible.
+ */
+@media (-moz-windows-default-theme) {
+  @media not (-moz-platform: windows-modern) {
+    #toolbar-menubar:not([lwtheme]):-moz-window-inactive {
+      color: ThreeDShadow;
     }
   }
 }
 
-/* When temporarily showing the menu bar, make it at least as tall as the
- * tab bar such that the window controls don't appear to move up. */
-:root[tabsintitlebar] #toolbar-menubar[autohide="true"] {
-  height: var(--tab-min-height);
+@media not (-moz-platform: windows-modern) {
+   /* On Windows 10, when temporarily showing the menu bar, make it at least as
+   * tall as the tab bar such that the window controls don't appear to move up. */
+   :root[tabsintitlebar] #toolbar-menubar[autohide="true"] {
+     height: var(--tab-min-height);
+   }
+}
+
+/* Add 4px extra margin on top of the tabs toolbar on Windows 7. */
+@media (-moz-platform: windows) {
+  :root[sizemode="normal"][chromehidden~="menubar"] #TabsToolbar > .toolbar-items,
+  :root[sizemode="normal"] #toolbar-menubar[autohide="true"][inactive] + #TabsToolbar > .toolbar-items {
+    padding-top: 4px;
+  }
+}
+
+/* Add a fog for background tabs to be visible on Windows 7 glass window background */
+@media (-moz-platform: windows) {
+  @media (-moz-windows-default-theme) {
+    #TabsToolbar:not([lwtheme]) {
+      background-image: radial-gradient(ellipse at bottom, rgba(255,255,255,0.8), rgba(255,255,255,0.5) 40%, transparent);
+    }
+  }
+}
+
+@media not (-moz-windows-compositor),
+       not (-moz-windows-default-theme),
+       (-moz-platform: windows-modern) {
+  /* Please keep the menu text colors in this media block in sync with
+   * light-dark-overrides.css, minus the :not([lwtheme]) condition - see Bug 1165718.
+   */
+  :root[tabsintitlebar]:not([lwtheme]) {
+    color: CaptionText;
+  }
+
+  :root[tabsintitlebar]:not([lwtheme]):-moz-window-inactive {
+    color: InactiveCaptionText;
+  }
+}
+
+@media (-moz-windows-classic) {
+  /**
+   * In the classic themes, the titlebar has a horizontal gradient, which is
+   * problematic for reading the text of background tabs when they're in the
+   * titlebar. We side-step this issue by layering our own background underneath
+   * the tabs.
+   */
+  :root[tabsintitlebar]:not([sizemode=fullscreen]) #TabsToolbar:not([lwtheme]) {
+    background-image: linear-gradient(transparent, ActiveCaption);
+    background-size: auto 200%;
+  }
+
+  :root[tabsintitlebar]:not([sizemode=fullscreen]) #TabsToolbar:not([lwtheme]):-moz-window-inactive {
+    background-image: linear-gradient(transparent, InactiveCaption);
+  }
+
+  /* Add a window top border for webextension themes */
+  :root[lwtheme][tabsintitlebar][sizemode="normal"] #navigator-toolbox {
+    background-image: linear-gradient(to bottom,
+          ThreeDLightShadow 0, ThreeDLightShadow 1px,
+          ThreeDHighlight 1px, ThreeDHighlight 2px,
+          ActiveBorder 2px, ActiveBorder 4px, transparent 4px);
+  }
+
+  :root[tabsintitlebar] :is(#TabsToolbar, #toolbar-menubar) toolbarbutton:not([lwtheme]) {
+    color: inherit;
+  }
 }
 
 /* Titlebar */
 
+:root[tabsintitlebar][sizemode="normal"] #titlebar {
+  appearance: auto;
+  -moz-default-appearance: -moz-window-titlebar;
+}
+
+:root[tabsintitlebar][sizemode="maximized"] #titlebar {
+  appearance: auto;
+  -moz-default-appearance: -moz-window-titlebar-maximized;
+}
+
+@media (-moz-windows-classic) {
+  :root[tabsintitlebar][sizemode="normal"] #toolbar-menubar {
+    margin-top: 4px;
+  }
+}
+
 .titlebar-buttonbox {
+  /* For all Windows configurations except for Windows Aero and Windows Aero Basic,
+   * the default -moz-default-appearance of -moz-window-button-box and
+   * -moz-window-button-box-maximized adds unwanted margins to the button box. We
+   * special case Windows Aero and Windows Aero Basic in browser-aero.css.
+   */
   appearance: none;
   /* The button box must appear on top of the navigator-toolbox in order for
    * click and hover mouse events to work properly for the button in the restored
@@ -72,165 +150,45 @@
   align-items: stretch;
 }
 
-/* Window control buttons */
-
-.titlebar-button {
-  appearance: none;
-  border: none;
-  margin: 0;
-  padding: 8px 17px;
-  -moz-context-properties: stroke;
-  stroke: currentColor;
-
-  :root[tabletmode] & {
-    display: none;
-  }
-
-  &:focus-visible {
-    outline: var(--focus-outline);
-    outline-offset: var(--focus-outline-inset);
-  }
-
-  > .toolbarbutton-icon {
-    width: 12px;
-    height: 12px;
-
-    &:-moz-locale-dir(rtl) {
-      transform: scaleX(-1);
-    }
+@media (-moz-platform: windows) {
+  /* Preserve window control buttons position at the top of the button box. */
+  .titlebar-buttonbox-container {
+    align-items: flex-start;
   }
 }
 
+/* Window control buttons */
+
 .titlebar-min {
-  /* Even though we use appearance: none, -moz-default-appearance is necessary
-   * for Windows 11's "snap layouts" feature, see
-   * DealWithWindowsAppearanceHacks */
+  appearance: auto;
   -moz-default-appearance: -moz-window-button-minimize;
-  list-style-image: url(chrome://browser/skin/window-controls/minimize.svg);
 }
 
 .titlebar-max {
+  appearance: auto;
   -moz-default-appearance: -moz-window-button-maximize;
-  list-style-image: url(chrome://browser/skin/window-controls/maximize.svg);
 }
 
 .titlebar-restore {
+  appearance: auto;
   -moz-default-appearance: -moz-window-button-restore;
-  list-style-image: url(chrome://browser/skin/window-controls/restore.svg);
 }
 
 .titlebar-close {
+  appearance: auto;
   -moz-default-appearance: -moz-window-button-close;
-  list-style-image: url(chrome://browser/skin/window-controls/close.svg);
 }
 
-:root[lwtheme-image] {
-  .titlebar-button {
-    -moz-context-properties: unset;
-  }
+@media not (-moz-windows-classic) {
   .titlebar-min {
-    list-style-image: url(chrome://browser/skin/window-controls/minimize-themes.svg);
-  }
-  .titlebar-max {
-    list-style-image: url(chrome://browser/skin/window-controls/maximize-themes.svg);
-  }
-  .titlebar-restore {
-    list-style-image: url(chrome://browser/skin/window-controls/restore-themes.svg);
-  }
-  .titlebar-close {
-    list-style-image: url(chrome://browser/skin/window-controls/close-themes.svg);
+    margin-inline-end: 2px;
   }
 }
 
-@media not (prefers-contrast) {
-  .titlebar-button:hover {
-    background-color: light-dark(hsla(0,0%,0%,.12), hsla(0,0%,100%,.22));
-
-    &:active {
-      background-color: light-dark(hsla(0,0%,0%,.22), hsla(0,0%,100%,.32));
-    }
-  }
-
-  .titlebar-close:hover {
-    stroke: white;
-    background-color: hsl(355,86%,49%);
-
-    &:active {
-      background-color: hsl(355,82%,69%);
-    }
-  }
-}
-
-@media (prefers-contrast) {
-  .titlebar-button {
-    background-color: -moz-field;
-    stroke: ButtonText;
-
-    &:hover {
-      background-color: SelectedItem;
-      stroke: SelectedItemText;
-    }
-  }
-
-  .titlebar-min {
-    list-style-image: url(chrome://browser/skin/window-controls/minimize-highcontrast.svg);
-  }
-
-  .titlebar-max {
-    list-style-image: url(chrome://browser/skin/window-controls/maximize-highcontrast.svg);
-  }
-
-  .titlebar-restore {
-    list-style-image: url(chrome://browser/skin/window-controls/restore-highcontrast.svg);
-  }
-
-  .titlebar-close {
-    list-style-image: url(chrome://browser/skin/window-controls/close-highcontrast.svg);
-  }
-}
-
-/* the 12px image renders a 10px icon, and the 10px upscaled gets rounded to 12.5, which
- * rounds up to 13px, which makes the icon one pixel too big on 1.25dppx. Fix: */
-@media (1.20dppx <= resolution <= 1.45dppx) {
-  .titlebar-button > .toolbarbutton-icon {
-    width: 11.5px;
-    height: 11.5px;
-  }
-}
-
-/* 175% dpi should result in the same device pixel sizes as 150% dpi. */
-@media (1.70dppx <= resolution <= 1.95dppx) {
-  .titlebar-button {
-    padding-inline: 14.1px;
-
-    > .toolbarbutton-icon {
-      width: 10.8px;
-      height: 10.8px;
-    }
-  }
-}
-
-/* 225% dpi should result in the same device pixel sizes as 200% dpi. */
-@media (2.20dppx <= resolution <= 2.45dppx) {
-  .titlebar-button {
-    padding-inline: 15.3333px;
-
-    > .toolbarbutton-icon {
-      width: 10.8px;
-      height: 10.8px;
-    }
-  }
-}
-
-/* 275% dpi should result in the same device pixel sizes as 250% dpi. */
-@media (2.70dppx <= resolution <= 2.95dppx) {
-  /* NB: todo: this should also change padding on the buttons
-   * themselves, but without a device to test this on, it's
-   * impossible to know by how much. */
-  .titlebar-button > .toolbarbutton-icon {
-    width: 10.8px;
-    height: 10.8px;
-  }
+:root[tabletmode] .titlebar-min,
+:root[tabletmode] .titlebar-restore,
+:root[tabletmode] .titlebar-max {
+  display: none;
 }
 
 /* Bookmark menus */
@@ -287,7 +245,7 @@
   }
 }
 
-@media (prefers-contrast) {
+@media not (-moz-windows-default-theme) {
   :root {
     /* Windows HCM conventions use these colors for chiclets. We can't use them on
        other platforms because AccentColor can be shown atop SelectedItem,
@@ -306,6 +264,14 @@
   }
 }
 
+/* Address bar results view */
+
+@media not (-moz-windows-default-theme) {
+  :root:not([lwtheme]) {
+    --urlbar-popup-action-color: LinkText;
+  }
+}
+
 /* Autocomplete */
 
 #PopupAutoComplete > richlistbox > richlistitem[originaltype~="datalist-first"] {
@@ -319,8 +285,8 @@
   padding: 0;
 }
 
-@media (prefers-contrast) {
-  /* For high contrast themes. XXX is this needed anymore? */
+@media not (-moz-windows-default-theme) {
+  /* For high contrast themes. */
   #tabbrowser-tabpanels,
   :root[privatebrowsingmode=temporary] #tabbrowser-tabpanels {
     background-color: -moz-default-background-color;
@@ -373,8 +339,91 @@ menupopup[touchmode] :is(menu, menuitem, menucaption) {
   padding-block: calc((3.5em - 32px) / 2);
 }
 
-/* Other menu separators don't extend all the way to the menu edges, but the
-   one below the navigation buttons in the content context menu should. */
-#context-sep-navigation {
-  padding-inline: 0;
+@media not (-moz-windows-non-native-menus) {
+  #context-navigation {
+    background-color: menu;
+  }
+}
+
+@media (-moz-windows-non-native-menus) {
+  /* :not([hidden]) to avoid the display: flex unhiding the item. */
+  #context-navigation:not([hidden]) {
+    /* Use modern flex box so we can use percentage widths to redistribute
+     * spacing manually. */
+    display: flex;
+    flex-direction: row;
+    /* We want the first and last icons to align with the text items which
+     * have 1em inline padding, and for icons to be centered within their
+     * hover state, so each icon of 16px needs 1em padding on both sides:
+     */
+    --menuitem-min-width: calc(2em + 16px);
+    /* The total width of the container should then be at least 4 times that: */
+    min-width: calc(4 * var(--menuitem-min-width));
+  }
+
+  #context-navigation > .menuitem-iconic {
+    flex: 1 0 auto;
+  }
+
+  #context-navigation > .menuitem-iconic[_moz-menuactive="true"] {
+    /* We only show hover state on the icons. This ensures there is no
+     * dead space between icons, but the visible hover state is only
+     * around the icons, and all the icons' hover states match each other.
+     */
+    background-color: transparent;
+  }
+
+  #context-navigation > .menuitem-iconic > .menu-iconic-left {
+    margin: 0;
+    padding: 0;
+  }
+
+  /* override styles from shared/contextmenu.inc.css */
+  #context-navigation > .menuitem-iconic > .menu-iconic-left > .menu-iconic-icon {
+    width: var(--menuitem-min-width);
+    height: 32px;
+    padding: 8px 1em;
+    margin: 0;
+  }
+  #context-navigation > .menuitem-iconic[_moz-menuactive="true"] > .menu-iconic-left > .menu-iconic-icon {
+    background-color: -moz-menuhover;
+  }
+
+  #context-navigation > .menuitem-iconic[_moz-menuactive="true"][disabled="true"] > .menu-iconic-left > .menu-iconic-icon {
+    background-color: -moz-menuhoverdisabled;
+  }
+
+  /* If the menu is wider than the icons strictly need, the <menuitem> elements
+   * will stretch to pick up the extra space. In that case, the outer icons
+   * should align to the start/end of their containing <menuitem>: */
+  #context-navigation > .menuitem-iconic:first-child {
+    justify-content: flex-start;
+  }
+
+  #context-navigation > .menuitem-iconic:last-child {
+    justify-content: flex-end;
+  }
+
+  #context-navigation > .menuitem-iconic:last-child,
+  #context-navigation > .menuitem-iconic:first-child {
+    flex-grow: 0;
+    /* The first and last items start off as 16px + 2em, like the other ones.
+     * 100% is the width of the parent, which will be at least 4 * the width of
+     * an individual item (16px + 2em)
+     * So 100% - 4 item widths gets us the remaining available space if
+     * #context-navigation is wider than that.
+     * Then divide by 6 to get the 1/6 of that extra space, and add this space
+     * to the width of the first/last items.
+     * This ensures that the 3 visual gaps between the 4 icons are all the same
+     * size, with each 1/3 of the available space evenly distributed between
+     * the 2 items on either side of the gap.
+     */
+    width: calc(var(--menuitem-min-width) + calc(100% - 4 * var(--menuitem-min-width)) / 6);
+  }
+
+  /* Other menu separators don't extend all the way to the menu edges, but the
+     one below the navigation buttons in the content context menu should. */
+  #context-sep-navigation {
+    padding-inline: 0;
+  }
 }

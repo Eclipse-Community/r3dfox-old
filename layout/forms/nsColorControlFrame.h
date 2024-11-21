@@ -33,18 +33,19 @@ class nsColorControlFrame final : public nsHTMLButtonControlFrame,
   NS_DECL_FRAMEARENA_HELPERS(nsColorControlFrame)
 
 #ifdef DEBUG_FRAME_DUMP
-  nsresult GetFrameName(nsAString& aResult) const override;
+  virtual nsresult GetFrameName(nsAString& aResult) const override;
 #endif
 
   // nsIAnonymousContentCreator
-  nsresult CreateAnonymousContent(nsTArray<ContentInfo>& aElements) override;
-  void AppendAnonymousContentTo(nsTArray<nsIContent*>& aElements,
-                                uint32_t aFilter) override;
+  virtual nsresult CreateAnonymousContent(
+      nsTArray<ContentInfo>& aElements) override;
+  virtual void AppendAnonymousContentTo(nsTArray<nsIContent*>& aElements,
+                                        uint32_t aFilter) override;
 
   // nsIFrame
-  nsresult AttributeChanged(int32_t aNameSpaceID, nsAtom* aAttribute,
-                            int32_t aModType) override;
-  nsContainerFrame* GetContentInsertionFrame() override;
+  virtual nsresult AttributeChanged(int32_t aNameSpaceID, nsAtom* aAttribute,
+                                    int32_t aModType) override;
+  virtual nsContainerFrame* GetContentInsertionFrame() override;
 
   // Refresh the color swatch, using associated input's value
   nsresult UpdateColor();

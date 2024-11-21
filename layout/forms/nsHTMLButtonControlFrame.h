@@ -9,13 +9,14 @@
 
 #include "mozilla/Attributes.h"
 #include "nsContainerFrame.h"
+#include "nsCSSRenderingBorders.h"
 #include "nsIFormControlFrame.h"
-#include "nsButtonFrameRenderer.h"
 
 class gfxContext;
 class nsPresContext;
 
-class nsHTMLButtonControlFrame : public nsContainerFrame {
+class nsHTMLButtonControlFrame : public nsContainerFrame,
+                                 public nsIFormControlFrame {
  public:
   explicit nsHTMLButtonControlFrame(ComputedStyle* aStyle,
                                     nsPresContext* aPresContext)
@@ -68,6 +69,10 @@ class nsHTMLButtonControlFrame : public nsContainerFrame {
     return MakeFrameName(u"HTMLButtonControl"_ns, aResult);
   }
 #endif
+
+  // nsIFormControlFrame
+  void SetFocus(bool aOn, bool aRepaint) override;
+  nsresult SetFormProperty(nsAtom* aName, const nsAString& aValue) override;
 
   // Inserted child content gets its frames parented by our child block
   nsContainerFrame* GetContentInsertionFrame() override {

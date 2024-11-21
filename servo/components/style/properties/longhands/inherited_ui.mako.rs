@@ -116,4 +116,5 @@ ${helpers.predefined_type(
     spec="https://drafts.csswg.org/css-scrollbars-1/#scrollbar-color",
     boxed=True,
     ignored_when_colors_disabled=True,
+    affects="paint",
 )}

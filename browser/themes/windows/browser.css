@@ -62,9 +62,11 @@
 /* Add a fog for background tabs to be visible on Windows 7 glass window background */
 @media (-moz-platform: windows) {
   @media (-moz-windows-default-theme) {
-    #TabsToolbar:not([lwtheme]) {
-      background-image: radial-gradient(ellipse at bottom, rgba(255,255,255,0.8), rgba(255,255,255,0.5) 40%, transparent);
-    }
+   @media (-moz-windows-glass) {
+     #TabsToolbar:not([lwtheme]) {
+       background-image: radial-gradient(ellipse at bottom, rgba(255,255,255,0.8), rgba(255,255,255,0.5) 40%, transparent);
+     }
+   }
   }
 }
 
@@ -343,11 +345,20 @@ menupopup[touchmode] :is(menu, menuitem, menucaption) {
   #context-navigation {
     background-color: menu;
   }
+
+  #context-sep-navigation {
+    margin-inline-start: -28px;
+  }
 }
 
 @media (-moz-windows-non-native-menus) {
   /* :not([hidden]) to avoid the display: flex unhiding the item. */
   #context-navigation:not([hidden]) {
+    /* The Windows 10 version of the navigation area needs the scrollbox's
+       background color, not the builtin "menu" color. */
+    background-color: inherit;
+    /* Match the inner top padding of the menupopup to center the icons visually. */
+    padding-bottom: 4px;
     /* Use modern flex box so we can use percentage widths to redistribute
      * spacing manually. */
     display: flex;

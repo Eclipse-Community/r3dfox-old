@@ -38,49 +38,10 @@ checkbox {
   -moz-default-appearance: checkbox;
   margin-inline-end: var(--checkbox-margin-inline);
 
-.checkbox-check:not([native]) {
-  height: 16px;
-  width: 16px;
-}
-
-checkbox:not([disabled="true"]):hover > .checkbox-check {
-  background-color: var(--checkbox-unchecked-hover-bgcolor, color-mix(in srgb, AccentColor 4%, Field));
-}
-
-checkbox:not([disabled="true"]):hover:active > .checkbox-check {
-  background-color: var(--checkbox-unchecked-active-bgcolor, color-mix(in srgb, AccentColor 8%, Field));
-}
-
-.checkbox-check[checked] {
-  border-color: var(--checkbox-checked-border-color, transparent);
-  background-color: var(--checkbox-checked-bgcolor, AccentColor);
-  background-image: url("chrome://global/skin/icons/check.svg");
-  background-position: center;
-  background-repeat: no-repeat;
-  -moz-context-properties: fill;
-  fill: currentColor;
-  color: var(--checkbox-checked-color, AccentColorText);
-  /* Style the button also when printing with "Print Backgrounds" unchecked */
-  color-adjust: exact;
-}
-
-checkbox:not([disabled="true"]):hover > .checkbox-check[checked] {
-  background-color: var(--checkbox-checked-hover-bgcolor, color-mix(in srgb, currentColor 12.5%, AccentColor));
-}
-
-checkbox:not([disabled="true"]):hover:active > .checkbox-check[checked] {
-  background-color: var(--checkbox-checked-active-bgcolor, color-mix(in srgb, currentColor 25%, AccentColor));
-}
-
-checkbox:not([native]):focus-visible > .checkbox-check {
-  outline: var(--focus-outline);
-  outline-offset: var(--focus-outline-offset);
-}
-
-@media (prefers-contrast) {
-  checkbox:not([disabled="true"]):hover > .checkbox-check {
-    /* color will set the border-color on the check due to how HCM works for in-content pages. */
-    color: var(--checkbox-checked-border-color, color-mix(in srgb, AccentColor 4%, Field));
+  &:not([native]) {
+    -moz-theme: non-native;
+    width: var(--checkbox-size);
+    height: var(--checkbox-size);
   }
 
   checkbox:focus-visible > & {
@@ -118,38 +79,15 @@ checkbox:not([native]):focus-visible > .checkbox-check {
 
   /* ::::: checkmark image ::::: */
 
-.checkbox-check[native] {
-  appearance: auto;
-  -moz-default-appearance: checkbox;
-  align-items: center;
-
-  @media (-moz-platform: windows) {
+  .checkbox-check[native] {
+    appearance: auto;
+    -moz-default-appearance: checkbox;
+    align-items: center;
+    margin-inline-end: 5px;
+    /* TODO: This matches what the old native theme did, but maybe we want to
+     * use em-based sizes here. */
     width: 13px;
     height: 13px;
-    margin-inline-end: 5px;
-  }
-
-  @media (-moz-platform: linux) {
-    margin: 2px;
-    margin-inline-end: 4px;
-  }
-
-  @media (-moz-platform: macos) {
-    width: 1.3em;
-    height: 1.3em;
-    margin-block: 1px 0;
-    margin-inline: 1px 3px;
-    /* vertical-align tells native theming where to snap to. However, this doesn't
-     * always work reliably because of bug 503833. */
-    vertical-align: top;
-  }
-}
-
-@media (-moz-platform: windows) {
-  checkbox:where([native]) {
-    margin: 2px 4px;
-    padding-block: 1px;
-    padding-inline: 4px 2px;
   }
 }
 
@@ -190,6 +128,10 @@ checkbox:not([native]):focus-visible > .checkbox-check {
     -moz-default-appearance: checkbox-container;
     align-items: center;
     margin: 2px 4px;
+
+    &:focus-visible > .checkbox-label-box {
+      outline: var(--focus-outline);
+    }
   }
 
   .checkbox-label-box[native] {
@@ -213,6 +155,13 @@ checkbox:not([native]):focus-visible > .checkbox-check {
 
   checkbox[native][disabled="true"] {
     color: GrayText;
+  }
+
+   @media (-moz-windows-classic) {
+    checkbox[native][disabled="true"] {
+      color: ThreeDShadow;
+      text-shadow: 1px 1px ThreeDHighlight;
+    }
   }
 
   /* ::::: checkmark image ::::: */

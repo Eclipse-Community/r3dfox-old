@@ -1146,32 +1146,6 @@ nsIFormControlFrame* nsGenericHTMLElement::GetFormControlFrame(
   return nullptr;
 }
 
-nsIFormControlFrame* nsGenericHTMLElement::GetFormControlFrame(
-    bool aFlushFrames) {
-  auto flushType = aFlushFrames ? FlushType::Frames : FlushType::None;
-  nsIFrame* frame = GetPrimaryFrame(flushType);
-  if (!frame) {
-    return nullptr;
-  }
-
-  if (nsIFormControlFrame* f = do_QueryFrame(frame)) {
-    return f;
-  }
-
-  // If we have generated content, the primary frame will be a wrapper frame...
-  // Our real frame will be in its child list.
-  //
-  // FIXME(emilio): I don't think that's true... See bug 155957 for test-cases
-  // though, we should figure out whether this is still needed.
-  for (nsIFrame* kid : frame->PrincipalChildList()) {
-    if (nsIFormControlFrame* f = do_QueryFrame(kid)) {
-      return f;
-    }
-  }
-
-  return nullptr;
-}
-
 static constexpr nsAttrValue::EnumTable kDivAlignTable[] = {
     {"left", StyleTextAlign::MozLeft},
     {"right", StyleTextAlign::MozRight},

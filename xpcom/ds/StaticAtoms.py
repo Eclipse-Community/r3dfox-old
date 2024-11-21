@@ -2277,6 +2277,7 @@ STATIC_ATOMS = [
     Atom("_moz_windows_classic", "-moz-windows-classic"),
     Atom("_moz_windows_glass", "-moz-windows-glass"),
     Atom("_moz_windows_non_native_menus", "-moz-windows-non-native-menus"),
+    Atom("_moz_native_controls", "-moz-native-controls"),
     Atom("_moz_menubar_drag", "-moz-menubar-drag"),
     Atom("_moz_device_pixel_ratio", "-moz-device-pixel-ratio"),
     Atom("_moz_device_orientation", "-moz-device-orientation"),

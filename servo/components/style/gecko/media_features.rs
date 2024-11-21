@@ -555,6 +555,10 @@ fn eval_moz_print_preview(context: &Context) -> bool {
     is_print_preview
 }
 
+fn eval_moz_non_native_content_theme(context: &Context) -> bool {
+    unsafe { bindings::Gecko_MediaFeatures_ShouldAvoidNativeTheme(context.device().document()) }
+}
+
 fn eval_moz_is_resource_document(context: &Context) -> bool {
     unsafe { bindings::Gecko_MediaFeatures_IsResourceDocument(context.device().document()) }
 }
@@ -953,6 +957,12 @@ pub static MEDIA_FEATURES: [QueryFeatureDescription; 66] = [
         atom!("-moz-print-preview"),
         AllowsRanges::No,
         Evaluator::BoolInteger(eval_moz_print_preview),
+        FeatureFlags::CHROME_AND_UA_ONLY,
+    ),
+    feature!(
+        atom!("-moz-non-native-content-theme"),
+        AllowsRanges::No,
+        Evaluator::BoolInteger(eval_moz_non_native_content_theme),
         FeatureFlags::CHROME_AND_UA_ONLY,
     ),
     feature!(

@@ -9,6 +9,7 @@
 
 #include "nsTextControlFrame.h"
 
+class nsITextControlFrame;
 class nsPresContext;
 
 namespace mozilla {

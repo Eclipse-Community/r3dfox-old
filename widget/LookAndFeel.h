@@ -140,6 +140,15 @@ class LookAndFeel {
     WindowsGlass,
 
     /*
+     * A Boolean value to determine whether to enable the custom Windows theme
+     * for modern looks
+     *
+     * This is Windows-specific and is not implemented on other platforms
+     * (will return the default of NS_ERROR_FAILURE).
+     */
+    WindowsModern,
+
+    /*
      * A Boolean value to determine whether the macOS Big Sur-specific
      * theming should be used.
      */

@@ -184,19 +184,6 @@
   }
 }
 
-@media (-moz-bool-pref: "r3dfox.caption.text.color") {
-  #TabsToolbar {
-    color: white !important;
-    --toolbarbutton-icon-fill: currentColor !important;
-  }
-  :root {
-    --lwt-text-color: white !important;
-  }
-  #main-menubar:not([lwtheme]) {
-    color: white !important;
-  }
-}
-
 @media (-moz-bool-pref: "r3dfox.force.transparency") {
   :root {
     --lwt-additional-images: none !important;
@@ -269,8 +256,6 @@
     --tab-bg-block-margin: 0px;
     --tab-inline-padding: 0px;
     --tab-separator-offset: 0px;
-    --arrowpanel-background: light-dark(rgba(255, 255, 255, 0.975), rgba(66, 65, 77, 0.975)) !important;
-    --toolbar-field-focus-background-color: light-dark(rgba(255, 255, 255, 0.975), rgba(66, 65, 77, 0.975)) !important;
   }
 
   /* Tab counter at top because it's funny */
@@ -544,5 +529,90 @@
     background-repeat: no-repeat;
     border: 0 !important;
     outline: none !important;
+  }
+}
+
+/* Backgrounds needs to override all */
+
+@media (-moz-bool-pref: "r3dfox.backgrounds.enabled") {
+
+  .tabs-alltabs-button > :is(.toolbarbutton-icon, .toolbarbutton-text, .toolbarbutton-badge-stack) {
+  border-radius: 4px 0px 0px 4px !important;
+  }
+
+  #alltabs-button::after {
+  padding: 4px 4px 4px 0px;
+  border-radius: 0px 4px 4px 0px !important;
+  background-clip: padding-box;   
+  }
+
+  /* WHY THE FUCK DOES light-dark NOT WORK HERE?!?!?!? */
+  /* Probably not going to need menubar shit below, commented out for now */
+
+  @media (-moz-content-prefers-color-scheme: dark),(-moz-toolbar-prefers-color-scheme: dark), (prefers-color-scheme: dark) {
+    #TabsToolbar {
+      color: white !important;
+      --toolbarbutton-icon-fill: currentColor !important;
+    }
+    :root {
+      --lwt-text-color: white !important;
+    }
+    @media (not (-moz-bool-pref: "r3dfox.transparent.menubar")) {
+      #main-window #main-menubar {
+        background-color: rgba(0, 0, 0, 0.33) !Important;
+      }
+      #toolbar-menubar {
+        text-shadow: none !important;
+      }
+      #main-menubar:not([lwtheme]) {
+        color: white !important;
+      }
+    }
+    #TabsToolbar .toolbarbutton-1 > :is(.toolbarbutton-icon, .toolbarbutton-text, .toolbarbutton-badge-stack) {
+     background-color: rgba(0, 0, 0, 0.33);
+    }
+    #alltabs-button::after {
+      background-color: rgba(0, 0, 0, 0.33);
+    }
+    .tabbrowser-tab { 
+      &:not([visuallyselected]) {
+        .tab-background { background-color: rgba(0, 0, 0, 0.75) !important; }
+        &:hover .tab-background { background-color: rgba(65, 64, 76, 0.75) !important; }
+        &[multiselected] .tab-background { background-color: rgba(65, 64, 76, 0.75) !important; }
+      }
+    }
+  }
+
+  @media (-moz-content-prefers-color-scheme: light),(-moz-toolbar-prefers-color-scheme: light), (prefers-color-scheme: light) {
+    #TabsToolbar {
+      color: black !important;
+      --toolbarbutton-icon-fill: currentColor !important;
+    }
+    :root {
+      --lwt-text-color: black !important;
+    }
+    @media (not (-moz-bool-pref: "r3dfox.transparent.menubar")) {
+      #main-window #main-menubar {
+        background-color: rgba(249, 249, 251, 0.33) !Important;
+      }
+      #toolbar-menubar {
+        text-shadow: none !important;
+      }
+      #main-menubar:not([lwtheme]) {
+        color: black !important;
+      }
+    }
+    #TabsToolbar .toolbarbutton-1 > :is(.toolbarbutton-icon, .toolbarbutton-text, .toolbarbutton-badge-stack) {
+      background-color: rgba(249, 249, 251, 0.33);
+    }
+    #alltabs-button::after {
+      background-color: rgba(249, 249, 251, 0.33);
+    }
+    .tabbrowser-tab { 
+      &:not([visuallyselected]) {
+        .tab-background { background-color: rgba(249, 249, 251, 0.66) !important; }
+        &:hover .tab-background { background-color: rgba(249, 249, 251, 0.75) !important; }
+        &[multiselected] .tab-background { background-color: rgba(249, 249, 251, 0.75) !important; }
+      }
   }
 }

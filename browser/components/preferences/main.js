@@ -69,6 +69,7 @@ Preferences.addAll([
   { id: "r3dfox.colors.plasmafox", type: "bool" },
   { id: "r3dfox.customizations.enabled", type: "bool" },
   { id: "r3dfox.drag-space.enabled", type: "bool" },
+  { id: "r3dfox.backgrounds.enabled", type: "bool" },
   { id: "r3dfox.transparent.menubar", type: "bool" },
   { id: "r3dfox.translucent.navbar", type: "bool" },
   { id: "r3dfox.less.aero.fog", type: "bool" },

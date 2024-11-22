@@ -165,6 +165,11 @@ r3dfox-drag =
 
 r3dfox-drag-desc = This enables or disables the caption/window bar drag space on the r3dfox theme.
 
+r3dfox-backgrounds =
+    .label = Backgrounds for tabs and other toolbar items
+
+r3dfox-backgrounds-desc = This enables or disables backgrounds for tabs and other toolbar items.
+
 r3dfox-colors =
     .label = Use r3dfox colors
 

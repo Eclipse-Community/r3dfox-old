@@ -638,6 +638,9 @@ pref("toolkit.telemetry.user_characteristics_ping.logLevel", "Warn");
 // Extra logging for AsyncShutdown barriers and phases
 pref("toolkit.asyncshutdown.log", false);
 
+// Enable Aero fog by default
+pref("widget.windows-style.show-fog", true);
+
 // Enable JS dump() function.
 // IMPORTANT: These prefs must be here even though they're also defined in
 // StaticPrefList.yaml. They are required because MOZILLA_OFFICIAL is false in

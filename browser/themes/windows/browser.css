@@ -105,13 +105,15 @@
    * titlebar. We side-step this issue by layering our own background underneath
    * the tabs.
    */
-  :root[tabsintitlebar]:not([sizemode=fullscreen]) #TabsToolbar:not([lwtheme]) {
-    background-image: linear-gradient(transparent, ActiveCaption);
-    background-size: auto 200%;
-  }
+  @media (-moz-bool-pref: "widget.windows-style.show-fog") {
+    :root[tabsintitlebar]:not([sizemode=fullscreen]) #TabsToolbar {
+      background-image: linear-gradient(transparent, ActiveCaption);
+      background-size: auto 200%;
+    }
 
-  :root[tabsintitlebar]:not([sizemode=fullscreen]) #TabsToolbar:not([lwtheme]):-moz-window-inactive {
-    background-image: linear-gradient(transparent, InactiveCaption);
+    :root[tabsintitlebar]:not([sizemode=fullscreen]) #TabsToolbar:-moz-window-inactive {
+      background-image: linear-gradient(transparent, InactiveCaption);
+    }
   }
 
   /* Add a window top border for webextension themes */

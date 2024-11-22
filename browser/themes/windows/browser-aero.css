@@ -256,7 +256,7 @@
         display: none;
       }
 
-      @media (-moz-bool-pref: "browser.aero.fog") {
+      @media (-moz-bool-pref: "widget.windows-style.show-fog") {
         :root:not([lwtheme]) #TabsToolbar {
           background-image: radial-gradient(ellipse at bottom, rgba(255,255,255,0.8), rgba(255,255,255,0.5) 40%, transparent) !important;
         }

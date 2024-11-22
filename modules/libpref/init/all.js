@@ -657,21 +657,23 @@ pref("toolkit.asyncshutdown.log", false);
 
 // r3dfox preferences.
 // Ability to enable/disable Aero fog.
-pref("r3dfox.aero.fog", true);
+pref("r3dfox.aero.fog", false);
 // Less Aero fog than stock 115 by default.
 pref("r3dfox.less.aero.fog", true);
 // r3dfox theme.
 pref("r3dfox.customizations.enabled", true);
 // r3dfox drag space in theme.
 pref("r3dfox.drag-space.enabled", true);
+// r3dfox tab and other item brackgrounds so no fog needed.
+pref("r3dfox.backgrounds.enabled", true);
 // r3dfox colors.
 pref("r3dfox.colors.enabled", true);
 // Black or white caption text.
 pref("r3dfox.caption.text.color", false);
 // Force (kinda) transparency.
 pref("r3dfox.force.transparency", false);
-// Enable transparent menubar by default
-pref("r3dfox.transparent.menubar", true);
+// Disable transparent menubar by default
+pref("r3dfox.transparent.menubar", false);
 // Translucent navbar design
 pref("r3dfox.translucent.navbar", false);
 // Disable other customizations by default

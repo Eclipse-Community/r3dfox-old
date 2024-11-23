@@ -2242,7 +2242,7 @@ LayoutDeviceIntSize nsNativeThemeWin::GetMinimumWidgetSize(
                                        GetSystemMetrics(SM_CXPADDEDBORDER));
         if (aAppearance == StyleAppearance::MozWindowButtonBoxMaximized) {
           result.width += 1;
-          result.height -= 2;
+          result.height += 6;
         }
         return result;
       }
@@ -2326,7 +2326,7 @@ LayoutDeviceIntSize nsNativeThemeWin::GetMinimumWidgetSize(
 
     case StyleAppearance::SpinnerUpbutton:
     case StyleAppearance::SpinnerDownbutton: {
-        LayoutDeviceIntSize result(18, 9);
+        LayoutDeviceIntSize result(16, 9);
         ScaleForFrameDPI(&result, aFrame);
         return result;
     }

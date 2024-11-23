@@ -87,7 +87,7 @@
   --card-shadow-hover: var(--card-shadow), 0 0 0 5px var(--card-outline-color);
 
   /*-moz-theme: non-native;*/
-  accent-color: var(--in-content-accent-color);
+  accent-color: var(--color-accent-primary);
   color-scheme: light dark;
 }
 

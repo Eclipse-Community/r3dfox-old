@@ -1005,19 +1005,10 @@ nsresult nsWindow::Create(nsIWidget* aParent, const LayoutDeviceIntRect& aRect,
       mIsCloaked = mozilla::IsCloaked(mWnd);
       mFrameState->ConsumePreXULSkeletonState(WasPreXULSkeletonUIMaximized());
 
-      MOZ_ASSERT(BoundsUseDesktopPixels());
-      auto scale = GetDesktopToDeviceScale();
-      mBounds = mLastPaintBounds = LayoutDeviceIntRect::FromUnknownRect(
-          DesktopIntRect::Round(LayoutDeviceRect(GetBounds()) / scale)
-              .ToUnknownRect());
-
       // These match the margins set in browser-tabsintitlebar.js with
       // default prefs on Windows. Bug 1673092 tracks lining this up with
       // that more correctly instead of hard-coding it.
       SetNonClientMargins(LayoutDeviceIntMargin(0, 2, 2, 2));
-      // The skeleton UI already painted over the NC area, so there's no need
-      // to do that again; the effective non-client margins haven't changed.
-      mNeedsNCAreaClear = false;
 
       // Reset the WNDPROC for this window and its whole class, as we had
       // to use our own WNDPROC when creating the the skeleton UI window.
@@ -1614,17 +1605,7 @@ void nsWindow::Show(bool aState) {
     // The first time we decide to actually show the window is when we decide
     // that we've taken over the window from the skeleton UI, and we should
     // no longer treat resizes / moves specially.
-    //
-    // NOTE(emilio): mIsShowingPreXULSkeletonUI feels a bit odd, or at least
-    // misnamed. During regular startup we create the skeleton UI, then the
-    // early blank window consumes it, and at that point we set
-    // mIsShowingPreXULSkeletonUI to false, but in fact, we're still showing
-    // the skeleton UI (because the blank window is, well, blank). We should
-    // consider guarding this with !mIsEarlyBlankWindow...
     mIsShowingPreXULSkeletonUI = false;
-    // Concomitantly, this is also when we change the cursor away from the
-    // default "wait" cursor.
-    SetCursor(Cursor{eCursor_standard});
 #if defined(ACCESSIBILITY)
     // If our HWND has focus and the a11y engine hasn't started yet, fire a
     // focus win event. Windows already did this when the skeleton UI appeared,
@@ -1931,45 +1912,13 @@ void nsWindow::Move(double aX, double aY) {
     return;
   }
 
-  // Normally, when the skeleton UI is disabled, we resize+move the window
-  // before showing it in order to ensure that it restores to the correct
-  // position when the user un-maximizes it. However, when we are using the
-  // skeleton UI, this results in the skeleton UI window being moved around
-  // undesirably before being locked back into the maximized position. To
-  // avoid this, we simply set the placement to restore to via
-  // SetWindowPlacement. It's a little bit more of a dance, though, since we
-  // need to convert the workspace coords that SetWindowPlacement uses to the
-  // screen space coordinates we normally use with SetWindowPos.
-  if (mIsShowingPreXULSkeletonUI && WasPreXULSkeletonUIMaximized()) {
-    WINDOWPLACEMENT pl = {sizeof(WINDOWPLACEMENT)};
-    VERIFY(::GetWindowPlacement(mWnd, &pl));
-
-    HMONITOR monitor = ::MonitorFromWindow(mWnd, MONITOR_DEFAULTTONULL);
-    if (NS_WARN_IF(!monitor)) {
-      return;
-    }
-    MONITORINFO mi = {sizeof(MONITORINFO)};
-    VERIFY(::GetMonitorInfo(monitor, &mi));
-
-    int32_t deltaX =
-        x + mi.rcWork.left - mi.rcMonitor.left - pl.rcNormalPosition.left;
-    int32_t deltaY =
-        y + mi.rcWork.top - mi.rcMonitor.top - pl.rcNormalPosition.top;
-    pl.rcNormalPosition.left += deltaX;
-    pl.rcNormalPosition.right += deltaX;
-    pl.rcNormalPosition.top += deltaY;
-    pl.rcNormalPosition.bottom += deltaY;
-    VERIFY(::SetWindowPlacement(mWnd, &pl));
-    return;
-  }
-
   mBounds.MoveTo(x, y);
 
   if (mWnd) {
 #ifdef DEBUG
     // complain if a window is moved offscreen (legal, but potentially
     // worrisome)
-    if (IsTopLevelWidget()) {  // only a problem for top-level windows
+    if (mIsTopWidgetWindow) {  // only a problem for top-level windows
       // Make sure this window is actually on the screen before we move it
       // XXX: Needs multiple monitor support
       HDC dc = ::GetDC(mWnd);
@@ -2060,18 +2009,6 @@ void nsWindow::Resize(double aWidth, double aHeight, bool aRepaint) {
     return;
   }
 
-  // Refer to the comment above a similar check in nsWindow::Move
-  if (mIsShowingPreXULSkeletonUI && WasPreXULSkeletonUIMaximized()) {
-    WINDOWPLACEMENT pl = {sizeof(WINDOWPLACEMENT)};
-    VERIFY(::GetWindowPlacement(mWnd, &pl));
-    pl.rcNormalPosition.right = pl.rcNormalPosition.left + width;
-    pl.rcNormalPosition.bottom = pl.rcNormalPosition.top + GetHeight(height);
-    mResizeState = RESIZING;
-    VERIFY(::SetWindowPlacement(mWnd, &pl));
-    mResizeState = NOT_RESIZING;
-    return;
-  }
-
   // Set cached value for lightweight and printing
   bool wasLocking = mAspectRatio != 0.0;
   mBounds.SizeTo(width, height);
@@ -2143,47 +2080,21 @@ void nsWindow::Resize(double aX, double aY, double aWidth, double aHeight,
     return;
   }
 
-  // Refer to the comment above a similar check in nsWindow::Move
-  if (mIsShowingPreXULSkeletonUI && WasPreXULSkeletonUIMaximized()) {
-    WINDOWPLACEMENT pl = {sizeof(WINDOWPLACEMENT)};
-    VERIFY(::GetWindowPlacement(mWnd, &pl));
-
-    HMONITOR monitor = ::MonitorFromWindow(mWnd, MONITOR_DEFAULTTONULL);
-    if (NS_WARN_IF(!monitor)) {
-      return;
-    }
-    MONITORINFO mi = {sizeof(MONITORINFO)};
-    VERIFY(::GetMonitorInfo(monitor, &mi));
-
-    int32_t deltaX =
-        x + mi.rcWork.left - mi.rcMonitor.left - pl.rcNormalPosition.left;
-    int32_t deltaY =
-        y + mi.rcWork.top - mi.rcMonitor.top - pl.rcNormalPosition.top;
-    pl.rcNormalPosition.left += deltaX;
-    pl.rcNormalPosition.right = pl.rcNormalPosition.left + width;
-    pl.rcNormalPosition.top += deltaY;
-    pl.rcNormalPosition.bottom = pl.rcNormalPosition.top + GetHeight(height);
-    VERIFY(::SetWindowPlacement(mWnd, &pl));
-    return;
-  }
-
   // Set cached value for lightweight and printing
   mBounds.SetRect(x, y, width, height);
 
   if (mWnd) {
-    UINT flags = SWP_NOZORDER | SWP_NOACTIVATE;
-    if (!aRepaint) {
-      flags |= SWP_NOREDRAW;
-    }
+    // Refer to the comment above a similar check in nsWindow::Move
+    if (mIsShowingPreXULSkeletonUI && WasPreXULSkeletonUIMaximized()) {
+      WINDOWPLACEMENT pl = {sizeof(WINDOWPLACEMENT)};
+      VERIFY(::GetWindowPlacement(mWnd, &pl));
 
-    double oldScale = mDefaultScale;
-    mResizeState = RESIZING;
-    VERIFY(
-        ::SetWindowPos(mWnd, nullptr, x, y, width, GetHeight(height), flags));
-    mResizeState = NOT_RESIZING;
-    if (WinUtils::LogToPhysFactor(mWnd) != oldScale) {
-      ChangedDPI();
-    }
+      HMONITOR monitor = ::MonitorFromWindow(mWnd, MONITOR_DEFAULTTONULL);
+      if (NS_WARN_IF(!monitor)) {
+        return;
+      }
+      MONITORINFO mi = {sizeof(MONITORINFO)};
+      VERIFY(::GetMonitorInfo(monitor, &mi));
 
       int32_t deltaX =
           x + mi.rcWork.left - mi.rcMonitor.left - pl.rcNormalPosition.left;
@@ -2863,7 +2774,8 @@ bool nsWindow::UpdateNonClientMargins(bool aReflowWindow) {
     mNonClientOffset.left = 0;
     mNonClientOffset.right = 0;
 
-    if (mozilla::Maybe<UINT> maybeEdge = GetHiddenTaskbarEdge()) {
+    mozilla::Maybe<UINT> maybeEdge = GetHiddenTaskbarEdge();
+    if (maybeEdge) {
       auto edge = maybeEdge.value();
       if (ABE_LEFT == edge) {
         mNonClientOffset.left -= kHiddenTaskbarSize;
@@ -2872,6 +2784,13 @@ bool nsWindow::UpdateNonClientMargins(bool aReflowWindow) {
       } else if (ABE_BOTTOM == edge || ABE_TOP == edge) {
         mNonClientOffset.bottom -= kHiddenTaskbarSize;
       }
+
+      // When we are drawing the non-client region, we need
+      // to clear the portion of the NC region that is exposed by the
+      // hidden taskbar.  As above, we clear the bottom of the NC region
+      // when the taskbar is at the top of the screen.
+      UINT clearEdge = (edge == ABE_TOP) ? ABE_BOTTOM : edge;
+      mClearNCEdge = Some(clearEdge);
     }
   } else {
     mNonClientOffset = NormalWindowNonClientOffset();
@@ -2889,10 +2808,6 @@ bool nsWindow::UpdateNonClientMargins(bool aReflowWindow) {
 nsresult nsWindow::SetNonClientMargins(const LayoutDeviceIntMargin& margins) {
   if (!IsTopLevelWidget() || mBorderStyle == BorderStyle::None) {
     return NS_ERROR_INVALID_ARG;
-  }
-
-  if (mNonClientMargins == margins) {
-    return NS_OK;
   }
 
   if (mHideChrome) {
@@ -2927,12 +2842,10 @@ nsresult nsWindow::SetNonClientMargins(const LayoutDeviceIntMargin& margins) {
   }
 
   mNonClientMargins = margins;
-
-  // Force a reflow of content based on the new client dimensions.
-  if (mCustomNonClient) {
-    UpdateNonClientMargins();
-  } else {
-    ResetLayout();
+  mCustomNonClient = true;
+  if (!UpdateNonClientMargins()) {
+    NS_WARNING("UpdateNonClientMargins failed!");
+    return NS_OK;
   }
 
   return NS_OK;
@@ -2945,7 +2858,7 @@ void nsWindow::SetResizeMargin(mozilla::LayoutDeviceIntCoord aResizeMargin) {
   UpdateNonClientMargins();
 }
 
-nsAutoRegion nsWindow::ComputeNonClientHRGN() {
+void nsWindow::InvalidateNonClientRegion() {
   // +-+-----------------------+-+
   // | | app non-client chrome | |
   // | +-----------------------+ |
@@ -2961,20 +2874,24 @@ nsAutoRegion nsWindow::ComputeNonClientHRGN() {
   RECT rect;
   GetWindowRect(mWnd, &rect);
   MapWindowPoints(nullptr, mWnd, (LPPOINT)&rect, 2);
-  nsAutoRegion winRgn(::CreateRectRgnIndirect(&rect));
+  HRGN winRgn = CreateRectRgnIndirect(&rect);
 
   // Subtract app client chrome and app content leaving
   // windows non-client chrome and app non-client chrome
   // in winRgn.
-  ::GetWindowRect(mWnd, &rect);
+  GetWindowRect(mWnd, &rect);
   rect.top += mCaptionHeight;
   rect.right -= mHorResizeMargin;
   rect.bottom -= mVertResizeMargin;
   rect.left += mHorResizeMargin;
-  ::MapWindowPoints(nullptr, mWnd, (LPPOINT)&rect, 2);
-  nsAutoRegion clientRgn(::CreateRectRgnIndirect(&rect));
-  ::CombineRgn(winRgn, winRgn, clientRgn, RGN_DIFF);
-  return nsAutoRegion(winRgn.out());
+  MapWindowPoints(nullptr, mWnd, (LPPOINT)&rect, 2);
+  HRGN clientRgn = CreateRectRgnIndirect(&rect);
+  CombineRgn(winRgn, winRgn, clientRgn, RGN_DIFF);
+  DeleteObject(clientRgn);
+
+  // triggers ncpaint and paint events for the two areas
+  RedrawWindow(mWnd, nullptr, winRgn, RDW_FRAME | RDW_INVALIDATE);
+  DeleteObject(winRgn);
 }
 
 HRGN nsWindow::ExcludeNonClientFromPaintRegion(HRGN aRegion) {

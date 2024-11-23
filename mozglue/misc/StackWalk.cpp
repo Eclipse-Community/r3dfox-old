@@ -165,12 +165,12 @@ CRITICAL_SECTION gDbgHelpCS;
 // ntdll internal locks. Once we have them, we no longer need to rely on
 // strategy (2).
 static Atomic<bool> sStackWalkLocksInitialized;
-static Array<SRWLOCK*, 2> sStackWalkLocks;
+static Array<CRITICAL_SECTION*, 2> sStackWalkLocks;
 
 MFBT_API
 void InitializeStackWalkLocks(const Array<void*, 2>& aStackWalkLocks) {
-  sStackWalkLocks[0] = reinterpret_cast<SRWLOCK*>(aStackWalkLocks[0]);
-  sStackWalkLocks[1] = reinterpret_cast<SRWLOCK*>(aStackWalkLocks[1]);
+  sStackWalkLocks[0] = reinterpret_cast<CRITICAL_SECTION*>(aStackWalkLocks[0]);
+  sStackWalkLocks[1] = reinterpret_cast<CRITICAL_SECTION*>(aStackWalkLocks[1]);
   sStackWalkLocksInitialized = true;
 }
 
@@ -209,12 +209,12 @@ bool IsStackWalkingSafe() {
   // Use strategy (1), if initialized.
   if (sStackWalkLocksInitialized) {
     bool isSafe = false;
-    if (::TryAcquireSRWLockShared(sStackWalkLocks[0])) {
-      if (::TryAcquireSRWLockShared(sStackWalkLocks[1])) {
+    if (::TryEnterCriticalSection(sStackWalkLocks[0])) {
+      if (::TryEnterCriticalSection(sStackWalkLocks[1])) {
         isSafe = true;
-        ::ReleaseSRWLockShared(sStackWalkLocks[1]);
+        ::LeaveCriticalSection(sStackWalkLocks[1]);
       }
-      ::ReleaseSRWLockShared(sStackWalkLocks[0]);
+      ::LeaveCriticalSection(sStackWalkLocks[0]);
     }
     return isSafe;
   }

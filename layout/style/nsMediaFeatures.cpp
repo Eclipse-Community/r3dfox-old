@@ -253,6 +253,7 @@ bool Gecko_MediaFeatures_MatchesPlatform(StylePlatform aPlatform) {
     case StylePlatform::Windows:
       return true;
     case StylePlatform::WindowsWin10:
+    case StylePlatform::WindowsWinXP: 
     case StylePlatform::WindowsWin7:
     case StylePlatform::WindowsWin8: {
       int overridePref =
@@ -264,6 +265,9 @@ bool Gecko_MediaFeatures_MatchesPlatform(StylePlatform aPlatform) {
       }
       if ((!doesOverride && IsWin8OrLater()) || overridePref == 8) {
         return aPlatform == StylePlatform::WindowsWin8;
+      }
+      if ((!doesOverride && !IsVistaOrLater()) || overridePref == 5) {
+        return aPlatform == StylePlatform::WindowsWinXP;
       }
       return aPlatform == StylePlatform::WindowsWin7;
     }

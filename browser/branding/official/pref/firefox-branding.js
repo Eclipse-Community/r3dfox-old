@@ -17,18 +17,18 @@ pref("app.update.promptWaitTime", 691200);
 // update" link supplied in the "An update is available" page of the update
 // wizard.
 #if MOZ_UPDATE_CHANNEL == beta
-  pref("app.update.url.manual", "");
-  pref("app.update.url.details", "");
+  pref("app.update.url.manual", "https://github.com/Eclipse-Community/r3dfox/releases");
+  pref("app.update.url.details", "https://github.com/Eclipse-Community/r3dfox/releases");
   pref("app.releaseNotesURL", "https://github.com/Eclipse-Community/r3dfox/releases");
   pref("app.releaseNotesURL.aboutDialog", "https://github.com/Eclipse-Community/r3dfox/releases");
 #elifdef MOZ_ESR
-  pref("app.update.url.manual", "");
-  pref("app.update.url.details", "");
+  pref("app.update.url.manual", "https://github.com/Eclipse-Community/r3dfox/releases");
+  pref("app.update.url.details", "https://github.com/Eclipse-Community/r3dfox/releases");
   pref("app.releaseNotesURL", "https://github.com/Eclipse-Community/r3dfox/releases");
   pref("app.releaseNotesURL.aboutDialog", "https://github.com/Eclipse-Community/r3dfox/releases");
 #else
-  pref("app.update.url.manual", "");
-  pref("app.update.url.details", "");
+  pref("app.update.url.manual", "https://github.com/Eclipse-Community/r3dfox/releases");
+  pref("app.update.url.details", "https://github.com/Eclipse-Community/r3dfox/releases");
   pref("app.releaseNotesURL", "https://github.com/Eclipse-Community/r3dfox/releases");
   pref("app.releaseNotesURL.aboutDialog", "https://github.com/Eclipse-Community/r3dfox/releases");
 #endif

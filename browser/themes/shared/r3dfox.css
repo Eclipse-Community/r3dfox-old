@@ -276,6 +276,33 @@
     border-bottom: 0px !important;
   }
 
+/*  .tab-icon-overlay[indicator-replaces-favicon] {
+    border: none !important;
+    background-size: 100% !important;
+    background-color: transparent !important;
+    fill: color-mix(in srgb, currentcolor 75%, transparent) !important;
+    &:hover {
+      background-color: color-mix(in srgb, currentcolor 15%, transparent) !important;
+      fill: color-mix(in srgb, currentcolor 95%, transparent) !important;
+    }
+  }*/
+
+  .tab-icon-stack[indicator-replaces-favicon] {
+    grid-template-areas: "a s";
+    & > :is(.tab-icon-image, .tab-icon-overlay) { opacity: 1 !important; }
+    & > .tab-icon-overlay {
+      grid-area: s;
+      border: none !important;
+      background-size: 100% !important;
+      background-color: transparent !important;
+      fill: color-mix(in srgb, currentcolor 75%, transparent) !important;
+      &:hover {
+        background-color: color-mix(in srgb, currentcolor 15%, transparent) !important;
+        fill: color-mix(in srgb, currentcolor 95%, transparent) !important;
+      }
+    }
+  }
+
   /* ---------------------------------------- Indents ---------------------------------------- */
 
   .titlebar-spacer {

@@ -2689,7 +2689,7 @@ nsNativeThemeWin::WidgetStateChanged(nsIFrame* aFrame,
   if (!IsVistaOrLater() &&
       (aAppearance == StyleAppearance::ScrollbarVertical ||
       aAppearance == StyleAppearance::ScrollbarHorizontal)) {
-    return false;
+    *aShouldRepaint = false;
   }
 
   return NS_OK;

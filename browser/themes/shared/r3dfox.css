@@ -611,14 +611,9 @@
     }
     .tabbrowser-tab { 
       &:not([visuallyselected]) {
-        .tab-background { background-color: rgba(0, 0, 0, 0.75) !important; }
-        &:hover .tab-background { background-color: rgba(65, 64, 76, 0.75) !important; }
-        &[multiselected] .tab-background { background-color: rgba(65, 64, 76, 0.75) !important; }
-        @media (-moz-bool-pref: "r3dfox.translucent.navbar") {
-          .tab-background { background-color: rgba(0, 0, 0, 0.33) !important; }
-          &:hover .tab-background { background-color: rgba(65, 64, 76, 0.5) !important; }
-          &[multiselected] .tab-background { background-color: rgba(65, 64, 76, 0.5) !important; }
-        }
+        .tab-background { background-color: rgba(0, 0, 0, 0.33) !important; }
+        &:hover .tab-background { background-color: rgba(0, 0, 0, 0.66) !important; }
+        &[multiselected] .tab-background { background-color: rgba(0, 0, 0, 0.5) !important; }
       }
     }
   }
@@ -650,14 +645,9 @@
     }
     .tabbrowser-tab { 
       &:not([visuallyselected]) {
-        .tab-background { background-color: rgba(249, 249, 251, 0.66) !important; }
-        &:hover .tab-background { background-color: rgba(249, 249, 251, 0.75) !important; }
-        &[multiselected] .tab-background { background-color: rgba(249, 249, 251, 0.75) !important; }
-        @media (-moz-bool-pref: "r3dfox.translucent.navbar") {
-          .tab-background { background-color: rgba(249, 249, 251, 0.33) !important; }
-          &:hover .tab-background { background-color: rgba(249, 249, 251, 0.5) !important; }
-          &[multiselected] .tab-background { background-color: rgba(249, 249, 251, 0.5) !important; }
-        }
+        .tab-background { background-color: rgba(249, 249, 251, 0.33) !important; }
+        &:hover .tab-background { background-color: rgba(249, 249, 251, 0.66) !important; }
+        &[multiselected] .tab-background { background-color: rgba(249, 249, 251, 0.5) !important; }
       }
     }
   }

@@ -574,11 +574,14 @@
 
   #alltabs-button::after {
   padding: 4px 4px 4px 0px !important;
-  @media (-moz-platform: windows-xp), (-moz-windows-classic) {
-    padding: 6px 5px 5px 0px !important;
-  }
   border-radius: 0px 4px 4px 0px !important;
   background-clip: padding-box !important;
+  }
+
+  @media (-moz-platform: windows-winxp), (-moz-windows-classic) {
+    #alltabs-button::after {
+      padding: 6px 5px 5px 0px !important;
+    }
   }
 
   /* WHY THE FUCK DOES light-dark NOT WORK HERE?!?!?!? */

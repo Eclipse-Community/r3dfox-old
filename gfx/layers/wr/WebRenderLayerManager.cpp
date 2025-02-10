@@ -11,6 +11,7 @@
 #include "mozilla/StaticPrefs_layers.h"
 #include "mozilla/dom/BrowserChild.h"
 #include "mozilla/gfx/DrawEventRecorder.h"
+#include "mozilla/gfx/gfxVars.h"
 #include "mozilla/layers/CompositorBridgeChild.h"
 #include "mozilla/layers/StackingContextHelper.h"
 #include "mozilla/layers/TextureClient.h"
@@ -381,6 +382,13 @@ void WebRenderLayerManager::EndTransactionWithoutLayer(
     }
   }
 
+  mWidget->AddWindowOverlayWebRenderCommands(WrBridge(), *mDLBuilder,
+                                             resourceUpdates);
+  if (dumpEnabled) {
+    printf_stderr("(window overlay)\n");
+    Unused << mDLBuilder->Dump(/*indent*/ 1, Some(builderDumpIndex), Nothing());
+  }  
+
   if (AsyncPanZoomEnabled()) {
     if (mIsFirstPaint) {
       mScrollData.SetIsFirstPaint();
@@ -731,11 +739,17 @@ void WebRenderLayerManager::WaitOnTransactionProcessed() {
 void WebRenderLayerManager::SendInvalidRegion(const nsIntRegion& aRegion) {
   // XXX Webrender does not support invalid region yet.
 
-#ifndef XP_WIN
-  if (WrBridge()) {
+#ifdef XP_WIN
+  // When DWM is disabled, each window does not have own back buffer. They would
+  // paint directly to a buffer that was to be displayed by the video card.
+  // WM_PAINT via SendInvalidRegion() requests necessary re-paint.
+  const bool needsInvalidate = !gfx::gfxVars::DwmCompositionEnabled();
+#else
+  const bool needsInvalidate = true;
+#endif
+  if (needsInvalidate && WrBridge()) {
     WrBridge()->SendInvalidateRenderedFrame();
   }
-#endif
 }
 
 void WebRenderLayerManager::ScheduleComposite(wr::RenderReasons aReasons) {

@@ -154,13 +154,7 @@
 
   > treechildren::-moz-tree-cell,
   > treechildren::-moz-tree-column {
-    border-inline-start: 1px solid color-mix(in srgb, FieldText 30%, transparent);
-  }
-
-  > treechildren::-moz-tree-column(first-column),
-  > treechildren::-moz-tree-cell(first-column) {
-    /* This matches the treecol separator in tree.css */
-    border-inline-start: none;
+    border-inline-end: 1px solid color-mix(in srgb, FieldText 30%, transparent);
   }
 
   > treechildren::-moz-tree-cell(separator) {

@@ -173,6 +173,8 @@ body {
 }
 
 .browser-toolbox-background {
+  @media not (-moz-platform: windows-win7) {
+  @media not (-moz-platform: windows-win8) {
   position: relative;
   background-color: var(--toolbox-bgcolor);
   color: var(--toolbox-textcolor);
@@ -183,6 +185,8 @@ body {
   &:-moz-window-inactive {
     background-color: var(--toolbox-bgcolor-inactive);
     color: var(--toolbox-textcolor-inactive);
+  }
+  }
   }
 
   :root[customizing] & {
@@ -394,6 +398,17 @@ body {
   > :is(toolbarbutton, toolbaritem):first-child,
   > toolbarpaletteitem:first-child > :is(toolbarbutton, toolbaritem) {
     padding-inline-start: var(--toolbar-start-end-padding);
+  }
+}
+
+@media not (-moz-windows-default-theme) {
+  #nav-bar:not([lwtheme]) {
+    box-shadow: 0 calc(-1 * var(--tabs-navbar-shadow-size)) 0 ThreeDShadow;
+  }
+}
+@media not (-moz-windows-compositor) {
+  #nav-bar[tabs-hidden="true"] {
+    box-shadow: none;
   }
 }
 

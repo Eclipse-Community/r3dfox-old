@@ -159,9 +159,9 @@ VIAddVersionKey "OriginalFilename" "setup.exe"
 Name "${BrandFullName}"
 OutFile "setup.exe"
 !ifdef HAVE_64BIT_BUILD
-  InstallDir "$PROGRAMFILES64\${BrandFullName}\"
+  InstallDir "$PROGRAMFILES64\${CompanyName}\${BrandShortName}\"
 !else
-  InstallDir "$PROGRAMFILES32\${BrandFullName}\"
+  InstallDir "$PROGRAMFILES32\${CompanyName}\${BrandShortName}\"
 !endif
 ShowInstDetails nevershow
 
@@ -311,7 +311,7 @@ Section "-InstallStartCleanup"
   ${EndIf}
 
   ; setup the application model id registration value
-  ${InitHashAppModelId} "$INSTDIR" "Software\Mozilla\${AppName}\TaskBarIDs"
+  ${InitHashAppModelId} "$INSTDIR" "Software\${CompanyName}\${BrandShortName}\TaskBarIDs"
 
   ; Clean up old maintenance service logs
   ${CleanMaintenanceServiceLogs} "Mozilla\Firefox"
@@ -434,25 +434,25 @@ Section "-Application" APP_IDX
 
   ${LogHeader} "Adding Registry Entries"
   SetShellVarContext current  ; Set SHCTX to HKCU
-  ${RegCleanMain} "Software\Mozilla"
+  ${RegCleanMain} "Software\${CompanyName}"
   ${RegCleanUninstall}
   ${UpdateProtocolHandlers}
 
   ClearErrors
-  WriteRegStr HKLM "Software\Mozilla" "${BrandShortName}InstallerTest" "Write Test"
+  WriteRegStr HKLM "Software\${CompanyName}" "${BrandShortName}InstallerTest" "Write Test"
   ${If} ${Errors}
     StrCpy $RegHive "HKCU"
   ${Else}
     SetShellVarContext all  ; Set SHCTX to HKLM
-    DeleteRegValue HKLM "Software\Mozilla" "${BrandShortName}InstallerTest"
+    DeleteRegValue HKLM "Software\${CompanyName}" "${BrandShortName}InstallerTest"
     StrCpy $RegHive "HKLM"
-    ${RegCleanMain} "Software\Mozilla"
+    ${RegCleanMain} "Software\${CompanyName}"
     ${RegCleanUninstall}
     ${UpdateProtocolHandlers}
 
-    ReadRegStr $0 HKLM "Software\mozilla.org\Mozilla" "CurrentVersion"
+    ReadRegStr $0 HKLM "Software\${CompanyName}" "CurrentVersion"
     ${If} "$0" != "${GREVersion}"
-      WriteRegStr HKLM "Software\mozilla.org\Mozilla" "CurrentVersion" "${GREVersion}"
+      WriteRegStr HKLM "Software\${CompanyName}" "CurrentVersion" "${GREVersion}"
     ${EndIf}
   ${EndIf}
 
@@ -777,7 +777,7 @@ Section "-Application" APP_IDX
   ${EndIf}
   ; Remember whether we were told to skip registering the agent, so that updates
   ; won't try to create a registration when they don't find an existing one.
-  WriteRegDWORD HKCU "Software\Mozilla\${AppName}\Installer\$AppUserModelID" \
+  WriteRegDWORD HKCU "Software\${CompanyName}\${BrandShortName}\Installer\$AppUserModelID" \
                      "DidRegisterDefaultBrowserAgent" $RegisterDefaultAgent
 !endif
 
@@ -831,7 +831,7 @@ Section "-InstallEndCleanup"
       ; If we have something other than empty string now, write the value.
       ${If} "$0" != ""
         ClearErrors
-        WriteRegStr HKCU "Software\Mozilla\Firefox" "OldDefaultBrowserCommand" "$0"
+        WriteRegStr HKCU "Software\${CompanyName}\${BrandShortName}" "OldDefaultBrowserCommand" "$0"
       ${EndIf}
 
       ${LogHeader} "Setting as the default browser"
@@ -853,7 +853,7 @@ Section "-InstallEndCleanup"
       StrCpy $SetAsDefault false
       ${LogHeader} "Writing default-browser opt-out"
       ClearErrors
-      WriteRegStr HKCU "Software\Mozilla\Firefox" "DefaultBrowserOptOut" "True"
+      WriteRegStr HKCU "Software\${CompanyName}\${BrandShortName}" "DefaultBrowserOptOut" "True"
       ${If} ${Errors}
         ${LogMsg} "Error writing default-browser opt-out"
       ${EndIf}
@@ -1168,12 +1168,12 @@ Function SendPing
   ${EndIf}
 
   ClearErrors
-  WriteRegStr HKLM "Software\Mozilla" "${BrandShortName}InstallerTest" \
+  WriteRegStr HKLM "Software\${CompanyName}" "${BrandShortName}InstallerTest" \
                    "Write Test"
   ${If} ${Errors}
     nsJSON::Set /tree ping "Data" "admin_user" /value false
   ${Else}
-    DeleteRegValue HKLM "Software\Mozilla" "${BrandShortName}InstallerTest"
+    DeleteRegValue HKLM "Software\${CompanyName}" "${BrandShortName}InstallerTest"
     nsJSON::Set /tree ping "Data" "admin_user" /value true
   ${EndIf}
 
@@ -1306,12 +1306,12 @@ Function WriteInstallationTelemetryData
   ; Check for write access to HKLM, if successful then report this user
   ; as an (elevated) admin.
   ClearErrors
-  WriteRegStr HKLM "Software\Mozilla" "${BrandShortName}InstallerTest" \
+  WriteRegStr HKLM "Software\${CompanyName}" "${BrandShortName}InstallerTest" \
                    "Write Test"
   ${If} ${Errors}
     StrCpy $1 "false"
   ${Else}
-    DeleteRegValue HKLM "Software\Mozilla" "${BrandShortName}InstallerTest"
+    DeleteRegValue HKLM "Software\${CompanyName}" "${BrandShortName}InstallerTest"
     StrCpy $1 "true"
   ${EndIf}
   ${JSONSet} "admin_user" /value $1
@@ -1326,7 +1326,7 @@ Function WriteInstallationTelemetryData
   ; Check for top-level profile directory
   ; Note: This is the same check used to set $ExistingProfile in stub.nsi
   ${GetLocalAppDataFolder} $0
-  ${If} ${FileExists} "$0\Mozilla\Firefox"
+  ${If} ${FileExists} "$0\${CompanyName}\${BrandShortName}"
     StrCpy $1 "true"
   ${Else}
     StrCpy $1 "false"
@@ -1544,13 +1544,13 @@ Function preComponents
 
   ; Only show the maintenance service page if we have write access to HKLM
   ClearErrors
-  WriteRegStr HKLM "Software\Mozilla" \
+  WriteRegStr HKLM "Software\${CompanyName}" \
               "${BrandShortName}InstallerTest" "Write Test"
   ${If} ${Errors}
     ClearErrors
     Abort
   ${Else}
-    DeleteRegValue HKLM "Software\Mozilla" "${BrandShortName}InstallerTest"
+    DeleteRegValue HKLM "Software\${CompanyName}" "${BrandShortName}InstallerTest"
   ${EndIf}
 
   StrCpy $PageName "Components"
@@ -1729,9 +1729,9 @@ Function preSummary
 
   ; Check if it is possible to write to HKLM
   ClearErrors
-  WriteRegStr HKLM "Software\Mozilla" "${BrandShortName}InstallerTest" "Write Test"
+  WriteRegStr HKLM "Software\${CompanyName}" "${BrandShortName}InstallerTest" "Write Test"
   ${Unless} ${Errors}
-    DeleteRegValue HKLM "Software\Mozilla" "${BrandShortName}InstallerTest"
+    DeleteRegValue HKLM "Software\${CompanyName}" "${BrandShortName}InstallerTest"
     ; Check if Firefox is the http handler for this user.
     SetShellVarContext current ; Set SHCTX to the current user
     ${IsHandlerForInstallDir} "http" $R9
@@ -1928,10 +1928,10 @@ Function .onInit
   ${EndIf}
 
   SetShellVarContext all
-  ${GetFirstInstallPath} "Software\Mozilla\${BrandFullNameInternal}" $0
+  ${GetFirstInstallPath} "Software\${CompanyName}\${BrandShortName}" $0
   ${If} "$0" == "false"
     SetShellVarContext current
-    ${GetFirstInstallPath} "Software\Mozilla\${BrandFullNameInternal}" $0
+    ${GetFirstInstallPath} "Software\${CompanyName}\${BrandShortName}" $0
     ${If} "$0" == "false"
       StrCpy $HadOldInstall false
     ${Else}

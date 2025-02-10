@@ -31,19 +31,39 @@
   }
 }
 
+#menubar-items {
+  flex-direction: column; /* for flex hack */
+  justify-content: normal; /* align the menubar to the top also in customize mode */
+}
+
+#main-menubar > menu {
+  appearance: none;
+  color: inherit;
+  
+  &[_moz-menuactive] {
+    background-color: light-dark(hsla(0,0%,0%,.12), hsla(0,0%,100%,.22));
+    color: inherit;
+    
+    @media (prefers-contrast) {
+      background-color: -moz-menuhover;
+      color: -moz-menuhovertext;
+    }
+  }
+}
+
 /* Use a different color only on Windows 8 and higher in inactive windows.
  * On Win 7, the menubar fog disappears for inactive windows, and renders gray
  * illegible.
  */
 @media (-moz-windows-default-theme) {
-  @media not (-moz-platform: windows-modern) {
+  @media not (-moz-windows-modern) {
     #toolbar-menubar:not([lwtheme]):-moz-window-inactive {
       color: ThreeDShadow;
     }
   }
 }
 
-@media not (-moz-platform: windows-modern) {
+@media (-moz-windows-modern) {
    /* On Windows 10, when temporarily showing the menu bar, make it at least as
    * tall as the tab bar such that the window controls don't appear to move up. */
    :root[tabsintitlebar] #toolbar-menubar[autohide="true"] {
@@ -62,15 +82,15 @@
 /* Add a fog for background tabs to be visible on Windows 7 glass window background */
 @media (-moz-platform: windows) {
   @media (-moz-windows-default-theme) {
-    #TabsToolbar:not([lwtheme]) {
-      background-image: radial-gradient(ellipse at bottom, rgba(255,255,255,0.8), rgba(255,255,255,0.5) 40%, transparent);
+    @media not (-moz-windows-modern) {
+      #TabsToolbar:not([lwtheme]) {
+        background-image: radial-gradient(ellipse at bottom, rgba(255,255,255,0.8), rgba(255,255,255,0.5) 40%, transparent);
+      }
     }
   }
 }
 
-@media not (-moz-windows-compositor),
-       not (-moz-windows-default-theme),
-       (-moz-platform: windows-modern) {
+@media (-moz-windows-modern) {
   /* Please keep the menu text colors in this media block in sync with
    * light-dark-overrides.css, minus the :not([lwtheme]) condition - see Bug 1165718.
    */

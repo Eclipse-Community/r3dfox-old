@@ -677,7 +677,42 @@ class nsContextMenu {
       !this.onAudio &&
       !this.onLink &&
       !this.onTextInput;
-    this.showItem("context-viewimage", showViewImage || showBGImage);
+    if (Services.prefs.getBoolPref("r3dfox.view.image")) {
+      this.showItem("context-viewimage", showViewImage);
+
+      var shouldShow = !(
+        this.isContentSelected ||
+        this.onImage ||
+        this.onCanvas ||
+        this.onVideo ||
+        this.onAudio ||
+        this.onLink ||
+        this.onTextInput
+      );
+
+      this.showItem(
+        "context-viewbgimage",
+        shouldShow &&
+          !this.hasMultipleBGImages &&
+          !this.inSyntheticDoc &&
+          !this.inPDFViewer
+      );
+
+      this.showItem(
+        "context-sep-viewbgimage",
+        shouldShow &&
+          !this.hasMultipleBGImages &&
+          !this.inSyntheticDoc &&
+          !this.inPDFViewer
+      );
+
+      document.getElementById("context-viewbgimage").disabled = !this.hasBGImage;
+      this.showItem("context-viewimagetab", false);
+    } else {
+      this.showItem("context-viewimagetab", showViewImage || showBGImage);
+      this.showItem("context-viewimage", false);
+      this.showItem("context-viewbgimage", false);
+    }
 
     // Save image depends on having loaded its content.
     this.showItem(
@@ -809,11 +844,21 @@ class nsContextMenu {
     this.showItem("context-inspect-a11y", showInspectA11Y);
 
     // View video depends on not having a standalone video.
-    this.showItem(
-      "context-viewvideo",
-      this.onVideo && (!this.inSyntheticDoc || this.inFrame)
-    );
-    this.setItemAttr("context-viewvideo", "disabled", !this.mediaURL);
+    if (Services.prefs.getBoolPref("r3dfox.view.image")) {
+      this.showItem(
+        "context-viewvideo",
+        this.onVideo && (!this.inSyntheticDoc || this.inFrame)
+      );
+      this.setItemAttr("context-viewvideo", "disabled", !this.mediaURL);
+      this.showItem("context-viewvideotab", false);
+    } else {
+      this.showItem(
+        "context-viewvideotab",
+        this.onVideo && (!this.inSyntheticDoc || this.inFrame)
+      );
+      this.setItemAttr("context-viewvideotab", "disabled", !this.mediaURL);
+      this.showItem("context-viewvideo", false);
+    }
   }
 
   initMiscItems() {
@@ -1688,8 +1733,10 @@ class nsContextMenu {
   // Change current window to the URL of the image, video, or audio.
   viewMedia(e) {
     let where = BrowserUtils.whereToOpenLink(e, false, false);
-    if (where == "current") {
-      where = "tab";
+    if (!Services.prefs.getBoolPref("r3dfox.view.image")) {
+      if (where == "current") {
+        where = "tab";
+      }
     }
     let referrerInfo = this.contentData.referrerInfo;
     let systemPrincipal = Services.scriptSecurityManager.getSystemPrincipal();

@@ -552,10 +552,9 @@ pub enum Platform {
     Macos,
     /// Matches any Windows version.
     Windows,
-    // XXX: The XP and Vista values can now be removed (see bug 1330146).
-    WindowsXP,
-    WindowsVista,
-    /// Matches only Windows 7.
+    /// Matches only Windows XP.
+    WindowsWinXP,
+    /// Matches Windows 7 and actually matches Windows Vista too, as of right now.
     WindowsWin7,
     /// Matches only Windows 8.
     WindowsWin8,

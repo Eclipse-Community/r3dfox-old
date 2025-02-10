@@ -173,8 +173,10 @@ void nsUXThemeData::EnsureCommandButtonMetrics() {
   sCommandButtonMetrics[1].cy = sCommandButtonMetrics[2].cy =
       sCommandButtonMetrics[0].cy;
 
-  // Trigger a refresh on the next layout.
-  sTitlebarInfoPopulatedAero = sTitlebarInfoPopulatedThemed = false;
+  // Use system metrics for pre-vista, otherwise trigger a
+  // refresh on the next layout.
+  sTitlebarInfoPopulatedAero = sTitlebarInfoPopulatedThemed =
+    !IsVistaOrLater();
 }
 
 // static
@@ -334,7 +336,7 @@ bool nsUXThemeData::IsHighContrastOn() { return sIsHighContrastOn; }
 // static
 void nsUXThemeData::UpdateNativeThemeInfo() {
   // Trigger a refresh of themed button metrics if needed
-  sTitlebarInfoPopulatedThemed = false;
+  sTitlebarInfoPopulatedThemed = !IsVistaOrLater();
 
   sIsDefaultWindowsTheme = false;
   sThemeId = WindowsTheme::Generic;

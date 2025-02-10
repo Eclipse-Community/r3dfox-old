@@ -337,6 +337,9 @@ UINT nsWindow::sHookTimerId = 0;
 // input.
 POINT nsWindow::sLastMouseMovePoint = {0};
 
+// Trim heap on minimize. (initialized, but still true.)
+//int nsWindow::sTrimOnMinimize = 2;
+
 bool nsWindow::sIsRestoringSession = false;
 
 bool nsWindow::sTouchInjectInitialized = false;
@@ -938,7 +941,7 @@ nsresult nsWindow::Create(nsIWidget* aParent, const LayoutDeviceIntRect& aRect,
   // When window is PiP window on Windows7, WS_EX_COMPOSITED is set to suppress
   // flickering during resizing with hardware acceleration.
   bool isPIPWindow = aInitData && aInitData->mPIPWindow;
-  if (isPIPWindow && !IsWin8OrLater() &&
+  if (isPIPWindow && IsVistaOrLater() && !IsWin8OrLater() &&
       gfxConfig::IsEnabled(gfx::Feature::HW_COMPOSITING) &&
       WidgetTypeSupportsAcceleration()) {
     extendedStyle |= WS_EX_COMPOSITED;
@@ -1197,6 +1200,19 @@ const wchar_t kShellLibraryName[] =  L"shell32.dll";
 
   mDefaultIMC.Init(this);
   IMEHandler::InitInputContext(this, mInputContext);
+
+  // If the internal variable set by the config.trim_on_minimize pref has not
+  // been initialized, and if this is the hidden window (conveniently created
+  // before any visible windows, and after the profile has been initialized),
+  // do some initialization work.
+//  if (sTrimOnMinimize == 2 && mWindowType == eWindowType_invisible) {
+    // Our internal trim prevention logic is effective on 2K/XP at maintaining
+    // the working set when windows are minimized, but on Vista and up it has
+    // little to no effect. Since this feature has been the source of numerous
+    // bugs over the years, disable it (sTrimOnMinimize=1) on Vista and up.
+//    sTrimOnMinimize = Preferences::GetBool("config.trim_on_minimize",
+//                                           IsVistaOrLater() ? 1 : 0);
+//  }
 
   // Query for command button metric data for rendering the titlebar. We
   // only do this once on the first window that has an actual titlebar
@@ -1793,7 +1809,7 @@ bool nsWindow::IsVisible() const { return mIsVisible; }
 // operations.
 // XXX this is apparently still needed in Windows 7 and later
 void nsWindow::ClearThemeRegion() {
-  if (!HasGlass() &&
+  if (IsVistaOrLater() && !HasGlass() &&
       (mWindowType == WindowType::Popup && !IsPopupWithTitleBar() &&
        (mPopupType == PopupType::Tooltip || mPopupType == PopupType::Panel))) {
     SetWindowRgn(mWnd, nullptr, false);
@@ -7042,6 +7058,30 @@ void nsWindow::OnWindowPosChanged(WINDOWPOS* wp) {
     // Send a gecko resize event
     OnResize(clientSize);
   }
+}
+
+// static
+void nsWindow::ActivateOtherWindowHelper(HWND aWnd) {
+  // Find the next window that is enabled, visible, and not minimized.
+  HWND hwndBelow = ::GetNextWindow(aWnd, GW_HWNDNEXT);
+  while (hwndBelow &&
+         (!::IsWindowEnabled(hwndBelow) || !::IsWindowVisible(hwndBelow) ||
+          ::IsIconic(hwndBelow))) {
+    hwndBelow = ::GetNextWindow(hwndBelow, GW_HWNDNEXT);
+  }
+
+  // Push ourselves to the bottom of the stack, then activate the
+  // next window.
+  ::SetWindowPos(aWnd, HWND_BOTTOM, 0, 0, 0, 0,
+                 SWP_NOACTIVATE | SWP_NOMOVE | SWP_NOSIZE);
+  if (hwndBelow) ::SetForegroundWindow(hwndBelow);
+
+  // Play the minimize sound while we're here, since that is also
+  // forgotten when we use SW_SHOWMINIMIZED.
+  /*nsCOMPtr<nsISound> sound(do_CreateInstance("@mozilla.org/sound;1"));
+  if (sound) {
+    sound->PlaySystemSound(NS_LITERAL_STRING("Minimize"));
+  }*/
 }
 
 void nsWindow::OnWindowPosChanging(WINDOWPOS* info) {

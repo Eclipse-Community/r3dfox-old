@@ -2273,6 +2273,7 @@ STATIC_ATOMS = [
     Atom("initialBrowsingContextGroupId", "initialBrowsingContextGroupId"),
     Atom("manualactiveness", "manualactiveness"),
     # windows media query names
+    Atom("windows_winxp", "windows-winxp"),
     Atom("windows_win7", "windows-win7"),
     Atom("windows_win8", "windows-win8"),
     Atom("windows_win10", "windows-win10"),

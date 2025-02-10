@@ -2,23 +2,28 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-# NSIS branding defines for nightly builds.
-# The official release build branding.nsi is located in other-license/branding/firefox/
+# NSIS branding defines for official release builds.
+# The nightly build branding.nsi is located in browser/installer/windows/nsis/
 # The unofficial build branding.nsi is located in browser/branding/unofficial/
 
 # BrandFullNameInternal is used for some registry and file system values
 # instead of BrandFullName and typically should not be modified.
-!define BrandFullNameInternal "Nightly"
-!define BrandFullName         "Firefox Nightly"
-!define CompanyName           "mozilla.org"
-!define URLInfoAbout          "https://www.mozilla.org"
-!define HelpLink              "https://support.mozilla.org"
+!define BrandFullNameInternal "Eclipse Plasmafox"
+!define BrandFullName         "Eclipse Plasmafox"
+!define CompanyName           "Eclipse Community"
+!define URLInfoAbout          "https://eclipse.cx"
+!define URLUpdateInfo         "https://github.com/Eclipse-Community/r3dfox/releases"
+!define HelpLink              "https://github.com/Eclipse-Community/r3dfox/issues"
 
-!define URLStubDownloadX86 "https://download.mozilla.org/?os=win&lang=${AB_CD}&product=firefox-nightly-latest"
-!define URLStubDownloadAMD64 "https://download.mozilla.org/?os=win64&lang=${AB_CD}&product=firefox-nightly-latest"
-!define URLStubDownloadAArch64 "https://download.mozilla.org/?os=win64-aarch64&lang=${AB_CD}&product=firefox-nightly-latest"
-!define URLManualDownload "https://www.mozilla.org/${AB_CD}/firefox/installer-help/?channel=nightly&installer_lang=${AB_CD}"
-!define URLSystemRequirements "https://www.mozilla.org/firefox/system-requirements/"
+; The OFFICIAL define is a workaround to support different urls for Release and
+; Beta since they share the same branding when building with other branches that
+; set the update channel to beta.
+!define OFFICIAL
+!define URLStubDownloadX86 ""
+!define URLStubDownloadAMD64 ""
+!define URLStubDownloadAArch64 ""
+!define URLManualDownload ""
+!define URLSystemRequirements ""
 !define Channel "nightly"
 
 # The installer's certificate name and issuer expected by the stub installer

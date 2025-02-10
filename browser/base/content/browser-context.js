@@ -117,6 +117,8 @@ document.addEventListener(
         case "context-media-showcontrols":
           gContextMenu.mediaCommand("showcontrols");
           break;
+        case "context-viewimagetab":
+        case "context-viewvideotab":
         case "context-viewimage":
         case "context-viewvideo":
           gContextMenu.viewMedia(event);

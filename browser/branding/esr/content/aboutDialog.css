@@ -1,0 +1,26 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
+#aboutDialogContainer {
+  background-image: url("chrome://branding/content/about-background.jpg");
+  color: #fff;
+  color-scheme: dark;
+}
+
+#rightBox {
+  background-size: 360px auto;
+  margin-inline: 30px;
+}
+
+#bottomBox {
+  background-color: hsla(0, 43%, 10%, .5);
+  padding: 15px 10px 15px;
+}
+
+#trademark {
+  font-size: xx-small;
+  text-align: center;
+  color: #999999;
+  margin-block: 10px;
+}

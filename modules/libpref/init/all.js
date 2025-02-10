@@ -667,6 +667,7 @@ pref("r3dfox.glow.menubar", true);
 // Translucent navbar design
 pref("r3dfox.translucent.navbar", false);
 // Disable other customizations by default
+pref("r3dfox.view.image", false);
 pref("r3dfox.colors.esr", false);
 pref("r3dfox.browser.plasmafox", false);
 pref("r3dfox.colors.plasmafox", false);

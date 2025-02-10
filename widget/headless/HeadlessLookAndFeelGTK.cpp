@@ -88,8 +88,15 @@ nsresult HeadlessLookAndFeel::NativeGetInt(IntID aID, int32_t& aResult) {
       aResult = 1;
       break;
     case IntID::WindowsAccentColorInTitlebar:
+    case IntID::WindowsDefaultTheme:
+    case IntID::DWMCompositor:
       aResult = 0;
       res = NS_ERROR_NOT_IMPLEMENTED;
+      break;
+    case IntID::WindowsClassic:
+    case IntID::WindowsGlass:
+      aResult = 0;
+      res = NS_ERROR_FAILURE;
       break;
     case IntID::AlertNotificationOrigin:
       aResult = NS_ALERT_TOP;

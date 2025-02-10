@@ -79,6 +79,11 @@ p {
   fill: currentColor;
   height: 96px;
   width: 172px;
+
+  @media (-moz-bool-pref: "r3dfox.browser.plasmafox") {
+    background-size: 220px;
+    width: 220px;
+  }
 }
 
 .search-inner-wrapper {

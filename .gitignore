@@ -50,6 +50,7 @@ ID
 /.clangd
 /.mozconfig*
 /mozconfig*
+!/mozconfigs
 /.moz-fast-forward
 /old-configure
 /config.cache

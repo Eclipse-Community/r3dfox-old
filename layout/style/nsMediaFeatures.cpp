@@ -253,6 +253,7 @@ bool Gecko_MediaFeatures_MatchesPlatform(StylePlatform aPlatform) {
     case StylePlatform::Windows:
       return true;
     case StylePlatform::WindowsWin10:
+    case StylePlatform::WindowsWinXP:
     case StylePlatform::WindowsWin7:
     case StylePlatform::WindowsWin8: {
       if (IsWin10OrLater()) {
@@ -260,6 +261,9 @@ bool Gecko_MediaFeatures_MatchesPlatform(StylePlatform aPlatform) {
       }
       if (IsWin8OrLater()) {
         return aPlatform == StylePlatform::WindowsWin8;
+      }
+      if (!IsVistaOrLater()) {
+        return aPlatform == StylePlatform::WindowsWinXP;
       }
       return aPlatform == StylePlatform::WindowsWin7;
     }

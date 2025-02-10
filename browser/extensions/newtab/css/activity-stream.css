@@ -740,6 +740,11 @@ main section {
   height: 64px;
   margin-inline-start: 16px;
   width: 105px;
+
+  @media (-moz-bool-pref: "r3dfox.browser.plasmafox") {
+    background-size: 220px;
+    width: 220px;
+  }
 }
 .lightWallpaper .logo-and-wordmark .wordmark {
   color-scheme: light;

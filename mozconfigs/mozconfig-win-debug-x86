@@ -1,0 +1,43 @@
+## mozconfig for compiling r3dfox Browser for Windows natively
+
+# x86 build
+ac_add_options --target=i686 
+ac_add_options --disable-sandbox
+
+# 16 jobs for 16 cores
+mk_add_options MOZ_MAKE_FLAGS="-j16"
+
+# Build only r3dfox
+ac_add_options --enable-application=browser
+ac_add_options --disable-artifact-builds
+export MOZ_INCLUDE_SOURCE_INFO=1
+export MOZ_SOURCE_CHANGESET=iloveneedingtobodgechangesetfornoreason
+
+# Media settings
+ac_add_options --disable-eme
+ac_add_options --enable-av1
+ac_add_options --enable-jxl
+ac_add_options --enable-raw
+ac_add_options --enable-webrtc
+
+# Add-ons
+ac_add_options --allow-addon-sideload
+ac_add_options --with-unsigned-addon-scopes=app,system
+
+# Client settings
+ac_add_options --disable-backgroundtasks
+ac_add_options --disable-bits-download
+ac_add_options --disable-default-browser-agent
+ac_add_options --disable-maintenance-service
+ac_add_options --disable-notification-server
+ac_add_options --disable-parental-controls
+ac_add_options --disable-update-agent
+ac_add_options --disable-updater
+ac_add_options --enable-clang-plugin
+ac_add_options --enable-debug
+ac_add_options --without-wasm-sandboxed-libraries
+export CROSS_COMPILE=0
+export MOZ_INCLUDE_SOURCE_INFO=1
+export MOZ_REQUIRE_SIGNING=
+export MOZ_SOURCE_CHANGESET=iloveneedingtobodgechangesetfornoreason
+export MOZ_PACKAGE_JSSHELL=1

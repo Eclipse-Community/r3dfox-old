@@ -196,6 +196,16 @@
   }
 }
 
+/* add extra margin for unmaximized windows
+   on Win XP Luna themes to look consistent */
+@media not (-moz-windows-classic) {
+  @media (-moz-platform: windows-winxp) {
+    :root[tabsintitlebar]:not([sizemode="maximized"]) .titlebar-buttonbox-container {
+      margin-top: 4px;
+    }
+  }
+}
+
 /* Window control buttons */
 
 .titlebar-min {

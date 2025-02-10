@@ -93,7 +93,7 @@ var gBrowserInit = {
       const toolbarMenubar = document.getElementById("toolbar-menubar");
       // set a default value
       if (!toolbarMenubar.hasAttribute("autohide")) {
-        toolbarMenubar.setAttribute("autohide", true);
+        toolbarMenubar.setAttribute("autohide", false);
       }
       document.l10n.setAttributes(
         toolbarMenubar,

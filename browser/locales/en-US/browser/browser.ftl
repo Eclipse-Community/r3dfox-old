@@ -24,13 +24,13 @@
 #  $profile-name (String): the name of the current profile.
 browser-main-window-titles =
   .data-title-default = { -brand-full-name }
-  .data-title-private = { -brand-full-name } Private Browsing
+  .data-title-private = { -brand-full-name } (Private Browsing)
   .data-title-default-with-profile = { $profile-name } — { -brand-full-name }
-  .data-title-private-with-profile = { $profile-name } — { -brand-full-name } Private Browsing
+  .data-title-private-with-profile = { $profile-name } — { -brand-full-name } (Private Browsing)
   .data-content-title-default = { $content-title } — { -brand-full-name }
-  .data-content-title-private = { $content-title } — { -brand-full-name } Private Browsing
+  .data-content-title-private = { $content-title } — { -brand-full-name } (Private Browsing)
   .data-content-title-default-with-profile = { $content-title } — { $profile-name } — { -brand-full-name }
-  .data-content-title-private-with-profile = { $content-title } — { $profile-name } — { -brand-full-name } Private Browsing
+  .data-content-title-private-with-profile = { $content-title } — { $profile-name } — { -brand-full-name } (Private Browsing)
 
 # These are the default window titles on macOS.
 # .data-title-default and .data-title-private are used when the web content
@@ -57,13 +57,13 @@ browser-main-window-titles =
 #  $profile-name (String): the name of the current profile.
 browser-main-window-titles-mac =
   .data-title-default = { -brand-full-name }
-  .data-title-private = { -brand-full-name } — Private Browsing
+  .data-title-private = { -brand-full-name } — (Private Browsing)
   .data-title-default-with-profile = { $profile-name } — { -brand-full-name }
-  .data-title-private-with-profile = { $profile-name } — { -brand-full-name } Private Browsing
+  .data-title-private-with-profile = { $profile-name } — { -brand-full-name } (Private Browsing)
   .data-content-title-default = { $content-title }
-  .data-content-title-private = { $content-title } — Private Browsing
+  .data-content-title-private = { $content-title } — (Private Browsing)
   .data-content-title-default-with-profile = { $content-title } — { $profile-name }
-  .data-content-title-private-with-profile = { $content-title } — { $profile-name } — Private Browsing
+  .data-content-title-private-with-profile = { $content-title } — { $profile-name } — (Private Browsing)
 
 # This gets set as the initial title, and is overridden as soon as we start
 # updating the titlebar based on loaded tabs or private browsing state.

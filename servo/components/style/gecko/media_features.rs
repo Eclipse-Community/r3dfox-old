@@ -675,7 +675,7 @@ macro_rules! lnf_int_feature {
 /// to support new types in these entries and (2) ensuring that either
 /// nsPresContext::MediaFeatureValuesChanged is called when the value that
 /// would be returned by the evaluator function could change.
-pub static MEDIA_FEATURES: [QueryFeatureDescription; 66] = [
+pub static MEDIA_FEATURES: [QueryFeatureDescription; 67] = [
     feature!(
         atom!("width"),
         AllowsRanges::Yes,
@@ -984,6 +984,7 @@ pub static MEDIA_FEATURES: [QueryFeatureDescription; 66] = [
     lnf_int_feature!(atom!("-moz-windows-compositor"), DWMCompositor),
     lnf_int_feature!(atom!("-moz-windows-classic"), WindowsClassic),
     lnf_int_feature!(atom!("-moz-windows-glass"), WindowsGlass),
+    lnf_int_feature!(atom!("-moz-windows-modern"), WindowsModern),
     lnf_int_feature!(atom!("-moz-swipe-animation-enabled"), SwipeAnimationEnabled),
     lnf_int_feature!(atom!("-moz-gtk-csd-available"), GTKCSDAvailable),
     lnf_int_feature!(atom!("-moz-gtk-csd-transparency-available"), GTKCSDTransparencyAvailable),

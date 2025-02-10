@@ -1,0 +1,214 @@
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+<!-- r3dfox panel -->
+
+<script src="chrome://browser/content/preferences/r3dfox.js"/>
+
+<!-- r3dfox -->
+<html:template id="template-paneR3dfox">
+<hbox id="r3dfoxcategory"
+      class="subcategory"
+      hidden="true"
+      data-category="paneR3dfox">
+  <html:h1 data-l10n-id="r3dfox-title"/>
+</hbox>
+
+<!-- r3dfox visual -->
+<groupbox id="r3dfoxVisualGroup"
+          data-category="paneR3dfox"
+          hidden="true">
+  <label><html:h2 data-l10n-id="r3dfox-visual-header"/></label>
+
+  <hbox align="center">
+    <checkbox id="r3dfoxUseNativeStyles"
+              data-l10n-id="r3dfox-native-checkbox"
+              preference="widget.non-native-theme.enabled"/>
+  </hbox>
+  <description class="indent tip-caption" data-l10n-id="r3dfox-native-checkbox-desc"/>
+
+  <hbox align="center">
+    <label id="r3dfoxNativeScroll" data-l10n-id="r3dfox-native-scroll" control="r3dfoxNativeScrollType"/>
+    <menulist id="r3dfoxFogType" preference="widget.native-controls.scrollbar-style">
+      <menupopup>
+        <menuitem label="Native scrollbars always" value="0"/>
+        <menuitem label="Custom scrollbars always" value="1"/>
+        <menuitem label="Native scrollbars unless the website has a dark color scheme (Default)" value="2"/>
+      </menupopup>
+    </menulist>
+  </hbox>
+
+  <hbox align="center">
+    <label id="r3dfoxFakeScroll" data-l10n-id="r3dfox-fake-scroll-type" control="r3dfoxFakeScrollType"/>
+    <menulist id="r3dfoxFakeScrollType" preference="widget.non-native-theme.scrollbar.style">
+      <menupopup>
+        <menuitem label="Default platform scrollbar style (Default)" value="0"/>
+        <menuitem label="macOS scrollbar (small)" value="1"/>
+        <menuitem label="GTK scrollbar (smaller)" value="2"/>
+        <menuitem label="Android scrollbar (smallest)" value="3"/>
+        <menuitem label="Windows 10 scrollbar (normal)" value="4"/>
+        <menuitem label="Windows 11 scrollbar (smaller)" value="5"/>
+      </menupopup>
+    </menulist>
+  </hbox>
+
+  <hbox align="center">
+    <label id="r3dfoxWinTheme" data-l10n-id="r3dfox-win-theme-type" control="r3dfoxWinThemeType"/>
+    <menulist id="r3dfoxWinThemeType" preference="widget.native-controls.override-win-version">
+      <menupopup>
+        <menuitem label="Current OS version (Default)" value="0"/>
+        <menuitem label="Windows XP" value="5"/>
+        <menuitem label="Windows Vista" value="6"/>
+        <menuitem label="Windows 7" value="7"/>
+        <menuitem label="Windows 8" value="8"/>
+        <menuitem label="Windows 10 (Modern)" value="10"/>
+      </menupopup>
+    </menulist>
+  </hbox>
+
+  <hbox align="center">
+    <label id="r3dfoxColors" data-l10n-id="r3dfox-colors" control="r3dfoxColorsType"/>
+    <menulist id="r3dfoxColorsType" preference="r3dfox.colors">
+      <menupopup>
+        <menuitem label="Disabled (Stock Firefox Blue)" value="0"/>
+        <menuitem label="r3dfox r3d" value="1"/>
+        <menuitem label="r3dfox ESR Orange" value="2"/>
+        <menuitem label="Plasmafox Pink" value="3"/>
+        <menuitem label="Eclipse Purple" value="4"/>
+      </menupopup>
+    </menulist>
+  </hbox>
+
+  <hbox align="center">
+    <checkbox id="r3dfoxTheme"
+              data-l10n-id="r3dfox-theme"
+              preference="r3dfox.customizations.enabled"/>
+  </hbox>
+
+  <hbox align="center">
+    <checkbox id="r3dfoxdrag"
+              data-l10n-id="r3dfox-drag"
+              preference="r3dfox.drag-space.enabled"/>
+  </hbox>
+
+  <hbox align="center">
+    <checkbox id="r3dfoxBackgrounds"
+              data-l10n-id="r3dfox-backgrounds"
+              preference="r3dfox.backgrounds.enabled"/>
+  </hbox>
+
+  <hbox align="center">
+    <checkbox id="r3dfoxMenubar"
+              data-l10n-id="r3dfox-menubar"
+              preference="r3dfox.transparent.menubar"/>
+  </hbox>
+
+  <hbox align="center">
+    <checkbox id="r3dfoxNavbar"
+              data-l10n-id="r3dfox-navbar"
+              preference="r3dfox.translucent.navbar"/>
+  </hbox>
+
+  <hbox align="center">
+    <label id="r3dfoxFog" data-l10n-id="r3dfox-fog-type" control="r3dfoxFogType"/>
+    <menulist id="r3dfoxFogType" preference="r3dfox.aero.fog">
+      <menupopup>
+        <menuitem label="Disabled (Default with backgrounds enabled)" value="0"/>
+        <menuitem label="r3dfox style (covers menubar)" value="1"/>
+        <menuitem label="Stock Firefox style" value="2"/>
+      </menupopup>
+    </menulist>
+  </hbox>
+
+  <hbox align="center">
+    <label id="r3dfoxCaptionText" data-l10n-id="r3dfox-caption-text" control="r3dfoxCaptionTextType"/>
+    <menulist id="r3dfoxCaptionTextType" preference="r3dfox.caption.text.color">
+      <menupopup>
+        <menuitem label="Default platform style (Default)" value="0"/>
+        <menuitem label="White" value="1"/>
+        <menuitem label="Black" value="2"/>
+      </menupopup>
+    </menulist>
+  </hbox>
+</groupbox>
+
+<!-- r3dfox functional -->
+<groupbox id="r3dfoxFunctionalGroup"
+          data-category="paneR3dfox"
+          hidden="true">
+  <label><html:h2 data-l10n-id="r3dfox-functional-header"/></label>
+
+  <hbox align="center">
+    <checkbox id="r3dfoxoneoffs"
+              data-l10n-id="r3dfox-one-offs"
+              preference="browser.urlbar.oneOffsInstant"/>
+  </hbox>
+
+  <hbox align="center">
+    <checkbox id="r3dfoxviewimage"
+              data-l10n-id="r3dfox-view-image"
+              preference="r3dfox.view.image"/>
+  </hbox>
+
+  <hbox align="center">
+    <checkbox id="r3dfoxhoverpreview"
+              data-l10n-id="r3dfox-hover-preview"
+              preference="browser.tabs.hoverPreview.enabled"/>
+  </hbox>
+
+  <hbox align="center">
+    <checkbox id="r3dfoxswitchtotab"
+              data-l10n-id="r3dfox-switch-to-tab"
+              preference="browser.urlbar.secondaryActions.switchToTab"/>
+  </hbox>
+  <description class="indent tip-caption" data-l10n-id="r3dfox-switch-to-tab-desc"/>
+</groupbox>
+
+<!-- r3dfox advanced -->
+<groupbox id="r3dfoxAdvancedGroup"
+          data-category="paneR3dfox"
+          hidden="true">
+  <label><html:h2 data-l10n-id="r3dfox-advanced-header"/></label>
+
+  <hbox align="center">
+    <label id="r3dfoxAccessibility" data-l10n-id="r3dfox-accessibility" control="r3dfoxAccessibilityType"/>
+    <menulist id="r3dfoxAccessibilityType" preference="accessibility.force_disabled">
+      <menupopup>
+        <menuitem label="Always disabled (1)" value="1"/>
+        <menuitem label="Default (0)" value="0"/>
+        <menuitem label="Always enabled (-1)" value="-1"/>
+      </menupopup>
+    </menulist>
+  </hbox>
+  <description id="r3dfoxAccessibilityDescription" class="tip-caption" data-l10n-id="r3dfox-accessibility-desc"/>
+
+  <hbox align="center">
+    <checkbox id="r3dfoxcsp"
+              data-l10n-id="r3dfox-csp"
+              preference="security.csp.enable"/>
+  </hbox>
+  <description class="indent tip-caption" data-l10n-id="r3dfox-csp-desc"/>
+
+  <hbox align="center">
+    <checkbox id="r3dfoxhsts"
+              data-l10n-id="r3dfox-hsts"
+              preference="network.stricttransportsecurity.enabled"/>
+  </hbox>
+  <description class="indent tip-caption" data-l10n-id="r3dfox-hsts-desc"/>
+
+  <hbox align="center">
+    <checkbox id="r3dfoxe10s"
+              data-l10n-id="r3dfox-e10s"
+              preference="browser.e10s.disabled"/>
+  </hbox>
+  <description class="indent tip-caption" data-l10n-id="r3dfox-e10s-desc"/>
+
+  <hbox align="center">
+    <checkbox id="r3dfoxdwrite"
+              data-l10n-id="r3dfox-dwrite"
+              preference="gfx.dwrite.enabled"/>
+  </hbox>
+  <description class="indent tip-caption" data-l10n-id="r3dfox-dwrite-desc"/>
+</groupbox>
+</html:template>

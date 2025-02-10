@@ -252,6 +252,11 @@ bool Gecko_MediaFeatures_MatchesPlatform(StylePlatform aPlatform) {
 #if defined(XP_WIN)
     case StylePlatform::Windows:
       return true;
+    case StylePlatform::WindowsWinXP: {
+      if (!IsVistaOrLater()) {
+        return aPlatform == StylePlatform::WindowsWinXP;
+      }
+    }
 #elif defined(ANDROID)
     case StylePlatform::Android:
       return true;

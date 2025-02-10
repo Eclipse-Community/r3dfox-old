@@ -1,0 +1,796 @@
+/* Color overrides */
+
+@media -moz-pref("r3dfox.colors", 1) {
+  :root {
+    --arrowpanel-border-color: light-dark(rgb(255, 60, 60), rgb(160, 60, 60)) !important;
+    --toolbar-field-focus-border-color: light-dark(rgb(255, 40, 40), rgb(160, 60, 60)) !important;
+    --sidebar-border-color: light-dark(rgb(255, 60, 60), rgb(160, 60, 60)) !important;
+    --lwt-toolbar-field-highlight: light-dark(rgb(255, 40, 40), rgb(160, 60, 60)) !important;
+    --newtab-primary-action-background: light-dark(rgb(255, 20, 20), rgb(255, 80, 80)) !important;
+    --newtab-primary-action-background-hover: light-dark(rgb(255, 40, 40), rgb(255, 60, 60)) !important;
+    --newtab-primary-action-background-active: light-dark(rgb(255, 40, 40), rgb(255, 40, 40)) !important;
+    --color-accent-primary: light-dark(rgb(255, 20, 20), rgb(255, 60, 60)) !important;
+    --color-accent-primary-hover: light-dark(rgb(255, 60, 60), rgb(255, 80, 80)) !important;
+    --color-accent-primary-active: light-dark(rgb(255, 60, 60), rgb(255, 60, 60)) !important;
+    --link-color: light-dark(rgb(255, 20, 20), rgb(255, 80, 80)) !important;
+    --link-color-hover: light-dark(rgb(255, 20, 20), rgb(255, 80, 80)) !important;
+    --link-color-active: light-dark(rgb(255, 60, 60), rgb(255, 60, 60)) !important;
+    --link-color-visited: light-dark(rgb(255, 20, 20), rgb(255, 80, 80)) !important;
+    --button-primary-bgcolor: light-dark(rgb(255, 20, 20), rgb(255, 100, 100)) !important;
+    --button-primary-hover-bgcolor: light-dark(rgb(255, 60, 60), rgb(255, 80, 80)) !important;
+    --button-primary-active-bgcolor: light-dark(rgb(255, 60, 60), rgb(255, 60, 60)) !important;
+    --toolbarbutton-icon-fill-attention: light-dark(rgb(255, 20, 20), rgb(255, 80, 80)) !important;
+    --download-progress-fill-color: light-dark(rgb(255, 40, 40), rgb(255, 80, 80)) !important;
+    --lwt-tab-line-color: light-dark(rgb(255, 40, 40), rgb(255, 80, 80)) !important;
+    @media (-moz-content-prefers-color-scheme: dark), (prefers-color-scheme: dark) {
+      --color-accent-primary: rgb(255, 60, 60) !important;
+      --color-accent-primary-hover: rgb(255, 80, 80) !important;
+      --color-accent-primary-active: rgb(255, 60, 60) !important;
+    }
+    &[privatebrowsingmode=temporary] {
+        --tabpanel-background-color: linear-gradient(to bottom, #480808 0%,#240103 93%,#200000 97%,#1E0000 100%) !important;
+    }
+
+    .urlbar-input::selection, .searchbar-textbox::selection {
+      background: light-dark(rgb(255, 80, 80), rgb(160, 60, 60)) !important;
+    }
+
+    .bookmark-item:is(toolbarbutton)[dragover="true"][open="true"] {
+      background: light-dark(rgb(255, 80, 80), rgb(160, 60, 60)) !important;
+    }
+
+    .tab-drop-indicator {
+      background: url(chrome://browser/skin/tabbrowser/r3d-tab-drag-indicator.svg) no-repeat center !important;
+    }
+
+    #PlacesToolbarDropIndicator {
+      list-style-image: url(chrome://browser/skin/r3d-toolbar-drag-indicator.svg) !important;
+    }
+  }
+
+  html.private {
+      --in-content-page-background: linear-gradient(to bottom, #480808 0%,#240103 93%,#200000 97%,#1E0000 100%) !important;
+  }
+
+  #main-window[privatebrowsingmode="temporary"] #TabsToolbar {
+    background-color: #CC190032 !important;
+  }
+}
+
+@media -moz-pref("r3dfox.colors", 2) {
+  :root {
+    --arrowpanel-border-color: light-dark(rgb(255, 102, 51), rgb(183, 98, 69)) !important;
+    --toolbar-field-focus-border-color: light-dark(rgb(255, 86, 30), rgb(183, 98, 69)) !important;
+    --sidebar-border-color: light-dark(rgb(255, 102, 51), rgb(183, 98, 69)) !important;
+    --lwt-toolbar-field-highlight: light-dark(rgb(255, 86, 30), rgb(183, 98, 69)) !important;
+    --newtab-primary-action-background: light-dark(rgb(255, 71, 9), rgb(255, 118, 72)) !important;
+    --newtab-primary-action-background-hover: light-dark(rgb(255, 86, 30), rgb(255, 102, 51)) !important;
+    --newtab-primary-action-background-active: light-dark(rgb(255, 86, 30), rgb(255, 86, 30)) !important;
+    --color-accent-primary: light-dark(rgb(255, 71, 9), rgb(255, 118, 72)) !important;
+    --color-accent-primary-hover: light-dark(rgb(255, 102, 51), rgb(255, 102, 51)) !important;
+    --color-accent-primary-active: light-dark(rgb(255, 102, 51), rgb(255, 102, 51)) !important;
+    --link-color: light-dark(rgb(255, 71, 9), rgb(255, 118, 72)) !important;
+    --link-color-hover: light-dark(rgb(255, 71, 9), rgb(255, 118, 72)) !important;
+    --link-color-active: light-dark(rgb(255, 102, 51), rgb(255, 102, 51)) !important;
+    --link-color-visited: light-dark(rgb(255, 71, 9), rgb(255, 118, 72)) !important;
+    --button-primary-bgcolor: light-dark(rgb(255, 71, 9), rgb(255, 118, 72)) !important;
+    --button-primary-hover-bgcolor: light-dark(rgb(255, 102, 51), rgb(255, 102, 51)) !important;
+    --button-primary-active-bgcolor: light-dark(rgb(255, 102, 51), rgb(255, 86, 30)) !important;
+    --toolbarbutton-icon-fill-attention: light-dark(rgb(255, 71, 9), rgb(255, 118, 72)) !important;
+    --download-progress-fill-color: light-dark(rgb(255, 86, 30), rgb(255, 118, 72)) !important;
+    --lwt-tab-line-color: light-dark(rgb(255, 86, 30), rgb(255, 118, 72)) !important;
+    @media (-moz-content-prefers-color-scheme: dark), (prefers-color-scheme: dark) {
+    --color-accent-primary: rgb(255, 102, 51) !important;
+    --color-accent-primary-hover: rgb(255, 118, 72) !important;
+    --color-accent-primary-active: rgb(255, 102, 51) !important;
+    }
+    &[privatebrowsingmode=temporary] {
+        --tabpanel-background-color: linear-gradient(to bottom, #480808 0%,#240103 93%,#200000 97%,#1E0000 100%) !important;
+    }
+
+    .urlbar-input::selection, .searchbar-textbox::selection {
+      background: light-dark(rgb(255, 118, 72), rgb(183, 98, 69)) !important;
+    }
+
+    .bookmark-item:is(toolbarbutton)[dragover="true"][open="true"] {
+      background: light-dark(rgb(255, 118, 72), rgb(183, 98, 69)) !important;
+    }
+
+    .tab-drop-indicator {
+      background: url(chrome://browser/skin/tabbrowser/esr-tab-drag-indicator.svg) no-repeat center !important;
+    }
+
+    #PlacesToolbarDropIndicator {
+      list-style-image: url(chrome://browser/skin/esr-toolbar-drag-indicator.svg) !important;
+    }
+  }
+
+  html.private {
+      --in-content-page-background: linear-gradient(to bottom, #480808 0%,#240103 93%,#200000 97%,#1E0000 100%) !important;
+  }
+
+  #main-window[privatebrowsingmode="temporary"] #TabsToolbar {
+    background-color: #CC190032 !important;
+  }
+}
+
+@media -moz-pref("r3dfox.colors", 3) {
+  :root {
+    --arrowpanel-border-color: light-dark(rgb(255, 60, 206), rgb(160, 60, 135)) !important;
+    --toolbar-field-focus-border-color: light-dark(rgb(255, 40, 201), rgb(160, 60, 135)) !important;
+    --sidebar-border-color: light-dark(rgb(255, 60, 206), rgb(160, 60, 135)) !important;
+    --lwt-toolbar-field-highlight: light-dark(rgb(255, 40, 201), rgb(160, 60, 135)) !important;
+    --newtab-primary-action-background: light-dark(rgb(255, 20, 196), rgb(255, 80, 211)) !important;
+    --newtab-primary-action-background-hover: light-dark(rgb(255, 40, 201), rgb(255, 60, 206)) !important;
+    --newtab-primary-action-background-active: light-dark(rgb(255, 40, 201), rgb(255, 40, 201)) !important;
+    --color-accent-primary: light-dark(rgb(255, 20, 196), rgb(255, 60, 206)) !important;
+    --color-accent-primary-hover: light-dark(rgb(255, 60, 206), rgb(255, 80, 211)) !important;
+    --color-accent-primary-active: light-dark(rgb(255, 60, 206), rgb(255, 60, 206)) !important;
+    --link-color: light-dark(rgb(255, 20, 196), rgb(255, 80, 211)) !important;
+    --link-color-hover: light-dark(rgb(255, 20, 196), rgb(255, 80, 211)) !important;
+    --link-color-active: light-dark(rgb(255, 60, 206), rgb(255, 60, 206)) !important;
+    --link-color-visited: light-dark(rgb(255, 20, 196), rgb(255, 80, 211)) !important;
+    --button-primary-bgcolor: light-dark(rgb(255, 20, 196), rgb(255, 100, 216)) !important;
+    --button-primary-hover-bgcolor: light-dark(rgb(255, 60, 206), rgb(255, 80, 211)) !important;
+    --button-primary-active-bgcolor: light-dark(rgb(255, 60, 206), rgb(255, 60, 206)) !important;
+    --toolbarbutton-icon-fill-attention: light-dark(rgb(255, 20, 196), rgb(255, 80, 211)) !important;
+    --download-progress-fill-color: light-dark(rgb(255, 40, 201), rgb(255, 80, 211)) !important;
+    --lwt-tab-line-color: light-dark(rgb(255, 40, 201), rgb(255, 80, 211)) !important;
+    @media (-moz-content-prefers-color-scheme: dark), (prefers-color-scheme: dark) {
+      --color-accent-primary: rgb(255, 60, 206) !important;
+      --color-accent-primary-hover: rgb(255, 80, 211) !important;
+      --color-accent-primary-active: rgb(255, 60, 206) !important;
+    }
+    &[privatebrowsingmode=temporary] {
+        --tabpanel-background-color: linear-gradient(to bottom, #480808 0%,#240103 93%,#200000 97%,#1E0000 100%) !important;
+    }
+
+    .urlbar-input::selection, .searchbar-textbox::selection {
+      background: light-dark(rgb(255, 80, 211), rgb(160, 60, 135)) !important;
+    }
+
+    .bookmark-item:is(toolbarbutton)[dragover="true"][open="true"] {
+      background: light-dark(rgb(255, 80, 211), rgb(160, 60, 135)) !important;
+    }
+
+    .tab-drop-indicator {
+      background: url(chrome://browser/skin/tabbrowser/plas-tab-drag-indicator.svg) no-repeat center !important;
+    }
+
+    #PlacesToolbarDropIndicator {
+      list-style-image: url(chrome://browser/skin/plas-toolbar-drag-indicator.svg) !important;
+    }
+  }
+
+  html.private {
+      --in-content-page-background: linear-gradient(to bottom, #480808 0%,#240103 93%,#200000 97%,#1E0000 100%) !important;
+  }
+
+  #main-window[privatebrowsingmode="temporary"] #TabsToolbar {
+    background-color: #CC190032 !important;
+  }
+}
+
+@media -moz-pref("r3dfox.colors", 4) {
+  :root {
+    --arrowpanel-border-color: light-dark(rgb(165, 0, 255), rgb(114, 63, 140)) !important;
+    --toolbar-field-focus-border-color: light-dark(rgb(165, 0, 255), rgb(114, 63, 140)) !important;
+    --sidebar-border-color: light-dark(rgb(165, 0, 255), rgb(114, 63, 140)) !important;
+    --lwt-toolbar-field-highlight: light-dark(rgb(165, 0, 255), rgb(114, 63, 140)) !important;
+    --newtab-primary-action-background: light-dark(rgb(165, 0, 255), rgb(185, 103, 229)) !important;
+    --newtab-primary-action-background-hover: light-dark(rgb(185, 103, 229), rgb(156, 87, 193)) !important;
+    --newtab-primary-action-background-active: light-dark(rgb(185, 103, 229), rgb(156, 87, 193)) !important;
+    --color-accent-primary: light-dark(rgb(165, 0, 255), rgb(156, 87, 193)) !important;
+    --color-accent-primary-hover: light-dark(rgb(156, 87, 193), rgb(185, 103, 229)) !important;
+    --color-accent-primary-active: light-dark(rgb(156, 87, 193), rgb(156, 87, 193)) !important;
+    --link-color: light-dark(rgb(165, 0, 255), rgb(185, 103, 229)) !important;
+    --link-color-hover: light-dark(rgb(169, 57, 229), rgb(169, 57, 229)) !important;
+    --link-color-active: light-dark(rgb(185, 103, 229), rgb(165, 0, 255)) !important;
+    --link-color-visited: light-dark(rgb(114, 63, 140), rgb(114, 63, 140)) !important;
+    --button-primary-bgcolor: light-dark(rgb(156, 87, 193), rgb(156, 87, 193)) !important;
+    --button-primary-hover-bgcolor: light-dark(rgb(185, 103, 229), rgb(185, 103, 229)) !important;
+    --button-primary-active-bgcolor: light-dark(rgb(156, 87, 193), rgb(156, 87, 193)) !important;
+    --toolbarbutton-icon-fill-attention: light-dark(rgb(185, 103, 229), rgb(185, 103, 229)) !important;
+    --download-progress-fill-color: light-dark(rgb(165, 0, 255), rgb(185, 103, 229)) !important;
+    --lwt-tab-line-color: light-dark(rgb(165, 0, 255), rgb(156, 87, 193)) !important;
+
+    --tabpanel-background-color: light-dark(rgb(229, 227, 234), rgb(11, 10, 13)) !important;
+    --in-content-page-background: light-dark(rgb(229, 227, 234), rgb(11, 10, 13)) !important;
+    --newtab-background-color: light-dark(rgb(229, 227, 234), rgb(11, 10, 13)) !important;
+    --newtab-background-color-secondary: light-dark(rgba(243, 242, 245, 0.95), rgba(23, 21, 28, 0.95)) !important;
+    --newtab-background-card: light-dark(rgba(243, 242, 245, 0.95), rgba(23, 21, 28, 0.95)) !important;
+    --lwt-sidebar-background-color: light-dark(rgba(243, 242, 245, 0.95), rgba(23, 21, 28, 0.95)) !important;
+
+    --arrowpanel-background: light-dark(rgba(243, 242, 245, 0.95), rgba(11, 10, 13, 0.95)) !important;
+    --toolbar-field-focus-background-color: light-dark(rgba(243, 242, 245, 0.95), rgba(11, 10, 13, 0.95)) !important;
+    --chrome-content-separator-color: light-dark(rgb(243, 242, 245), rgb(11, 10, 13)) !important;
+    @media (-moz-content-prefers-color-scheme: dark), (prefers-color-scheme: dark) {
+      --color-accent-primary: rgb(156, 87, 193) !important;
+      --color-accent-primary-hover: rgb(185, 103, 229) !important;
+      --color-accent-primary-active: rgb(156, 87, 193) !important;
+    }
+
+    @media not -moz-pref("r3dfox.translucent.navbar") {
+      @media (-moz-toolbar-prefers-color-scheme: dark), (prefers-color-scheme: dark) {
+        --toolbar-bgcolor: rgb(23, 21, 28) !important;
+        --toolbar-field-background-color: rgb(11, 10, 13) !important;
+      }
+
+      @media (-moz-toolbar-prefers-color-scheme: light), (prefers-color-scheme: light) {
+        --toolbar-bgcolor: rgb(243, 242, 245) !important;
+        --toolbar-field-background-color: rgb(229, 227, 234) !important;
+      }
+    }
+
+    @-moz-document url("about:home"),url("about:blank"),url("about:newtab") {
+      body { background-color: light-dark(rgb(229, 227, 234), rgb(11, 10, 13)) !important }
+    }
+
+    /*&[privatebrowsingmode=temporary] {
+        --tabpanel-background-color: linear-gradient(to bottom, #480808 0%,#240103 93%,#200000 97%,#1E0000 100%) !important;
+    }*/
+
+    .urlbar-input::selection, .searchbar-textbox::selection {
+      background: light-dark(rgb(185, 103, 229), rgb(114, 63, 140)) !important;
+    }
+
+    .bookmark-item:is(toolbarbutton)[dragover="true"][open="true"] {
+      background: light-dark(rgb(185, 103, 229), rgb(114, 63, 140)) !important;
+    }
+
+    .tab-drop-indicator {
+      background: url(chrome://browser/skin/tabbrowser/ecl-tab-drag-indicator.svg) no-repeat center !important;
+    }
+
+    #PlacesToolbarDropIndicator {
+      list-style-image: url(chrome://browser/skin/ecl-toolbar-drag-indicator.svg) !important;
+    }
+  }
+
+  /*html.private {
+      --in-content-page-background: linear-gradient(to bottom, #480808 0%,#240103 93%,#200000 97%,#1E0000 100%) !important;
+  }*/
+
+  #main-window[privatebrowsingmode="temporary"] #TabsToolbar {
+    background-color: #CC190032 !important;
+  }
+
+  #identity-box[pageproxystate="valid"]:is(.notSecureText, .chromeUI, .extensionPage) > .identity-box-button, #urlbar-label-box {
+    background-color: light-dark(rgb(243, 242, 245), rgb(30, 26, 39)) !important;
+  }
+}
+
+/* Aero fog and other settings */
+
+@media -moz-pref("r3dfox.aero.fog", 1) {
+  @media (-moz-windows-compositor), (-moz-windows-glass) {
+    #navigator-toolbox:not([lwtheme]) {
+      background-color: transparent !important;
+    }
+
+    #titlebar:not([lwtheme]) {
+      appearance: inherit !important;
+      background-image: radial-gradient(ellipse at bottom, rgba(255,255,255,0.8), rgba(255,255,255,0.5) 40%, transparent) !important;
+    }
+
+    :root[sizemode=maximized] {
+      #titlebar:not([lwtheme]) {
+        margin-top: 8px !important;
+      }
+    }
+  }
+
+  @media (-moz-windows-classic) {
+    :root[tabsintitlebar]:not([sizemode=fullscreen]) #TabsToolbar {
+      background-image: linear-gradient(transparent, ActiveCaption) !important;
+      background-size: auto 200% !important;
+    }
+
+    :root[tabsintitlebar]:not([sizemode=fullscreen]) #TabsToolbar:-moz-window-inactive {
+      background-image: linear-gradient(transparent, InactiveCaption) !important;
+    }
+  }
+}
+
+@media -moz-pref("r3dfox.caption.text.color", 1) {
+  #TabsToolbar {
+    color: white !important;
+    --toolbarbutton-icon-fill: currentColor !important;
+  }
+  :root {
+    --lwt-text-color: white !important;
+  }
+  #main-menubar:not([lwtheme]) {
+    color: white !important;
+  }
+  @media (-moz-windows-glass) {
+    #toolbar-menubar {
+      text-shadow: 0 0 .5em black, 0 0 .5em black, 0 1px 0 rgba(0,0,0,.4) !important;
+    }
+  }
+}
+
+@media -moz-pref("r3dfox.caption.text.color", 2) {
+  #TabsToolbar {
+    color: black !important;
+    --toolbarbutton-icon-fill: currentColor !important;
+  }
+  :root {
+    --lwt-text-color: black !important;
+  }
+  #main-menubar:not([lwtheme]) {
+    color: black !important;
+  }
+  @media (-moz-windows-glass) {
+    #toolbar-menubar {
+      text-shadow: 0 0 .5em white, 0 0 .5em white, 0 1px 0 rgba(0,0,0,.4) !important;
+    }
+  }
+}
+
+@media -moz-pref("r3dfox.transparent.menubar") {
+  #main-window #main-menubar {
+    background: none !important;
+  }
+}
+
+@media -moz-pref("r3dfox.translucent.navbar") {
+  @media -moz-pref("r3dfox.aero.fog", 1) {
+    @media (-moz-windows-compositor) {
+      #titlebar:not([lwtheme]) {
+        appearance: auto !important;
+      }
+      #navigator-toolbox {
+        background-image: radial-gradient(ellipse at bottom, rgba(255,255,255,0.8), rgba(255,255,255,0.5) 60%, transparent) !important;
+      }
+      :root[sizemode=maximized] {
+        #titlebar:not([lwtheme]) {
+          margin-top: 0px !important;
+        }
+      }
+    }
+  }
+}
+
+/* Main defines */
+
+@media -moz-pref("r3dfox.customizations.enabled") {
+  @media not -moz-pref("sidebar.verticalTabs") {
+    :root {
+      --align-menu-icons: -2px 6px;
+      --tab-first-last-inline-margin: calc(var(--tab-min-height) / 2);
+      --tab-overflow-clip-margin: var(--tab-first-last-inline-margin);
+      --tab-inset-clip-path: -4px calc(-1 * var(--tab-first-last-inline-margin)) 0px;
+      --tab-scroll-animation-inline-margin: calc(-1 * var(--tab-first-last-inline-margin));
+      --tab-scroll-animation-inline-padding: var(--tab-first-last-inline-margin);
+      --tab-bg-block-margin: 0px;
+      --my-tab-inline-padding: 0px;
+      --tab-separator-offset: 0px;
+      @media not -moz-pref("r3dfox.colors", 4) {
+        --arrowpanel-background: light-dark(rgba(255, 255, 255, 0.95), rgba(66, 65, 77, 0.95)) !important;
+        --toolbar-field-focus-background-color: light-dark(rgba(255, 255, 255, 0.95), rgba(66, 65, 77, 0.95)) !important;
+        /*--chrome-content-separator-color: light-dark(rgb(204, 204, 204), rgb(12, 12, 13)) !important;*/
+      }
+    }
+
+    /* Tab counter at top because it's funny */
+
+    #tabbrowser-tabs {
+        counter-reset: TabCounter;
+    }
+
+    .tabbrowser-tab {
+        counter-increment: TabCounter;
+    }
+
+    #tabbrowser-tabs ~ #alltabs-button::after {
+        content: counter(TabCounter);
+    }
+
+    /* ---------------------------------------- Indents ---------------------------------------- */
+
+    .titlebar-spacer {
+        display: none !important;
+    }
+
+    @media -moz-pref("r3dfox.drag-space.enabled") {
+      :root:has(#toolbar-menubar[autohide="true"])[sizemode="normal"] {
+        --drag-space: 15px;
+          /*#TabsToolbar > :is(.titlebar-buttonbox-container, .titlebar-spacer) {
+          display: none !important;
+        }*/
+      }
+    }
+
+    #TabsToolbar :is(.tabbrowser-tab, .toolbarbutton-1, separator, #personal-bookmarks, #search-container, .accessibility-indicator, .private-browsing-indicator, #private-browsing-indicator-with-label) {
+        margin-top: var(--drag-space, 0px) !important;
+    }
+
+    #tabbrowser-arrowscrollbox {
+        --margin-top: var(--drag-space, 0px) !important;
+    }
+
+    #scrollbutton-up,
+    #scrollbutton-down,
+    spacer[part="overflow-start-indicator"],
+    spacer[part="overflow-end-indicator"] {
+        margin-top: var(--margin-top, revert) !important;
+    }
+
+    #TabsToolbar .toolbarbutton-1 {
+      padding-right: 8px !important;
+    }
+
+    :root:not([privatebrowsingmode], [firefoxviewhidden]) :is(toolbarbutton, toolbarpaletteitem) + #tabbrowser-tabs, :root[privatebrowsingmode]:not([firefoxviewhidden]) :is(toolbarbutton:not(#firefox-view-button), toolbarpaletteitem:not(#wrapper-firefox-view-button)) + #tabbrowser-tabs {
+      border-inline-start: 0px solid !important;
+      padding-inline-start: 0px !important;
+      margin-inline-start: 0px !important;
+    }
+
+    #TabsToolbar-customization-target > :is(toolbarbutton, toolbaritem):first-child,
+    #TabsToolbar-customization-target > toolbarpaletteitem:first-child > :is(toolbarbutton, toolbaritem) {
+        margin-inline-start: calc(var(--toolbar-start-end-padding) - var(--toolbarbutton-outer-padding)) !important;
+    }
+
+    #TabsToolbar-customization-target > :is(toolbarbutton, toolbaritem):last-child,
+    #TabsToolbar-customization-target > toolbarpaletteitem:last-child > :is(toolbarbutton, toolbaritem) {
+        margin-inline-end: calc(var(--toolbar-start-end-padding) - var(--toolbarbutton-outer-padding)) !important;
+    }
+
+    #tabbrowser-tabs:not([overflow]) .tabbrowser-tab:nth-child(1 of .tabbrowser-tab:not([pinned], [hidden])) {
+        margin-inline-start: 0px !important;
+    }
+
+    #tabbrowser-tabs:not([overflow]) .tabbrowser-tab:nth-child(1 of .tabbrowser-tab:not([hidden])),
+    #tabbrowser-tabs[overflow] .tabbrowser-tab:nth-child(1 of .tabbrowser-tab:not([pinned], [hidden])),
+    #tabbrowser-tabs[overflow][haspinnedtabs] {
+        margin-inline-start: var(--tab-first-last-inline-margin) !important;
+    }
+
+    .tabbrowser-tab:nth-last-child(1 of .tabbrowser-tab:not([hidden])) {
+        margin-inline-end: var(--tab-first-last-inline-margin) !important;
+    }
+
+    #tabs-newtab-button {
+        margin-inline-start: calc(-1 * var(--tab-first-last-inline-margin) / 2) !important;
+    }
+
+    .toolbarbutton-1:has(+ #tabbrowser-tabs:not([overflow])),
+    .toolbarbutton-1:has(+ #tabbrowser-tabs[overflow][haspinnedtabs]) {
+        margin-inline-end: calc(-1 * var(--tab-first-last-inline-margin) / 2 + 1px) !important;
+        z-index: 0 !important;
+    }
+
+    /* ---------------------------------------- Tabs ---------------------------------------- */
+
+    :root {
+      --inactive-titlebar-opacity: 1 !important;
+    }
+
+    .tabbrowser-tab[visuallyselected] {
+      color: var(--toolbar-color) !important;
+
+      .tab-background {
+        background-color: var(--toolbar-bgcolor) !important;
+      }
+    }
+
+    :root {
+        --tab-min-height: 32px !important;
+        --tabstrip-min-height: unset !important;
+
+      #nav-bar {
+        height: 32px !important;
+      }
+    }
+
+    :root[uidensity="compact"] {
+        --tab-min-height: 24px !important;
+
+      .tab-label-container {
+        #tabbrowser-tabs:not([secondarytext-unsupported], [orient=vertical]) & {
+          height: 2em !important;
+        }
+      }
+
+      #nav-bar {
+        height: 27px !important;
+      }
+
+      #urlbar-container {
+        min-height: 20px !important; height: 28px !important;
+      }
+    }
+
+    :root[uidensity="touch"] {
+        --tab-min-height: 40px !important;
+    }
+
+    @media not (prefers-contrast) {
+        .titlebar-buttonbox-container {
+            align-items: flex-start !important;
+        }
+
+        .titlebar-button:not(.titlebar-close):hover {
+            background-color: var(--toolbarbutton-hover-background) !important;
+        }
+
+        .titlebar-button:not(.titlebar-close):hover:active {
+            background-color: var(--toolbarbutton-active-background) !important;
+        }
+    }
+
+    .tabbrowser-tab {
+      --tab-label-mask-size: 0px !important;
+      overflow-clip-margin: var(--tab-min-height) !important;
+      padding-inline: var(--my-tab-inline-padding) !important;
+
+      &[visuallyselected] {
+        color: var(--toolbar-color) !important;
+        position: relative;
+        z-index: 2 !important;
+
+        .tab-background {
+          --gradient-background-image: linear-gradient(var(--toolbar-bgcolor), var(--toolbar-bgcolor));
+          --gradient-background-attachment: fixed;
+          --gradient-background-size: auto auto;
+          --gradient-background-position: left top;
+          --gradient-background-repeat: no-repeat;
+
+          --amo-background-image-1: var(--lwt-header-image, none);
+          --amo-background-attachment-1: fixed;
+          --amo-background-size-1: auto auto;
+          --amo-background-position-1: right top;
+          --amo-background-repeat-1: no-repeat;
+
+          --amo-background-image-2: var(--lwt-additional-images, none);
+          --amo-background-attachment-2: fixed, fixed, fixed;
+          --amo-background-size-2: auto auto, auto auto, auto auto;
+          --amo-background-position-2: var(--lwt-background-alignment);
+          --amo-background-repeat-2: var(--lwt-background-tiling);
+
+          background-color: transparent !important;
+          background-image: var(--gradient-background-image), var(--amo-background-image-1), var(--amo-background-image-2) !important;
+          background-attachment: var(--gradient-background-attachment), var(--amo-background-attachment-1), var(--amo-background-attachment-2) !important;
+          background-size: var(--gradient-background-size), var(--amo-background-size-1), var(--amo-background-size-2) !important;
+          background-position: var(--gradient-background-position), var(--amo-background-position-1), var(--amo-background-position-2) !important;
+          background-repeat: var(--gradient-background-repeat), var(--amo-background-repeat-1), var(--amo-background-repeat-2) !important;
+        }
+      }
+
+      &:not([visuallyselected]) {
+        color: inherit !important;
+
+        &:hover .tab-background {
+          background-color: var(--toolbarbutton-hover-background) !important;
+        }
+
+        &[multiselected] .tab-background {
+          background-color: var(--toolbarbutton-active-background) !important;
+        }
+
+        #tabbrowser-tabs[movingtab] &{
+          z-index: 0 !important;
+        }
+      }
+
+      .tab-background {
+        mask-image: url("r3d_left_corner.svg"), url("r3d_center.svg"), url("r3d_right_corner.svg");
+        mask-size: auto 100%, calc(100% - var(--tab-min-height) * 2) 100%, auto 100%;
+        mask-position: left center, center center, right center;
+        mask-repeat: no-repeat, no-repeat, no-repeat;
+        box-shadow: none !important;
+        outline: none !important;
+        margin-block: var(--tab-bg-block-margin) !important;
+        margin-inline: calc(-1 * (var(--tab-min-height) / 2)) !important;
+        border-radius: 0px !important;
+        pointer-events: none !important;
+      }
+
+      &[pinned] .tab-content {
+        padding-inline: calc((var(--tab-min-height) - 16px) / 2 + var(--pinned-tabs-width-offset, 0px)) !important;
+      }
+
+      &:not([pinned]) .tab-content {
+        padding-inline: 10px !important;
+      }
+    }
+
+    #tabbrowser-tabs[overflow] .tab-drop-indicator {
+      inset-inline-start: var(--tab-first-last-inline-margin) !important;
+    }
+
+    .tabbrowser-tab[pending] .tab-icon-image {
+      filter: saturate(0) !important;
+    }
+
+    .tab-close-button {
+      width: 16px !important;
+      height: 16px !important;
+      border-radius: 50% !important;
+      padding: 2px !important;
+      margin: 0px !important;
+    }
+
+    .tab-close-button:hover {
+      background-color: var(--toolbarbutton-hover-background) !important;
+    }
+
+    .tab-close-button:hover:active {
+      background-color: var(--toolbarbutton-active-background) !important;
+    }
+
+      /* -------------------- Selected Tab Indicator -------------------- */
+
+    @media -moz-pref("r3dfox.colors", 0) {
+      :root {
+        --lwt-tab-line-color: light-dark(var(--color-blue-50), var(--color-cyan-50)) !important;
+        &[privatebrowsingmode=temporary] {
+          --lwt-tab-line-color: #9400FF !important;
+        }
+      }
+    }
+
+    /* adds the little colored strip on top of the selected tab */
+    .tab-background:is([selected], [multiselected]) {
+      box-shadow: inset 0 2px 0 var(--lwt-tab-line-color) !important;
+      border: 0 !important;
+      outline: none !important;
+    }
+
+    /* special handling for mozilla containers */
+    tab[class*="identity-color"] {
+      background-image: linear-gradient(var(--identity-tab-color, white), var(--identity-tab-color, white));
+      background-size: 100% 2px;
+      background-position: bottom center;
+      background-repeat: no-repeat;
+      border: 0 !important;
+      outline: none !important;
+    }
+
+    /* override the built in container colors */
+    tab[class*="identity-color"][selected="true"]>.tab-stack>.tab-background>.tab-context-line {
+      height: 0 !important;
+    }
+
+    /* replace with our own container border */
+    tab[class*="identity-color"][selected="true"]>.tab-stack>.tab-background:is([selected], [multiselected]) {
+      box-shadow: inset 0 2px var(--identity-tab-color, white) !important;
+      background-image: linear-gradient(var(--identity-tab-color, white), var(--identity-tab-color, white));
+      background-size: 100% 2px;
+      background-position: bottom center;
+      background-repeat: no-repeat;
+      border: 0 !important;
+      outline: none !important;
+    }
+  }
+}
+
+/* Backgrounds needs to override all */
+
+@media -moz-pref("r3dfox.backgrounds.enabled") {
+  .tabs-alltabs-button > :is(.toolbarbutton-icon, .toolbarbutton-text, .toolbarbutton-badge-stack) {
+    border-radius: 4px 0px 0px 4px !important;
+  }
+
+  #alltabs-button::after {
+    padding: 4px 4px 4px 0px !important;
+
+    @media (-moz-platform: windows-winxp), (-moz-windows-classic) {
+      padding: 6px 5px 5px 0px !important;
+    }
+
+    border-radius: 0px 4px 4px 0px !important;
+    background-clip: padding-box !important;
+  }
+
+  @media (-moz-toolbar-prefers-color-scheme: dark), (prefers-color-scheme: dark) {
+    #TabsToolbar {
+      color: white !important;
+      --toolbarbutton-icon-fill: currentColor !important;
+    }
+
+    :root {
+      --lwt-text-color: white !important;
+    }
+
+    @media (not -moz-pref("r3dfox.transparent.menubar")) {
+      #main-window #main-menubar {
+        background-color: rgba(23, 21, 28, 0.33) !Important;
+      }
+
+      #toolbar-menubar {
+        text-shadow: none !important;
+      }
+
+      #main-menubar:not([lwtheme]) {
+        color: white !important;
+      }
+
+      #main-menubar > menu {
+        &[_moz-menuactive] {
+          background-color: hsla(0,0%,100%,.22) !important;
+        }
+      }
+    }
+
+    #TabsToolbar .toolbarbutton-1 {
+      > :is(.toolbarbutton-icon, .toolbarbutton-text, .toolbarbutton-badge-stack) {
+        background-color: rgba(23, 21, 28, 0.33);
+      }
+      &:hover > :is(.toolbarbutton-icon, .toolbarbutton-text, .toolbarbutton-badge-stack) {
+        background-color: rgba(23, 21, 28, 0.33);
+        box-shadow: inset 0 0 0 99999px hsla(60,15%,38%,.22);
+      }
+    }
+
+    #alltabs-button::after {
+      background-color: rgba(23, 21, 28, 0.33);
+    }
+
+    .tabbrowser-tab { 
+      &:not([visuallyselected]) {
+        .tab-background { background-color: rgba(23, 21, 28, 0.33) !important; }
+        &:hover .tab-background { background-color: rgba(23, 21, 28, 0.66) !important; }
+        &[multiselected] .tab-background { background-color: rgba(23, 21, 28, 0.5) !important; }
+        /*&:hover .tab-background { box-shadow: inset 0 0 0 99999px hsla(60,15%,38%,.22) !important; }
+        &[multiselected] .tab-background { box-shadow: box-shadow: inset 0 0 0 99999px hsla(0,0%,38%,.11) !important; }*/
+      }
+    }
+  }
+
+  @media (-moz-toolbar-prefers-color-scheme: light), (prefers-color-scheme: light) {
+    #TabsToolbar {
+      color: black !important;
+      --toolbarbutton-icon-fill: currentColor !important;
+    }
+
+    :root {
+      --lwt-text-color: black !important;
+    }
+
+    @media (not -moz-pref("r3dfox.transparent.menubar")) {
+      #main-window #main-menubar {
+        background-color: rgba(243, 242, 245, 0.33) !Important;
+      }
+
+      #toolbar-menubar {
+        text-shadow: none !important;
+      }
+
+      #main-menubar:not([lwtheme]) {
+        color: black !important;
+      }
+
+      #main-menubar > menu {
+        &[_moz-menuactive] {
+          background-color: hsla(0,0%,0%,.22) !important;
+        }
+      }
+    }
+
+    #TabsToolbar .toolbarbutton-1 {
+      > :is(.toolbarbutton-icon, .toolbarbutton-text, .toolbarbutton-badge-stack) {
+        background-color: rgba(243, 242, 245, 0.33);
+      }
+      &:hover > :is(.toolbarbutton-icon, .toolbarbutton-text, .toolbarbutton-badge-stack) {
+        background-color: rgba(243, 242, 245, 0.33);
+        box-shadow: inset 0 0 0 99999px hsla(60,60%,92%,.24);
+      }
+    }
+
+    #alltabs-button::after {
+      background-color: rgba(243, 242, 245, 0.33);
+    }
+
+    .tabbrowser-tab { 
+      &:not([visuallyselected]) {
+        .tab-background { background-color: rgba(243, 242, 245, 0.33) !important; }
+        &:hover .tab-background { background-color: rgba(243, 242, 245, 0.66) !important; }
+        &[multiselected] .tab-background { background-color: rgba(243, 242, 245, 0.5) !important; }
+        /*&:hover .tab-background { box-shadow: inset 0 0 0 99999px hsla(60,60%,92%,.24) !important; }
+        &[multiselected] .tab-background { box-shadow: inset 0 0 0 99999px hsla(0,0%,100%,.48) !important; }*/
+      }
+    }
+  }
+}

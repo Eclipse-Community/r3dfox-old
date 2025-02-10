@@ -61,6 +61,10 @@ settings-category-labs =
     .tooltiptext = { -firefoxlabs-brand-name }
 pane-experimental-description3 = Give our experimental features a try! They’re in development and evolving, which could impact how { -brand-short-name } works.
 
+pane-r3dfox-title = r3dfox configurations
+category-r3dfox =
+    .tooltiptext = { pane-privacy-title }
+
 pane-experimental-reset =
   .label = Restore Defaults
   .accesskey = R
@@ -130,7 +134,87 @@ search-results-empty-message2 =
 
 search-results-help-link = Need help? Visit <a data-l10n-name="url">Mozilla Support</a>
 
-## General Section
+## General Section - r3dfox
+
+r3dfox-title = r3dfox specific options
+
+r3dfox-visual-header = Visual configurations
+
+r3dfox-native-checkbox =
+    .label = Use native styles
+
+r3dfox-native-checkbox-desc = This controls whether the scrollbar, checkboxes, and other elements use their native system counterparts or their non-native browser themed style.
+
+r3dfox-native-scroll = Scrollbar type
+
+r3dfox-fake-scroll-type = Non-native scrollbar theme
+
+r3dfox-win-theme-type = Windows version theme override (requires restart)
+
+r3dfox-colors = r3dfox color schemes
+
+r3dfox-fog-type = Caption bar/Aero fog style
+
+r3dfox-caption-text = Override caption/window text color
+
+r3dfox-theme =
+    .label = Use r3dfox theme styles
+
+r3dfox-drag =
+    .label = Enable drag space on r3dfox theme styles
+
+r3dfox-backgrounds =
+    .label = Backgrounds for tabs and other toolbar items
+
+r3dfox-menubar =
+    .label = Transparent menubar
+
+r3dfox-navbar =
+    .label = Translucent design
+
+r3dfox-functional-header = Functionality configurations
+
+r3dfox-one-offs =
+    .label = Instant one off searches
+
+r3dfox-view-image =
+    .label = Restore classic View Image context menu option
+
+r3dfox-hover-preview =
+    .label = Tab hover preview
+
+r3dfox-switch-to-tab =
+    .label = Reverse urlbar switch to tab behavior
+
+r3dfox-switch-to-tab-desc = This should reverse the behavior of switching to an already open tab in the urlbar (require Shift/Ctrl/Alt to switch to open tab instead of preventing it), however it's a bit buggy currently and just disables it.
+
+r3dfox-advanced-header = Advanced configurations
+
+r3dfox-accessibility = Accessibility services
+
+r3dfox-accessibility-desc = Recommended to disable if you do not need them for enhanced security and performance.
+
+r3dfox-csp =
+    .label = Disable Content Security Policy (CSP)
+
+r3dfox-csp-desc = CSP is a security feature, improperly designed websites may require disabling CSP. Not recommended unless you know what you are doing.
+
+r3dfox-dwrite =
+    .label = Use Skia GDI font rendering (BETA)
+
+r3dfox-dwrite-desc = Disable DirectWrite font rendering. Not recommended unless you know what you are doing. Currently buggy. https://github.com/Eclipse-Community/r3dfox/issues/290
+
+r3dfox-hsts =
+    .label = Disable HTTP Strict Transport Security (HSTS)
+
+r3dfox-hsts-desc = HSTS is a security feature, websites with missing, expired, or wrong certificates may require disabling HSTS to access. Not recommended unless you know what you are doing.
+
+r3dfox-e10s =
+    .label = Disable content multiprocess (e10s) (BETA)
+
+r3dfox-e10s-desc = Disables e10s/electrolysis content multiprocess. There are still multiple processes from other browser components with this enabled. Not recommended unless you know what you are doing.
+
+## General Section - Startup
 
 startup-header = Startup
 

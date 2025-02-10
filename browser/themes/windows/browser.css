@@ -7,6 +7,20 @@
 
 @namespace html url("http://www.w3.org/1999/xhtml");
 
+:root {
+  @media -moz-pref("r3dfox.translucent.navbar") {
+    @media (-moz-toolbar-prefers-color-scheme: dark), (prefers-color-scheme: dark) {
+      --toolbar-bgcolor: rgba(23, 21, 28, 0.66) !important;
+      --toolbar-field-background-color: rgba(11, 10, 13, 0.33) !important;
+    }
+
+    @media (-moz-toolbar-prefers-color-scheme: light), (prefers-color-scheme: light) {
+      --toolbar-bgcolor: rgb(243, 242, 245, 0.66) !important;
+      --toolbar-field-background-color: rgb(229, 227, 234, 0.33) !important;
+    }
+  }
+}
+
 #main-menubar > menu {
   appearance: none;
   color: inherit;

@@ -308,7 +308,7 @@ nsresult nsTextControlFrame::EnsureEditorInitialized() {
      public:
       explicit EnsureSetFocus(nsTextControlFrame* aFrame) : mFrame(aFrame) {}
       ~EnsureSetFocus() {
-        if (nsContentUtils::IsFocusedContent(mFrame->GetContent()))
+        if (nsFocusManager::GetFocusedElementStatic() == (mFrame->GetContent()))
           mFrame->SetFocus(true, false);
       }
 

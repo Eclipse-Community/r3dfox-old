@@ -55,12 +55,12 @@ FRAME_CLASSES = [
     Frame("nsColorControlFrame", "ColorControl", REPLACED | LEAF),
     Frame("nsColumnSetFrame", "ColumnSet", COMMON),
     Frame("ColumnSetWrapperFrame", "ColumnSetWrapper", BLOCK),
-    Frame("nsComboboxControlFrame", "ComboboxControl", BLOCK | REPLACED_WITH_BLOCK),
+    Frame("nsComboboxControlFrame", "ComboboxControl", BLOCK | REPLACED),
     # FIXME(emilio, bug 1362907): Revisit these after that bug, this is the
     # only frame that has ReplacedContainsBlock but not Replaced, which is
     # sketchy.
     Frame(
-        "nsComboboxDisplayFrame", "ComboboxDisplay", REPLACED_WITH_BLOCK - {"Replaced"}
+        "nsComboboxDisplayFrame", "ComboboxDisplay", REPLACED - {"Replaced"}
     ),
     Frame("nsContinuingTextFrame", "Text", TEXT),
     Frame("nsDateTimeControlFrame", "DateTimeControl", REPLACED),

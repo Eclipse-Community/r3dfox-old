@@ -3503,7 +3503,7 @@ nsCSSFrameConstructor::FindHTMLData(const Element& aElement,
 
   if (aElement.IsInNativeAnonymousSubtree() &&
       aElement.NodeInfo()->NameAtom() == nsGkAtoms::label &&
-      static_cast<nsFileControlFrame*>(do_QueryFrame(aParentFrame))) {
+      aParentFrame->IsFileControlFrame()) {
     static constexpr FrameConstructionData sFileLabelData(
         NS_NewFileControlLabelFrame);
     return &sFileLabelData;

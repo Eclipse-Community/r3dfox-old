@@ -125,7 +125,7 @@ class nsNativeThemeWin final : public Theme {
                                     bool aIsClassic);
   void DrawThemedProgressMeter(nsIFrame* aFrame, StyleAppearance aAppearance,
                                HANDLE aTheme, HDC aHdc, int aPart, int aState,
-                               RECT* aWidgetRect, RECT* aClipRect);
+                               RECT* aWidgetRect, RECT* aClipRect, gfxFloat aAppUnits);
 
   [[nodiscard]] LayoutDeviceIntMargin GetCachedWidgetBorder(
       HANDLE aTheme, UXThemeClass aThemeClass, StyleAppearance aAppearance,

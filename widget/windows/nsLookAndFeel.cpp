@@ -183,8 +183,10 @@ void nsLookAndFeel::EnsureCommandButtonMetrics() {
   sCommandButtonMetrics[1].cy = sCommandButtonMetrics[2].cy =
       sCommandButtonMetrics[0].cy;
 
-  // Trigger a refresh on the next layout.
-  sTitlebarInfoPopulatedAero = sTitlebarInfoPopulatedThemed = false;
+  // Use system metrics for pre-vista, otherwise trigger a
+  // refresh on the next layout.
+  sTitlebarInfoPopulatedAero = sTitlebarInfoPopulatedThemed =
+    !IsVistaOrLater();
 }
 
 // static
@@ -1386,7 +1388,7 @@ void nsLookAndFeel::EnsureInit() {
 // static
 void nsLookAndFeel::UpdateNativeThemeInfo() {
   // Trigger a refresh of themed button metrics if needed
-  sTitlebarInfoPopulatedThemed = false;
+  sTitlebarInfoPopulatedThemed = !IsVistaOrLater();
 
   bool mHighContrastOn = false;
   sIsDefaultWindowsTheme = false;

@@ -7,6 +7,21 @@
 
 @namespace html url("http://www.w3.org/1999/xhtml");
 
+:root {
+  --sidebar-border-color: ThreeDLightShadow;
+  @media -moz-pref("r3dfox.translucent.navbar") {
+    @media (-moz-content-prefers-color-scheme: dark),(-moz-toolbar-prefers-color-scheme: dark), (prefers-color-scheme: dark) {
+      --toolbar-bgcolor: rgba(0, 0, 0, 0.66) !important;
+      --toolbar-field-background-color: rgba(28, 27, 34, 0.33) !important;
+    }
+
+    @media (-moz-content-prefers-color-scheme: light),(-moz-toolbar-prefers-color-scheme: light), (prefers-color-scheme: light) {
+      --toolbar-bgcolor: rgb(249, 249, 251, 0.66) !important;
+      --toolbar-field-background-color: rgb(240, 240, 244, 0.33) !important;
+    }
+  }
+}
+
 #menubar-items {
   flex-direction: column; /* for flex hack */
   justify-content: normal; /* align the menubar to the top also in customize mode */

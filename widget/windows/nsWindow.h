@@ -632,6 +632,7 @@ class nsWindow final : public nsBaseWidget {
   static bool IsTopLevelMouseExit(HWND aWnd);
   LayoutDeviceIntRegion GetRegionToPaint(bool aForceFullRepaint, PAINTSTRUCT ps,
                                          HDC aDC);
+  static void ActivateOtherWindowHelper(HWND aWnd);
   nsIWidgetListener* GetPaintListener();
 
   void AddWindowOverlayWebRenderCommands(
@@ -688,6 +689,7 @@ class nsWindow final : public nsBaseWidget {
   static bool sJustGotDeactivate;
   static bool sJustGotActivate;
   static bool sIsInMouseCapture;
+//  static int sTrimOnMinimize;
   static bool sIsRestoringSession;
 
   // Message postponement hack. See the definition-site of

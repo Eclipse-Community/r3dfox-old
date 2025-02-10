@@ -559,6 +559,8 @@ pub enum Platform {
     Macos,
     /// Matches any Windows version.
     Windows,
+    /// Matches only Windows XP.
+    WindowsWinXP,
 }
 
 fn eval_moz_platform(_: &Context, query_value: Option<Platform>) -> bool {

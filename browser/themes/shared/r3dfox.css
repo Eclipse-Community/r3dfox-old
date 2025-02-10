@@ -184,6 +184,19 @@
   }
 }
 
+@media (-moz-bool-pref: "r3dfox.caption.text.color") {
+  #TabsToolbar {
+    color: white !important;
+    --toolbarbutton-icon-fill: currentColor !important;
+  }
+  :root {
+    --lwt-text-color: white !important;
+  }
+  #main-menubar:not([lwtheme]) {
+    color: white !important;
+  }
+}
+
 @media (-moz-bool-pref: "r3dfox.force.transparency") {
   :root {
     --lwt-additional-images: none !important;

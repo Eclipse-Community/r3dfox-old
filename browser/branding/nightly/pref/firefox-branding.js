@@ -44,4 +44,4 @@ pref("devtools.selfxss.count", 5);
 
 // Plasmafox customizations
 pref("r3dfox.browser.plasmafox", true);
-pref("r3dfox.colors.plasmafox", true);
+pref("r3dfox.colors", 3);

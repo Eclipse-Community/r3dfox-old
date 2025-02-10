@@ -1670,6 +1670,13 @@ LayoutDeviceIntSize nsNativeThemeWin::GetMinimumWidgetSize(
       return result;
     }
 
+    case StyleAppearance::SpinnerUpbutton:
+    case StyleAppearance::SpinnerDownbutton: {
+        LayoutDeviceIntSize result(16, 9);
+        ScaleForFrameDPI(&result, aFrame);
+        return result;
+    }
+
     case StyleAppearance::Separator: {
       // that's 2px left margin, 2px right margin and 2px separator
       // (the margin is drawn as part of the separator, though)

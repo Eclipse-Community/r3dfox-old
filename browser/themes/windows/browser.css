@@ -200,16 +200,6 @@
   }
 }
 
-/* add extra margin for unmaximized windows
-   on Win XP Luna themes to look consistent */
-@media not (-moz-windows-classic) {
-  @media (-moz-platform: windows-xp) {
-    :root[tabsintitlebar]:not([sizemode="maximized"]) .titlebar-buttonbox-container {
-      margin-top: 4px;
-    }
-  }
-}
-
 .titlebar-buttonbox {
   /* For all Windows configurations except for Windows Aero and Windows Aero Basic,
    * the default -moz-default-appearance of -moz-window-button-box and
@@ -234,6 +224,16 @@
   /* Preserve window control buttons position at the top of the button box. */
   .titlebar-buttonbox-container {
     align-items: flex-start;
+  }
+}
+
+/* add extra margin for unmaximized windows
+   on Win XP Luna themes to look consistent */
+@media not (-moz-windows-classic) {
+  @media (-moz-platform: windows-xp) {
+    :root[tabsintitlebar]:not([sizemode="maximized"]) .titlebar-buttonbox-container {
+      margin-top: 4px;
+    }
   }
 }
 

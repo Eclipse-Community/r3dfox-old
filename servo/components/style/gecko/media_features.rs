@@ -559,7 +559,9 @@ pub enum Platform {
     Macos,
     /// Matches any Windows version.
     Windows,
-    /// Matches only Windows 7.
+    /// Matches only Windows XP.
+    WindowsWinXP,
+    /// Matches only Windows 7 (and Vista).
     WindowsWin7,
     /// Matches only Windows 8.
     WindowsWin8,

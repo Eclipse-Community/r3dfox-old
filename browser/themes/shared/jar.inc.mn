@@ -105,6 +105,10 @@
   skin/classic/browser/tracking-protection-disabled.svg               (../shared/identity-block/tracking-protection-disabled.svg)
   skin/classic/browser/tracking-protection-active.svg                 (../shared/identity-block/tracking-protection-active.svg)
 
+  skin/classic/browser/r3d-toolbar-drag-indicator.svg                 (../shared/r3d-toolbar-drag-indicator.svg)
+  skin/classic/browser/ecl-toolbar-drag-indicator.svg                 (../shared/ecl-toolbar-drag-indicator.svg)
+  skin/classic/browser/esr-toolbar-drag-indicator.svg                 (../shared/esr-toolbar-drag-indicator.svg)
+  skin/classic/browser/plas-toolbar-drag-indicator.svg                (../shared/plas-toolbar-drag-indicator.svg)
   skin/classic/browser/toolbar-drag-indicator.svg                     (../shared/toolbar-drag-indicator.svg)
 
   skin/classic/browser/protections/resolved-breach.svg         (../shared/protections/resolved-breach.svg)
@@ -115,6 +119,7 @@
   skin/classic/browser/preferences/android-menu.svg            (../shared/preferences/android-menu.svg)
   skin/classic/browser/preferences/category-general.svg        (../shared/preferences/category-general.svg)
   skin/classic/browser/preferences/category-privacy-security.svg    (../shared/preferences/category-privacy-security.svg)
+  skin/classic/browser/preferences/category-r3dfox.svg         (../shared/preferences/category-r3dfox.svg)
   skin/classic/browser/preferences/category-search.svg         (../shared/preferences/category-search.svg)
   skin/classic/browser/preferences/category-sync.svg           (../shared/preferences/category-sync.svg)
   skin/classic/browser/preferences/containers.css              (../shared/preferences/containers.css)
@@ -237,6 +242,10 @@
   skin/classic/browser/tabbrowser/fullscreen-and-pointerlock.css (../shared/tabbrowser/fullscreen-and-pointerlock.css)
   skin/classic/browser/tabbrowser/loading.svg                  (../shared/tabbrowser/loading.svg)
   skin/classic/browser/tabbrowser/loading-burst.svg            (../shared/tabbrowser/loading-burst.svg)
+  skin/classic/browser/tabbrowser/r3d-tab-drag-indicator.svg   (../shared/tabbrowser/r3d-tab-drag-indicator.svg)
+  skin/classic/browser/tabbrowser/ecl-tab-drag-indicator.svg   (../shared/tabbrowser/ecl-tab-drag-indicator.svg)
+  skin/classic/browser/tabbrowser/esr-tab-drag-indicator.svg   (../shared/tabbrowser/esr-tab-drag-indicator.svg)
+  skin/classic/browser/tabbrowser/plas-tab-drag-indicator.svg  (../shared/tabbrowser/plas-tab-drag-indicator.svg)
   skin/classic/browser/tabbrowser/tab-audio-playing-small.svg  (../shared/tabbrowser/tab-audio-playing-small.svg)
   skin/classic/browser/tabbrowser/tab-audio-muted-small.svg    (../shared/tabbrowser/tab-audio-muted-small.svg)
   skin/classic/browser/tabbrowser/tab-audio-blocked-small.svg  (../shared/tabbrowser/tab-audio-blocked-small.svg)
@@ -294,3 +303,10 @@
   skin/classic/browser/weather/night-partly-cloudy-with-showers.svg (../shared/weather/night-partly-cloudy-with-showers.svg)
   skin/classic/browser/weather/night-partly-cloudy-with-thunderstorms.svg (../shared/weather/night-partly-cloudy-with-thunderstorms.svg)
   skin/classic/browser/weather/night-mostly-cloudy-with-flurries.svg (../shared/weather/night-mostly-cloudy-with-flurries.svg)
+
+browser.jar:
+%  skin browser classic/1.0 %skin/classic/browser/
+ skin/classic/browser/r3dfox.css     (../shared/r3dfox.css)
+ skin/classic/browser/r3d_center.svg            (../shared/icons/r3d_center.svg)
+ skin/classic/browser/r3d_left_corner.svg            (../shared/icons/r3d_left_corner.svg)
+ skin/classic/browser/r3d_right_corner.svg            (../shared/icons/r3d_right_corner.svg) 

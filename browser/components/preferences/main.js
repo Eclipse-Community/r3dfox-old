@@ -61,6 +61,10 @@ Preferences.addAll([
   { id: "browser.download.folderList", type: "int" },
   { id: "browser.download.dir", type: "file" },
 
+  /* r3dfox preferences */
+
+  { id: "browser.tabs.hoverPreview.enabled", type: "bool" },
+
   /* Tab preferences
   Preferences:
 
@@ -89,7 +93,6 @@ Preferences.addAll([
   { id: "browser.warnOnQuitShortcut", type: "bool" },
   { id: "browser.tabs.warnOnOpen", type: "bool" },
   { id: "browser.ctrlTab.sortByRecentlyUsed", type: "bool" },
-  { id: "browser.tabs.hoverPreview.enabled", type: "bool" },
   { id: "browser.tabs.hoverPreview.showThumbnails", type: "bool" },
   { id: "browser.tabs.groups.smart.userEnabled", type: "bool" },
 

@@ -6863,6 +6863,12 @@
   value: 0
   mirror: once
 
+# Bool to enable/disable DWrite
+- name: gfx.dwrite.enabled
+  type: bool
+  value: true
+  mirror: always
+
 # Rate by which the frame rate is divided. I.e. at a number higher than 1 we
 # will only refresh every <x> frames.
 - name: gfx.display.frame-rate-divisor

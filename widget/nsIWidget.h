@@ -906,9 +906,7 @@ class nsIWidget : public nsISupports {
   }
 
   /**
-   * Set the native background color for this widget.
-   *
-   * Deprecated. Currently only implemented for iOS. (See bug 1901896.)
+   * Set the background color for this widget
    *
    * @param aColor the new background color
    */
@@ -1159,6 +1157,14 @@ class nsIWidget : public nsISupports {
    * Always called on the main thread.
    */
   virtual void PrepareWindowEffects() = 0;
+
+  /**
+   * Called on the main thread at the end of WebRender display list building.
+   */
+  virtual void AddWindowOverlayWebRenderCommands(
+      mozilla::layers::WebRenderBridgeChild* aWrBridge,
+      mozilla::wr::DisplayListBuilder& aBuilder,
+      mozilla::wr::IpcResourceUpdateQueue& aResources) {}
 
   /**
    * Called when Gecko knows which themed widgets exist in this window.

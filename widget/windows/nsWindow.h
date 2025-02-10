@@ -234,6 +234,7 @@ class nsWindow final : public nsBaseWidget {
   [[nodiscard]] nsresult GetRestoredBounds(LayoutDeviceIntRect& aRect) override;
   LayoutDeviceIntRect GetClientBounds() override;
   LayoutDeviceIntPoint GetClientOffset() override;
+  void SetBackgroundColor(const nscolor& aColor) override;
   void SetCursor(const Cursor&) override;
   bool PrepareForFullscreenTransition(nsISupports** aData) override;
   void PerformFullscreenTransition(FullscreenTransitionStage aStage,
@@ -298,11 +299,14 @@ class nsWindow final : public nsBaseWidget {
   TextEventDispatcherListener* GetNativeTextEventDispatcherListener() override;
   void SetTransparencyMode(TransparencyMode aMode) override;
   TransparencyMode GetTransparencyMode() override;
+  void UpdateOpaqueRegion(const LayoutDeviceIntRegion& aOpaqueRegion) override;
   nsresult SetNonClientMargins(const LayoutDeviceIntMargin&) override;
   void SetResizeMargin(mozilla::LayoutDeviceIntCoord aResizeMargin) override;
   void UpdateWindowDraggingRegion(
       const LayoutDeviceIntRegion& aRegion) override;
 
+  void UpdateThemeGeometries(
+      const nsTArray<ThemeGeometry>& aThemeGeometries) override;
   uint32_t GetMaxTouchPoints() const override;
   void SetIsEarlyBlankWindow(bool) override;
 
@@ -531,6 +535,8 @@ class nsWindow final : public nsBaseWidget {
   static LRESULT CALLBACK WindowProcInternal(HWND hWnd, UINT msg, WPARAM wParam,
                                              LPARAM lParam);
 
+  static BOOL CALLBACK BroadcastMsgToChildren(HWND aWnd, LPARAM aMsg);
+  static BOOL CALLBACK BroadcastMsg(HWND aTopWindow, LPARAM aMsg);
   static BOOL CALLBACK DispatchStarvedPaints(HWND aTopWindow, LPARAM aMsg);
   static BOOL CALLBACK RegisterTouchForDescendants(HWND aTopWindow,
                                                    LPARAM aMsg);
@@ -558,8 +564,13 @@ class nsWindow final : public nsBaseWidget {
   bool CanTakeFocus();
   bool UpdateNonClientMargins(bool aReflowWindow = true);
   void UpdateDarkModeToolbar();
+  void UpdateGetWindowInfoCaptionStatus(bool aActiveCaption);
   void ResetLayout();
-  nsAutoRegion ComputeNonClientHRGN();
+  void InvalidateNonClientRegion();
+  HRGN ExcludeNonClientFromPaintRegion(HRGN aRegion);
+  bool HasGlass() const {
+    return mTransparencyMode == TransparencyMode::BorderlessGlass;
+  }
   HWND GetOwnerWnd() const { return ::GetWindow(mWnd, GW_OWNER); }
   bool IsOwnerForegroundWindow() const {
     HWND owner = GetOwnerWnd();
@@ -631,6 +642,11 @@ class nsWindow final : public nsBaseWidget {
   DWORD WindowStyle();
   DWORD WindowExStyle();
 
+    /**
+   * XP and Vista theming support for windows with rounded edges
+   */
+  void ClearThemeRegion();
+
   /**
    * Popup hooks
    */
@@ -650,11 +666,9 @@ class nsWindow final : public nsBaseWidget {
   TransparencyMode GetWindowTranslucencyInner() const {
     return mTransparencyMode;
   }
+  void UpdateGlass();
   bool IsSimulatedClientArea(int32_t clientX, int32_t clientY);
   bool IsWindowButton(int32_t hitTestResult);
-
-  void UpdateOpaqueRegion(const LayoutDeviceIntRegion&) override;
-  void UpdateOpaqueRegionInternal();
 
   void SetColorScheme(const mozilla::Maybe<mozilla::ColorScheme>&) override;
 
@@ -673,6 +687,11 @@ class nsWindow final : public nsBaseWidget {
   static bool IsTopLevelMouseExit(HWND aWnd);
   LayoutDeviceIntRegion GetRegionToPaint(const PAINTSTRUCT& ps, HDC aDC) const;
   nsIWidgetListener* GetPaintListener();
+
+  void AddWindowOverlayWebRenderCommands(
+      mozilla::layers::WebRenderBridgeChild* aWrBridge,
+      mozilla::wr::DisplayListBuilder& aBuilder,
+      mozilla::wr::IpcResourceUpdateQueue& aResourceUpdates) override;
 
   void CreateCompositor() override;
   void DestroyCompositor() override;
@@ -765,6 +784,7 @@ class nsWindow final : public nsBaseWidget {
   HWND mWnd = nullptr;
   HWND mTransitionWnd = nullptr;
   mozilla::Maybe<WNDPROC> mPrevWndProc;
+  HBRUSH mBrush;
   IMEContext mDefaultIMC;
   HDEVNOTIFY mDeviceNotifyHandle = nullptr;
   bool mInDtor = false;
@@ -782,7 +802,6 @@ class nsWindow final : public nsBaseWidget {
   bool mIsEarlyBlankWindow = false;
   bool mIsShowingPreXULSkeletonUI = false;
   bool mResizable = false;
-  bool mHasBeenShown = false;
   // Whether we're an alert window. Alert windows don't have taskbar icons and
   // don't steal focus from other windows when opened. They're also expected to
   // be of type WindowType::Dialog.
@@ -838,8 +857,6 @@ class nsWindow final : public nsBaseWidget {
 
   // Draggable titlebar region maintained by UpdateWindowDraggingRegion
   LayoutDeviceIntRegion mDraggableRegion;
-  // Opaque region maintained by UpdateOpaqueRegion
-  LayoutDeviceIntRegion mOpaqueRegion;
 
   // Graphics
   LayoutDeviceIntRect mLastPaintBounds;
@@ -848,6 +865,8 @@ class nsWindow final : public nsBaseWidget {
 
   // Transparency
   TransparencyMode mTransparencyMode = TransparencyMode::Opaque;
+  nsIntRegion mPossiblyTransparentRegion;
+  MARGINS mGlassMargins = {0, 0, 0, 0};
 
   // Win7 Gesture processing and management
   nsWinGesture mGesture;
@@ -875,6 +894,9 @@ class nsWindow final : public nsBaseWidget {
   // The point in time at which the last paint completed. We use this to avoid
   //  painting too rapidly in response to frequent input events.
   TimeStamp mLastPaintEndTime;
+
+  // The location of the window buttons in the window.
+  mozilla::Maybe<LayoutDeviceIntRect> mWindowButtonsRect;
 
   // Caching for hit test results (in client coordinates)
   LayoutDeviceIntPoint mCachedHitTestPoint;

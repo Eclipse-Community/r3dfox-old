@@ -159,7 +159,47 @@ bool nsWindow::OnPaint(uint32_t aNestingLevel) {
   KnowsCompositor* knowsCompositor = renderer->AsKnowsCompositor();
   WebRenderLayerManager* layerManager = renderer->AsWebRender();
 
-  const bool didResize = mBounds.Size() != mLastPaintBounds.Size();
+  // Clear window by transparent black when compositor window is used in GPU
+  // process and non-client area rendering by DWM is enabled.
+  // It is for showing non-client area rendering. See nsWindow::UpdateGlass().
+  if (HasGlass() && knowsCompositor && knowsCompositor->GetUseCompositorWnd()) {
+    HDC hdc;
+    RECT rect;
+    hdc = ::GetWindowDC(mWnd);
+    ::GetWindowRect(mWnd, &rect);
+    ::MapWindowPoints(nullptr, mWnd, (LPPOINT)&rect, 2);
+    ::FillRect(hdc, &rect,
+               reinterpret_cast<HBRUSH>(GetStockObject(BLACK_BRUSH)));
+    ReleaseDC(mWnd, hdc);
+  }
+
+  if (mClearNCEdge) {
+    // We need to clear this edge of the non-client region to black (once).
+    HDC hdc;
+    RECT rect;
+    hdc = ::GetWindowDC(mWnd);
+    ::GetWindowRect(mWnd, &rect);
+    ::MapWindowPoints(nullptr, mWnd, (LPPOINT)&rect, 2);
+    switch (mClearNCEdge.value()) {
+      case ABE_TOP:
+        rect.bottom = rect.top + kHiddenTaskbarSize;
+        break;
+      case ABE_LEFT:
+        rect.right = rect.left + kHiddenTaskbarSize;
+        break;
+      case ABE_BOTTOM:
+        rect.top = rect.bottom - kHiddenTaskbarSize;
+        break;
+      case ABE_RIGHT:
+        rect.left = rect.right - kHiddenTaskbarSize;
+        break;
+      default:
+        MOZ_ASSERT_UNREACHABLE("Invalid edge value");
+        break;
+    }
+    ::FillRect(hdc, &rect,
+               reinterpret_cast<HBRUSH>(::GetStockObject(BLACK_BRUSH)));
+    ::ReleaseDC(mWnd, hdc);
 
   if (didResize && knowsCompositor && layerManager) {
     // Do an early async composite so that we at least have something on the
@@ -300,6 +340,7 @@ bool nsWindow::OnPaint(uint32_t aNestingLevel) {
           // rendering the whole window; make sure we clear it first
           dt->ClearRect(Rect(dt->GetRect()));
           break;
+        case TransparencyMode::BorderlessGlass:
         default:
           // If we're not doing translucency, then double buffer
           doubleBuffering = mozilla::layers::BufferMode::BUFFERED;
@@ -327,7 +368,8 @@ bool nsWindow::OnPaint(uint32_t aNestingLevel) {
       if (nsIWidgetListener* listener = GetPaintListener()) {
         result = listener->PaintWindow(this, region);
       }
-      if (!gfxEnv::MOZ_DISABLE_FORCE_PRESENT()) {
+      if (!gfxEnv::MOZ_DISABLE_FORCE_PRESENT() &&
+          gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled()) {
         nsCOMPtr<nsIRunnable> event = NewRunnableMethod(
             "nsWindow::ForcePresent", this, &nsWindow::ForcePresent);
         NS_DispatchToMainThread(event);

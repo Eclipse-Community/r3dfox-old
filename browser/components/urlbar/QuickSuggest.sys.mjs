@@ -57,8 +57,8 @@ class _QuickSuggest {
     return {
       "quicksuggest.enabled": true,
       "quicksuggest.dataCollection.enabled": false,
-      "suggest.quicksuggest.nonsponsored": true,
-      "suggest.quicksuggest.sponsored": true,
+      "suggest.quicksuggest.nonsponsored": false,
+      "suggest.quicksuggest.sponsored": false,
     };
   }
 

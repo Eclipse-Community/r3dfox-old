@@ -1845,7 +1845,7 @@
 # Minimal interval between two save operations in milliseconds (while the user is active).
 - name: browser.sessionstore.interval
   type: RelaxedAtomicUint32
-  value: 15000
+  value: 60000
   mirror: always
 
 # Disable collection of data for session store using the native collector code,
@@ -1893,7 +1893,7 @@
 # no (0), yes (1), or default (2), which is true everywhere except Linux.
 - name: browser.tabs.inTitlebar
   type: int32_t
-  value: 2
+  value: 1
   mirror: always
 
 # If set, use DocumentChannel to directly initiate loads entirely
@@ -2283,7 +2283,7 @@
 # 2: Reject-all if possible, otherwise accept-all.
 - name: cookiebanners.service.mode
   type: uint32_t
-  value: 0
+  value: 1
   mirror: always
 
 # When set to true, cookie banners are detected and detection events are
@@ -2298,7 +2298,7 @@
 # options as the normal browsing pref above.
 - name: cookiebanners.service.mode.privateBrowsing
   type: uint32_t
-  value: 0
+  value: 1
   mirror: always
 
 # Enables use of global CookieBannerRules, which apply to all sites. This is
@@ -3620,7 +3620,7 @@
 # Whether origin trials are enabled.
 - name: dom.origin-trials.enabled
   type: bool
-  value: true
+  value: false
   mirror: always
 
 # Whether we use the test key to verify tokens.
@@ -3647,11 +3647,7 @@
 # 0: normal, 1: always-enabled, 2: always-disabled
 - name: dom.origin-trials.private-attribution.state
   type: RelaxedAtomicInt32
-#ifdef ANDROID
   value: 2
-#else
-  value: 0
-#endif
   mirror: always
 
 # Origin trial state for MLS
@@ -3665,7 +3661,7 @@
 # information should be collected / submitted.
 - name: dom.private-attribution.submission.enabled
   type: bool
-  value: @IS_NOT_ANDROID@
+  value: false
   mirror: always
 
 # Is support for Window.paintWorklet enabled?
@@ -8062,7 +8058,7 @@
 # Chunk size for calls to the image decoders.
 - name: image.mem.decode_bytes_at_a_time
   type: uint32_t
-  value: 16384
+  value: 32768
   mirror: once
 
 # Discards inactive image frames and re-decodes them on demand from
@@ -13182,7 +13178,7 @@
 # If we should attempt to race the cache and network.
 - name: network.http.rcwn.enabled
   type: bool
-  value: true
+  value: false
   mirror: always
 
 - name: network.http.rcwn.cache_queue_normal_threshold
@@ -13464,7 +13460,7 @@
 # as Punycode in the UI.
 - name: network.IDN_show_punycode
   type: RelaxedAtomicBool
-  value: false
+  value: true
   mirror: always
 
 # If set to true, IOService.offline depends on IOService.connectivity.
@@ -14988,7 +14984,7 @@
 # 1 => Cubic
 - name: network.http.http3.cc_algorithm
   type: RelaxedAtomicUint32
-  value: 1
+  value: 0
   mirror: always
   rust: true
 
@@ -15415,12 +15411,12 @@
 
 - name: nglayout.initialpaint.delay
   type: int32_t
-  value: 5
+  value: 100
   mirror: always
 
 - name: nglayout.initialpaint.delay_in_oopif
   type: int32_t
-  value: 5
+  value: 100
   mirror: always
 
 #---------------------------------------------------------------------------
@@ -17058,11 +17054,7 @@
 
 - name: security.tls.enable_kyber
   type: RelaxedAtomicBool
-#ifdef ANDROID
-  value: @IS_NIGHTLY_BUILD@
-#else
   value: true
-#endif
   mirror: always
   rust: true
 
@@ -17732,7 +17724,7 @@
 # Delay in milliseconds for tooltips
 - name: ui.tooltip.delay_ms
   type: uint32_t
-  value: 500
+  value: 100
   mirror: always
 
 # If the user puts a finger down on an element and we think the user might be
@@ -18485,11 +18477,7 @@
 # controls). Maybe it's just fine.
 - name: widget.non-native-theme.use-theme-accent
   type: RelaxedAtomicBool
-#if defined(XP_WIN) && !defined(MOZ_THUNDERBIRD)
-  value: false
-#else
   value: true
-#endif
   mirror: always
 
 # Preference to disable dark scrollbar implementation.

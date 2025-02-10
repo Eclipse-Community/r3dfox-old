@@ -38,7 +38,7 @@ pref("pdfjs.enableHighlightFloatingButton", false);
 pref("pdfjs.enableNewAltTextWhenAddingImage", true);
 pref("pdfjs.enablePermissions", false);
 pref("pdfjs.enablePrintAutoRotate", true);
-pref("pdfjs.enableScripting", true);
+pref("pdfjs.enableScripting", false);
 pref("pdfjs.enableSignatureEditor", false);
 pref("pdfjs.enableUpdatedAddImage", false);
 pref("pdfjs.enableXfa", true);

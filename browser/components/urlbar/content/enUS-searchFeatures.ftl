@@ -191,8 +191,8 @@ firefox-suggest-fakespot-sponsored = { -fakespot-brand-name } · Sponsored
 # user into "online" Firefox Suggest, allowing them to receive suggestions from
 # Mozilla's Merino server.
 addressbar-firefox-suggest-data-collection =
-  .label = Improve the { -firefox-suggest-brand-name } experience
-  .description = Share search query data with { -vendor-short-name } to create a richer search experience.
+  .label = Mozilla wants more of your data
+  .description = Share search query data with Mozilla to create a richer search experience.
 
 ## Used as title on the introduction pane. The text can be formatted to span
 ## multiple lines as needed (line breaks are significant).
@@ -254,16 +254,16 @@ firefox-suggest-onboarding-main-title-9 =
 
 ##
 
-firefox-suggest-onboarding-main-description-1 = Allowing { -vendor-short-name } to process your search queries means you’re helping us create smarter, more relevant search suggestions. And, as always, we’ll keep your privacy top of mind.
-firefox-suggest-onboarding-main-description-2 = When you allow { -vendor-short-name } to process your search queries, you’re helping build a better { -firefox-suggest-brand-name } for everyone. And, as always, we’ll keep your privacy top of mind.
-firefox-suggest-onboarding-main-description-3 = What if your browser helped you zero in on what you’re actually looking for? Allowing { -vendor-short-name } to process your search queries helps us create more relevant search suggestions that still keep your privacy top of mind.
-firefox-suggest-onboarding-main-description-4 = You’re trying to get where you’re going on the web and get on with it. When you allow { -vendor-short-name } to process your search queries, we can help you get there faster—while keeping your privacy top of mind.
-firefox-suggest-onboarding-main-description-5 = Allowing { -vendor-short-name } to process your search queries will help us create more relevant suggestions for everyone. And, as always, we’ll keep your privacy top of mind.
-firefox-suggest-onboarding-main-description-6 = Allowing { -vendor-short-name } to process your search queries will help us create more relevant search suggestions. We’re building { -firefox-suggest-brand-name } to help you get where you’re going on the Internet while keeping your privacy in mind.
-firefox-suggest-onboarding-main-description-7 = Allowing { -vendor-short-name } to process your search queries helps us create more relevant search suggestions.
-firefox-suggest-onboarding-main-description-8 = Allowing { -vendor-short-name } to process your search queries helps us provide more relevant search suggestions. We don’t use this data to profile you on the web.
+firefox-suggest-onboarding-main-description-1 = Allowing Mozilla to process your search queries means you’re helping us create smarter, more relevant search suggestions. And, as always, we’ll keep your privacy top of mind.
+firefox-suggest-onboarding-main-description-2 = When you allow Mozilla to process your search queries, you’re helping build a better { -firefox-suggest-brand-name } for everyone. And, as always, we’ll keep your privacy top of mind.
+firefox-suggest-onboarding-main-description-3 = What if your browser helped you zero in on what you’re actually looking for? Allowing Mozilla to process your search queries helps us create more relevant search suggestions that still keep your privacy top of mind.
+firefox-suggest-onboarding-main-description-4 = You’re trying to get where you’re going on the web and get on with it. When you allow Mozilla to process your search queries, we can help you get there faster—while keeping your privacy top of mind.
+firefox-suggest-onboarding-main-description-5 = Allowing Mozilla to process your search queries will help us create more relevant suggestions for everyone. And, as always, we’ll keep your privacy top of mind.
+firefox-suggest-onboarding-main-description-6 = Allowing Mozilla to process your search queries will help us create more relevant search suggestions. We’re building { -firefox-suggest-brand-name } to help you get where you’re going on the Internet while keeping your privacy in mind.
+firefox-suggest-onboarding-main-description-7 = Allowing Mozilla to process your search queries helps us create more relevant search suggestions.
+firefox-suggest-onboarding-main-description-8 = Allowing Mozilla to process your search queries helps us provide more relevant search suggestions. We don’t use this data to profile you on the web.
 firefox-suggest-onboarding-main-description-9 =
-  We’re building a better search experience. When you allow { -vendor-short-name } to process your search queries, we can create more relevant search suggestions for you.
+  We’re building a better search experience. When you allow Mozilla to process your search queries, we can create more relevant search suggestions for you.
   <a data-l10n-name="learn-more-link">Learn more</a>
 
 firefox-suggest-onboarding-main-privacy-first = No user profiling. Privacy-first, always.
@@ -286,9 +286,9 @@ firefox-suggest-onboarding-main-submit-button = Save preferences
 firefox-suggest-onboarding-main-skip-link = Not now
 
 urlbar-firefox-suggest-contextual-opt-in-title-1 =
-  Find the best of the web, faster
+  Mozilla wants your data
 urlbar-firefox-suggest-contextual-opt-in-description-3 =
-  We’re building a better search experience. When you share search query data with { -vendor-short-name }, we can create more relevant suggestions from { -brand-short-name } and our partners.
+  Share search query data with Mozilla to create a richer search experience.
   <a data-l10n-name="learn-more-link">Learn more</a>
 urlbar-firefox-suggest-contextual-opt-in-allow = Allow suggestions
 urlbar-firefox-suggest-contextual-opt-in-dismiss = Not now

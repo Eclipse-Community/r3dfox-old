@@ -264,7 +264,7 @@ newtab-custom-row-selector =
         }
 newtab-custom-stories-toggle =
   .label = Recommended stories
-  .description = Exceptional content curated by the { -brand-product-name } family
+  .description = Exceptional content curated by Mozilla
 newtab-custom-pocket-show-recent-saves = Show recent saves
 newtab-custom-weather-toggle =
   .label = Weather

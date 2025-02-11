@@ -2047,7 +2047,10 @@ LayoutDeviceIntMargin nsNativeThemeWin::GetWidgetBorder(
   if (!themeClass.isNothing()) {
     theme = nsUXThemeData::GetTheme(themeClass.value());
   }
-  if (!theme) {
+  // Classic scrollbar thumbs require classic borders. The theme procedure will
+  // break horizontal scrollbar thumbs otherwise.
+  if (aAppearance == StyleAppearance::ScrollbarthumbVertical ||
+      aAppearance == StyleAppearance::ScrollbarthumbHorizontal || !theme) {
     result = ClassicGetWidgetBorder(aContext, aFrame, aAppearance);
     ScaleForFrameDPI(&result, aFrame);
     return result;

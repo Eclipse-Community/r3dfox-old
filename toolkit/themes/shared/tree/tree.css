@@ -124,7 +124,7 @@ treechildren::-moz-tree-drop-feedback {
 treecol,
 .tree-columnpicker-button {
   appearance: auto;
-  -moz-default-appearance: treeheadercell;  
+  -moz-default-appearance: treeheadercell;
   background-color: -moz-ColHeader;
   color: -moz-ColHeaderText;
   align-items: center;
@@ -133,7 +133,11 @@ treecol,
   margin: 0;
 
   border-inline-start: 1px solid ThreeDLightShadow;
-  box-shadow: inset 0 -1px ThreeDLightShadow;
+
+  @media (-moz-platform: linux) or (prefers-color-scheme: dark) {
+    appearance: none;
+    box-shadow: inset 0 -1px ThreeDLightShadow;
+  }
 
   &:where(:hover) {
     background-color: -moz-ColHeaderHover;

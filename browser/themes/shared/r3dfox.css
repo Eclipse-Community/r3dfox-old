@@ -29,7 +29,7 @@
         --tabpanel-background-color: linear-gradient(to bottom, #480808 0%,#240103 93%,#200000 97%,#1E0000 100%) !important;
     }
 
-    ::selection {
+    .urlbar-input::selection, .searchbar-textbox::selection {
       background: light-dark(rgb(255, 80, 80), rgb(160, 60, 60)) !important;
     }
 
@@ -70,7 +70,7 @@
       --download-progress-fill-color: light-dark(rgb(255, 86, 30), rgb(255, 118, 72)) !important;
       --lwt-tab-line-color: light-dark(rgb(255, 86, 30), rgb(255, 118, 72)) !important;
 
-      ::selection {
+      .urlbar-input::selection, .searchbar-textbox::selection {
         background: light-dark(rgb(255, 118, 72), rgb(183, 98, 69)) !important;
       }
 
@@ -112,7 +112,7 @@
       --download-progress-fill-color: light-dark(rgb(255, 40, 201), rgb(255, 80, 211)) !important;
       --lwt-tab-line-color: light-dark(rgb(255, 40, 201), rgb(255, 80, 211)) !important;
 
-      ::selection {
+      .urlbar-input::selection, .searchbar-textbox::selection {
         background: light-dark(rgb(255, 80, 211), rgb(160, 60, 135)) !important;
       }
 

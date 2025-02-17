@@ -1490,9 +1490,40 @@ pub enum Appearance {
     /// A dual toolbar button (e.g., a Back button with a dropdown)
     #[parse(condition = "ParserContext::chrome_rules_enabled")]
     Dualbutton,
+    /// A groupbox.
+    #[parse(condition = "ParserContext::chrome_rules_enabled")]
+    Groupbox,
+    /// Menu Bar background
+    #[parse(condition = "ParserContext::chrome_rules_enabled")]
+    Menubar,
+    /// <menu> and <menuitem> appearances
+    #[parse(condition = "ParserContext::chrome_rules_enabled")]
+    Menuitem,
+    #[parse(condition = "ParserContext::chrome_rules_enabled")]
+    Checkmenuitem,
+    #[parse(condition = "ParserContext::chrome_rules_enabled")]
+    Radiomenuitem,
+    /// For text on non-iconic menuitems only
+    #[parse(condition = "ParserContext::chrome_rules_enabled")]
+    Menuitemtext,
+    /// The text part of a dropdown list, to left of button.
+    #[parse(condition = "ParserContext::chrome_rules_enabled")]
+    MenulistText,
     /// Menu Popup background.
     #[parse(condition = "ParserContext::chrome_rules_enabled")]
     Menupopup,
+    /// menu checkbox/radio appearances
+    #[parse(condition = "ParserContext::chrome_rules_enabled")]
+    Menucheckbox,
+    #[parse(condition = "ParserContext::chrome_rules_enabled")]
+    Menuradio,
+    #[parse(condition = "ParserContext::chrome_rules_enabled")]
+    Menuseparator,
+    #[parse(condition = "ParserContext::chrome_rules_enabled")]
+    Menuarrow,
+    /// An image in the menu gutter, like in bookmarks or history.
+    #[parse(condition = "ParserContext::chrome_rules_enabled")]
+    Menuimage,
     /// The meter bar's meter indicator.
     #[parse(condition = "ParserContext::chrome_rules_enabled")]
     Meterchunk,
@@ -1581,10 +1612,36 @@ pub enum Appearance {
     /// A tooltip.
     #[parse(condition = "ParserContext::chrome_rules_enabled")]
     Tooltip,
+    /// A listbox or tree widget header
+    #[parse(condition = "ParserContext::chrome_rules_enabled")]
+    Treeheader,
+    /// An individual header cell
+    #[parse(condition = "ParserContext::chrome_rules_enabled")]
+    Treeheadercell,
+    /// A tree item.
+    #[parse(condition = "ParserContext::chrome_rules_enabled")]
+    Treeitem,
+    /// A tree widget branch line
+    #[parse(condition = "ParserContext::chrome_rules_enabled")]
+    Treeline,
+    /// A tree widget twisty.
+    #[parse(condition = "ParserContext::chrome_rules_enabled")]
+    Treetwisty,
+    /// Open tree widget twisty.
+    #[parse(condition = "ParserContext::chrome_rules_enabled")]
+    Treetwistyopen,
+    /// A tree widget.
+    #[parse(condition = "ParserContext::chrome_rules_enabled")]
+    Treeview,
 
     /// Sidebar appearance.
     #[parse(condition = "ParserContext::chrome_rules_enabled")]
     MozSidebar,
+    #[parse(condition = "ParserContext::chrome_rules_enabled")]
+    MozWinBorderlessGlass,
+    /// -moz-apperance style used in setting proper glass margins.
+    #[parse(condition = "ParserContext::chrome_rules_enabled")]
+    MozWinExcludeGlass,
 
     /// Mac help button.
     #[parse(condition = "ParserContext::chrome_rules_enabled")]
@@ -1599,6 +1656,8 @@ pub enum Appearance {
     /// Windows themed window frame elements.
     #[parse(condition = "ParserContext::chrome_rules_enabled")]
     MozWindowButtonBox,
+    #[parse(condition = "ParserContext::chrome_rules_enabled")]
+    MozWindowButtonBoxMaximized,
     #[parse(condition = "ParserContext::chrome_rules_enabled")]
     MozWindowButtonClose,
     #[parse(condition = "ParserContext::chrome_rules_enabled")]

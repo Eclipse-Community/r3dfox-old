@@ -99,20 +99,27 @@ static IconMetrics sIconMetrics[] = {
  **************************************************************/
 
 // GetRegionToPaint returns the invalidated region that needs to be painted
-LayoutDeviceIntRegion nsWindow::GetRegionToPaint(const PAINTSTRUCT& ps,
-                                                 HDC aDC) const {
-  LayoutDeviceIntRegion fullRegion(WinUtils::ToIntRect(ps.rcPaint));
+LayoutDeviceIntRegion nsWindow::GetRegionToPaint(bool aForceFullRepaint,
+                                                 PAINTSTRUCT ps, HDC aDC) {
+  if (aForceFullRepaint) {
+    RECT paintRect;
+    ::GetClientRect(mWnd, &paintRect);
+    return LayoutDeviceIntRegion(WinUtils::ToIntRect(paintRect));
+  }
+
   HRGN paintRgn = ::CreateRectRgn(0, 0, 0, 0);
-  if (paintRgn) {
-    if (GetRandomRgn(aDC, paintRgn, SYSRGN) == 1) {
+  if (paintRgn != nullptr) {
+    int result = GetRandomRgn(aDC, paintRgn, SYSRGN);
+    if (result == 1) {
       POINT pt = {0, 0};
       ::MapWindowPoints(nullptr, mWnd, &pt, 1);
       ::OffsetRgn(paintRgn, pt.x, pt.y);
-      fullRegion.AndWith(WinUtils::ConvertHRGNToRegion(paintRgn));
     }
+    LayoutDeviceIntRegion rgn(WinUtils::ConvertHRGNToRegion(paintRgn));
     ::DeleteObject(paintRgn);
+    return rgn;
   }
-  return fullRegion;
+  return LayoutDeviceIntRegion(WinUtils::ToIntRect(ps.rcPaint));
 }
 
 nsIWidgetListener* nsWindow::GetPaintListener() {
@@ -225,6 +232,7 @@ bool nsWindow::OnPaint(uint32_t aNestingLevel) {
     // endlessly.
     ::BeginPaint(mWnd, &ps);
     ::EndPaint(mWnd, &ps);
+
     // We're guaranteed to have a widget proxy since we called
     // GetLayerManager().
     hDC = mBasicLayersSurface->GetTransparentDC();
@@ -233,7 +241,7 @@ bool nsWindow::OnPaint(uint32_t aNestingLevel) {
   }
 
   const bool forceRepaint = mTransparencyMode == TransparencyMode::Transparent;
-  const LayoutDeviceIntRegion region = GetRegionToPaint(ps, hDC);
+  const LayoutDeviceIntRegion region = GetRegionToPaint(forceRepaint, ps, hDC);
 
   RefPtr<nsWindow> strongThis(this);
 
@@ -397,7 +405,8 @@ void nsWindow::NotifyOcclusionState(mozilla::widget::OcclusionState aState) {
   flags._0 = gfx::gfxVars::WebRenderDebugFlags();
   bool debugEnabled = bool(flags & wr::DebugFlags::WINDOW_VISIBILITY_DBG);
   if (debugEnabled && mCompositorWidgetDelegate) {
-    mCompositorWidgetDelegate->NotifyVisibilityUpdated(mIsFullyOccluded);
+    mCompositorWidgetDelegate->NotifyVisibilityUpdated(
+        mFrameState->GetSizeMode(), mIsFullyOccluded);
   }
 
   if (mWidgetListener) {
@@ -423,7 +432,8 @@ void nsWindow::MaybeEnableWindowOcclusion(bool aEnable) {
       flags._0 = gfx::gfxVars::WebRenderDebugFlags();
       bool debugEnabled = bool(flags & wr::DebugFlags::WINDOW_VISIBILITY_DBG);
       if (debugEnabled && mCompositorWidgetDelegate) {
-        mCompositorWidgetDelegate->NotifyVisibilityUpdated(mIsFullyOccluded);
+        mCompositorWidgetDelegate->NotifyVisibilityUpdated(
+            mFrameState->GetSizeMode(), mIsFullyOccluded);
       }
     }
     return;
@@ -443,7 +453,8 @@ void nsWindow::MaybeEnableWindowOcclusion(bool aEnable) {
   flags._0 = gfx::gfxVars::WebRenderDebugFlags();
   bool debugEnabled = bool(flags & wr::DebugFlags::WINDOW_VISIBILITY_DBG);
   if (debugEnabled && mCompositorWidgetDelegate) {
-    mCompositorWidgetDelegate->NotifyVisibilityUpdated(mIsFullyOccluded);
+    mCompositorWidgetDelegate->NotifyVisibilityUpdated(
+        mFrameState->GetSizeMode(), mIsFullyOccluded);
   }
 }
 

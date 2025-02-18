@@ -270,9 +270,8 @@ nsresult nsMathMLmencloseFrame::Place(DrawTarget* aDrawTarget,
   // Measure the size of our content using the base class to format like an
   // inferred mrow, without border/padding.
   ReflowOutput baseSize(aDesiredSize.GetWritingMode());
-  PlaceFlags flags = aFlags + PlaceFlag::MeasureOnly +
-                     PlaceFlag::IgnoreBorderPadding +
-                     PlaceFlag::DoNotAdjustForWidthAndHeight;
+  PlaceFlags flags =
+      aFlags + PlaceFlag::MeasureOnly + PlaceFlag::IgnoreBorderPadding;
   nsresult rv = nsMathMLContainerFrame::Place(aDrawTarget, flags, baseSize);
 
   if (NS_FAILED(rv)) {
@@ -527,11 +526,6 @@ nsresult nsMathMLmencloseFrame::Place(DrawTarget* aDrawTarget,
         2 * kPhasorangleWidth * mRuleThickness - mBoundingMetrics.descent);
 
   aDesiredSize.mBoundingMetrics = mBoundingMetrics;
-
-  // Apply width/height to math content box.
-  auto sizes = GetWidthAndHeightForPlaceAdjustment(aFlags);
-  dx_left += ApplyAdjustmentForWidthAndHeight(aFlags, sizes, aDesiredSize,
-                                              mBoundingMetrics);
 
   // Add padding+border.
   auto borderPadding = GetBorderPaddingForPlace(aFlags);

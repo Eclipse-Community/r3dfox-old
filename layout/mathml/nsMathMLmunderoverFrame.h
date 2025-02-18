@@ -58,8 +58,6 @@ class nsMathMLmunderoverFrame final : public nsMathMLContainerFrame,
   virtual ~nsMathMLmunderoverFrame();
 
  private:
-  bool IsMathContentBoxHorizontallyCentered() const final;
-
   // Helper to set the "increment script level" flag on the element belonging
   // to a child frame given by aChildIndex.
   //

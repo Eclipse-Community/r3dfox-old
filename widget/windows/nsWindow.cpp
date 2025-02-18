@@ -2919,6 +2919,12 @@ void nsWindow::SetBackgroundColor(const nscolor& aColor) {
   }
 }
 
+void nsWindow::InvalidateNonClientRegion() {
+  nsAutoRegion winRgn(ComputeNonClientHRGN());
+  // triggers ncpaint and paint events for the two areas
+  RedrawWindow(mWnd, nullptr, winRgn, RDW_FRAME | RDW_INVALIDATE);
+}
+
 /**************************************************************
  *
  * SECTION: nsIWidget::SetCursor

@@ -27,13 +27,15 @@ class PlatformCompositorWidgetDelegate : public CompositorWidgetDelegate {
   virtual void LeavePresentLock() = 0;
   virtual void OnDestroyWindow() = 0;
   virtual bool OnWindowResize(const LayoutDeviceIntSize& aSize) = 0;
+  virtual void OnWindowModeChange(nsSizeMode aSizeMode) = 0;
 
   // Transparency handling.
   virtual void UpdateTransparency(TransparencyMode aMode) = 0;
   virtual void ClearTransparentWindow() = 0;
 
   // Deliver visibility info
-  virtual void NotifyVisibilityUpdated(bool aIsFullyOccluded) = 0;
+  virtual void NotifyVisibilityUpdated(nsSizeMode aSizeMode,
+                                       bool aIsFullyOccluded) = 0;
 
   // CompositorWidgetDelegate Overrides
 
@@ -76,7 +78,7 @@ class WinCompositorWidget : public CompositorWidget {
 
   virtual bool HasGlass() const = 0;
 
-  //virtual nsSizeMode GetWindowSizeMode() const = 0;
+  virtual nsSizeMode GetWindowSizeMode() const = 0;
   virtual bool GetWindowIsFullyOccluded() const = 0;
 
   virtual void UpdateCompositorWnd(const HWND aCompositorWnd,

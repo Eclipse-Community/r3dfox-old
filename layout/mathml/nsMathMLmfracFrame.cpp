@@ -377,8 +377,8 @@ nsresult nsMathMLmfracFrame::Place(DrawTarget* aDrawTarget,
                       ReflowChildFlags::Default);
     // place denominator
     dxDen += denMargin.left;
-    dy =
-        aDesiredSize.BlockStartAscent() + denShift - sizeDen.BlockStartAscent();
+    dy = aDesiredSize.Height() - sizeDen.Height() - denMargin.bottom -
+         borderPadding.bottom;
     FinishReflowChild(frameDen, presContext, sizeDen, nullptr, dxDen, dy,
                       ReflowChildFlags::Default);
     // place the fraction bar - dy is top of bar

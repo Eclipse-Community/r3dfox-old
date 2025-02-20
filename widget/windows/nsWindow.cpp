@@ -532,88 +532,86 @@ class TIPMessageHandler {
     }
   }
 
-  class MOZ_RAII A11yInstantiationBlocker {
-   public:
-    A11yInstantiationBlocker() {
-      if (!TIPMessageHandler::sInstance) {
-        return;
-      }
-      ++TIPMessageHandler::sInstance->mA11yBlockCount;
-    }  // namespace mozilla
+  class MOZ_RAII A11yInstantiationBlocker{public : A11yInstantiationBlocker(){
+      if (!TIPMessageHandler::sInstance){return;
+} ++TIPMessageHandler::sInstance->mA11yBlockCount;
+}  // namespace mozilla
 
-    ~A11yInstantiationBlocker() {
-      if (!TIPMessageHandler::sInstance) {
-        return;
-      }
-      MOZ_ASSERT(TIPMessageHandler::sInstance->mA11yBlockCount > 0);
-      --TIPMessageHandler::sInstance->mA11yBlockCount;
-    }
-  };
+~A11yInstantiationBlocker() {
+  if (!TIPMessageHandler::sInstance) {
+    return;
+  }
+  MOZ_ASSERT(TIPMessageHandler::sInstance->mA11yBlockCount > 0);
+  --TIPMessageHandler::sInstance->mA11yBlockCount;
+}
+}
+;
 
-  friend class A11yInstantiationBlocker;
+friend class A11yInstantiationBlocker;
 
-  static LRESULT CALLBACK TIPHook(int aCode, WPARAM aWParam, LPARAM aLParam) {
-    if (aCode < 0 || !sInstance) {
-      return ::CallNextHookEx(nullptr, aCode, aWParam, aLParam);
-    }
-
-    MSG* msg = reinterpret_cast<MSG*>(aLParam);
-    UINT& msgCode = msg->message;
-
-    for (uint32_t i = 0; i < std::size(sInstance->mMessages); ++i) {
-      if (msgCode == sInstance->mMessages[i]) {
-        A11yInstantiationBlocker block;
-        return ::CallNextHookEx(nullptr, aCode, aWParam, aLParam);
-      }
-    }
-
+static LRESULT CALLBACK TIPHook(int aCode, WPARAM aWParam, LPARAM aLParam) {
+  if (aCode < 0 || !sInstance) {
     return ::CallNextHookEx(nullptr, aCode, aWParam, aLParam);
   }
 
-  static void CALLBACK ProcessCaretEventsHook(HWINEVENTHOOK aWinEventHook,
-                                              DWORD aEvent, HWND aHwnd,
-                                              LONG aObjectId, LONG aChildId,
-                                              DWORD aGeneratingTid,
-                                              DWORD aEventTime) {
-    A11yInstantiationBlocker block;
-    sProcessCaretEventsStub(aWinEventHook, aEvent, aHwnd, aObjectId, aChildId,
-                            aGeneratingTid, aEventTime);
-  }
+  MSG* msg = reinterpret_cast<MSG*>(aLParam);
+  UINT& msgCode = msg->message;
 
-  static LRESULT WINAPI SendMessageTimeoutWHook(HWND aHwnd, UINT aMsgCode,
-                                                WPARAM aWParam, LPARAM aLParam,
-                                                UINT aFlags, UINT aTimeout,
-                                                PDWORD_PTR aMsgResult) {
-    // We don't want to handle this unless the message is a WM_GETOBJECT that we
-    // want to block, and the aHwnd is a nsWindow that belongs to the current
-    // (i.e., main) thread.
-    if (!aMsgResult || aMsgCode != WM_GETOBJECT ||
-        static_cast<LONG>(aLParam) != OBJID_CLIENT || !::NS_IsMainThread() ||
-        !WinUtils::GetNSWindowPtr(aHwnd) || !IsA11yBlocked()) {
-      return sSendMessageTimeoutWStub(aHwnd, aMsgCode, aWParam, aLParam, aFlags,
-                                      aTimeout, aMsgResult);
+  for (uint32_t i = 0; i < std::size(sInstance->mMessages); ++i) {
+    if (msgCode == sInstance->mMessages[i]) {
+      A11yInstantiationBlocker block;
+      return ::CallNextHookEx(nullptr, aCode, aWParam, aLParam);
     }
-
-    // In this case we want to fake the result that would happen if we had
-    // decided not to handle WM_GETOBJECT in our WndProc. We hand the message
-    // off to DefWindowProc to accomplish this.
-    *aMsgResult = static_cast<DWORD_PTR>(
-        ::DefWindowProcW(aHwnd, aMsgCode, aWParam, aLParam));
-
-    return static_cast<LRESULT>(TRUE);
   }
 
-  static WindowsDllInterceptor sTipTsfInterceptor;
-  static WindowsDllInterceptor::FuncHookType<WINEVENTPROC>
-      sProcessCaretEventsStub;
-  static WindowsDllInterceptor::FuncHookType<decltype(&SendMessageTimeoutW)>
-      sSendMessageTimeoutWStub;
-  static StaticAutoPtr<TIPMessageHandler> sInstance;
+  return ::CallNextHookEx(nullptr, aCode, aWParam, aLParam);
+}
 
-  HHOOK mHook;
-  UINT mMessages[7];
-  uint32_t mA11yBlockCount;
-};
+static void CALLBACK ProcessCaretEventsHook(HWINEVENTHOOK aWinEventHook,
+                                            DWORD aEvent, HWND aHwnd,
+                                            LONG aObjectId, LONG aChildId,
+                                            DWORD aGeneratingTid,
+                                            DWORD aEventTime) {
+  A11yInstantiationBlocker block;
+  sProcessCaretEventsStub(aWinEventHook, aEvent, aHwnd, aObjectId, aChildId,
+                          aGeneratingTid, aEventTime);
+}
+
+static LRESULT WINAPI SendMessageTimeoutWHook(HWND aHwnd, UINT aMsgCode,
+                                              WPARAM aWParam, LPARAM aLParam,
+                                              UINT aFlags, UINT aTimeout,
+                                              PDWORD_PTR aMsgResult) {
+  // We don't want to handle this unless the message is a WM_GETOBJECT that we
+  // want to block, and the aHwnd is a nsWindow that belongs to the current
+  // (i.e., main) thread.
+  if (!aMsgResult || aMsgCode != WM_GETOBJECT ||
+      static_cast<LONG>(aLParam) != OBJID_CLIENT || !::NS_IsMainThread() ||
+      !WinUtils::GetNSWindowPtr(aHwnd) || !IsA11yBlocked()) {
+    return sSendMessageTimeoutWStub(aHwnd, aMsgCode, aWParam, aLParam, aFlags,
+                                    aTimeout, aMsgResult);
+  }
+
+  // In this case we want to fake the result that would happen if we had
+  // decided not to handle WM_GETOBJECT in our WndProc. We hand the message
+  // off to DefWindowProc to accomplish this.
+  *aMsgResult = static_cast<DWORD_PTR>(
+      ::DefWindowProcW(aHwnd, aMsgCode, aWParam, aLParam));
+
+  return static_cast<LRESULT>(TRUE);
+}
+
+static WindowsDllInterceptor sTipTsfInterceptor;
+static WindowsDllInterceptor::FuncHookType<WINEVENTPROC>
+    sProcessCaretEventsStub;
+static WindowsDllInterceptor::FuncHookType<decltype(&SendMessageTimeoutW)>
+    sSendMessageTimeoutWStub;
+static StaticAutoPtr<TIPMessageHandler> sInstance;
+
+HHOOK mHook;
+UINT mMessages[7];
+uint32_t mA11yBlockCount;
+}
+;
 
 WindowsDllInterceptor TIPMessageHandler::sTipTsfInterceptor;
 WindowsDllInterceptor::FuncHookType<WINEVENTPROC>
@@ -2779,10 +2777,6 @@ void nsWindow::SetCustomTitlebar(bool aCustomTitlebar) {
     if (WindowStyle() & WS_SYSMENU) {
       // Restore the WS_SYSMENU style if appropriate.
       ::SetWindowLongPtrW(mWnd, GWL_STYLE, style | WS_SYSMENU);
-      // Reset the small icon as a workaround for a dwm bug, see bug 1935542.
-      HICON icon =
-          (HICON)::SendMessageW(mWnd, WM_SETICON, (WPARAM)ICON_SMALL, 0);
-      ::SendMessageW(mWnd, WM_SETICON, (WPARAM)ICON_SMALL, (LPARAM)icon);
     }
     mCustomNonClientMetrics = {};
     ResetLayout();

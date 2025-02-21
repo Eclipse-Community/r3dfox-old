@@ -220,6 +220,11 @@ r3dfox-one-offs =
 
 r3dfox-one-offs-desc = Enable for instant one off searches.
 
+r3dfox-view-image =
+    .label = Restore classic View Image context menu option
+
+r3dfox-view-image-desc = Restore the classic View Image and View Background Image context menu options instead of always opening images in a new tab.
+
 r3dfox-modern =
     .label = Modern UI (Requires browser restart)
 

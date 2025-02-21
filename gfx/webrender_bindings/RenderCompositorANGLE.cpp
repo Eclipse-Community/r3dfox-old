@@ -66,7 +66,16 @@ UniquePtr<RenderCompositor> RenderCompositorANGLE::Create(
 RenderCompositorANGLE::RenderCompositorANGLE(
     const RefPtr<widget::CompositorWidget>& aWidget,
     RefPtr<gl::GLContext>&& aGL)
-    : RenderCompositor(aWidget), mGL(aGL) {
+    : RenderCompositor(aWidget),
+      mGL(aGL),
+      mEGLConfig(nullptr),
+      mEGLSurface(nullptr),
+      mUseTripleBuffering(false),
+      mUseAlpha(false),
+      mUseNativeCompositor(true),
+      mUsePartialPresent(false),
+      mFullRender(false),
+      mDisablingNativeCompositor(false) {
   MOZ_ASSERT(mGL);
   LOG("RenderCompositorANGLE::RenderCompositorANGLE()");
 }
@@ -343,11 +352,14 @@ void RenderCompositorANGLE::CreateSwapChainForDCompIfPossible(
   // It does not support triple buffering.
   bool useTripleBuffering =
       gfx::gfxVars::UseWebRenderTripleBufferingWin() && !UseCompositor();
+  // Non Glass window is common since Windows 10.
+  bool useAlpha = false;
   RefPtr<IDXGISwapChain1> swapChain1 =
-      CreateSwapChainForDComp(useTripleBuffering);
+      CreateSwapChainForDComp(useTripleBuffering, useAlpha);
   if (swapChain1) {
     mSwapChain = swapChain1;
     mSwapChain1 = swapChain1;
+    mUseAlpha = useAlpha;
     mUseTripleBuffering = useTripleBuffering;
     mDCLayerTree->SetDefaultSwapChain(swapChain1);
   } else {
@@ -357,7 +369,7 @@ void RenderCompositorANGLE::CreateSwapChainForDCompIfPossible(
 }
 
 RefPtr<IDXGISwapChain1> RenderCompositorANGLE::CreateSwapChainForDComp(
-    bool aUseTripleBuffering) {
+    bool aUseTripleBuffering, bool aUseAlpha) {
   HRESULT hr;
   RefPtr<IDXGIDevice> dxgiDevice;
   mDevice->QueryInterface((IDXGIDevice**)getter_AddRefs(dxgiDevice));
@@ -396,7 +408,12 @@ RefPtr<IDXGISwapChain1> RenderCompositorANGLE::CreateSwapChainForDComp(
   // DXGI_SCALING_NONE caused swap chain creation failure.
   desc.Scaling = DXGI_SCALING_STRETCH;
   desc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL;
-  desc.AlphaMode = DXGI_ALPHA_MODE_IGNORE;
+  if (aUseAlpha) {
+    // This could degrade performance. Use it only when it is necessary.
+    desc.AlphaMode = DXGI_ALPHA_MODE_PREMULTIPLIED;
+  } else {
+    desc.AlphaMode = DXGI_ALPHA_MODE_IGNORE;
+  }
   desc.Flags = 0;
 
   hr = dxgiFactory2->CreateSwapChainForComposition(mDevice, &desc, nullptr,
@@ -413,8 +430,35 @@ RefPtr<IDXGISwapChain1> RenderCompositorANGLE::CreateSwapChainForDComp(
 bool RenderCompositorANGLE::BeginFrame() {
   mWidget->AsWindows()->UpdateCompositorWndSizeIfNecessary();
 
-  if (!UseCompositor() && !ResizeBufferIfNeeded()) {
-    return false;
+  if (!UseCompositor()) {
+    if (mDCLayerTree) {
+      bool useAlpha = mWidget->AsWindows()->HasGlass();
+      // When Alpha usage is changed, SwapChain needs to be recreatd.
+      if (useAlpha != mUseAlpha) {
+        DestroyEGLSurface();
+        mBufferSize.reset();
+        RefPtr<IDXGISwapChain1> swapChain1 =
+            CreateSwapChainForDComp(mUseTripleBuffering, useAlpha);
+        if (swapChain1) {
+          mSwapChain = swapChain1;
+          mUseAlpha = useAlpha;
+          mDCLayerTree->SetDefaultSwapChain(swapChain1);
+          // When alpha is used, we want to disable partial present.
+          // See Bug 1595027.
+          if (useAlpha) {
+            mFullRender = true;
+          }
+        } else {
+          gfxCriticalNote << "Failed to re-create SwapChain";
+          RenderThread::Get()->HandleWebRenderError(
+              WebRenderError::NEW_SURFACE);
+          return false;
+        }
+      }
+    }
+    if (!ResizeBufferIfNeeded()) {
+      return false;
+    }
   }
 
   if (!MakeCurrent()) {
@@ -458,7 +502,14 @@ RenderedFrameId RenderCompositorANGLE::EndFrame(
     const UINT flags = 0;
 
     const LayoutDeviceIntSize& bufferSize = mBufferSize.ref();
-    if (mUsePartialPresent && mSwapChain1) {
+
+    // During high contrast mode, alpha is used. In this case,
+    // IDXGISwapChain1::Present1 shows nothing with compositor window.
+    // In this case, we want to disable partial present by full render.
+    // See Bug 1595027
+    MOZ_ASSERT_IF(mUsePartialPresent && mUseAlpha, mFullRender);
+
+    if (mUsePartialPresent && !mUseAlpha && mSwapChain1) {
       // Clear full render flag.
       mFullRender = false;
       // If there is no diry rect, we skip SwapChain present.
@@ -887,14 +938,22 @@ void RenderCompositorANGLE::EnableNativeCompositor(bool aEnable) {
   mUseNativeCompositor = false;
   mDCLayerTree->DisableNativeCompositor();
 
+  bool useAlpha = mWidget->AsWindows()->HasGlass();
+
   DestroyEGLSurface();
   mBufferSize.reset();
 
   RefPtr<IDXGISwapChain1> swapChain1 =
-      CreateSwapChainForDComp(mUseTripleBuffering);
+      CreateSwapChainForDComp(mUseTripleBuffering, useAlpha);
   if (swapChain1) {
     mSwapChain = swapChain1;
+    mUseAlpha = useAlpha;
     mDCLayerTree->SetDefaultSwapChain(swapChain1);
+    // When alpha is used, we want to disable partial present.
+    // See Bug 1595027.
+    if (useAlpha) {
+      mFullRender = true;
+    }
     ResizeBufferIfNeeded();
   } else {
     gfxCriticalNote << "Failed to re-create SwapChain";

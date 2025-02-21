@@ -23,21 +23,6 @@ tree {
   }
 }
 
-/********** splitter **********/
-
-.tree-splitter {
-  margin-inline: -4px;
-  width: 8px;
-  max-width: 8px;
-  min-width: 8px;
-  appearance: none !important;
-  border: none !important;
-  background: none !important;
-  order: 2147483646;
-  z-index: 2147483646;
-}
-
-
 /* ::::: tree rows ::::: */
 
 treechildren::-moz-tree-row {
@@ -54,7 +39,7 @@ treechildren::-moz-tree-row(multicol, odd) {
   background-color: -moz-oddtreerow;
 }
 
-@media not (prefers-contrast) {
+@media (-moz-windows-default-theme) {
   treechildren::-moz-tree-row(hover) {
     background-color: hsla(0,0%,50%,.15);
   }
@@ -138,6 +123,8 @@ treechildren::-moz-tree-drop-feedback {
 
 treecol,
 .tree-columnpicker-button {
+  appearance: auto;
+  -moz-default-appearance: treeheadercell;  
   background-color: -moz-ColHeader;
   color: -moz-ColHeaderText;
   align-items: center;

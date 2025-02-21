@@ -16847,6 +16847,12 @@
 # Prefs starting with "widget."
 #---------------------------------------------------------------------------
 
+# Whether enable windows-modern mode for stylesheets
+- name: widget.windows-style.modern
+  type: bool
+  value: false
+  mirror: always
+
 # Whether the non-native theme should always use system colors. Useful mostly
 # for testing forced colors mode.
 - name: widget.non-native-theme.always-high-contrast

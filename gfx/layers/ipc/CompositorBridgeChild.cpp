@@ -40,6 +40,7 @@
 #include "mozilla/SpinEventLoopUntil.h"
 #include "nsThreadUtils.h"
 #if defined(XP_WIN)
+#include "mozilla/WindowsVersion.h"
 #  include "WinUtils.h"
 #endif
 #include "mozilla/widget/CompositorWidget.h"
@@ -364,7 +365,11 @@ bool CompositorBridgeChild::SendFlushRenderingAsync(
   if (!mCanSend) {
     return false;
   }
+  if (!IsWin8OrLater() && !gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled()) {
+  return PCompositorBridgeChild::SendFlushRendering(aReasons);
+  } else {
   return PCompositorBridgeChild::SendFlushRenderingAsync(aReasons);
+  }
 }
 
 void CompositorBridgeChild::SetForceSyncFlushRendering(

@@ -705,7 +705,7 @@ class nsContextMenu {
           !this.inPDFViewer
       );
 
-      this.document.getElementById("context-viewbgimage").disabled = !this.hasBGImage;
+      document.getElementById("context-viewbgimage").disabled = !this.hasBGImage;
 
     // Save image depends on having loaded its content.
     this.showItem(

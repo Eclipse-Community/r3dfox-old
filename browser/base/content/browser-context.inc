@@ -190,8 +190,11 @@
                 data-l10n-id="main-context-menu-media-show-controls"
                 />
       <menuseparator id="context-media-sep-video-commands"/>
-      <menuitem id="context-viewvideo"
+      <menuitem id="context-viewvideotab"
                 data-l10n-id="main-context-menu-video-view-new-tab"
+                />
+      <menuitem id="context-viewvideo"
+                data-l10n-id="main-context-menu-video-view"
                 />
       <menuitem id="context-video-pictureinpicture"
                 data-l10n-id="main-context-menu-media-watch-pip"
@@ -201,8 +204,11 @@
       <menuitem id="context-reloadimage"
                 data-l10n-id="main-context-menu-image-reload"
                 />
-      <menuitem id="context-viewimage"
+      <menuitem id="context-viewimagetab"
                 data-l10n-id="main-context-menu-image-view-new-tab"
+                />
+      <menuitem id="context-viewimage"
+                data-l10n-id="main-context-menu-image-view"
                 />
       <menuitem id="context-saveimage"
                 data-l10n-id="main-context-menu-image-save-as"

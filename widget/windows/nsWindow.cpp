@@ -977,7 +977,7 @@ nsresult nsWindow::Create(nsIWidget* aParent, nsNativeWidget aNativeParent,
   if (isPIPWindow && !IsWin8OrLater() &&
       gfxConfig::IsEnabled(gfx::Feature::HW_COMPOSITING) &&
       WidgetTypeSupportsAcceleration()) {
-    extendedStyle |= WS_EX_COMPOSITED;
+    desiredStyles.ex |= WS_EX_COMPOSITED;
   }
 
   if (mWindowType == WindowType::Popup) {
@@ -987,7 +987,7 @@ nsresult nsWindow::Create(nsIWidget* aParent, nsNativeWidget aNativeParent,
 
     if (!IsWin8OrLater() && HasBogusPopupsDropShadowOnMultiMonitor() &&
         ShouldUseOffMainThreadCompositing()) {
-      extendedStyle |= WS_EX_COMPOSITED;
+      desiredStyles.ex |= WS_EX_COMPOSITED;
     }
   } else if (mWindowType == WindowType::Invisible) {
     // Make sure CreateWindowEx succeeds at creating a toplevel window
@@ -2963,38 +2963,6 @@ void nsWindow::InvalidateNonClientRegion() {
   // triggers ncpaint and paint events for the two areas
   RedrawWindow(mWnd, nullptr, winRgn, RDW_FRAME | RDW_INVALIDATE);
   DeleteObject(winRgn);
-}
-
-HRGN nsWindow::ExcludeNonClientFromPaintRegion(HRGN aRegion) {
-  RECT rect;
-  HRGN rgn = nullptr;
-  if (aRegion == (HRGN)1) {  // undocumented value indicating a full refresh
-    GetWindowRect(mWnd, &rect);
-    rgn = CreateRectRgnIndirect(&rect);
-  } else {
-    rgn = aRegion;
-  }
-  GetClientRect(mWnd, &rect);
-  MapWindowPoints(mWnd, nullptr, (LPPOINT)&rect, 2);
-  HRGN nonClientRgn = CreateRectRgnIndirect(&rect);
-  CombineRgn(rgn, rgn, nonClientRgn, RGN_DIFF);
-  DeleteObject(nonClientRgn);
-  return rgn;
-}
-
-/**************************************************************
- *
- * SECTION: nsIWidget::SetBackgroundColor
- *
- * Sets the window background paint color.
- *
- **************************************************************/
-void nsWindow::SetBackgroundColor(const nscolor& aColor) {
-  if (mBrush) ::DeleteObject(mBrush);
-  mBrush = ::CreateSolidBrush(NSRGB_2_COLOREF(aColor));
-  if (mWnd != nullptr) {
-    ::SetClassLongPtrW(mWnd, GCLP_HBRBACKGROUND, (LONG_PTR)mBrush);
-  }
 }
 
 HRGN nsWindow::ExcludeNonClientFromPaintRegion(HRGN aRegion) {

@@ -1504,7 +1504,7 @@ void AppWindow::SyncAttributesToWidget() {
 
   nsAutoString attr;
 
-  // Some attributes can change the client size (e.g. customtitlebar on Windows
+  // Some attributes can change the client size (e.g. chromemargin on Windows
   // and MacOS). But we might want to keep it.
   const LayoutDeviceIntSize oldClientSize = mWindow->GetClientSize();
   // We have to check now whether we want to restore the client size, as any
@@ -1519,13 +1519,12 @@ void AppWindow::SyncAttributesToWidget() {
 
   NS_ENSURE_TRUE_VOID(mWindow);
 
-  // "customtitlebar" attribute
-  // FIXME(emilio): This should arguably be
-  // SetCustomTitlebar(windowElement->GetBoolAttr(...)), but that breaks with
-  // the early blank window which sets the custom titlebar via
-  // nsIDOMWindowUtils...
-  if (windowElement->GetBoolAttr(nsGkAtoms::customtitlebar)) {
-    mWindow->SetCustomTitlebar(true);
+  // "chromemargin" attribute
+  nsIntMargin margins;
+  windowElement->GetAttribute(u"chromemargin"_ns, attr);
+  if (nsContentUtils::ParseIntMarginValue(attr, margins)) {
+    mWindow->SetNonClientMargins(
+        LayoutDeviceIntMargin::FromUnknownMargin(margins));
   }
 
   NS_ENSURE_TRUE_VOID(mWindow);
@@ -2350,7 +2349,7 @@ NS_IMETHODIMP
 AppWindow::BeforeStartLayout() {
   ApplyChromeFlags();
   // Ordering here is important, loading width/height values in
-  // LoadPersistentWindowState() depends on the customtitlebar attribute (since
+  // LoadPersistentWindowState() depends on the chromemargin attribute (since
   // we need to translate outer to inner sizes).
   SyncAttributesToWidget();
   LoadPersistentWindowState();

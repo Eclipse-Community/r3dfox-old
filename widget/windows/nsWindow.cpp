@@ -2741,7 +2741,10 @@ bool nsWindow::UpdateNonClientMargins(bool aReflowWindow) {
     }
   } else if (mPIPWindow &&
              !StaticPrefs::widget_windows_pip_decorations_enabled()) {
-    metrics.mOffset = metrics.DefaultMargins();
+    mNonClientOffset.top = mVertResizeMargin + mCaptionHeight;
+    mNonClientOffset.bottom = mVertResizeMargin;
+    mNonClientOffset.left = mHorResizeMargin;
+    mNonClientOffset.right = mHorResizeMargin;
   } else {
     mNonClientOffset = NormalWindowNonClientOffset();
   }
@@ -2787,14 +2790,6 @@ nsresult nsWindow::SetNonClientMargins(const LayoutDeviceIntMargin& margins) {
   if (mCustomNonClient) {
     UpdateNonClientMargins();
   } else {
-    if (WindowStyle() & WS_SYSMENU) {
-      // Restore the WS_SYSMENU style if appropriate.
-      ::SetWindowLongPtrW(mWnd, GWL_STYLE, style | WS_SYSMENU);
-      // Reset the small icon as a workaround for a dwm bug, see bug 1935542.
-      HICON icon =
-          (HICON)::SendMessageW(mWnd, WM_SETICON, (WPARAM)ICON_SMALL, 0);
-      ::SendMessageW(mWnd, WM_SETICON, (WPARAM)ICON_SMALL, (LPARAM)icon);
-    }
     ResetLayout();
   }
 
@@ -2827,11 +2822,10 @@ nsAutoRegion nsWindow::ComputeNonClientHRGN() {
   // windows non-client chrome and app non-client chrome
   // in winRgn.
   ::GetWindowRect(mWnd, &rect);
-  rect.top += mCustomNonClientMetrics.mCaptionHeight +
-              mCustomNonClientMetrics.mVertResizeMargin;
-  rect.right -= mCustomNonClientMetrics.mHorResizeMargin;
-  rect.bottom -= mCustomNonClientMetrics.mVertResizeMargin;
-  rect.left += mCustomNonClientMetrics.mHorResizeMargin;
+  rect.top += mCaptionHeight + mVertResizeMargin;
+  rect.right -= mHorResizeMargin;
+  rect.bottom -= mVertResizeMargin;
+  rect.left += mHorResizeMargin;
   ::MapWindowPoints(nullptr, mWnd, (LPPOINT)&rect, 2);
   nsAutoRegion clientRgn(::CreateRectRgnIndirect(&rect));
   ::CombineRgn(winRgn, winRgn, clientRgn, RGN_DIFF);

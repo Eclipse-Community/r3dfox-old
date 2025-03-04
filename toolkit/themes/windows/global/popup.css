@@ -3,10 +3,10 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 @namespace url("http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul");
-
 @namespace html url("http://www.w3.org/1999/xhtml");
 
 /* ::::: menupopup ::::: */
+
 menupopup,
 panel {
   min-width: 1px;
@@ -16,6 +16,7 @@ panel {
   --panel-border-radius: 0;
   --panel-border-color: ThreeDShadow;
   --panel-width: initial;
+
   --panel-shadow: 0 0 var(--panel-shadow-margin) hsla(0,0%,0%,.2);
   --panel-shadow-margin: 4px;
   -moz-window-input-region-margin: var(--panel-shadow-margin);
@@ -26,8 +27,10 @@ panel {
   menupopup {
     appearance: auto;
     -moz-default-appearance: menupopup;
+
     /* Native menus are always light */
     color-scheme: light !important;
+
     /* We set the background-color / border here so that it doesn't interfere with native styling. */
     background-color: Menu;
     border: 1px solid ThreeDShadow;
@@ -42,9 +45,11 @@ panel {
   menupopup {
     /* Disable the default appearance so we can override the native styling. */
     appearance: none;
+
     /* Prevent any background or border around the outside of the shadow. */
     background-color: transparent;
     border: none;
+
     --panel-border-radius: 4px;
     --panel-padding: 4px 0;
     --panel-border-color: ThreeDShadow;
@@ -84,6 +89,7 @@ menupopup > menu > menupopup {
   width: var(--panel-width);
   min-width: 0;
   min-height: 0;
+
   /* Makes popup constraints work */
   max-height: round(up, 100% - 2 * var(--panel-shadow-margin), 1px);
   max-width: round(up, 100% - 2 * var(--panel-shadow-margin), 1px);
@@ -99,6 +105,7 @@ panel[type="arrow"].panel-no-padding::part(content) {
 }
 
 /* rules for popups associated with menulists */
+
 menulist > menupopup {
   font: inherit;
   appearance: none;

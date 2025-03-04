@@ -1838,7 +1838,7 @@ nsITheme* nsTreeBodyFrame::GetTwistyRect(int32_t aRowIndex,
     aImageRect.width = aTwistyRect.width;
   else
     aTwistyRect.width = aImageRect.width;
-  
+
   bool useTheme = false;
   nsITheme* theme = nullptr;
   StyleAppearance appearance =
@@ -1848,7 +1848,7 @@ nsITheme* nsTreeBodyFrame::GetTwistyRect(int32_t aRowIndex,
     if (theme->ThemeSupportsWidget(aPresContext, nullptr, appearance))
       useTheme = true;
   }
-  
+
   if (useTheme) {
     LayoutDeviceIntSize minTwistySizePx =
         theme->GetMinimumWidgetSize(aPresContext, this, appearance);
@@ -1859,7 +1859,7 @@ nsITheme* nsTreeBodyFrame::GetTwistyRect(int32_t aRowIndex,
         aPresContext->DevPixelsToAppUnits(minTwistySizePx.width);
     minTwistySize.height =
         aPresContext->DevPixelsToAppUnits(minTwistySizePx.height);
-        
+
     if (aTwistyRect.width < minTwistySize.width) {
       aTwistyRect.width = minTwistySize.width;
     }
@@ -2702,6 +2702,7 @@ ImgDrawResult nsTreeBodyFrame::PaintRow(int32_t aRowIndex,
   if (appearance != StyleAppearance::None) {
     theme = aPresContext->Theme();
   }
+
   if (theme && theme->ThemeSupportsWidget(aPresContext, nullptr, appearance)) {
     nsRect dirty;
     dirty.IntersectRect(rowRect, aDirtyRect);
@@ -3103,6 +3104,7 @@ ImgDrawResult nsTreeBodyFrame::PaintTwisty(
     // Paint our borders and background for our image rect.
     result &= PaintBackgroundLayer(twistyContext, aPresContext,
                                    aRenderingContext, twistyRect, aDirtyRect);
+
     if (theme) {
       if (isRTL) twistyRect.x = rightEdge - twistyRect.width;
       // yeah, I know it says we're drawing a background, but a twisty is really
@@ -3128,7 +3130,7 @@ ImgDrawResult nsTreeBodyFrame::PaintTwisty(
       GetImage(aRowIndex, aColumn, true, twistyContext, getter_AddRefs(image));
       if (image) {
         nsPoint anchorPoint = twistyRect.TopLeft();
-        
+
         // Center the image. XXX Obey vertical-align style prop?
         if (imageSize.height < twistyRect.height) {
           anchorPoint.y += (twistyRect.height - imageSize.height) / 2;

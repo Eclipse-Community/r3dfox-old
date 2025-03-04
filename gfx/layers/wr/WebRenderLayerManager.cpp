@@ -387,7 +387,7 @@ void WebRenderLayerManager::EndTransactionWithoutLayer(
   if (dumpEnabled) {
     printf_stderr("(window overlay)\n");
     Unused << mDLBuilder->Dump(/*indent*/ 1, Some(builderDumpIndex), Nothing());
-  }  
+  }
 
   if (AsyncPanZoomEnabled()) {
     if (mIsFirstPaint) {

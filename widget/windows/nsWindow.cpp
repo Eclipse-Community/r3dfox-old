@@ -2151,6 +2151,7 @@ void nsWindow::Resize(double aX, double aY, double aWidth, double aHeight,
       }
 
       ClearThemeRegion();
+
       double oldScale = mDefaultScale;
       mResizeState = RESIZING;
       VERIFY(
@@ -2590,6 +2591,7 @@ static const wchar_t kManageWindowInfoProperty[] = L"ManageWindowInfoProperty";
 typedef BOOL(WINAPI* GetWindowInfoPtr)(HWND hwnd, PWINDOWINFO pwi);
 static WindowsDllInterceptor::FuncHookType<GetWindowInfoPtr>
     sGetWindowInfoPtrStub;
+
 BOOL WINAPI GetWindowInfoHook(HWND hWnd, PWINDOWINFO pwi) {
   if (!sGetWindowInfoPtrStub) {
     NS_ASSERTION(FALSE, "Something is horribly wrong in GetWindowInfoHook!");
@@ -2606,14 +2608,17 @@ BOOL WINAPI GetWindowInfoHook(HWND hWnd, PWINDOWINFO pwi) {
     pwi->dwWindowStatus = (windowStatus == 1 ? 0 : WS_ACTIVECAPTION);
   return result;
 }
+
 void nsWindow::UpdateGetWindowInfoCaptionStatus(bool aActiveCaption) {
   if (!mWnd) return;
+
   sUser32Intercept.Init("user32.dll");
   sGetWindowInfoPtrStub.Set(sUser32Intercept, "GetWindowInfo",
                             &GetWindowInfoHook);
   if (!sGetWindowInfoPtrStub) {
     return;
   }
+
   // Update our internally tracked caption status
   SetPropW(mWnd, kManageWindowInfoProperty,
            reinterpret_cast<HANDLE>(static_cast<INT_PTR>(aActiveCaption) + 1));
@@ -2956,8 +2961,10 @@ HRGN nsWindow::ExcludeNonClientFromPaintRegion(HRGN aRegion) {
  * Sets the window background paint color.
  *
  **************************************************************/
+
 void nsWindow::SetBackgroundColor(const nscolor& aColor) {
   if (mBrush) ::DeleteObject(mBrush);
+
   mBrush = ::CreateSolidBrush(NSRGB_2_COLOREF(aColor));
   if (mWnd != nullptr) {
     ::SetClassLongPtrW(mWnd, GCLP_HBRBACKGROUND, (LONG_PTR)mBrush);
@@ -3187,6 +3194,7 @@ void nsWindow::SetTransparencyMode(TransparencyMode aMode) {
 
 void nsWindow::UpdateOpaqueRegion(const LayoutDeviceIntRegion& aOpaqueRegion) {
   if (!HasGlass() || GetParent()) return;
+
   // If there is no opaque region or hidechrome=true, set margins
   // to support a full sheet of glass. Comments in MSDN indicate
   // all values must be set to -1 to get a full sheet of glass.
@@ -3206,6 +3214,7 @@ void nsWindow::UpdateOpaqueRegion(const LayoutDeviceIntRegion& aOpaqueRegion) {
     }
     margins.cyTopHeight = largest.Y();
   }
+
   // Only update glass area if there are changes
   if (memcmp(&mGlassMargins, &margins, sizeof mGlassMargins)) {
     mGlassMargins = margins;
@@ -3234,6 +3243,7 @@ void nsWindow::UpdateGlass() {
           : gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled();
 
   MARGINS margins = mGlassMargins;
+
   // DWMNCRP_USEWINDOWSTYLE - The non-client rendering area is
   //                          rendered based on the window style.
   // DWMNCRP_ENABLED        - The non-client area rendering is
@@ -3253,10 +3263,12 @@ void nsWindow::UpdateGlass() {
     default:
       break;
   }
+
   MOZ_LOG(gWindowsLog, LogLevel::Info,
           ("glass margins: left:%d top:%d right:%d bottom:%d\n",
            margins.cxLeftWidth, margins.cyTopHeight, margins.cxRightWidth,
            margins.cyBottomHeight));
+
   // Extends the window frame behind the client area
   if (dwmCompositionEnabled) {
     DwmExtendFrameIntoClientArea(mWnd, &margins);
@@ -4244,9 +4256,11 @@ void nsWindow::UpdateThemeGeometries(
   if (!layerManager) {
     return;
   }
+
   if (!HasGlass() || !dwmCompositionEnabled) {
     return;
   }
+
   mWindowButtonsRect = Nothing();
   for (size_t i = 0; i < aThemeGeometries.Length(); i++) {
     if (aThemeGeometries[i].mType ==
@@ -5120,7 +5134,7 @@ bool nsWindow::ProcessMessageInternal(UINT msg, WPARAM& wParam, LPARAM& lParam,
 
   // Glass hit testing w/custom transparent margins
   LRESULT dwmHitResult;
-  if (mCustomNonClient && dwmCompositionEnabled  &&
+  if (mCustomNonClient && dwmCompositionEnabled &&
       /* We don't do this for win10 glass with a custom titlebar,
        * in order to avoid the caption buttons breaking. */
       DwmDefWindowProc(mWnd, msg, wParam, lParam, &dwmHitResult)) {
@@ -5381,8 +5395,8 @@ bool nsWindow::ProcessMessageInternal(UINT msg, WPARAM& wParam, LPARAM& lParam,
        * sending the message with an updated title
        */
 
-        if ((mSendingSetText && dwmCompositionEnabled) ||
-          !mCustomNonClient || mNonClientMargins.top == -1)
+      if ((mSendingSetText && dwmCompositionEnabled) || !mCustomNonClient ||
+          mNonClientMargins.top == -1)
         break;
 
       {
@@ -5461,9 +5475,12 @@ bool nsWindow::ProcessMessageInternal(UINT msg, WPARAM& wParam, LPARAM& lParam,
        * non-client areas we paint manually. Then call defwndproc
        * to do the actual painting.
        */
+
       if (!mCustomNonClient) break;
+
       // let the dwm handle nc painting on glass
       if (dwmCompositionEnabled) break;
+
       HRGN paintRgn = ExcludeNonClientFromPaintRegion((HRGN)wParam);
       LRESULT res = CallWindowProcW(GetPrevWindowProc(), mWnd, msg,
                                     (WPARAM)paintRgn, lParam);
@@ -6385,6 +6402,7 @@ void nsWindow::FinishLiveResizing(ResizeState aNewState) {
  * Broadcast messages to all windows.
  *
  **************************************************************/
+
 // Enumerate all child windows sending aMsg to each of them
 BOOL CALLBACK nsWindow::BroadcastMsgToChildren(HWND aWnd, LPARAM aMsg) {
   WNDPROC winProc = (WNDPROC)::GetWindowLongPtrW(aWnd, GWLP_WNDPROC);
@@ -6394,6 +6412,7 @@ BOOL CALLBACK nsWindow::BroadcastMsgToChildren(HWND aWnd, LPARAM aMsg) {
   }
   return TRUE;
 }
+
 // Enumerate all top level windows specifying that the children of each
 // top level window should be enumerated. Do *not* send the message to
 // each top level window since it is assumed that the toolkit will send

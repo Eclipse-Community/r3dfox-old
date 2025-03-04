@@ -416,11 +416,13 @@ void gfxWindowsPlatform::InitAcceleration() {
       gfxVars::SetDwmCompositionEnabled(true);
     }
   }
+
   // gfxVars are not atomic, but multiple threads can query DWM status
   // Therefore, mirror value into an atomic
   mDwmCompositionStatus = gfxVars::DwmCompositionEnabled()
                               ? DwmCompositionStatus::Enabled
                               : DwmCompositionStatus::Disabled;
+
   gfxVars::SetDwmCompositionEnabledListener([this] {
     this->mDwmCompositionStatus = gfxVars::DwmCompositionEnabled()
                                       ? DwmCompositionStatus::Enabled
@@ -1508,6 +1510,7 @@ void gfxWindowsPlatform::InitGPUProcessSupport() {
 
 bool gfxWindowsPlatform::DwmCompositionEnabled() {
   MOZ_RELEASE_ASSERT(mDwmCompositionStatus != DwmCompositionStatus::Unknown);
+
   return mDwmCompositionStatus == DwmCompositionStatus::Enabled;
 }
 

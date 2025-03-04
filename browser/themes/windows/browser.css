@@ -98,23 +98,6 @@
 }
 
 @media (-moz-windows-classic) {
-  /**
-   * In the classic themes, the titlebar has a horizontal gradient, which is
-   * problematic for reading the text of background tabs when they're in the
-   * titlebar. We side-step this issue by layering our own background underneath
-   * the tabs.
-   */
-  @media (-moz-bool-pref: "widget.windows-style.show-fog") {
-    :root[tabsintitlebar]:not([sizemode=fullscreen]) #TabsToolbar {
-      background-image: linear-gradient(transparent, ActiveCaption);
-      background-size: auto 200%;
-    }
-
-    :root[tabsintitlebar]:not([sizemode=fullscreen]) #TabsToolbar:-moz-window-inactive {
-      background-image: linear-gradient(transparent, InactiveCaption);
-    }
-  }
-
   /* Add a window top border for webextension themes */
   :root[lwtheme][tabsintitlebar][sizemode="normal"] #navigator-toolbox {
     background-image: linear-gradient(to bottom,

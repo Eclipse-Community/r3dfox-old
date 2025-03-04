@@ -2804,7 +2804,7 @@ bool nsWindow::UpdateNonClientMargins(bool aReflowWindow) {
     // a new issue where widget edges would sometimes appear to bleed into other
     // displays (bug 1614218).
     int verticalResize = 0;
-    if (StaticPrefs::widget_windows_style_modern() == true) {
+    if (isWin10OrLater) {
       verticalResize =
           WinUtils::GetSystemMetricsForDpi(SM_CYFRAME, dpi) +
           (hasCaption ? WinUtils::GetSystemMetricsForDpi(SM_CXPADDEDBORDER, dpi)
@@ -2831,7 +2831,7 @@ bool nsWindow::UpdateNonClientMargins(bool aReflowWindow) {
       // to clear the portion of the NC region that is exposed by the
       // hidden taskbar.  As above, we clear the bottom of the NC region
       // when the taskbar is at the top of the screen.
-      if (IsWin10OrLater()) {
+      if (isWin10OrLater) {
         UINT clearEdge = (edge == ABE_TOP) ? ABE_BOTTOM : edge;
         mClearNCEdge = Some(clearEdge);
       }
@@ -4262,16 +4262,19 @@ void nsWindow::UpdateThemeGeometries(
   }
 
   mWindowButtonsRect = Nothing();
-  for (size_t i = 0; i < aThemeGeometries.Length(); i++) {
-    if (aThemeGeometries[i].mType ==
-        nsNativeThemeWin::eThemeGeometryTypeWindowButtons) {
-      LayoutDeviceIntRect bounds = aThemeGeometries[i].mRect;
-      // Extend the bounds by one pixel to the right, because that's how much
-      // the actual window button shape extends past the client area of the
-      // window (and overlaps the right window frame).
-      bounds.SetWidth(bounds.Width() + 1);
-      if (!mWindowButtonsRect) {
-        mWindowButtonsRect = Some(bounds);
+
+  if (!((winVerOverride == 0 && IsWin10OrLater()) || winVerOverride >= 10)) {
+    for (size_t i = 0; i < aThemeGeometries.Length(); i++) {
+      if (aThemeGeometries[i].mType ==
+          nsNativeThemeWin::eThemeGeometryTypeWindowButtons) {
+        LayoutDeviceIntRect bounds = aThemeGeometries[i].mRect;
+        // Extend the bounds by one pixel to the right, because that's how much
+        // the actual window button shape extends past the client area of the
+        // window (and overlaps the right window frame).
+        bounds.SetWidth(bounds.Width() + 1);
+        if (!mWindowButtonsRect) {
+          mWindowButtonsRect = Some(bounds);
+        }
       }
     }
   }
@@ -5137,6 +5140,7 @@ bool nsWindow::ProcessMessageInternal(UINT msg, WPARAM& wParam, LPARAM& lParam,
   if (mCustomNonClient && dwmCompositionEnabled &&
       /* We don't do this for win10 glass with a custom titlebar,
        * in order to avoid the caption buttons breaking. */
+      !(isWin10 && HasGlass()) &&
       DwmDefWindowProc(mWnd, msg, wParam, lParam, &dwmHitResult)) {
     *aRetValue = dwmHitResult;
     return true;

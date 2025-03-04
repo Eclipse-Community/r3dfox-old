@@ -237,7 +237,9 @@ void nsUXThemeData::UpdateTitlebarInfo(HWND aWnd) {
   }
 
   // NB: sTitlebarInfoPopulatedThemed is always true pre-vista.
-  if (sTitlebarInfoPopulatedThemed) return;
+  if (sTitlebarInfoPopulatedThemed ||
+      (IsWin8OrLater() && dwmCompositionEnabled))
+    return;
 
   // Query a temporary, visible window with command buttons to get
   // the right metrics.
@@ -375,7 +377,7 @@ void nsUXThemeData::UpdateNativeThemeInfo() {
   // themes "don't count" as default themes, so we specifically check for high
   // contrast mode in that situation.
   sIsDefaultWindowsTheme = [&] {
-    if (sIsHighContrastOn) {
+    if (sIsHighContrastOn && IsWin8OrLater()) {
       return false;
     }
     return sThemeId == WindowsTheme::Aero ||

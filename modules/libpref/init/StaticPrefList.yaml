@@ -16905,12 +16905,6 @@
   value: 0
   mirror: always
 
-# Whether enable windows-modern mode for stylesheets
-- name: widget.windows-style.modern
-  type: bool
-  value: false
-  mirror: always
-
 # Global user preference for disabling native theme in content processes.
 #
 # NOTE(emilio): When changing this make sure to update the non_native_theme

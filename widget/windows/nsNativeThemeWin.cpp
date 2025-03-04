@@ -86,10 +86,12 @@ auto nsNativeThemeWin::IsWidgetNonNative(nsIFrame* aFrame,
       }
     }
   }
+
   if (aAppearance == StyleAppearance::Tooltip &&
       StaticPrefs::widget_native_controls_tooltip_style() == 0) {
     return NonNative::No;
   }
+
   if (aAppearance == StyleAppearance::FocusOutline &&
       StaticPrefs::widget_native_controls_tooltip_style() == 0) {
     return NonNative::No;
@@ -127,7 +129,6 @@ static int32_t GetTopLevelWindowActiveState(nsIFrame* aFrame) {
 
   if (window->GetWindowHandle() == ::GetActiveWindow())
     return mozilla::widget::themeconst::FS_ACTIVE;
-
   return mozilla::widget::themeconst::FS_INACTIVE;
 }
 
@@ -145,7 +146,6 @@ static int32_t GetWindowFrameButtonState(nsIFrame* aFrame,
       return mozilla::widget::themeconst::BS_PUSHED;
     return mozilla::widget::themeconst::BS_HOT;
   }
-
   return mozilla::widget::themeconst::BS_NORMAL;
 }
 
@@ -155,7 +155,6 @@ static int32_t GetClassicWindowFrameButtonState(ElementState elementState) {
     return DFCS_BUTTONPUSH | DFCS_PUSHED;
   return DFCS_BUTTONPUSH;
 }
-
 
 static bool IsTopLevelMenu(nsIFrame* aFrame) {
   auto* menu = dom::XULButtonElement::FromNodeOrNull(aFrame->GetContent());
@@ -285,20 +284,25 @@ static HRESULT DrawThemeBGRTLAware(HANDLE aTheme, HDC aHdc, int aPart,
   NS_ASSERTION(aHdc, "Bad hdc.");
   NS_ASSERTION(aWidgetRect, "Bad rect.");
   NS_ASSERTION(aClipRect, "Bad clip rect.");
+
   if (!aIsRtl) {
     return DrawThemeBackground(aTheme, aHdc, aPart, aState, aWidgetRect,
                                aClipRect);
   }
+
   HGDIOBJ hObj = GetCurrentObject(aHdc, OBJ_BITMAP);
   BITMAP bitmap;
   POINT vpOrg;
+
   if (hObj && GetObject(hObj, sizeof(bitmap), &bitmap) &&
       GetViewportOrgEx(aHdc, &vpOrg)) {
     RECT newWRect(*aWidgetRect);
     newWRect.left = bitmap.bmWidth - (aWidgetRect->right + 2 * vpOrg.x);
     newWRect.right = bitmap.bmWidth - (aWidgetRect->left + 2 * vpOrg.x);
+
     RECT newCRect;
     RECT* newCRectPtr = nullptr;
+
     if (aClipRect) {
       newCRect.top = aClipRect->top;
       newCRect.bottom = aClipRect->bottom;
@@ -306,6 +310,7 @@ static HRESULT DrawThemeBGRTLAware(HANDLE aTheme, HDC aHdc, int aPart,
       newCRect.right = bitmap.bmWidth - (aClipRect->left + 2 * vpOrg.x);
       newCRectPtr = &newCRect;
     }
+
     SetLayout(aHdc, LAYOUT_RTL);
     HRESULT hr = DrawThemeBackground(aTheme, aHdc, aPart, aState, &newWRect,
                                      newCRectPtr);
@@ -812,6 +817,7 @@ nsresult nsNativeThemeWin::GetCachedMinimumWidgetSize(
       aResult->width += gutterSize.cx;
       break;
     }
+
     case StyleAppearance::Menuarrow:
       // Use the width of the arrow glyph as padding. See the drawing
       // code for details.
@@ -1539,33 +1545,41 @@ nsresult nsNativeThemeWin::GetThemePartAndState(nsIFrame* aFrame,
     case StyleAppearance::Checkmenuitem:
     case StyleAppearance::Radiomenuitem: {
       ElementState elementState = GetContentState(aFrame, aAppearance);
+
       auto* menu = dom::XULButtonElement::FromNodeOrNull(aFrame->GetContent());
+
       const bool isTopLevel = IsTopLevelMenu(aFrame);
       const bool isOpen = menu && menu->IsMenuPopupOpen();
       const bool isHover = IsMenuActive(aFrame, aAppearance);
+
       if (isTopLevel) {
         aPart = MENU_BARITEM;
+
         if (isOpen)
           aState = MBI_PUSHED;
         else if (isHover)
           aState = MBI_HOT;
         else
           aState = MBI_NORMAL;
+
         // the disabled states are offset by 3
         if (elementState.HasState(ElementState::DISABLED)) {
           aState += 3;
         }
       } else {
         aPart = MENU_POPUPITEM;
+
         if (isHover)
           aState = MPI_HOT;
         else
           aState = MPI_NORMAL;
+
         // the disabled states are offset by 2
         if (elementState.HasState(ElementState::DISABLED)) {
           aState += 2;
         }
       }
+
       return NS_OK;
     }
     case StyleAppearance::Menuseparator:
@@ -1582,14 +1596,18 @@ nsresult nsNativeThemeWin::GetThemePartAndState(nsIFrame* aFrame,
     case StyleAppearance::Menucheckbox:
     case StyleAppearance::Menuradio: {
       ElementState elementState = GetContentState(aFrame, aAppearance);
+
       aPart = MENU_POPUPCHECK;
       aState = MC_CHECKMARKNORMAL;
+
       // Radio states are offset by 2
       if (aAppearance == StyleAppearance::Menuradio) aState += 2;
+
       // the disabled states are offset by 1
       if (elementState.HasState(ElementState::DISABLED)) {
         aState += 1;
       }
+
       return NS_OK;
     }
     case StyleAppearance::Menuitemtext:
@@ -1807,26 +1825,33 @@ RENDER_AGAIN:
              aAppearance == StyleAppearance::Menuradio) {
     bool isChecked = false;
     isChecked = CheckBooleanAttr(aFrame, nsGkAtoms::checked);
+
     if (isChecked) {
       int bgState = MCB_NORMAL;
       ElementState elementState = GetContentState(aFrame, aAppearance);
+
       // the disabled states are offset by 1
       if (elementState.HasState(ElementState::DISABLED)) {
         bgState += 1;
       }
+
       SIZE checkboxBGSize(GetCheckboxBGSize(theme, hdc));
+
       RECT checkBGRect = widgetRect;
       if (IsFrameRTL(aFrame)) {
         checkBGRect.left = checkBGRect.right - checkboxBGSize.cx;
       } else {
         checkBGRect.right = checkBGRect.left + checkboxBGSize.cx;
       }
+
       // Center the checkbox background vertically in the menuitem
       checkBGRect.top +=
           (checkBGRect.bottom - checkBGRect.top) / 2 - checkboxBGSize.cy / 2;
       checkBGRect.bottom = checkBGRect.top + checkboxBGSize.cy;
+
       DrawThemeBackground(theme, hdc, MENU_POPUPCHECKBACKGROUND, bgState,
                           &checkBGRect, &clipRect);
+
       MARGINS checkMargins = GetCheckboxMargins(theme, hdc);
       RECT checkRect = checkBGRect;
       checkRect.left += checkMargins.cxLeftWidth;
@@ -1842,14 +1867,18 @@ RENDER_AGAIN:
     SIZE borderSize;
     GetThemePartSize(theme, hdc, MENU_POPUPBORDERS, 0, nullptr, TS_TRUE,
                      &borderSize);
+
     RECT bgRect = widgetRect;
     bgRect.top += borderSize.cy;
     bgRect.bottom -= borderSize.cy;
     bgRect.left += borderSize.cx;
     bgRect.right -= borderSize.cx;
+
     DrawThemeBackground(theme, hdc, MENU_POPUPBACKGROUND, /* state */ 0,
                         &bgRect, &clipRect);
+
     SIZE gutterSize(GetGutterSize(theme, hdc));
+
     RECT gutterRect;
     gutterRect.top = bgRect.top;
     gutterRect.bottom = bgRect.bottom;
@@ -1860,15 +1889,18 @@ RENDER_AGAIN:
       gutterRect.left = bgRect.left;
       gutterRect.right = gutterRect.left + gutterSize.cx;
     }
+
     DrawThemeBGRTLAware(theme, hdc, MENU_POPUPGUTTER, /* state */ 0,
                         &gutterRect, &clipRect, IsFrameRTL(aFrame));
   } else if (aAppearance == StyleAppearance::Menuseparator) {
     SIZE gutterSize(GetGutterSize(theme, hdc));
+
     RECT sepRect = widgetRect;
     if (IsFrameRTL(aFrame))
       sepRect.right -= gutterSize.cx;
     else
       sepRect.left += gutterSize.cx;
+
     DrawThemeBackground(theme, hdc, MENU_POPUPSEPARATOR, /* state */ 0,
                         &sepRect, &clipRect);
   } else if (aAppearance == StyleAppearance::Menuarrow) {
@@ -1877,10 +1909,14 @@ RENDER_AGAIN:
     // For StyleAppearance::Menuarrow, layout may hand us a widget rect larger
     // than the glyph rect we request in GetMinimumWidgetSize. To prevent
     // distortion we have to position and scale what we draw.
+
     SIZE glyphSize;
     GetThemePartSize(theme, hdc, part, state, nullptr, TS_TRUE, &glyphSize);
+
     int32_t widgetHeight = widgetRect.bottom - widgetRect.top;
+
     RECT renderRect = widgetRect;
+
     // We request (glyph width * 2, glyph height) in GetMinimumWidgetSize. In
     // Firefox some menu items provide the full height of the item to us, in
     // others our widget rect is the exact dims of our arrow glyph. Adjust the
@@ -1938,6 +1974,7 @@ RENDER_AGAIN:
     widgetRect.right += border.right;
     widgetRect.top -= border.top;
     widgetRect.bottom += border.bottom;
+
     DTBGOPTS opts = {sizeof(DTBGOPTS), DTBG_OMITCONTENT | DTBG_CLIPRECT,
                      clipRect};
     DrawThemeBackgroundEx(theme, hdc, part, state, &widgetRect, &opts);
@@ -1983,11 +2020,13 @@ RENDER_AGAIN:
   } else if (aAppearance == StyleAppearance::ScrollbarthumbHorizontal ||
              aAppearance == StyleAppearance::ScrollbarthumbVertical) {
     // Draw the decorative gripper for the scrollbar thumb button, if it fits
+
     SIZE gripSize;
     MARGINS thumbMgns;
     int gripPart = (aAppearance == StyleAppearance::ScrollbarthumbHorizontal)
                        ? SP_GRIPPERHOR
                        : SP_GRIPPERVERT;
+
     if (GetThemePartSize(theme, hdc, gripPart, state, nullptr, TS_TRUE,
                          &gripSize) == S_OK &&
         GetThemeMargins(theme, hdc, part, state, TMT_CONTENTMARGINS, nullptr,
@@ -2056,7 +2095,6 @@ LayoutDeviceIntMargin nsNativeThemeWin::GetWidgetBorder(
     return result;
   }
 
-  //TODO: RESTORE ALL OF THESE!
   if (!WidgetIsContainer(aAppearance) ||
       aAppearance == StyleAppearance::Toolbox ||
       aAppearance == StyleAppearance::MozWinMediaToolbox ||
@@ -2148,8 +2186,10 @@ bool nsNativeThemeWin::GetWidgetPadding(nsDeviceContext* aContext,
   if (aAppearance == StyleAppearance::MozWindowButtonBox ||
       aAppearance == StyleAppearance::MozWindowButtonBoxMaximized) {
     aResult->SizeTo(0, 0, 0, 0);
+
     // aero glass doesn't display custom buttons
     if (dwmCompositionEnabled) return true;
+
     // button padding for standard windows
     if (aAppearance == StyleAppearance::MozWindowButtonBox) {
       aResult->top = GetSystemMetrics(SM_CXFRAME);
@@ -2481,6 +2521,7 @@ LayoutDeviceIntSize nsNativeThemeWin::GetMinimumWidgetSize(
         return result;
       }
       break;
+
     case StyleAppearance::Menuimage:
     case StyleAppearance::Menucheckbox:
     case StyleAppearance::Menuradio: {
@@ -2489,14 +2530,17 @@ LayoutDeviceIntSize nsNativeThemeWin::GetMinimumWidgetSize(
       ScaleForFrameDPI(&result, aFrame);
       return result;
     }
+
     case StyleAppearance::Menuitemtext:
       return {};
+
     case StyleAppearance::ProgressBar:
       // Best-fit size for progress meters is too large for most
       // themes. We want these widgets to be able to really shrink
       // down, so use the min-size request value (of 0).
       sizeReq = TS_MIN;
       break;
+
     case StyleAppearance::Resizer:
       break;
 
@@ -2599,7 +2643,7 @@ bool nsNativeThemeWin::WidgetAttributeChangeRequiresRepaint(
        aAppearance == StyleAppearance::MozMenulistArrowButton ||
       aAppearance == StyleAppearance::MozMenulistArrowButton) {
     return true;
-  }  
+  }
 
   // On Vista, the scrollbar buttons need to change state when the track has/doesn't have hover
   if (!IsVistaOrLater() &&
@@ -2993,6 +3037,7 @@ LayoutDeviceIntSize nsNativeThemeWin::ClassicGetMinimumWidgetSize(
       if (ScrollbarDrawing::IsScrollbarWidthThin(aFrame)) {
         result.height >>= 1;
       }
+
       break;
     case StyleAppearance::MozMenulistArrowButton:
       result.width = ::GetSystemMetrics(SM_CXVSCROLL);
@@ -3030,6 +3075,7 @@ LayoutDeviceIntSize nsNativeThemeWin::ClassicGetMinimumWidgetSize(
       result.height = 10;
       break;
     }
+
     case StyleAppearance::MozWindowTitlebarMaximized:
     case StyleAppearance::MozWindowTitlebar:
       result.height =
@@ -3144,26 +3190,33 @@ nsresult nsNativeThemeWin::ClassicGetThemePartAndState(
     case StyleAppearance::Checkmenuitem:
     case StyleAppearance::Radiomenuitem: {
       ElementState elementState = GetContentState(aFrame, aAppearance);
+
       auto* menu = dom::XULButtonElement::FromNodeOrNull(aFrame->GetContent());
+
       const bool isTopLevel = IsTopLevelMenu(aFrame);
       const bool isOpen = menu && menu->IsMenuPopupOpen();
+
       // We indicate top-level-ness using aPart. 0 is a normal menu item,
       // 1 is a top-level menu item. The state of the item is composed of
       // DFCS_* flags only.
       aPart = 0;
       aState = 0;
+
       if (elementState.HasState(ElementState::DISABLED)) {
         aState |= DFCS_INACTIVE;
       }
+
       if (isTopLevel) {
         aPart = 1;
         if (isOpen) {
           aState |= DFCS_PUSHED;
         }
       }
+
       if (IsMenuActive(aFrame, aAppearance)) {
         aState |= DFCS_HOT;
       }
+
       return NS_OK;
     }
     case StyleAppearance::Menucheckbox:
@@ -3171,10 +3224,12 @@ nsresult nsNativeThemeWin::ClassicGetThemePartAndState(
     case StyleAppearance::Menuarrow: {
       aState = 0;
       ElementState elementState = GetContentState(aFrame, aAppearance);
+
       if (elementState.HasState(ElementState::DISABLED)) {
         aState |= DFCS_INACTIVE;
       }
       if (IsMenuActive(aFrame, aAppearance)) aState |= DFCS_HOT;
+
       if (aAppearance == StyleAppearance::Menucheckbox ||
           aAppearance == StyleAppearance::Menuradio) {
         if (IsCheckedButton(aFrame)) aState |= DFCS_CHECKED;
@@ -3252,6 +3307,7 @@ nsresult nsNativeThemeWin::ClassicGetThemePartAndState(
     case StyleAppearance::ScrollbarbuttonLeft:
     case StyleAppearance::ScrollbarbuttonRight: {
       ElementState contentState = GetContentState(aFrame, aAppearance);
+
       aPart = DFC_SCROLL;
       switch (aAppearance) {
         case StyleAppearance::ScrollbarbuttonUp:
@@ -3269,12 +3325,14 @@ nsresult nsNativeThemeWin::ClassicGetThemePartAndState(
         default:
           break;
       }
+
       if (contentState.HasState(ElementState::DISABLED)) {
         aState |= DFCS_INACTIVE;
       } else if (contentState.HasAllStates(ElementState::HOVER |
                                            ElementState::ACTIVE)) {
         aState |= DFCS_PUSHED | DFCS_FLAT;
       }
+
       return NS_OK;
     }
     case StyleAppearance::SpinnerUpbutton:
@@ -3450,6 +3508,7 @@ static void DrawMenuImage(HDC hdc, const RECT& rc, int32_t aComponent,
     // they change currently, so we can't do so easily. Same for the bitmap.
     int checkW = ::GetSystemMetrics(SM_CXMENUCHECK);
     int checkH = ::GetSystemMetrics(SM_CYMENUCHECK);
+
     HBITMAP hMonoBitmap = ::CreateBitmap(checkW, checkH, 1, 1, nullptr);
     if (hMonoBitmap) {
       HBITMAP hPrevBitmap = (HBITMAP)::SelectObject(hMemoryDC, hMonoBitmap);
@@ -3459,9 +3518,11 @@ static void DrawMenuImage(HDC hdc, const RECT& rc, int32_t aComponent,
         RECT imgRect = {0, 0, checkW, checkH};
         POINT imgPos = {rc.left + (rc.right - rc.left - checkW) / 2,
                         rc.top + (rc.bottom - rc.top - checkH) / 2};
+
         // XXXzeniko Windows renders these 1px lower than you'd expect
         if (aComponent == DFCS_MENUCHECK || aComponent == DFCS_MENUBULLET)
           imgPos.y++;
+
         ::DrawFrameControl(hMemoryDC, &imgRect, DFC_MENU, aComponent);
         COLORREF oldTextCol = ::SetTextColor(hdc, 0x00000000);
         COLORREF oldBackCol = ::SetBkColor(hdc, 0x00FFFFFF);
@@ -3598,8 +3659,10 @@ RENDER_AGAIN:
     case StyleAppearance::Treeview: {
       // Draw inset edge
       ::DrawEdge(hdc, &widgetRect, EDGE_SUNKEN, BF_RECT | BF_ADJUST);
+
       // Fill in window color background
       ::FillRect(hdc, &widgetRect, (HBRUSH)(COLOR_WINDOW + 1));
+
       break;
     }
       // Draw ToolTip background
@@ -3607,6 +3670,7 @@ RENDER_AGAIN:
       ::FrameRect(hdc, &widgetRect, ::GetSysColorBrush(COLOR_WINDOWFRAME));
       InflateRect(&widgetRect, -1, -1);
       ::FillRect(hdc, &widgetRect, ::GetSysColorBrush(COLOR_INFOBK));
+
       break;
     case StyleAppearance::Groupbox:
       ::DrawEdge(hdc, &widgetRect, EDGE_ETCHED, BF_RECT | BF_ADJUST);
@@ -3628,12 +3692,15 @@ RENDER_AGAIN:
     case StyleAppearance::ScrollbarthumbVertical:
     case StyleAppearance::ScrollbarthumbHorizontal:
       ::DrawEdge(hdc, &widgetRect, EDGE_RAISED, BF_RECT | BF_MIDDLE);
+
       break;
       // Draw 3D inset statusbar panel
     case StyleAppearance::Statusbarpanel: {
       if (aFrame->GetNextSibling())
         widgetRect.right -= 2;  // space between sibling status panels
+
       ::DrawEdge(hdc, &widgetRect, BDR_SUNKENOUTER, BF_RECT | BF_MIDDLE);
+
       break;
     }
     case StyleAppearance::RangeThumb: {
@@ -3679,9 +3746,11 @@ RENDER_AGAIN:
       // Windows fills in the scrollbar track differently
       // depending on whether these are equal
       DWORD color3D, colorScrollbar, colorWindow;
+
       color3D = ::GetSysColor(COLOR_3DFACE);
       colorWindow = ::GetSysColor(COLOR_WINDOW);
       colorScrollbar = ::GetSysColor(COLOR_SCROLLBAR);
+
       if ((color3D != colorScrollbar) && (colorWindow != colorScrollbar))
         // Use solid brush
         ::FillRect(hdc, &widgetRect, (HBRUSH)(COLOR_SCROLLBAR + 1));
@@ -3691,10 +3760,12 @@ RENDER_AGAIN:
       }
       // XXX should invert the part of the track being clicked here
       // but the track is never :active
+
       break;
     }
     case StyleAppearance::Scrollcorner: {
       ::FillRect(hdc, &widgetRect, (HBRUSH)(COLOR_SCROLLBAR + 1));
+
       // Are Mozilla fucking retarded? They added this in 2018
       // (https://github.com/mozilla/gecko-dev/blob/7038d5f94456dcb558f7c7f6fe66d913070001c5/widget/windows/nsNativeThemeWin.cpp#L3793-L3795)
       // and never fixed this fallthrough.
@@ -3738,7 +3809,6 @@ RENDER_AGAIN:
                  BF_SOFT | BF_MIDDLE | BF_LEFT | BF_RIGHT | BF_BOTTOM);
 
       break;
-
     case StyleAppearance::Menubar:
       break;
     case StyleAppearance::Menupopup:
@@ -3784,6 +3854,7 @@ RENDER_AGAIN:
         color = COLOR_GRAYTEXT;
       else if ((state & DFCS_HOT))
         color = COLOR_HIGHLIGHTTEXT;
+
       if (aAppearance == StyleAppearance::Menucheckbox)
         DrawMenuImage(hdc, widgetRect, DFCS_MENUCHECK, color);
       else if (aAppearance == StyleAppearance::Menuradio)
@@ -3814,8 +3885,10 @@ RENDER_AGAIN:
     case StyleAppearance::MozWindowTitlebarMaximized: {
       RECT rect = widgetRect;
       int32_t offset = GetSystemMetrics(SM_CXFRAME);
+
       // first fill the area to the color of the window background
       ::FillRect(hdc, &rect, (HBRUSH)(COLOR_3DFACE + 1));
+
       // inset the caption area so it doesn't overflow.
       rect.top += offset;
       // if enabled, draw a gradient titlebar background, otherwise
@@ -3836,6 +3909,7 @@ RENDER_AGAIN:
           startColor = GetSysColor(COLOR_INACTIVECAPTION);
           endColor = GetSysColor(COLOR_GRADIENTINACTIVECAPTION);
         }
+
         TRIVERTEX vertex[2];
         vertex[0].x = rect.left;
         vertex[0].y = rect.top;
@@ -3843,24 +3917,28 @@ RENDER_AGAIN:
         vertex[0].Green = GetGValue(startColor) << 8;
         vertex[0].Blue = GetBValue(startColor) << 8;
         vertex[0].Alpha = 0;
+
         vertex[1].x = rect.right;
         vertex[1].y = rect.bottom;
         vertex[1].Red = GetRValue(endColor) << 8;
         vertex[1].Green = GetGValue(endColor) << 8;
         vertex[1].Blue = GetBValue(endColor) << 8;
         vertex[1].Alpha = 0;
+
         GRADIENT_RECT gRect;
         gRect.UpperLeft = 0;
         gRect.LowerRight = 1;
         // available on win2k & up
         GradientFill(hdc, vertex, 2, &gRect, 1, GRADIENT_FILL_RECT_H);
       }
+
       if (aAppearance == StyleAppearance::MozWindowTitlebar) {
         // frame things up with a top raised border.
         DrawEdge(hdc, &widgetRect, EDGE_RAISED, BF_TOP);
       }
       break;
     }
+
     case StyleAppearance::MozWindowButtonClose:
     case StyleAppearance::MozWindowButtonMinimize:
     case StyleAppearance::MozWindowButtonMaximize:

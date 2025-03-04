@@ -803,6 +803,7 @@ void Theme::PaintMenuArrow(StyleAppearance aAppearance, nsIFrame* aFrame,
   const bool isMenuList =
       aAppearance == StyleAppearance::MozMenulistArrowButton;
   const float kPolygonSize = kMinimumDropdownArrowButtonWidth;
+
   const auto direction = [&] {
     const auto wm = aFrame->GetWritingMode();
     if (!isMenuList) {

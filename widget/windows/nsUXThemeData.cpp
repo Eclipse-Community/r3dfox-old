@@ -225,6 +225,7 @@ void nsUXThemeData::UpdateTitlebarInfo(HWND aWnd) {
       if (overrideCaptionButtonsWidth > 0) {
         sCommandButtonBoxMetrics.cx = overrideCaptionButtonsWidth;
       }
+
       if (overrideCaptionButtonsHeight > 0) {
         sCommandButtonBoxMetrics.cy = overrideCaptionButtonsHeight;
       }

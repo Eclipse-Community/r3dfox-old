@@ -585,7 +585,7 @@ class nsWindow final : public nsBaseWidget {
   DWORD WindowStyle();
   DWORD WindowExStyle();
 
-    /**
+  /**
    * XP and Vista theming support for windows with rounded edges
    */
   void ClearThemeRegion();

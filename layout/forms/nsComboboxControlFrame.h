@@ -220,6 +220,7 @@ class nsComboboxControlFrame final : public nsBlockFrame,
   int32_t mRecentSelectedIndex;
   int32_t mDisplayedIndex;
   nsString mDisplayedOptionTextOrPreview;
+
   RefPtr<mozilla::HTMLSelectEventListener> mEventListener;
 
   // See comment in HandleRedisplayTextEvent().

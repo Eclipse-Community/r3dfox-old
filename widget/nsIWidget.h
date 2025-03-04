@@ -722,7 +722,7 @@ class nsIWidget : public nsISupports {
    * @param aShouldLock bool
    *
    */
-  virtual void LockAspectRatio(bool aShouldLock) {};
+  virtual void LockAspectRatio(bool aShouldLock){};
 
   /**
    * Move or resize this widget. Any size constraints set for the window by
@@ -904,6 +904,7 @@ class nsIWidget : public nsISupports {
    * Set the background color for this widget
    *
    * @param aColor the new background color
+   *
    */
 
   virtual void SetBackgroundColor(const nscolor& aColor) {}
@@ -1950,7 +1951,7 @@ class nsIWidget : public nsISupports {
 
   virtual void UpdateZoomConstraints(
       const uint32_t& aPresShellId, const ScrollableLayerGuid::ViewID& aViewId,
-      const mozilla::Maybe<ZoomConstraints>& aConstraints) {};
+      const mozilla::Maybe<ZoomConstraints>& aConstraints){};
 
   /**
    * GetTextEventDispatcher() returns TextEventDispatcher belonging to the

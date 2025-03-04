@@ -525,6 +525,11 @@ nsresult nsLookAndFeel::NativeGetInt(IntID aID, int32_t& aResult) {
         break;
       }
 
+      int overrideWinVer =
+          StaticPrefs::widget_ev_native_controls_patch_override_win_version();
+      bool isWin8OrLater =
+          (overrideWinVer == 0 && IsWin8OrLater()) || overrideWinVer >= 8;
+
       // Aero Glass is only available prior to Windows 8 when DWM is used.
       aResult = (gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled() &&
                  !isWin8OrLater);

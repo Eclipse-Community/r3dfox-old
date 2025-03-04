@@ -2000,6 +2000,11 @@ bool nsNativeThemeWin::GetWidgetPadding(nsDeviceContext* aContext,
           ? false
           : gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled();
 
+  int overrideWinVer =
+      StaticPrefs::widget_ev_native_controls_patch_override_win_version();
+  bool isWindows10OrLater =
+      (overrideWinVer == 0 && IsWin10OrLater()) || overrideWinVer >= 10;
+
   switch (aAppearance) {
     // Radios and checkboxes return a fixed size in GetMinimumWidgetSize
     // and have a meaningful baseline, so they can't have

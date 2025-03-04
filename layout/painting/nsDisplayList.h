@@ -1448,6 +1448,7 @@ class nsDisplayListBuilder {
   void AddWindowExcludeGlassRegion(nsIFrame* aFrame, const nsRect& aBounds) {
     mWindowExcludeGlassRegion.Add(aFrame, aBounds);
   }
+
   /**
    * Returns the window exclude glass region.
    */

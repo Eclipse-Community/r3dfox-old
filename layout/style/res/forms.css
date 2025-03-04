@@ -273,6 +273,7 @@ select > button {
   position: static;
   appearance: auto;
   -moz-default-appearance: -moz-menulist-arrow-button;
+  pointer-events: none;
 
   /* Make sure to size correctly if the combobox has a non-auto height. */
   block-size: 100%;
@@ -292,6 +293,8 @@ select > button {
 *|*::-moz-display-comboboxcontrol-frame {
   content: inherit;
   overflow: clip;
+  pointer-events: none;
+  cursor: unset;
   color: unset;
   white-space: nowrap;
   text-align: unset;
@@ -545,6 +548,12 @@ input[type=color] {
   input[type=color] {
     padding: 4px;
   }
+}
+
+/* https://github.com/whatwg/html/issues/9976 */
+input:not([type=image i], [type=range i], [type=checkbox i], [type=radio i]) {
+  overflow: clip !important;
+  overflow-clip-margin: 0px !important;
 }
 
 button,

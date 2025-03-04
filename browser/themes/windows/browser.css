@@ -35,11 +35,6 @@
   }
 }
 
-      &[sizemode="normal"] #navigator-toolbox {
-        border-top: .5px solid ActiveBorder;
-        &:-moz-window-inactive {
-          border-top-color: InactiveBorder;
-        }
 @media (-moz-windows-accent-color-in-titlebar) {
   :root[tabsintitlebar] {
     /* stylelint-disable-next-line media-query-no-invalid */
@@ -361,14 +356,12 @@ menupopup[touchmode] :is(menu, menuitem, menucaption) {
   padding-block: calc((3.5em - 32px) / 2);
 }
 
-@media not (-moz-windows-non-native-menus) {
-  #context-navigation {
-    background-color: menu;
-  }
+#context-navigation {
+  background-color: menu;
+}
 
-  #context-sep-navigation {
-    margin-inline-start: -28px;
-  }
+#context-sep-navigation {
+  margin-inline-start: -28px;
 }
 
 @media (-moz-windows-non-native-menus) {

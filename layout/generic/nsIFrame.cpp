@@ -9019,10 +9019,9 @@ static nsContentAndOffset FindLineBreakingFrame(nsIFrame* aFrame,
     return result;
   }
 
-  // Treat form controls and other replaced inline level elements as inline
-  // leaves.
-  if (aFrame->IsReplaced() && aFrame->IsInlineOutside() &&
-      !aFrame->IsBrFrame() && !aFrame->IsTextFrame()) {
+  // Treat form controls as inline leaves
+  // XXX we really need a way to determine whether a frame is inline-level
+  if (static_cast<nsIFormControlFrame*>(do_QueryFrame(aFrame))) {
     return result;
   }
 

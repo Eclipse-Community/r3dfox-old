@@ -1700,11 +1700,6 @@ pub enum Appearance {
     /// Sidebar appearance.
     #[parse(condition = "ParserContext::chrome_rules_enabled")]
     MozSidebar,
-    #[parse(condition = "ParserContext::chrome_rules_enabled")]
-    MozWinBorderlessGlass,
-    /// -moz-apperance style used in setting proper glass margins.
-    #[parse(condition = "ParserContext::chrome_rules_enabled")]
-    MozWinExcludeGlass,
 
     /// Vista Rebars.
     #[parse(condition = "ParserContext::chrome_rules_enabled")]
@@ -1713,6 +1708,11 @@ pub enum Appearance {
     MozWinMediaToolbox,
     #[parse(condition = "ParserContext::chrome_rules_enabled")]
     MozWinBrowsertabbarToolbox,
+    #[parse(condition = "ParserContext::chrome_rules_enabled")]
+    MozWinBorderlessGlass,
+    /// -moz-apperance style used in setting proper glass margins.
+    #[parse(condition = "ParserContext::chrome_rules_enabled")]
+    MozWinExcludeGlass,
 
     /// Mac help button.
     #[parse(condition = "ParserContext::chrome_rules_enabled")]

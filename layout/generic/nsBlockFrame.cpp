@@ -7994,8 +7994,8 @@ void nsBlockFrame::BuildDisplayList(nsDisplayListBuilder* aBuilder,
   //    (A) we are not honoring the document colors
   //    (B) the backplate feature is preffed on
   //    (C) the force color adjust property is set to auto
-  if (StaticPrefs::browser_display_permit_backplate() &&
-      PresContext()->ForcingColors() && !IsComboboxControlFrame() &&
+  if (PresContext()->ForcingColors() && !IsComboboxControlFrame() &&
+      StaticPrefs::browser_display_permit_backplate() &&
       StyleText()->mForcedColorAdjust != StyleForcedColorAdjust::None) {
     backplateColor.emplace(GetBackplateColor(this));
   }

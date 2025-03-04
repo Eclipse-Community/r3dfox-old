@@ -67,9 +67,8 @@ nsNativeThemeWin::nsNativeThemeWin()
 
 nsNativeThemeWin::~nsNativeThemeWin() { nsUXThemeData::Invalidate(); }
 
-auto nsNativeThemeWin::IsWidgetNonNative(nsIFrame* aFrame,
-                                         StyleAppearance aAppearance)
-    -> NonNative {
+auto nsNativeThemeWin::IsWidgetNonNative(
+    nsIFrame* aFrame, StyleAppearance aAppearance) -> NonNative {
   if (IsWidgetScrollbarPart(aAppearance)) {
     if (StaticPrefs::widget_native_controls_scrollbar_style() == 0) {
       return NonNative::No;
@@ -1502,40 +1501,6 @@ nsresult nsNativeThemeWin::GetThemePartAndState(nsIFrame* aFrame,
       }
       return NS_OK;
     }
-    case StyleAppearance::MozWindowTitlebar:
-      aPart = mozilla::widget::themeconst::WP_CAPTION;
-      aState = GetTopLevelWindowActiveState(aFrame);
-      return NS_OK;
-    case StyleAppearance::MozWindowTitlebarMaximized:
-      aPart = mozilla::widget::themeconst::WP_MAXCAPTION;
-      aState = GetTopLevelWindowActiveState(aFrame);
-      return NS_OK;
-    case StyleAppearance::MozWindowButtonClose:
-      aPart = mozilla::widget::themeconst::WP_CLOSEBUTTON;
-      aState = GetWindowFrameButtonState(aFrame,
-                                         GetContentState(aFrame, aAppearance));
-      return NS_OK;
-    case StyleAppearance::MozWindowButtonMinimize:
-      aPart = mozilla::widget::themeconst::WP_MINBUTTON;
-      aState = GetWindowFrameButtonState(aFrame,
-                                         GetContentState(aFrame, aAppearance));
-      return NS_OK;
-    case StyleAppearance::MozWindowButtonMaximize:
-      aPart = mozilla::widget::themeconst::WP_MAXBUTTON;
-      aState = GetWindowFrameButtonState(aFrame,
-                                         GetContentState(aFrame, aAppearance));
-      return NS_OK;
-    case StyleAppearance::MozWindowButtonRestore:
-      aPart = mozilla::widget::themeconst::WP_RESTOREBUTTON;
-      aState = GetWindowFrameButtonState(aFrame,
-                                         GetContentState(aFrame, aAppearance));
-      return NS_OK;
-    case StyleAppearance::MozWindowButtonBox:
-    case StyleAppearance::MozWindowButtonBoxMaximized:
-    case StyleAppearance::MozWinBorderlessGlass:
-      aPart = -1;
-      aState = 0;
-      return NS_OK;
     case StyleAppearance::Menupopup: {
       aPart = MENU_POPUPBACKGROUND;
       aState = MB_ACTIVE;
@@ -1612,6 +1577,41 @@ nsresult nsNativeThemeWin::GetThemePartAndState(nsIFrame* aFrame,
     }
     case StyleAppearance::Menuitemtext:
     case StyleAppearance::Menuimage:
+      aPart = -1;
+      aState = 0;
+      return NS_OK;
+
+    case StyleAppearance::MozWindowTitlebar:
+      aPart = mozilla::widget::themeconst::WP_CAPTION;
+      aState = GetTopLevelWindowActiveState(aFrame);
+      return NS_OK;
+    case StyleAppearance::MozWindowTitlebarMaximized:
+      aPart = mozilla::widget::themeconst::WP_MAXCAPTION;
+      aState = GetTopLevelWindowActiveState(aFrame);
+      return NS_OK;
+    case StyleAppearance::MozWindowButtonClose:
+      aPart = mozilla::widget::themeconst::WP_CLOSEBUTTON;
+      aState = GetWindowFrameButtonState(aFrame,
+                                         GetContentState(aFrame, aAppearance));
+      return NS_OK;
+    case StyleAppearance::MozWindowButtonMinimize:
+      aPart = mozilla::widget::themeconst::WP_MINBUTTON;
+      aState = GetWindowFrameButtonState(aFrame,
+                                         GetContentState(aFrame, aAppearance));
+      return NS_OK;
+    case StyleAppearance::MozWindowButtonMaximize:
+      aPart = mozilla::widget::themeconst::WP_MAXBUTTON;
+      aState = GetWindowFrameButtonState(aFrame,
+                                         GetContentState(aFrame, aAppearance));
+      return NS_OK;
+    case StyleAppearance::MozWindowButtonRestore:
+      aPart = mozilla::widget::themeconst::WP_RESTOREBUTTON;
+      aState = GetWindowFrameButtonState(aFrame,
+                                         GetContentState(aFrame, aAppearance));
+      return NS_OK;
+    case StyleAppearance::MozWindowButtonBox:
+    case StyleAppearance::MozWindowButtonBoxMaximized:
+    case StyleAppearance::MozWinBorderlessGlass:
       aPart = -1;
       aState = 0;
       return NS_OK;
@@ -2416,75 +2416,6 @@ LayoutDeviceIntSize nsNativeThemeWin::GetMinimumWidgetSize(
     case StyleAppearance::Menuitemtext:
     case StyleAppearance::MozWinBorderlessGlass:
       return {};  // Don't worry about it.
-
-    case StyleAppearance::MozWindowButtonMaximize:
-    case StyleAppearance::MozWindowButtonRestore: {
-      // The only way to get accurate titlebar button info is to query a
-      // window w/buttons when it's visible. nsWindow takes care of this and
-      // stores that info in nsUXThemeData.
-      SIZE sz = nsUXThemeData::GetCommandButtonMetrics(CMDBUTTONIDX_RESTORE);
-      // For XP, subtract 4 from system metrics dimensions.
-      if (!IsVistaOrLater()) {
-        LayoutDeviceIntSize result(sz.cx - 4, sz.cy - 4);
-        AddPaddingRect(&result, CAPTIONBUTTON_RESTORE);
-        return result;
-      } else {
-        LayoutDeviceIntSize result(sz.cx, sz.cy);
-        AddPaddingRect(&result, CAPTIONBUTTON_RESTORE);
-        return result;
-      }
-    }
-    case StyleAppearance::MozWindowButtonMinimize: {
-      SIZE sz = nsUXThemeData::GetCommandButtonMetrics(CMDBUTTONIDX_MINIMIZE);
-      if (!IsVistaOrLater()) {
-        LayoutDeviceIntSize result(sz.cx - 4, sz.cy - 4);
-        AddPaddingRect(&result, CAPTIONBUTTON_MINIMIZE);
-        return result;
-      } else {
-        LayoutDeviceIntSize result(sz.cx, sz.cy);
-        AddPaddingRect(&result, CAPTIONBUTTON_MINIMIZE);
-        return result;
-      }
-    }
-    case StyleAppearance::MozWindowButtonClose: {
-      SIZE sz = nsUXThemeData::GetCommandButtonMetrics(CMDBUTTONIDX_CLOSE);
-      if (!IsVistaOrLater()) {
-        LayoutDeviceIntSize result(sz.cx - 4, sz.cy - 4);
-        AddPaddingRect(&result, CAPTIONBUTTON_CLOSE);
-        return result;
-      } else {
-        LayoutDeviceIntSize result(sz.cx, sz.cy);
-        AddPaddingRect(&result, CAPTIONBUTTON_CLOSE);
-        return result;
-      }
-    }
-
-    case StyleAppearance::MozWindowTitlebar:
-    case StyleAppearance::MozWindowTitlebarMaximized: {
-      LayoutDeviceIntSize result;
-      result.height = GetSystemMetrics(SM_CYCAPTION);
-      result.height += GetSystemMetrics(SM_CYFRAME);
-      result.height += GetSystemMetrics(SM_CXPADDEDBORDER);
-      ScaleForFrameDPI(&result, aFrame);
-      return result;
-    }
-
-    case StyleAppearance::MozWindowButtonBox:
-    case StyleAppearance::MozWindowButtonBoxMaximized: {
-      if (dwmCompositionEnabled) {
-        SIZE sz = nsUXThemeData::GetCommandButtonBoxMetrics();
-        LayoutDeviceIntSize result(sz.cx,
-                                   sz.cy - GetSystemMetrics(SM_CYFRAME) -
-                                       GetSystemMetrics(SM_CXPADDEDBORDER));
-        if (aAppearance == StyleAppearance::MozWindowButtonBoxMaximized) {
-          result.width += 1;
-          result.height -= 2;
-        }
-        return result;
-      }
-      break;
-    }
-
     default:
       break;
   }
@@ -2593,6 +2524,74 @@ LayoutDeviceIntSize nsNativeThemeWin::GetMinimumWidgetSize(
         sizeReq = TS_MIN;
       }
       break;
+
+    case StyleAppearance::MozWindowButtonMaximize:
+    case StyleAppearance::MozWindowButtonRestore: {
+      // The only way to get accurate titlebar button info is to query a
+      // window w/buttons when it's visible. nsWindow takes care of this and
+      // stores that info in nsUXThemeData.
+      SIZE sz = nsUXThemeData::GetCommandButtonMetrics(CMDBUTTONIDX_RESTORE);
+      // For XP, subtract 4 from system metrics dimensions.
+      if (!IsVistaOrLater()) {
+        LayoutDeviceIntSize result(sz.cx - 4, sz.cy - 4);
+        AddPaddingRect(&result, CAPTIONBUTTON_RESTORE);
+        return result;
+      } else {
+        LayoutDeviceIntSize result(sz.cx, sz.cy);
+        AddPaddingRect(&result, CAPTIONBUTTON_RESTORE);
+        return result;
+      }
+    }
+    case StyleAppearance::MozWindowButtonMinimize: {
+      SIZE sz = nsUXThemeData::GetCommandButtonMetrics(CMDBUTTONIDX_MINIMIZE);
+      if (!IsVistaOrLater()) {
+        LayoutDeviceIntSize result(sz.cx - 4, sz.cy - 4);
+        AddPaddingRect(&result, CAPTIONBUTTON_MINIMIZE);
+        return result;
+      } else {
+        LayoutDeviceIntSize result(sz.cx, sz.cy);
+        AddPaddingRect(&result, CAPTIONBUTTON_MINIMIZE);
+        return result;
+      }
+    }
+    case StyleAppearance::MozWindowButtonClose: {
+      SIZE sz = nsUXThemeData::GetCommandButtonMetrics(CMDBUTTONIDX_CLOSE);
+      if (!IsVistaOrLater()) {
+        LayoutDeviceIntSize result(sz.cx - 4, sz.cy - 4);
+        AddPaddingRect(&result, CAPTIONBUTTON_CLOSE);
+        return result;
+      } else {
+        LayoutDeviceIntSize result(sz.cx, sz.cy);
+        AddPaddingRect(&result, CAPTIONBUTTON_CLOSE);
+        return result;
+      }
+    }
+
+    case StyleAppearance::MozWindowTitlebar:
+    case StyleAppearance::MozWindowTitlebarMaximized: {
+      LayoutDeviceIntSize result;
+      result.height = GetSystemMetrics(SM_CYCAPTION);
+      result.height += GetSystemMetrics(SM_CYFRAME);
+      result.height += GetSystemMetrics(SM_CXPADDEDBORDER);
+      ScaleForFrameDPI(&result, aFrame);
+      return result;
+    }
+
+    case StyleAppearance::MozWindowButtonBox:
+    case StyleAppearance::MozWindowButtonBoxMaximized: {
+      if (dwmCompositionEnabled) {
+        SIZE sz = nsUXThemeData::GetCommandButtonBoxMetrics();
+        LayoutDeviceIntSize result(sz.cx,
+                                   sz.cy - GetSystemMetrics(SM_CYFRAME) -
+                                       GetSystemMetrics(SM_CXPADDEDBORDER));
+        if (aAppearance == StyleAppearance::MozWindowButtonBoxMaximized) {
+          result.width += 1;
+          result.height -= 2;
+        }
+        return result;
+      }
+      break;
+    }
 
     default:
       break;

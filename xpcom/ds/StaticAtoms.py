@@ -2257,6 +2257,10 @@ STATIC_ATOMS = [
     Atom("forcemessagemanager", "forcemessagemanager"),
     Atom("initialBrowsingContextGroupId", "initialBrowsingContextGroupId"),
     Atom("manualactiveness", "manualactiveness"),
+    # windows media query names
+    Atom("windows_win7", "windows-win7"),
+    Atom("windows_win8", "windows-win8"),
+    Atom("windows_win10", "windows-win10"),
     # Names for system metrics.
     Atom("_moz_bool_pref", "-moz-bool-pref"),
     Atom("_moz_scrollbar_start_backward", "-moz-scrollbar-start-backward"),

@@ -580,6 +580,12 @@ pub enum Platform {
     Macos,
     /// Matches any Windows version.
     Windows,
+    /// Matches only Windows 7.
+    WindowsWin7,
+    /// Matches only Windows 8.
+    WindowsWin8,
+    /// Matches windows 10 and actually matches windows 11 too, as of right now.
+    WindowsWin10,
 }
 
 fn eval_moz_platform(_: &Context, query_value: Option<Platform>) -> bool {

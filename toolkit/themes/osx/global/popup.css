@@ -1,9 +1,8 @@
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
- 
-@namespace url("http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul");
 
+@namespace url("http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul");
 @namespace html url("http://www.w3.org/1999/xhtml");
 
 menupopup,
@@ -20,6 +19,7 @@ panel {
   --panel-border-color: transparent;
   --panel-border-radius: 0;
   --panel-width: initial;
+
   /* This var is used on panelUI-shared.css to calculate panel shadow margins,
    * but as shadows on macOS are being taken care of by the OS, there's
    * no need for CSS to do calculations, so just set it to 0px here. */
@@ -56,8 +56,10 @@ panel[titlebar] {
   width: var(--panel-width);
   border-radius: var(--panel-border-radius);
   border: 1px solid var(--panel-border-color);
+
   min-width: 0;
   min-height: 0;
+
   /* Makes popup constraints work */
   max-height: calc(100% - 2 * var(--panel-shadow-margin));
   max-width: calc(100% - 2 * var(--panel-shadow-margin));
@@ -77,6 +79,7 @@ panel[type="arrow"].panel-no-padding::part(content) {
 }
 
 /* rules for popups associated with menulists */
+
 menulist > menupopup {
   min-width: 0;
   --panel-padding: 4px 0;

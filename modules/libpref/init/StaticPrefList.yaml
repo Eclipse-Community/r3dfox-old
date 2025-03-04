@@ -16875,32 +16875,32 @@
 # Prefs starting with "widget."
 #---------------------------------------------------------------------------
 
-- name: widget.native-controls.force-dwm-report-off
+- name: widget.ev-native-controls-patch.force-dwm-report-off
   type: bool
   value: false
   mirror: always
   
-- name: widget.native-controls.force-glass-reporting
+- name: widget.ev-native-controls-patch.force-glass-reporting
   type: int32_t
   value: 0
   mirror: always
   
-- name: widget.native-controls.override-aero-caption-buttons-mask-width
+- name: widget.ev-native-controls-patch.override-aero-caption-buttons-mask-width
   type: int32_t
   value: 0
   mirror: always
   
-- name: widget.native-controls.override-aero-caption-buttons-mask-height
+- name: widget.ev-native-controls-patch.override-aero-caption-buttons-mask-height
   type: int32_t
   value: 0
   mirror: always
   
-- name: widget.native-controls.scrollbar-style
+- name: widget.ev-native-controls-patch.scrollbar-style
   type: int32_t
   value: 2
   mirror: always
   
-- name: widget.native-controls.tooltip-style
+- name: widget.ev-native-controls-patch.tooltip-style
   type: int32_t
   value: 0
   mirror: always
@@ -16915,7 +16915,7 @@
 #
 # NOTE(emilio): When changing this make sure to update the non_native_theme
 # entry in python/mozbuild/mozbuild/mozinfo.py and test_fission_autostart.py
-# erm no LOLOLOLOLOLO -eriz
+# ^^^ no ~ev
 - name: widget.non-native-theme.enabled
   type: RelaxedAtomicBool
   value: false

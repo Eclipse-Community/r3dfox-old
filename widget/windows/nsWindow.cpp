@@ -1635,7 +1635,7 @@ nsWindow* nsWindow::GetParentWindowBase(bool aIncludeOwner) {
 
 void nsWindow::Show(bool aState) {
   bool dwmCompositionEnabled =
-      StaticPrefs::widget_native_controls_force_dwm_report_off()
+      StaticPrefs::widget_ev_native_controls_patch_force_dwm_report_off()
           ? false
           : gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled();
 
@@ -2641,7 +2641,7 @@ void nsWindow::UpdateDarkModeToolbar() {
 
 LayoutDeviceIntMargin nsWindow::NormalWindowNonClientOffset() const {
   bool glass =
-      StaticPrefs::widget_native_controls_force_dwm_report_off()
+      StaticPrefs::widget_ev_native_controls_patch_force_dwm_report_off()
           ? false
           : gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled();
 
@@ -3172,7 +3172,7 @@ TransparencyMode nsWindow::GetTransparencyMode() {
 
 void nsWindow::SetTransparencyMode(TransparencyMode aMode) {
   bool dwmCompositionEnabled =
-      StaticPrefs::widget_native_controls_force_dwm_report_off()
+      StaticPrefs::widget_ev_native_controls_patch_force_dwm_report_off()
           ? false
           : gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled();
 
@@ -3238,7 +3238,7 @@ void nsWindow::UpdateWindowDraggingRegion(
 
 void nsWindow::UpdateGlass() {
   bool dwmCompositionEnabled =
-      StaticPrefs::widget_native_controls_force_dwm_report_off()
+      StaticPrefs::widget_ev_native_controls_patch_force_dwm_report_off()
           ? false
           : gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled();
 
@@ -3544,7 +3544,7 @@ NS_IMPL_ISUPPORTS0(FullscreenTransitionData)
 /* virtual */
 bool nsWindow::PrepareForFullscreenTransition(nsISupports** aData) {
   bool dwmCompositionEnabled =
-      StaticPrefs::widget_native_controls_force_dwm_report_off()
+      StaticPrefs::widget_ev_native_controls_patch_force_dwm_report_off()
           ? false
           : gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled();
 
@@ -4247,7 +4247,7 @@ nsresult nsWindow::OnDefaultButtonLoaded(
 void nsWindow::UpdateThemeGeometries(
     const nsTArray<ThemeGeometry>& aThemeGeometries) {
   bool dwmCompositionEnabled =
-      StaticPrefs::widget_native_controls_force_dwm_report_off()
+      StaticPrefs::widget_ev_native_controls_patch_force_dwm_report_off()
           ? false
           : gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled();
 
@@ -5109,7 +5109,7 @@ bool nsWindow::ProcessMessage(UINT msg, WPARAM& wParam, LPARAM& lParam,
 bool nsWindow::ProcessMessageInternal(UINT msg, WPARAM& wParam, LPARAM& lParam,
                                       LRESULT* aRetValue) {
   bool dwmCompositionEnabled =
-      StaticPrefs::widget_native_controls_force_dwm_report_off()
+      StaticPrefs::widget_ev_native_controls_patch_force_dwm_report_off()
           ? false
           : gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled();
 
@@ -6570,7 +6570,7 @@ int32_t nsWindow::ClientMarginHitTestPoint(int32_t aX, int32_t aY) {
     // flicker. It seems this was broken during a refactor sometime after
     // Australis.
     bool dwmCompositionEnabled =
-        StaticPrefs::widget_native_controls_force_dwm_report_off()
+        StaticPrefs::widget_ev_native_controls_patch_force_dwm_report_off()
             ? false
             : gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled();
 
@@ -8725,7 +8725,7 @@ void nsWindow::GetCompositorWidgetInitData(
 
 bool nsWindow::SynchronouslyRepaintOnResize() {
   bool dwmCompositionEnabled =
-      StaticPrefs::widget_native_controls_force_dwm_report_off()
+      StaticPrefs::widget_ev_native_controls_patch_force_dwm_report_off()
           ? false
           : gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled();
 

@@ -318,15 +318,15 @@ bool nsWindow::OnPaint(uint32_t aNestingLevel) {
       // don't need to double buffer with anything but GDI
       BufferMode doubleBuffering = mozilla::layers::BufferMode::BUFFER_NONE;
       switch (mTransparencyMode) {
-        case TransparencyMode::Transparent:
-          // If we're rendering with translucency, we're going to be
-          // rendering the whole window; make sure we clear it first
-          dt->ClearRect(Rect(dt->GetRect()));
-          break;
         case TransparencyMode::BorderlessGlass:
         default:
           // If we're not doing translucency, then double buffer
           doubleBuffering = mozilla::layers::BufferMode::BUFFERED;
+          break;
+        case TransparencyMode::Transparent:
+          // If we're rendering with translucency, we're going to be
+          // rendering the whole window; make sure we clear it first
+          dt->ClearRect(Rect(dt->GetRect()));
           break;
       }
 

@@ -229,9 +229,9 @@ void nsUXThemeData::UpdateTitlebarInfo(HWND aWnd) {
       }
 
       sCommandButtonBoxMetricsInitialized = true;
-      //MOZ_ASSERT(
-      //    sCommandButtonBoxMetrics.cx > 0 && sCommandButtonBoxMetrics.cy > 0,
-      //    "We must not cache bad command button box dimensions");
+      // MOZ_ASSERT(
+      // sCommandButtonBoxMetrics.cx > 0 && sCommandButtonBoxMetrics.cy > 0,
+      // "We must not cache bad command button box dimensions");
       sTitlebarInfoPopulatedAero = true;
     }
   }

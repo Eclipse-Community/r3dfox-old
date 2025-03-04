@@ -378,6 +378,14 @@ nsresult nsLookAndFeel::NativeGetColor(ColorID aID, ColorScheme aScheme,
     case ColorID::Accentcolortext:
       aColor = mColorAccentText;
       return NS_OK;
+    case ColorID::MozHeaderbartext:
+    case ColorID::MozHeaderbarinactivetext:
+    case ColorID::MozDialogtext:
+    case ColorID::MozColheadertext:
+    case ColorID::MozColheaderhovertext:
+    case ColorID::MozColheaderactivetext:
+      idx = COLOR_WINDOWTEXT;
+      break;
     case ColorID::MozWinMediatext:
       if (mColorMediaText) {
         aColor = *mColorMediaText;
@@ -392,14 +400,6 @@ nsresult nsLookAndFeel::NativeGetColor(ColorID aID, ColorScheme aScheme,
         return NS_OK;
       }
       // if we've gotten here just return -moz-dialogtext instead
-      idx = COLOR_WINDOWTEXT;
-      break;
-    case ColorID::MozHeaderbartext:
-    case ColorID::MozHeaderbarinactivetext:
-    case ColorID::MozDialogtext:
-    case ColorID::MozColheadertext:
-    case ColorID::MozColheaderhovertext:
-    case ColorID::MozColheaderactivetext:
       idx = COLOR_WINDOWTEXT;
       break;
     case ColorID::MozNativehyperlinktext:

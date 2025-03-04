@@ -59,9 +59,7 @@ FRAME_CLASSES = [
     # FIXME(emilio, bug 1362907): Revisit these after that bug, this is the
     # only frame that has ReplacedContainsBlock but not Replaced, which is
     # sketchy.
-    Frame(
-        "nsComboboxDisplayFrame", "ComboboxDisplay", REPLACED - {"Replaced"}
-    ),
+    Frame("nsComboboxDisplayFrame", "ComboboxDisplay", REPLACED - {"Replaced"}),
     Frame("nsContinuingTextFrame", "Text", TEXT),
     Frame("nsDateTimeControlFrame", "DateTimeControl", REPLACED),
     Frame("nsFieldSetFrame", "FieldSet", BLOCK),

@@ -2639,7 +2639,6 @@ bool nsNativeThemeWin::WidgetAttributeChangeRequiresRepaint(
       aAppearance == StyleAppearance::MozWindowButtonRestore ||
       aAppearance == StyleAppearance::Menulist ||
       aAppearance == StyleAppearance::MenulistButton ||
-       aAppearance == StyleAppearance::MozMenulistArrowButton ||
       aAppearance == StyleAppearance::MozMenulistArrowButton) {
     return true;
   }
@@ -2805,9 +2804,6 @@ nsITheme::Transparency nsNativeThemeWin::GetWidgetTransparency(
 bool nsNativeThemeWin::ClassicThemeSupportsWidget(nsIFrame* aFrame,
                                                   StyleAppearance aAppearance) {
   switch (aAppearance) {
-      // Classic non-flat menus are handled almost entirely through CSS.
-      if (!nsUXThemeData::AreFlatMenusEnabled()) return false;
-      [[fallthrough]];
     case StyleAppearance::Resizer: {
       // The classic native resizer has an opaque grey background which doesn't
       // match the usually white background of the scrollable container, so
@@ -2817,6 +2813,9 @@ bool nsNativeThemeWin::ClassicThemeSupportsWidget(nsIFrame* aFrame,
     }
     case StyleAppearance::Menubar:
     case StyleAppearance::Menupopup:
+      // Classic non-flat menus are handled almost entirely through CSS.
+      if (!nsUXThemeData::AreFlatMenusEnabled()) return false;
+      [[fallthrough]];
     case StyleAppearance::Button:
     case StyleAppearance::NumberInput:
     case StyleAppearance::PasswordInput:

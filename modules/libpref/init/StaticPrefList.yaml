@@ -16415,37 +16415,37 @@
 # Prefs starting with "widget."
 #---------------------------------------------------------------------------
 
-- name: widget.ev-native-controls-patch.override-win-version
+- name: widget.native-controls.override-win-version
   type: int32_t
   value: 0
   mirror: always
   
-- name: widget.ev-native-controls-patch.force-dwm-report-off
+- name: widget.native-controls.force-dwm-report-off
   type: bool
   value: false
   mirror: always
   
-- name: widget.ev-native-controls-patch.force-glass-reporting
+- name: widget.native-controls.force-glass-reporting
   type: int32_t
   value: 0
   mirror: always
   
-- name: widget.ev-native-controls-patch.override-aero-caption-buttons-mask-width
+- name: widget.native-controls.override-aero-caption-buttons-mask-width
   type: int32_t
   value: 0
   mirror: always
   
-- name: widget.ev-native-controls-patch.override-aero-caption-buttons-mask-height
+- name: widget.native-controls.override-aero-caption-buttons-mask-height
   type: int32_t
   value: 0
   mirror: always
   
-- name: widget.ev-native-controls-patch.scrollbar-style
+- name: widget.native-controls.scrollbar-style
   type: int32_t
   value: 2
   mirror: always
   
-- name: widget.ev-native-controls-patch.tooltip-style
+- name: widget.native-controls.tooltip-style
   type: int32_t
   value: 0
   mirror: always
@@ -16454,7 +16454,7 @@
 #
 # NOTE(emilio): When changing this make sure to update the non_native_theme
 # entry in python/mozbuild/mozbuild/mozinfo.py and test_fission_autostart.py
-# ^^^ no ~ev
+# erm no LOLOLOLOLOLO -eriz
 - name: widget.non-native-theme.enabled
   type: RelaxedAtomicBool
   value: false

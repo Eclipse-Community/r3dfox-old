@@ -203,16 +203,16 @@ void nsUXThemeData::UpdateTitlebarInfo(HWND aWnd) {
   if (!aWnd) return;
 
   bool dwmCompositionEnabled =
-      StaticPrefs::widget_ev_native_controls_patch_force_dwm_report_off()
+      StaticPrefs::widget_native_controls_force_dwm_report_off()
           ? false
           : gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled();
 
   if (!sTitlebarInfoPopulatedAero && dwmCompositionEnabled) {
     RECT captionButtons;
     int overrideCaptionButtonsWidth = StaticPrefs::
-        widget_ev_native_controls_patch_override_aero_caption_buttons_mask_width();
+        widget_native_controls_override_aero_caption_buttons_mask_width();
     int overrideCaptionButtonsHeight = StaticPrefs::
-        widget_ev_native_controls_patch_override_aero_caption_buttons_mask_height();
+        widget_native_controls_override_aero_caption_buttons_mask_height();
 
     if (SUCCEEDED(DwmGetWindowAttribute(aWnd, DWMWA_CAPTION_BUTTON_BOUNDS,
                                         &captionButtons,

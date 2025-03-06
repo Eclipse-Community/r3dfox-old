@@ -257,7 +257,7 @@ bool Gecko_MediaFeatures_MatchesPlatform(StylePlatform aPlatform) {
     case StylePlatform::WindowsWin7:
     case StylePlatform::WindowsWin8: {
       int overridePref =
-          StaticPrefs::widget_ev_native_controls_patch_override_win_version();
+          StaticPrefs::widget_native_controls_override_win_version();
       bool doesOverride = overridePref > 0;
 
       if ((!doesOverride && IsWin10OrLater()) || overridePref == 10) {

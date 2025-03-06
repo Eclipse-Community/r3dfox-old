@@ -266,6 +266,10 @@ main-context-menu-image-reload =
     .accesskey = R
 
 main-context-menu-image-view-new-tab =
+    .label = Open Image in New Tab
+    .accesskey = I
+
+main-context-menu-image-view =
     .label = View Image
     .accesskey = I
 
@@ -274,6 +278,10 @@ main-context-menu-image-view-background =
     .accesskey = w
 
 main-context-menu-video-view-new-tab =
+    .label = Open Video in New Tab
+    .accesskey = i
+
+main-context-menu-video-view =
     .label = View Video
     .accesskey = i
 

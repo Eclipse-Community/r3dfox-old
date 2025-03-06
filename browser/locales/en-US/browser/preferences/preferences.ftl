@@ -147,7 +147,7 @@ r3dfox-title = r3dfox configurations
 r3dfox-native-checkbox =
     .label = Use native styles
 
-r3dfox-native-checkbox-desc = This controls whether the scrollbar, checkboxes, and other elements use their native system counterparts or their non-native browser themed style. May requre browser restart.
+r3dfox-native-checkbox-desc = This controls whether the scrollbar, checkboxes, and other elements use their native system counterparts or their non-native browser themed style.
 
 r3dfox-native-scroll = Scrollbar style
 
@@ -226,6 +226,11 @@ r3dfox-view-image =
     .label = Restore classic View Image context menu option
 
 r3dfox-view-image-desc = Restore the classic View Image and View Background Image context menu options instead of always opening images in a new tab.
+
+r3dfox-modern =
+    .label = Modern UI (Requires browser restart)
+
+r3dfox-modern-desc = Enable for standard Firefox Windows 10 UI on all platforms.
 
 r3dfox-e10s =
     .label = (BETA) Disable e10s (multiprocess)

@@ -266,6 +266,11 @@
       margin-inline-end: 3px;
     }
 
+      @media (-moz-bool-pref: "widget.windows-style.show-fog") {
+        :root:not([lwtheme]) #TabsToolbar {
+          background-image: radial-gradient(ellipse at bottom, rgba(255,255,255,0.8), rgba(255,255,255,0.5) 40%, transparent) !important;
+        }
+      }
     /* These should be hidden w/ glass enabled. Windows draws its own buttons. */
     .titlebar-button {
       display: none;

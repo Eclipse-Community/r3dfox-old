@@ -359,8 +359,8 @@ void RenderCompositorANGLE::CreateSwapChainForDCompIfPossible(
   if (swapChain1) {
     mSwapChain = swapChain1;
     mSwapChain1 = swapChain1;
-    mUseTripleBuffering = useTripleBuffering;
     mUseAlpha = useAlpha;
+    mUseTripleBuffering = useTripleBuffering;
     mDCLayerTree->SetDefaultSwapChain(swapChain1);
   } else {
     // Clear CLayerTree on falire
@@ -437,7 +437,6 @@ bool RenderCompositorANGLE::BeginFrame() {
       if (useAlpha != mUseAlpha) {
         DestroyEGLSurface();
         mBufferSize.reset();
-
         RefPtr<IDXGISwapChain1> swapChain1 =
             CreateSwapChainForDComp(mUseTripleBuffering, useAlpha);
         if (swapChain1) {
@@ -457,7 +456,6 @@ bool RenderCompositorANGLE::BeginFrame() {
         }
       }
     }
-
     if (!ResizeBufferIfNeeded()) {
       return false;
     }
@@ -941,6 +939,7 @@ void RenderCompositorANGLE::EnableNativeCompositor(bool aEnable) {
   mDCLayerTree->DisableNativeCompositor();
 
   bool useAlpha = mWidget->AsWindows()->HasGlass();
+
   DestroyEGLSurface();
   mBufferSize.reset();
 

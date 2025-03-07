@@ -429,12 +429,10 @@ bool ScrollbarDrawing::PaintScrollbarButton(
     builder->LineTo(p);
   }
   RefPtr<gfx::Path> path = builder->Finish();
-
   // The arrow should be drawn without antialiasing.
   DrawOptions arrowOptions(
     1.0f, gfx::CompositionOp::OP_OVER, gfx::AntialiasMode::NONE
   );
-
   aDrawTarget.Fill(path, gfx::ColorPattern(ToDeviceColor(arrowColor)), arrowOptions);
   return true;
 }

@@ -549,7 +549,6 @@ static BOOL CALLBACK AddMonitor(HMONITOR, HDC, LPRECT, LPARAM aParam) {
   (*(int32_t*)aParam)++;
   return TRUE;
 }
-
 /* static */
 int32_t WinUtils::GetMonitorCount() {
   int32_t monitorCount = 0;

@@ -14147,7 +14147,6 @@ already_AddRefed<nsDOMCaretPosition> Document::CaretPositionFromPoint(
     HTMLTextAreaElement* textArea = HTMLTextAreaElement::FromNode(nonChrome);
     nsITextControlFrame* textFrame =
         do_QueryFrame(nonChrome->AsContent()->GetPrimaryFrame());
-
     if (!textFrame) {
       return nullptr;
     }

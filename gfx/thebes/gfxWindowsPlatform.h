@@ -246,7 +246,7 @@ class gfxWindowsPlatform final : public gfxPlatform {
   bool mInitializedDevices = false;
 
   mozilla::Atomic<DwmCompositionStatus, mozilla::ReleaseAcquire>
-      mDwmCompositionStatus;
+    mDwmCompositionStatus;
 
   // Cached contents of the output color profile file
   nsTArray<uint8_t> mCachedOutputColorProfile;

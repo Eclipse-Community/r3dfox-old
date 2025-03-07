@@ -496,7 +496,6 @@ nsresult nsComboboxControlFrame::RedisplayText() {
     NS_ASSERTION(!nsContentUtils::IsSafeToRunScript(),
                  "If we happen to run our redisplay event now, we might kill "
                  "ourselves!");
-
     mRedisplayTextEvent = new RedisplayTextEvent(this);
     nsContentUtils::AddScriptRunner(mRedisplayTextEvent.get());
   }
@@ -820,7 +819,6 @@ nsIFrame* nsComboboxControlFrame::CreateFrameForDisplayNode() {
 void nsComboboxControlFrame::Destroy(DestroyContext& aContext) {
   // Revoke any pending RedisplayTextEvent
   mRedisplayTextEvent.Revoke();
-
   mEventListener->Detach();
 
   // Cleanup frames in popup child list

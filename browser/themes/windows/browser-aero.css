@@ -3,10 +3,10 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 :root {
-  --glass-active-border-color: rgb(37, 44, 51);
-  --glass-inactive-border-color: rgb(102, 102, 102);
-  --glass-shadow-color: hsla(240,5%,5%,0.3);
-}
+   --glass-active-border-color: rgb(37, 44, 51);
+   --glass-inactive-border-color: rgb(102, 102, 102);
+   --glass-shadow-color: hsla(240,5%,5%,0.3);
+ }
 
 @media (-moz-platform: windows) {
   @media not (-moz-windows-classic) {

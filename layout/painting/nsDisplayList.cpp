@@ -840,7 +840,6 @@ void nsDisplayListBuilder::SetGlassDisplayItem(nsDisplayItem* aItem) {
   // own elements (as long as they are root frames, which is rare as each doc
   // only gets one near the root). We only care about the first one, since that
   // will be the background of the root window.
-
   if (IsPartialUpdate()) {
     if (aItem->Frame()->Style()->IsRootElementStyle()) {
 #ifdef DEBUG
@@ -855,7 +854,6 @@ void nsDisplayListBuilder::SetGlassDisplayItem(nsDisplayItem* aItem) {
     }
     return;
   }
-
   if (aItem->Frame()->Style()->IsRootElementStyle()) {
 #ifdef DEBUG
     if (mGlassDisplayItem) {
@@ -868,7 +866,6 @@ void nsDisplayListBuilder::SetGlassDisplayItem(nsDisplayItem* aItem) {
     }
   }
 }
-
 bool nsDisplayListBuilder::NeedToForceTransparentSurfaceForItem(
     nsDisplayItem* aItem) {
   return aItem == mGlassDisplayItem;

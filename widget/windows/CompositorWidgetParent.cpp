@@ -121,7 +121,6 @@ bool CompositorWidgetParent::InitCompositor(layers::Compositor* aCompositor) {
 bool CompositorWidgetParent::HasGlass() const {
   MOZ_ASSERT(layers::CompositorThreadHolder::IsInCompositorThread() ||
              wr::RenderThread::IsInRenderThread());
-
   return mTransparencyMode == uint32_t(TransparencyMode::BorderlessGlass);
 }
 

@@ -8,8 +8,7 @@
   --glass-shadow-color: hsla(240,5%,5%,0.3);
 }
 
-@media (-moz-platform: windows-win7),
-       (-moz-platform: windows-win8) {
+@media (-moz-platform: windows) {
   @media not (-moz-windows-classic) {
     :root[sizemode="normal"] #toolbar-menubar:not([autohide="true"]) > #menubar-items,
     :root[sizemode="normal"] #toolbar-menubar[autohide="true"][inactive] + #TabsToolbar > .toolbar-items {
@@ -43,8 +42,7 @@
 }
 
 @media (-moz-windows-compositor) {
-  @media not (-moz-platform: windows-win7) {
-    @media not (-moz-platform: windows-win8) {
+  @media (-moz-windows-modern) {
       @media (-moz-windows-default-theme) {
         @media (-moz-windows-accent-color-in-titlebar) {
           :root[sizemode=normal][tabsintitlebar] #navigator-toolbox {
@@ -241,51 +239,55 @@
     }
   }
 
-  @media (-moz-platform: windows-win7),
-         (-moz-platform: windows-win8) {
-    :root {
-      background-color: transparent;
-      appearance: auto;
-      -moz-default-appearance: -moz-win-borderless-glass;
-    }
+  @media (-moz-windows-glass) {
+    @media not (-moz-windows-modern) {
+      :root {
+        background-color: transparent;
+        appearance: auto;
+        -moz-default-appearance: -moz-win-borderless-glass;
+      }
 
-    :root[sizemode="maximized"] .titlebar-buttonbox {
-      margin-inline-end: 3px;
-    }
+      :root[sizemode="maximized"] .titlebar-buttonbox {
+        margin-inline-end: 3px;
+      }
+
+      /* These should be hidden w/ glass enabled. Windows draws its own buttons. */
+      .titlebar-button {
+        display: none;
+      }
 
       @media (-moz-bool-pref: "widget.windows-style.show-fog") {
         :root:not([lwtheme]) #TabsToolbar {
           background-image: radial-gradient(ellipse at bottom, rgba(255,255,255,0.8), rgba(255,255,255,0.5) 40%, transparent) !important;
         }
       }
-    /* These should be hidden w/ glass enabled. Windows draws its own buttons. */
-    .titlebar-button {
-      display: none;
-    }
 
-    /* The borders on the glass frame are ours, and inside #browser, and on
-     * win7 we want to make sure they are "glassy", so we can't use #browser
-     * as the exclude-glass container. We use #tabbrowser-tabbox instead. */
-    #tabbrowser-tabbox {
-      appearance: auto;
-      -moz-default-appearance: -moz-win-exclude-glass;
+      /* The borders on the glass frame are ours, and inside #browser, and on
+       * win7 we want to make sure they are "glassy", so we can't use #browser
+       * as the exclude-glass container. We use #tabbrowser-tabbox instead. */
+      #tabbrowser-tabbox {
+        appearance: auto;
+        -moz-default-appearance: -moz-win-exclude-glass;
+      }
     }
   }
 
-  @media (-moz-platform: windows-win8) {
-    /* Artificially draw window borders that are covered by lwtheme, see bug 591930.
-     * Borders for win7 are below, win10 only needs something like this when
-     * drawing in the titlebar (-moz-windows-accent-color-in-titlebar). */
-    #main-window[sizemode="normal"] #navigator-toolbox {
-      &[lwtheme] {
-        border-top: 1px solid var(--glass-shadow-color);
+  @media (-moz-platform: windows) {
+    @media not (-moz-windows-modern) {
+      /* Artificially draw window borders that are covered by lwtheme, see bug 591930.
+      * Borders for win7 are below, win10 only needs something like this when
+      * drawing in the titlebar (-moz-windows-accent-color-in-titlebar). */
+      #main-window[sizemode="normal"] #navigator-toolbox {
+        &[lwtheme] {
+          border-top: 1px solid var(--glass-shadow-color);
+        }
       }
-    }
 
-    /* Allows seeing inactive stuffs on 8 */
-    #TabsToolbar {
-      color: black !important;
-      --toolbarbutton-icon-fill: currentColor !important;
+      /* Allows seeing inactive stuffs on 8 */
+      #TabsToolbar {
+        color: black !important;
+        --toolbarbutton-icon-fill: currentColor !important;
+      }
     }
   }
 

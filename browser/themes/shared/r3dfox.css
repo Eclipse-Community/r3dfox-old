@@ -148,8 +148,8 @@
 }
 
 @media (-moz-bool-pref: "r3dfox.aero.fog") {
-  @media (-moz-platform: windows-win7), (-moz-platform: windows-win8) {
-    @media (-moz-windows-default-theme), (-moz-windows-compositor) {
+  @media (-moz-windows-compositor), (-moz-windows-glass) {
+    @media not (-moz-windows-modern) {
       #navigator-toolbox:not([lwtheme]) {
         background-color: transparent !important;
       }
@@ -220,8 +220,8 @@
 
 @media (-moz-bool-pref: "r3dfox.translucent.navbar") {
   @media (-moz-bool-pref: "r3dfox.aero.fog") {
-    @media (-moz-platform: windows-win7), (-moz-platform: windows-win8) {
-      @media (-moz-windows-default-theme), (-moz-windows-compositor) {
+    @media (-moz-windows-glass) {
+      @media not (-moz-windows-modern) {
         #titlebar:not([lwtheme]) {
           appearance: auto !important;
         }

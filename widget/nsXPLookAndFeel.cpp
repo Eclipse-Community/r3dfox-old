@@ -152,6 +152,7 @@ static const char sIntPrefs[][45] = {
     "ui.dwmCompositor",
     "ui.windowsClassic",
     "ui.windowsGlass",
+    "ui.windowsModern",
     "ui.macBigSurTheme",
     "ui.macRTL",
     "ui.macTitlebarHeight",
@@ -495,11 +496,7 @@ bool LookAndFeel::WindowsNonNativeMenusEnabled() {
     case 1:
       return true;
     default:
-#ifdef XP_WIN
-      return IsWin10OrLater();
-#else
       return false;
-#endif
   }
 }
 

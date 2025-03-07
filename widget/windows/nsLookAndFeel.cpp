@@ -507,7 +507,7 @@ nsresult nsLookAndFeel::NativeGetInt(IntID aID, int32_t& aResult) {
       aResult = nsUXThemeData::IsDefaultWindowTheme();
       break;
     case IntID::DWMCompositor:
-      if (StaticPrefs::widget_ev_native_controls_patch_force_dwm_report_off()) {
+      if (StaticPrefs::widget_native_controls_force_dwm_report_off()) {
         aResult = 0;
         break;
       }
@@ -519,6 +519,7 @@ nsresult nsLookAndFeel::NativeGetInt(IntID aID, int32_t& aResult) {
     } break;
     case IntID::WindowsGlass: {
       int reportingPref =
+          StaticPrefs::widget_native_controls_force_glass_reporting();
       if (reportingPref != 0) {
         aResult = (reportingPref == 1) ? 1 : 0;
         break;
@@ -536,7 +537,6 @@ nsresult nsLookAndFeel::NativeGetInt(IntID aID, int32_t& aResult) {
     case IntID::WindowsModern: {
       int reportingPref =
           StaticPrefs::widget_windows_style_modern();
-          StaticPrefs::widget_ev_native_controls_patch_force_glass_reporting();
       if (reportingPref != 0) {
         aResult = (reportingPref == 1) ? 1 : 0;
         break;

@@ -69,9 +69,9 @@ nsNativeThemeWin::~nsNativeThemeWin() { nsUXThemeData::Invalidate(); }
 auto nsNativeThemeWin::IsWidgetNonNative(
     nsIFrame* aFrame, StyleAppearance aAppearance) -> NonNative {
   if (IsWidgetScrollbarPart(aAppearance)) {
-    if (StaticPrefs::widget_ev_native_controls_patch_scrollbar_style() == 0) {
+    if (StaticPrefs::widget_native_controls_scrollbar_style() == 0) {
       return NonNative::No;
-    } else if (StaticPrefs::widget_ev_native_controls_patch_scrollbar_style() ==
+    } else if (StaticPrefs::widget_native_controls_scrollbar_style() ==
                1) {
       return NonNative::Always;
     } else /* >= 2, < 0 */
@@ -86,12 +86,12 @@ auto nsNativeThemeWin::IsWidgetNonNative(
   }
 
   if (aAppearance == StyleAppearance::Tooltip &&
-      StaticPrefs::widget_ev_native_controls_patch_tooltip_style() == 0) {
+      StaticPrefs::widget_native_controls_tooltip_style() == 0) {
     return NonNative::No;
   }
 
   if (aAppearance == StyleAppearance::FocusOutline &&
-      StaticPrefs::widget_ev_native_controls_patch_tooltip_style() == 0) {
+      StaticPrefs::widget_native_controls_tooltip_style() == 0) {
     return NonNative::No;
   }
 
@@ -1488,7 +1488,7 @@ nsNativeThemeWin::DrawWidgetBackground(gfxContext* aContext, nsIFrame* aFrame,
                                        const nsRect& aDirtyRect,
                                        DrawOverflow aDrawOverflow) {
   bool dwmCompositionEnabled =
-      StaticPrefs::widget_ev_native_controls_patch_force_dwm_report_off()
+      StaticPrefs::widget_native_controls_force_dwm_report_off()
           ? false
           : gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled();
 
@@ -1992,7 +1992,7 @@ bool nsNativeThemeWin::GetWidgetPadding(nsDeviceContext* aContext,
                                         StyleAppearance aAppearance,
                                         LayoutDeviceIntMargin* aResult) {
   bool dwmCompositionEnabled =
-      StaticPrefs::widget_ev_native_controls_patch_force_dwm_report_off()
+      StaticPrefs::widget_native_controls_force_dwm_report_off()
           ? false
           : gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled();
 
@@ -2201,7 +2201,7 @@ LayoutDeviceIntSize nsNativeThemeWin::GetMinimumWidgetSize(
     nsPresContext* aPresContext, nsIFrame* aFrame,
     StyleAppearance aAppearance) {
   bool dwmCompositionEnabled =
-      StaticPrefs::widget_ev_native_controls_patch_force_dwm_report_off()
+      StaticPrefs::widget_native_controls_force_dwm_report_off()
           ? false
           : gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled();
 

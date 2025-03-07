@@ -638,7 +638,7 @@ fn eval_scripting(context: &Context, query_value: Option<Scripting>) -> bool {
     }
 }
 
-fn eval_moz_ev_native_controls_patch(_context: &Context) -> bool {
+fn eval_moz_native_controls(_context: &Context) -> bool {
     true
 }
 
@@ -989,9 +989,9 @@ pub static MEDIA_FEATURES: [QueryFeatureDescription; 68] = [
     ),
     // Custom feature for native controls patch for userstyles to detect it:
     feature!(
-        atom!("-moz-ev-native-controls-patch"),
+        atom!("-moz-native-controls"),
         AllowsRanges::No,
-        Evaluator::BoolInteger(eval_moz_ev_native_controls_patch),
+        Evaluator::BoolInteger(eval_moz_native_controls),
         FeatureFlags::CHROME_AND_UA_ONLY,
     ),
     lnf_int_feature!(

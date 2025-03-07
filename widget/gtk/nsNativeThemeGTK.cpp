@@ -950,8 +950,9 @@ bool nsNativeThemeGTK::GetWidgetOverflow(nsDeviceContext* aContext,
   return true;
 }
 
-auto nsNativeThemeGTK::IsWidgetNonNative(
-    nsIFrame* aFrame, StyleAppearance aAppearance) -> NonNative {
+auto nsNativeThemeGTK::IsWidgetNonNative(nsIFrame* aFrame,
+                                         StyleAppearance aAppearance)
+    -> NonNative {
   if (IsWidgetScrollbarPart(aAppearance) ||
       aAppearance == StyleAppearance::FocusOutline) {
     return NonNative::Always;

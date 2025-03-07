@@ -1,3 +1,4 @@
+@ -1,297 +0,0 @@
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
@@ -124,19 +125,21 @@ treechildren::-moz-tree-drop-feedback {
 treecol,
 .tree-columnpicker-button {
   appearance: auto;
-  -moz-default-appearance: treeheadercell;
+  -moz-default-appearance: treeheadercell;  
   background-color: -moz-ColHeader;
   color: -moz-ColHeaderText;
   align-items: center;
   justify-content: center;
   padding: 0 4px;
   margin: 0;
-  border-inline-start: 1px solid ThreeDLightShadow;
 
-  @media (-moz-platform: linux) or ((-moz-platform: windows) and (prefers-color-scheme: dark)) {
-    appearance: none;
-    box-shadow: inset 0 -1px ThreeDLightShadow;
-  }
+  border-inline-start: 1px solid ThreeDLightShadow;
+  box-shadow: inset 0 -1px ThreeDLightShadow;
+
+                                                                                                
+                     
+                                               
+   
 
   &:where(:hover) {
     background-color: -moz-ColHeaderHover;
@@ -251,43 +254,44 @@ html|input.tree-input {
   z-index: 2147483647;
 }
 
-@media not (-moz-platform: macos) {
-  /* ::::: sort direction indicator :::::  */
-  .treecol-sortdirection {
-    list-style-image: url("chrome://global/skin/tree/sort-asc.svg");
-    -moz-context-properties: fill;
-    fill: currentColor;
-    visibility: hidden;
+                                   
+/* ::::: sort direction indicator :::::  */
+.treecol-sortdirection {
+  list-style-image: url("chrome://global/skin/tree/sort-asc.svg");
+  -moz-context-properties: fill;
+  fill: currentColor;
+  visibility: hidden;
 
-    treecol[sortDirection="ascending"]:not([hideheader="true"]) > & {
-      visibility: inherit;
-    }
-
-    treecol[sortDirection="descending"]:not([hideheader="true"]) > & {
-      visibility: inherit;
-      list-style-image: url("chrome://global/skin/tree/sort-dsc.svg");
-    }
+  treecol[sortDirection="ascending"]:not([hideheader="true"]) > & {
+    visibility: inherit;
   }
 
-  @media (-moz-windows-classic) {
-    treecol,
-    .tree-columnpicker-button {
-      border: 1px solid;
-      border-top-color: ThreeDHighlight;
-      border-inline-end-color: ThreeDShadow;
-      border-bottom-color: ThreeDShadow;
-      border-inline-start-color: ThreeDHighlight;
-      box-shadow: none;
-      background-color: -moz-Dialog;
-    }
+  treecol[sortDirection="descending"]:not([hideheader="true"]) > & {
+    visibility: inherit;
+    list-style-image: url("chrome://global/skin/tree/sort-dsc.svg");
+     
+  }
+}
 
-    treecol:where(:hover:active),
-    .tree-columnpicker-button:where(:hover:active) {
-      border-top-color: ThreeDShadow;
-      border-inline-end-color: ThreeDHighlight;
-      border-bottom-color: ThreeDHighlight;
-      border-inline-start-color: ThreeDShadow;
-    }
+@media (-moz-windows-classic) {
+  treecol,
+  .tree-columnpicker-button {
+    border: 1px solid;
+    border-top-color: ThreeDHighlight;
+    border-inline-end-color: ThreeDShadow;
+    border-bottom-color: ThreeDShadow;
+    border-inline-start-color: ThreeDHighlight;
+    box-shadow: none;
+    background-color: -moz-Dialog;
+  }
+
+  treecol:where(:hover:active),
+  .tree-columnpicker-button:where(:hover:active) {
+    border-top-color: ThreeDShadow;
+    border-inline-end-color: ThreeDHighlight;
+    border-bottom-color: ThreeDHighlight;
+    border-inline-start-color: ThreeDShadow;
+     
   }
 }
 

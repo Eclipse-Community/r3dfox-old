@@ -56,9 +56,8 @@ dropmarker {
 dropmarker:not([native]) {
   display: flex;
   appearance: none;
-  content: url(chrome://global/skin/icons/arrow-down-12.svg);
-  -moz-context-properties: fill;
-  fill: currentColor;
+  width: 12px;
+  height: unset;
 }
 
 dropmarker:not([native])::part(icon) {

@@ -1916,11 +1916,7 @@ LayoutDeviceIntMargin nsNativeThemeWin::GetWidgetBorder(
   if (!themeClass.isNothing()) {
     theme = nsUXThemeData::GetTheme(themeClass.value());
   }
-
-  // Classic scrollbar thumbs require classic borders. The theme procedure will
-  // break horizontal scrollbar thumbs otherwise.
-  if (aAppearance == StyleAppearance::ScrollbarthumbVertical ||
-      aAppearance == StyleAppearance::ScrollbarthumbHorizontal || !theme) {
+  if (!theme) {
     result = ClassicGetWidgetBorder(aContext, aFrame, aAppearance);
     ScaleForFrameDPI(&result, aFrame);
     return result;
@@ -2038,9 +2034,7 @@ bool nsNativeThemeWin::GetWidgetPadding(nsDeviceContext* aContext,
     // adding padding to the top of the window that is the size of the caption
     // area and then "removing" it when calculating the client area for
     // WM_NCCALCSIZE.  See bug 618353,
-
-    if (!isWindows10OrLater &&
-        aAppearance == StyleAppearance::MozWindowTitlebarMaximized) {
+    if (aAppearance == StyleAppearance::MozWindowTitlebarMaximized) {
       nsCOMPtr<nsIWidget> rootWidget;
       if (WinUtils::HasSystemMetricsForDpi()) {
         rootWidget = aFrame->PresContext()->GetRootWidget();
@@ -2324,6 +2318,13 @@ LayoutDeviceIntSize nsNativeThemeWin::GetMinimumWidgetSize(
       break;
     }
 
+    case StyleAppearance::SpinnerUpbutton:
+    case StyleAppearance::SpinnerDownbutton: {
+        LayoutDeviceIntSize result(18, 9);
+        ScaleForFrameDPI(&result, aFrame);
+        return result;
+    }
+
     case StyleAppearance::Separator: {
       // that's 2px left margin, 2px right margin and 2px separator
       // (the margin is drawn as part of the separator, though)
@@ -2447,6 +2448,7 @@ bool nsNativeThemeWin::WidgetAttributeChangeRequiresRepaint(
       aAppearance == StyleAppearance::MozWindowButtonRestore ||
       aAppearance == StyleAppearance::Menulist ||
       aAppearance == StyleAppearance::MenulistButton ||
+       aAppearance == StyleAppearance::MozMenulistArrowButton ||
       aAppearance == StyleAppearance::MozMenulistArrowButton) {
     return true;
   }
@@ -2605,6 +2607,9 @@ nsITheme::Transparency nsNativeThemeWin::GetWidgetTransparency(
 bool nsNativeThemeWin::ClassicThemeSupportsWidget(nsIFrame* aFrame,
                                                   StyleAppearance aAppearance) {
   switch (aAppearance) {
+      // Classic non-flat menus are handled almost entirely through CSS.
+      if (!nsUXThemeData::AreFlatMenusEnabled()) return false;
+      [[fallthrough]];
     case StyleAppearance::Resizer: {
       // The classic native resizer has an opaque grey background which doesn't
       // match the usually white background of the scrollable container, so
@@ -2614,9 +2619,6 @@ bool nsNativeThemeWin::ClassicThemeSupportsWidget(nsIFrame* aFrame,
     }
     case StyleAppearance::Menubar:
     case StyleAppearance::Menupopup:
-      // Classic non-flat menus are handled almost entirely through CSS.
-      if (!nsUXThemeData::AreFlatMenusEnabled()) return false;
-      [[fallthrough]];
     case StyleAppearance::Button:
     case StyleAppearance::NumberInput:
     case StyleAppearance::PasswordInput:

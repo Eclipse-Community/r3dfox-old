@@ -184,19 +184,6 @@
   }
 }
 
-@media (-moz-bool-pref: "r3dfox.caption.text.color") {
-  #TabsToolbar {
-    color: white !important;
-    --toolbarbutton-icon-fill: currentColor !important;
-  }
-  :root {
-    --lwt-text-color: white !important;
-  }
-  #main-menubar:not([lwtheme]) {
-    color: white !important;
-  }
-}
-
 @media (-moz-bool-pref: "r3dfox.force.transparency") {
   :root {
     --lwt-additional-images: none !important;
@@ -269,8 +256,6 @@
     --tab-bg-block-margin: 0px;
     --my-tab-inline-padding: 0px;
     --tab-separator-offset: 0px;
-    --arrowpanel-background: light-dark(rgba(255, 255, 255, 0.975), rgba(66, 65, 77, 0.975)) !important;
-    --toolbar-field-focus-background-color: light-dark(rgba(255, 255, 255, 0.975), rgba(66, 65, 77, 0.975)) !important;
   }
 
   /* Tab counter at top because it's funny */

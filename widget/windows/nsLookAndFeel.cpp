@@ -519,15 +519,30 @@ nsresult nsLookAndFeel::NativeGetInt(IntID aID, int32_t& aResult) {
     } break;
     case IntID::WindowsGlass: {
       int reportingPref =
+      if (reportingPref != 0) {
+        aResult = (reportingPref == 1) ? 1 : 0;
+        break;
+      }
+      if (StaticPrefs::widget_native_controls_force_dwm_report_off()) {
+        aResult = 0;
+        break;
+      }
+      // Aero Glass is only available prior to Windows 8 when DWM is used.
+      // Actually not, you can restore it with glass tools
+      // It's just that people don't research anymore... smh
+      aResult = (gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled());
+      break;
+    }
+    case IntID::WindowsModern: {
+      int reportingPref =
+          StaticPrefs::widget_windows_style_modern();
           StaticPrefs::widget_ev_native_controls_patch_force_glass_reporting();
       if (reportingPref != 0) {
         aResult = (reportingPref == 1) ? 1 : 0;
         break;
       }
 
-      // Aero Glass is only available prior to Windows 8 when DWM is used.
-      aResult = (gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled() &&
-                 !isWin8OrLater);
+      aResult = 0;
       break;
     }
     case IntID::AlertNotificationOrigin:

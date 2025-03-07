@@ -1892,8 +1892,6 @@ void nsDisplayListBuilder::RemoveModifiedWindowRegions() {
   mRetainedWindowNoDraggingRegion.RemoveModifiedFramesAndRects();
   mWindowExcludeGlassRegion.RemoveModifiedFramesAndRects();
   mRetainedWindowOpaqueRegion.RemoveModifiedFramesAndRects();
-
-  mHasGlassItemDuringPartial = false;
 }
 
 void nsDisplayListBuilder::ClearRetainedWindowRegions() {

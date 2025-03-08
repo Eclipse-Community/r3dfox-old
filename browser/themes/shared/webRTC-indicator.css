@@ -306,7 +306,7 @@ xul|menu {
 }
 
 @media (-moz-platform: windows) {
-  @media (prefers-contrast) {
+  @media not (-moz-windows-default-theme) {
     :root {
       --indicator-background-color: -moz-Dialog;
       --indicator-color: -moz-DialogText;

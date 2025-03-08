@@ -2770,7 +2770,7 @@ bool nsWindow::UpdateNonClientMargins(bool aReflowWindow) {
     // a new issue where widget edges would sometimes appear to bleed into other
     // displays (bug 1614218).
     int verticalResize = 0;
-    if (StaticPrefs::widget_windows_style_modern() == true) {
+    if (StaticPrefs::widget_windows_style_modern()) {
       verticalResize =
           WinUtils::GetSystemMetricsForDpi(SM_CYFRAME, dpi) +
           (hasCaption ? WinUtils::GetSystemMetricsForDpi(SM_CXPADDEDBORDER, dpi)
@@ -4232,17 +4232,19 @@ void nsWindow::UpdateThemeGeometries(
     return;
   }
 
-  mWindowButtonsRect = Nothing();
-  for (size_t i = 0; i < aThemeGeometries.Length(); i++) {
-    if (aThemeGeometries[i].mType ==
-        nsNativeThemeWin::eThemeGeometryTypeWindowButtons) {
-      LayoutDeviceIntRect bounds = aThemeGeometries[i].mRect;
-      // Extend the bounds by one pixel to the right, because that's how much
-      // the actual window button shape extends past the client area of the
-      // window (and overlaps the right window frame).
-      bounds.SetWidth(bounds.Width() + 1);
-      if (!mWindowButtonsRect) {
-        mWindowButtonsRect = Some(bounds);
+  if (StaticPrefs::widget_windows_style_modern()) {
+    mWindowButtonsRect = Nothing();
+    for (size_t i = 0; i < aThemeGeometries.Length(); i++) {
+      if (aThemeGeometries[i].mType ==
+          nsNativeThemeWin::eThemeGeometryTypeWindowButtons) {
+        LayoutDeviceIntRect bounds = aThemeGeometries[i].mRect;
+        // Extend the bounds by one pixel to the right, because that's how much
+        // the actual window button shape extends past the client area of the
+        // window (and overlaps the right window frame).
+        bounds.SetWidth(bounds.Width() + 1);
+        if (!mWindowButtonsRect) {
+          mWindowButtonsRect = Some(bounds);
+        }
       }
     }
   }
@@ -5117,6 +5119,7 @@ bool nsWindow::ProcessMessageInternal(UINT msg, WPARAM& wParam, LPARAM& lParam,
   if (mCustomNonClient && dwmCompositionEnabled &&
       /* We don't do this for win10 glass with a custom titlebar,
        * in order to avoid the caption buttons breaking. */
+      !(StaticPrefs::widget_windows_style_modern() && HasGlass()) &&
       DwmDefWindowProc(mWnd, msg, wParam, lParam, &dwmHitResult)) {
     *aRetValue = dwmHitResult;
     return true;

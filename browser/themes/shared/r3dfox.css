@@ -142,9 +142,10 @@
 /* Aero fog and other settings */
 
 @media (-moz-windows-default-theme), (-moz-windows-compositor) {
-  #main-menubar:not([lwtheme]) {
-    color: black;
-  }
+  @media not (-moz-windows-modern) {
+    #main-menubar:not([lwtheme]) {
+      color: black;
+    }
 }
 
 @media (-moz-bool-pref: "r3dfox.aero.fog") {

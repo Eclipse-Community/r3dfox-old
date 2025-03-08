@@ -2724,11 +2724,6 @@ LayoutDeviceIntMargin nsWindow::NormalWindowNonClientOffset() const {
  * or removed entirely.
  */
 bool nsWindow::UpdateNonClientMargins(bool aReflowWindow) {
-  int overrideWinVer =
-      StaticPrefs::widget_native_controls_override_win_version();
-  bool isWin10OrLater =
-      (overrideWinVer == 0 && IsWin10OrLater()) || overrideWinVer >= 10;
-
   if (!mCustomNonClient) {
     return false;
   }
@@ -4265,9 +4260,6 @@ void nsWindow::UpdateThemeGeometries(
           ? false
           : gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled();
 
-  int winVerOverride =
-      StaticPrefs::widget_native_controls_override_win_version();
-
   RefPtr<WebRenderLayerManager> layerManager =
       GetWindowRenderer() ? GetWindowRenderer()->AsWebRender() : nullptr;
   if (!layerManager) {
@@ -5120,11 +5112,6 @@ bool nsWindow::ProcessMessageInternal(UINT msg, WPARAM& wParam, LPARAM& lParam,
       StaticPrefs::widget_native_controls_force_dwm_report_off()
           ? false
           : gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled();
-
-  int winVerOverride =
-      StaticPrefs::widget_native_controls_override_win_version();
-  bool isWin10 =
-      (winVerOverride == 0 && IsWin10OrLater()) || winVerOverride >= 10;
 
   MSGResult msgResult(aRetValue);
   if (ExternalHandlerProcessMessage(msg, wParam, lParam, msgResult)) {

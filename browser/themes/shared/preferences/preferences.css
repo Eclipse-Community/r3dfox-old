@@ -597,6 +597,13 @@ html|label[disabled] {
   margin-inline-start: 0;
 }
 
+@media not (-moz-windows-modern) {
+  #windows-sso,
+  #windows-sso-caption {
+    display: none;
+  }
+}
+ 
 /**
  * Dialog
  */

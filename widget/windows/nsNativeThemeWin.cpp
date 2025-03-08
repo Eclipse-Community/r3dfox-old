@@ -2215,6 +2215,7 @@ bool nsNativeThemeWin::GetWidgetPadding(nsDeviceContext* aContext,
     // area and then "removing" it when calculating the client area for
     // WM_NCCALCSIZE.  See bug 618353,
 
+    // check if this fucks with modern mode
     if (!isWindows10OrLater &&
         aAppearance == StyleAppearance::MozWindowTitlebarMaximized) {
       nsCOMPtr<nsIWidget> rootWidget;
@@ -2507,6 +2508,13 @@ LayoutDeviceIntSize nsNativeThemeWin::GetMinimumWidgetSize(
         return result;
       }
       break;
+    }
+
+    case StyleAppearance::SpinnerUpbutton:
+    case StyleAppearance::SpinnerDownbutton: {
+        LayoutDeviceIntSize result(16, 9);
+        ScaleForFrameDPI(&result, aFrame);
+        return result;
     }
 
     case StyleAppearance::Separator: {

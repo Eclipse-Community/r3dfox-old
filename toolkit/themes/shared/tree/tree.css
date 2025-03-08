@@ -131,7 +131,6 @@ treecol,
   justify-content: center;
   padding: 0 4px;
   margin: 0;
-
   border-inline-start: 1px solid ThreeDLightShadow;
 
   @media (-moz-platform: linux) or (prefers-color-scheme: dark) {
@@ -280,6 +279,7 @@ html|input.tree-input {
     box-shadow: none;
     background-color: -moz-Dialog;
   }
+
   treecol:where(:hover:active),
   .tree-columnpicker-button:where(:hover:active) {
     border-top-color: ThreeDShadow;

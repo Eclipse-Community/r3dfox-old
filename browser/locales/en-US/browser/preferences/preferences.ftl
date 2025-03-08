@@ -192,6 +192,11 @@ r3dfox-menubar =
 
 r3dfox-menubar-desc = This removes the menubar background.
 
+r3dfox-glow-menubar =
+    .label = Menubar text glow
+
+r3dfox-glow-menubar-desc = This enables/disables the menubar text glow. Can help with reading the text on some backgrounds or colors.
+
 r3dfox-navbar =
     .label = Translucent design
 

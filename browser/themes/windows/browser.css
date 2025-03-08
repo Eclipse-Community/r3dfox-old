@@ -382,12 +382,14 @@ menupopup[touchmode] :is(menu, menuitem, menucaption) {
   padding-block: calc((3.5em - 32px) / 2);
 }
 
-#context-navigation {
-  background-color: menu;
-}
+@media not (-moz-windows-non-native-menus) {
+  #context-navigation {
+    background-color: menu;
+  }
 
-#context-sep-navigation {
-  margin-inline-start: -28px;
+  #context-sep-navigation {
+    margin-inline-start: -28px;
+  }
 }
 
 @media (-moz-windows-non-native-menus) {

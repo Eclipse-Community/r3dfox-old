@@ -91,8 +91,6 @@ ac_add_options RUSTC_OPT_LEVEL="3"
 # Enable LTO
 export MOZ_LTO=1
 ac_add_options MOZ_LTO=1
-export MOZ_PGO=1
-ac_add_options MOZ_PGO=1
 
 if test "$GEN_PGO"; then
     ac_add_options --enable-profile-generate

@@ -31,20 +31,6 @@
     }
   }
 
-  /* Black toolbar text for 7 to make stuffs visible */
-  @media (-moz-platform: windows-win7),
-         (-moz-platform: windows-win8) {
-    @media (-moz-windows-default-theme), (-moz-windows-compositor) {
-      #TabsToolbar {
-        @media (-moz-bool-pref: "widget.windows-style.show-fog") {
-          background-image: radial-gradient(ellipse at bottom, rgba(255,255,255,0.8), rgba(255,255,255,0.5) 40%, transparent);
-        }
-        color: black;
-        --toolbarbutton-icon-fill: currentColor;
-      }
-    }
-  }
-
   @media (-moz-windows-classic) {
     @media (-moz-bool-pref: "widget.windows-style.show-fog") {
       :root[tabsintitlebar]:not([sizemode=fullscreen]) #TabsToolbar {
@@ -71,8 +57,17 @@
     }
   }
 
-  @media (-moz-platform: windows-win7),
-         (-moz-platform: windows-win8) {
+  @media not (-moz-windows-modern) {
+    /* Add a fog for background tabs to be visible on Windows 7 glass window background */
+    @media (-moz-windows-default-theme) {
+      #TabsToolbar {
+        @media (-moz-bool-pref: "widget.windows-style.show-fog") {
+          background-image: radial-gradient(ellipse at bottom, rgba(255,255,255,0.8), rgba(255,255,255,0.5) 40%, transparent);
+        }
+        color: black;
+        --toolbarbutton-icon-fill: currentColor;
+      }
+    }
     @media (-moz-windows-compositor) {
       :root {
         background: transparent !important;
@@ -95,8 +90,7 @@
        these colors so tabs and menus are legible against the window accent color.
        These colors are copied from browser.css. */
     @media not (-moz-windows-compositor),
-           not (-moz-windows-default-theme),
-           (-moz-platform: windows-win8) {
+           not (-moz-windows-default-theme) {
       :root[tabsintitlebar] {
         color: CaptionText;
       }
@@ -105,26 +99,23 @@
         color: InactiveCaptionText;
       }
     }
-  }
 
-  /* Restored windows get an artificial border on windows, because the lwtheme background
-   * overlaps the regular window border. That isn't the case for us, so we avoid painting
-   * over the native border with our custom borders. These are !important to avoid
-   * specificity-wars with the selectors that add these borders. */
-  @media (-moz-windows-classic),
-         not (-moz-windows-compositor) and (-moz-windows-default-theme) {
-    #navigator-toolbox {
-      background-image: none !important;
+    /* Restored windows get an artificial border on windows, because the lwtheme background
+     * overlaps the regular window border. That isn't the case for us, so we avoid painting
+     * over the native border with our custom borders. These are !important to avoid
+     * specificity-wars with the selectors that add these borders. */
+    @media (-moz-windows-classic),
+           not (-moz-windows-compositor) and (-moz-windows-default-theme) {
+      #navigator-toolbox {
+        background-image: none !important;
+      }
     }
-  }
-  @media (-moz-windows-glass) {
-    #navigator-toolbox {
-      border-top: none !important;
-      box-shadow: none !important;
-      padding-top: 0 !important;
+    @media (-moz-windows-glass) {
+      #navigator-toolbox {
+        box-shadow: none !important;
+        padding-top: 0 !important;
+      }
     }
-  }
-  @media (-moz-platform: windows-win8) {
     #navigator-toolbox {
       border-top: none !important;
     }

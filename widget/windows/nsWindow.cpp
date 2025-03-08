@@ -2817,7 +2817,7 @@ bool nsWindow::UpdateNonClientMargins(bool aReflowWindow) {
     // a new issue where widget edges would sometimes appear to bleed into other
     // displays (bug 1614218).
     int verticalResize = 0;
-    if (isWin10OrLater) {
+    if (StaticPrefs::widget_windows_style_modern()) {
       verticalResize =
           WinUtils::GetSystemMetricsForDpi(SM_CYFRAME, dpi) +
           (hasCaption ? WinUtils::GetSystemMetricsForDpi(SM_CXPADDEDBORDER, dpi)
@@ -4280,7 +4280,7 @@ void nsWindow::UpdateThemeGeometries(
 
   mWindowButtonsRect = Nothing();
 
-  if (!((winVerOverride == 0 && IsWin10OrLater()) || winVerOverride >= 10)) {
+  if (StaticPrefs::widget_windows_style_modern()) {
     for (size_t i = 0; i < aThemeGeometries.Length(); i++) {
       if (aThemeGeometries[i].mType ==
           nsNativeThemeWin::eThemeGeometryTypeWindowButtons) {
@@ -5150,7 +5150,7 @@ bool nsWindow::ProcessMessageInternal(UINT msg, WPARAM& wParam, LPARAM& lParam,
   if (mCustomNonClient && dwmCompositionEnabled &&
       /* We don't do this for win10 glass with a custom titlebar,
        * in order to avoid the caption buttons breaking. */
-      !(isWin10 && HasGlass()) &&
+      !(StaticPrefs::widget_windows_style_modern() && HasGlass()) &&
       DwmDefWindowProc(mWnd, msg, wParam, lParam, &dwmHitResult)) {
     *aRetValue = dwmHitResult;
     return true;

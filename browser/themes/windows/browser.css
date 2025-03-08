@@ -37,22 +37,24 @@
 }
 
 @media (-moz-windows-accent-color-in-titlebar) {
-  :root[tabsintitlebar] {
-    /* stylelint-disable-next-line media-query-no-invalid */
-    @media (-moz-bool-pref: "browser.theme.windows.accent-color-in-tabs.enabled") {
-      --toolbox-non-lwt-bgcolor: ActiveCaption;
-      --toolbox-non-lwt-textcolor: CaptionText;
-      --toolbox-non-lwt-bgcolor-inactive: InactiveCaption;
-      --toolbox-non-lwt-textcolor-inactive: InactiveCaptionText;
-
-      &:not([lwtheme]) #TabsToolbar {
-        /* These colors match the Linux/HCM default button colors. We need to
-         * override these on the tabs toolbar because the accent color is
-         * arbitrary, so the hardcoded colors from browser-custom-colors might
-         * not provide sufficient contrast. */
-        --toolbarbutton-icon-fill: currentColor;
-        --toolbarbutton-hover-background: color-mix(in srgb, currentColor 17%, transparent);
-        --toolbarbutton-active-background: color-mix(in srgb, currentColor 30%, transparent);
+  @media (-moz-windows-modern) {
+    :root[tabsintitlebar] {
+      /* stylelint-disable-next-line media-query-no-invalid */
+      @media (-moz-bool-pref: "browser.theme.windows.accent-color-in-tabs.enabled") {
+        --toolbox-non-lwt-bgcolor: ActiveCaption;
+        --toolbox-non-lwt-textcolor: CaptionText;
+        --toolbox-non-lwt-bgcolor-inactive: InactiveCaption;
+        --toolbox-non-lwt-textcolor-inactive: InactiveCaptionText;
+    
+        &:not([lwtheme]) #TabsToolbar {
+          /* These colors match the Linux/HCM default button colors. We need to
+           * override these on the tabs toolbar because the accent color is
+           * arbitrary, so the hardcoded colors from browser-custom-colors might
+           * not provide sufficient contrast. */
+          --toolbarbutton-icon-fill: currentColor;
+          --toolbarbutton-hover-background: color-mix(in srgb, currentColor 17%, transparent);
+          --toolbarbutton-active-background: color-mix(in srgb, currentColor 30%, transparent);
+        }
       }
     }
   }
@@ -63,44 +65,43 @@
  * illegible.
  */
 @media (-moz-windows-default-theme) {
-  @media not (-moz-platform: windows-win7) {
+  @media not (-moz-windows-modern) {
     #toolbar-menubar:not([lwtheme]):-moz-window-inactive {
       color: ThreeDShadow;
     }
   }
 }
 
-@media not (-moz-platform: windows-win7) {
-  @media not (-moz-platform: windows-win8) {
-    /* On Windows 10, when temporarily showing the menu bar, make it at least as
-     * tall as the tab bar such that the window controls don't appear to move up. */
-    :root[tabsintitlebar] #toolbar-menubar[autohide="true"] {
-      height: var(--tab-min-height);
-    }
+@media (-moz-windows-modern) {
+  /* On Windows 10, when temporarily showing the menu bar, make it at least as
+  * tall as the tab bar such that the window controls don't appear to move up. */
+  :root[tabsintitlebar] #toolbar-menubar[autohide="true"] {
+    height: var(--tab-min-height);
   }
 }
 
 /* Add 4px extra margin on top of the tabs toolbar on Windows 7. */
-@media (-moz-platform: windows-win7) {
+@media not (-moz-windows-modern) {
   :root[sizemode="normal"][chromehidden~="menubar"] #TabsToolbar > .toolbar-items,
   :root[sizemode="normal"] #toolbar-menubar[autohide="true"][inactive] + #TabsToolbar > .toolbar-items {
     padding-top: 4px;
   }
 }
 
+
 /* Add a fog for background tabs to be visible on Windows 7 glass window background */
-@media (-moz-platform: windows-win7),
-       (-moz-platform: windows-win8) {
-  @media (-moz-bool-pref: "widget.windows-style.show-fog") {
-    #TabsToolbar:not([lwtheme]) {
-      background-image: radial-gradient(ellipse at bottom, rgba(255,255,255,0.8), rgba(255,255,255,0.5) 40%, transparent);
+@media (-moz-windows-default-theme) {
+  @media not (-moz-windows-modern) {
+    @media (-moz-bool-pref: "widget.windows-style.show-fog") {
+      #TabsToolbar:not([lwtheme]) {
+        background-image: radial-gradient(ellipse at bottom, rgba(255,255,255,0.8), rgba(255,255,255,0.5) 40%, transparent);
+      }
     }
   }
 }
 
 @media not (-moz-windows-compositor),
-       not (-moz-windows-default-theme),
-       (-moz-platform: windows-win8) {
+       not (-moz-windows-default-theme) {
   /* Please keep the menu text colors in this media block in sync with
    * light-dark-overrides.css, minus the :not([lwtheme]) condition - see Bug 1165718.
    */
@@ -182,8 +183,7 @@
   align-items: stretch;
 }
 
-@media (-moz-platform: windows-win7),
-       (-moz-platform: windows-win8) {
+@media not (-moz-windows-modern) {
   /* Preserve window control buttons position at the top of the button box. */
   .titlebar-buttonbox-container {
     align-items: flex-start;

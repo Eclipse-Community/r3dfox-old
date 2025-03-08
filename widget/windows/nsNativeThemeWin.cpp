@@ -2215,8 +2215,7 @@ bool nsNativeThemeWin::GetWidgetPadding(nsDeviceContext* aContext,
     // area and then "removing" it when calculating the client area for
     // WM_NCCALCSIZE.  See bug 618353,
 
-    // check if this fucks with modern mode
-    if (!isWindows10OrLater &&
+    if (!StaticPrefs::widget_windows_style_modern() &&
         aAppearance == StyleAppearance::MozWindowTitlebarMaximized) {
       nsCOMPtr<nsIWidget> rootWidget;
       if (WinUtils::HasSystemMetricsForDpi()) {

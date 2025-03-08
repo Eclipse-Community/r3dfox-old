@@ -598,8 +598,7 @@ html|label[disabled] {
   margin-inline-start: 0;
 }
 
-@media (-moz-platform: windows-win7),
-       (-moz-platform: windows-win8) {
+@media not (-moz-windows-modern) {
   #windows-sso,
   #windows-sso-caption {
     display: none;

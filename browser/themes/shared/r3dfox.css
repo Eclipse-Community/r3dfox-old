@@ -196,6 +196,11 @@
   #main-menubar:not([lwtheme]) {
     color: white !important;
   }
+  @media (-moz-bool-pref: "r3dfox.glow.menubar") {
+    #toolbar-menubar {
+      text-shadow: 0 0 .5em black, 0 0 .5em black, 0 1px 0 rgba(0,0,0,.4) !important;
+    }
+  }
 }
 
 @media (-moz-bool-pref: "r3dfox.force.transparency") {
@@ -229,6 +234,12 @@
 @media (-moz-bool-pref: "r3dfox.transparent.menubar") {
   #main-window #main-menubar {
     background: none !important;
+  }
+}
+
+@media not (-moz-bool-pref: "r3dfox.glow.menubar") {
+  #toolbar-menubar {
+    text-shadow: none !important;
   }
 }
 

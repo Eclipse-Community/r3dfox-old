@@ -674,6 +674,8 @@ pref("r3dfox.caption.text.color", false);
 pref("r3dfox.force.transparency", false);
 // Disable transparent menubar by default
 pref("r3dfox.transparent.menubar", false);
+// Enable menubar text glow by default
+pref("r3dfox.glow.menubar", true);
 // Translucent navbar design
 pref("r3dfox.translucent.navbar", false);
 // Disable other customizations by default

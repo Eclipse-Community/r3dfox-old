@@ -17510,6 +17510,11 @@
   value: false
   mirror: always
 
+- name: widget.ev-native-controls-patch.override-win-version
+  type: int32_t
+  value: 0
+  mirror: always
+  
 - name: widget.native-controls.force-dwm-report-off
   type: bool
   value: false

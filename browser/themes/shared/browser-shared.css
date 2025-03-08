@@ -187,18 +187,16 @@ body {
 
   /* Toolbar / content area border */
   border-bottom: 0.01px solid var(--chrome-content-separator-color);
-  @media not (-moz-platform: windows-win7) {
-    @media not (-moz-platform: windows-win8) {
-      background-color: var(--toolbox-non-lwt-bgcolor);
-      color: var(--toolbox-non-lwt-textcolor);
+  @media (-moz-windows-modern) {
+    background-color: var(--toolbox-non-lwt-bgcolor);
+    color: var(--toolbox-non-lwt-textcolor);
 
-      will-change: background-color;
-      transition: background-color var(--inactive-window-transition);
+    will-change: background-color;
+    transition: background-color var(--inactive-window-transition);
 
-      &:-moz-window-inactive {
-        background-color: var(--toolbox-non-lwt-bgcolor-inactive);
-        color: var(--toolbox-non-lwt-textcolor-inactive);
-      }
+    &:-moz-window-inactive {
+      background-color: var(--toolbox-non-lwt-bgcolor-inactive);
+      color: var(--toolbox-non-lwt-textcolor-inactive);
     }
   }
 

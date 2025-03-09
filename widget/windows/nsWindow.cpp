@@ -2839,7 +2839,7 @@ bool nsWindow::UpdateNonClientMargins(bool aReflowWindow) {
       // to clear the portion of the NC region that is exposed by the
       // hidden taskbar.  As above, we clear the bottom of the NC region
       // when the taskbar is at the top of the screen.
-      if (isWin10OrLater) {
+      if (IsWin10OrLater()) {
         UINT clearEdge = (edge == ABE_TOP) ? ABE_BOTTOM : edge;
         mClearNCEdge = Some(clearEdge);
       }

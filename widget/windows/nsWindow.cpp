@@ -4272,18 +4272,16 @@ void nsWindow::UpdateThemeGeometries(
 
   mWindowButtonsRect = Nothing();
 
-  if (StaticPrefs::widget_windows_style_modern()) {
-    for (size_t i = 0; i < aThemeGeometries.Length(); i++) {
-      if (aThemeGeometries[i].mType ==
-          nsNativeThemeWin::eThemeGeometryTypeWindowButtons) {
-        LayoutDeviceIntRect bounds = aThemeGeometries[i].mRect;
-        // Extend the bounds by one pixel to the right, because that's how much
-        // the actual window button shape extends past the client area of the
-        // window (and overlaps the right window frame).
-        bounds.SetWidth(bounds.Width() + 1);
-        if (!mWindowButtonsRect) {
-          mWindowButtonsRect = Some(bounds);
-        }
+  for (size_t i = 0; i < aThemeGeometries.Length(); i++) {
+    if (aThemeGeometries[i].mType ==
+        nsNativeThemeWin::eThemeGeometryTypeWindowButtons) {
+      LayoutDeviceIntRect bounds = aThemeGeometries[i].mRect;
+      // Extend the bounds by one pixel to the right, because that's how much
+      // the actual window button shape extends past the client area of the
+      // window (and overlaps the right window frame).
+      bounds.SetWidth(bounds.Width() + 1);
+      if (!mWindowButtonsRect) {
+        mWindowButtonsRect = Some(bounds);
       }
     }
   }
@@ -5137,7 +5135,6 @@ bool nsWindow::ProcessMessageInternal(UINT msg, WPARAM& wParam, LPARAM& lParam,
   if (mCustomNonClient && dwmCompositionEnabled &&
       /* We don't do this for win10 glass with a custom titlebar,
        * in order to avoid the caption buttons breaking. */
-      !(StaticPrefs::widget_windows_style_modern() && HasGlass()) &&
       DwmDefWindowProc(mWnd, msg, wParam, lParam, &dwmHitResult)) {
     *aRetValue = dwmHitResult;
     return true;

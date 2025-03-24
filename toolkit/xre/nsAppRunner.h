@@ -63,7 +63,7 @@ extern bool gIsGtest;
 nsresult NS_CreateNativeAppSupport(nsINativeAppSupport* *aResult);
 
 nsresult
-NS_NewToolkitProfileService(nsIToolkitProfileService* *aResult);
+NS_NewToolkitProfileService(nsIToolkitProfileService* *aResult,uint32_t portable);
 
 nsresult
 NS_NewToolkitProfileFactory(nsIFactory* *aResult);

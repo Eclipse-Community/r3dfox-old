@@ -300,6 +300,26 @@ GetSystemParentDirectory(nsIFile** aFile)
 }
 #endif
 
+nsresult
+nsXREDirProvider::Portable(uint32_t *aResult)
+{
+  bool portable;
+  nsCOMPtr<nsIFile> portmodemark;
+  GetAppDir()->Clone(getter_AddRefs(portmodemark));
+  portmodemark->AppendNative(NS_LITERAL_CSTRING("pmprt.mod"));
+  portmodemark->Exists(&portable);
+  if (portable){
+     *aResult=1;
+     return NS_OK;
+     }
+  GetAppDir()->Clone(getter_AddRefs(portmodemark));
+  portmodemark->AppendNative(NS_LITERAL_CSTRING("pmundprt.mod"));
+  portmodemark->Exists(&portable);
+  if (portable) *aResult=2;
+  else *aResult=0; 
+  return NS_OK;
+}
+
 NS_IMETHODIMP
 nsXREDirProvider::GetFile(const char* aProperty, bool* aPersistent,
                           nsIFile** aFile)
@@ -1487,8 +1507,8 @@ nsXREDirProvider::GetSysUserExtensionsDirectory(nsIFile** aFile)
   nsresult rv = GetUserDataDirectoryHome(getter_AddRefs(localDir), false);
   NS_ENSURE_SUCCESS(rv, rv);
 
-  rv = AppendSysUserExtensionPath(localDir);
-  NS_ENSURE_SUCCESS(rv, rv);
+  //rv = AppendSysUserExtensionPath(localDir);
+  //NS_ENSURE_SUCCESS(rv, rv);
 
   rv = EnsureDirectoryExists(localDir);
   NS_ENSURE_SUCCESS(rv, rv);

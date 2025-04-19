@@ -494,6 +494,7 @@ tabpanels > .deck-selected,
 deck > .deck-selected {
   -moz-subtree-hidden-only-visually: 0;
   visibility: inherit;
+  overflow: auto;
 }
 
 tabpanels,

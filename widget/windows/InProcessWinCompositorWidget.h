@@ -49,7 +49,6 @@ class InProcessWinCompositorWidget final
   void NotifyVisibilityUpdated(bool aIsFullyOccluded) override;
   void ClearTransparentWindow() override;
 
-  bool DrawsToMemoryDC() const;
   bool RedrawTransparentWindow();
 
   // Ensure that a transparent surface exists, then return it.

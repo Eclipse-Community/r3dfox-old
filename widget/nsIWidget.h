@@ -777,9 +777,6 @@ class nsIWidget : public nsISupports {
    */
   virtual void SuppressAnimation(bool aSuppress) {}
 
-  /** Sets windows-specific mica backdrop on this widget. */
-  virtual void SetMicaBackdrop(bool) {}
-
   /**
    * Return size mode (minimized, maximized, normalized).
    * Returns a value from nsSizeMode (see nsIWidgetListener.h)

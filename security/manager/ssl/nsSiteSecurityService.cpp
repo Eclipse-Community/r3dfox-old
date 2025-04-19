@@ -300,6 +300,11 @@ nsresult nsSiteSecurityService::SetHSTSState(
   MOZ_ASSERT(aHSTSState == SecurityPropertySet,
              "HSTS State must be SecurityPropertySet");
 
+  // Exit early if STS not enabled
+  if (!StaticPrefs::network_stricttransportsecurity_enabled()) {
+    return NS_OK;
+  }
+
   int64_t expiretime = ExpireTimeFromMaxAge(maxage);
   SiteHSTSState siteState(hostname, aOriginAttributes, expiretime, aHSTSState,
                           includeSubdomains);
@@ -727,6 +732,13 @@ nsSiteSecurityService::IsSecureURI(nsIURI* aURI,
   nsAutoCString hostname;
   nsresult rv = GetHost(aURI, hostname);
   NS_ENSURE_SUCCESS(rv, rv);
+
+  // Exit early if STS not enabled
+  if (!StaticPrefs::network_stricttransportsecurity_enabled()) {
+    *aResult = false;
+    return NS_OK;
+  }
+
   /* An IP address never qualifies as a secure URI. */
   if (HostIsIPAddress(hostname)) {
     *aResult = false;
@@ -915,6 +927,11 @@ nsresult nsSiteSecurityService::IsSecureHost(
     bool* aResult) {
   NS_ENSURE_ARG(aResult);
   *aResult = false;
+
+  // Exit early if STS not enabled
+  if (!StaticPrefs::network_stricttransportsecurity_enabled()) {
+    return NS_OK;
+  }
 
   /* An IP address never qualifies as a secure URI. */
   const nsCString& flatHost = PromiseFlatCString(aHost);

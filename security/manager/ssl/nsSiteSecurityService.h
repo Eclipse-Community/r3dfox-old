@@ -150,6 +150,7 @@ class nsSiteSecurityService : public nsISiteSecurityService,
                                nsIDataStorage::DataType aDataStorageType);
 
   bool mUsePreloadList;
+  bool mUseStsService;
   int64_t mPreloadListTimeOffset;
   nsCOMPtr<nsIDataStorage> mSiteStateStorage;
   const mozilla::Dafsa mDafsa;

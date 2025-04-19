@@ -82,6 +82,7 @@ Preferences.addAll([
   { id: "widget.windows-style.modern", type: "bool" },
   { id: "browser.e10s.disabled", type: "bool" },
   { id: "security.csp.enable", type: "bool",  inverted: true },
+  { id: "network.stricttransportsecurity.enabled", type: "bool",  inverted: true },
   { id: "accessibility.force_disabled", type: "int" },
 
   /* Tab preferences

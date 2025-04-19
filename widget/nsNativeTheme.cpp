@@ -58,6 +58,10 @@ NS_IMPL_ISUPPORTS(nsNativeTheme, nsITimerCallback, nsINamed)
     } else if (aAppearance == StyleAppearance::Checkbox ||
                aAppearance == StyleAppearance::Radio ||
                aAppearance == StyleAppearance::ToolbarbuttonDropdown ||
+<<<<<<< HEAD
+=======
+               aAppearance == StyleAppearance::Treeheadersortarrow ||
+>>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
                aAppearance == StyleAppearance::ButtonArrowPrevious ||
                aAppearance == StyleAppearance::ButtonArrowNext ||
                aAppearance == StyleAppearance::ButtonArrowUp ||

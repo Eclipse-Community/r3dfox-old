@@ -181,7 +181,7 @@ Maybe<HANDLE> GpuProcessD3D11TextureMap::GetSharedHandleOfCopiedTexture(
     }
 
     // Disable no video copy for future decoded video frames. Since
-    // Get SharedHandle of copied Texture() is slow.
+    // GetSharedHandleOfCopiedTexture() is slow.
     if (it->second.mZeroCopyUsageInfo) {
       it->second.mZeroCopyUsageInfo->DisableZeroCopyNV12Texture();
     }

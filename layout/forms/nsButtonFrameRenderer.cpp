@@ -214,7 +214,11 @@ void nsButtonFrameRenderer::SetComputedStyle(int32_t aIndex,
 
 namespace mozilla {
 
+<<<<<<< HEAD
 class nsDisplayButtonBoxShadowOuter final : public nsPaintedDisplayItem {
+=======
+class nsDisplayButtonBoxShadowOuter : public nsPaintedDisplayItem {
+>>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
  public:
   nsDisplayButtonBoxShadowOuter(nsDisplayListBuilder* aBuilder,
                                 nsIFrame* aFrame)

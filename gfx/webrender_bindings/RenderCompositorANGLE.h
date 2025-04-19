@@ -84,8 +84,6 @@ class RenderCompositorANGLE : public RenderCompositor {
             wr::DeviceIntRect aDirtyRect,
             wr::DeviceIntRect aValidRect) override;
   void Unbind() override;
-  void BindSwapChain(wr::NativeSurfaceId aId) override;
-  void PresentSwapChain(wr::NativeSurfaceId aId) override;
   void CreateSurface(wr::NativeSurfaceId aId, wr::DeviceIntPoint aVirtualOffset,
                      wr::DeviceIntSize aTileSize, bool aIsOpaque) override;
   void CreateExternalSurface(wr::NativeSurfaceId aId, bool aIsOpaque) override;
@@ -94,10 +92,6 @@ class RenderCompositorANGLE : public RenderCompositor {
   void DestroyTile(wr::NativeSurfaceId aId, int32_t aX, int32_t aY) override;
   void AttachExternalImage(wr::NativeSurfaceId aId,
                            wr::ExternalImageId aExternalImage) override;
-  void CreateSwapChainSurface(wr::NativeSurfaceId aId, wr::DeviceIntSize aSize,
-                              bool aIsOpaque) override;
-  void ResizeSwapChainSurface(wr::NativeSurfaceId aId,
-                              wr::DeviceIntSize aSize) override;
   void AddSurface(wr::NativeSurfaceId aId,
                   const wr::CompositorSurfaceTransform& aTransform,
                   wr::DeviceIntRect aClipRect,
@@ -126,12 +120,23 @@ class RenderCompositorANGLE : public RenderCompositor {
   void DestroyEGLSurface();
   ID3D11Device* GetDeviceOfEGLDisplay(nsACString& aError);
   bool CreateSwapChain(nsACString& aError);
+<<<<<<< HEAD
   void CreateSwapChainForDCompIfPossible(IDXGIFactory2* aDXGIFactory2);
+=======
+  void CreateSwapChainForDCompIfPossible();
+  bool CreateSwapChainForHWND();
+>>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
   RefPtr<IDXGISwapChain1> CreateSwapChainForDComp(bool aUseTripleBuffering,
                                                   bool aUseAlpha);
   RefPtr<ID3D11Query> GetD3D11Query();
   void ReleaseNativeCompositorResources();
   HWND GetCompositorHwnd();
+<<<<<<< HEAD
+=======
+
+  RefPtr<IDXGIDevice> DXGIDevice();
+  RefPtr<IDXGIFactory> DXGIFactory();
+>>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
 
   RefPtr<gl::GLContext> mGL;
 

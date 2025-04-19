@@ -15,7 +15,11 @@
      broken. So instead just show the normal titlebar in that case, and override
      the window color as transparent when the compositor is available. */
   @media not (-moz-windows-compositor) {
+<<<<<<< HEAD
     :root[tabsintitlebar]:not([inDOMFullscreen]) #titlebar:-moz-lwtheme {
+=======
+    :root[tabsintitlebar][lwtheme]:not([inDOMFullscreen]) .browser-titlebar {
+>>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
       visibility: visible;
     }
 
@@ -32,16 +36,34 @@
   }
 
   /* Add a fog for background tabs to be visible on Windows 7 glass window background */
+<<<<<<< HEAD
   @media (-moz-platform: windows) {
     @media (-moz-windows-default-theme) {
       #TabsToolbar {
         background-image: radial-gradient(ellipse at bottom, rgba(255,255,255,0.8), rgba(255,255,255,0.5) 40%, transparent);
+=======
+  @media (-moz-platform: windows-win7) {
+    @media (-moz-windows-default-theme) {
+      #TabsToolbar {
+    isolation: isolate;
+    position: relative;
+       &::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  height: 100%;
+  width: 100%;
+        background-image: radial-gradient(ellipse at bottom, rgba(255,255,255,0.8), rgba(255,255,255,0.5) 80%, transparent);
+  z-index: -1;
+       }
+>>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
         color: black;
         --toolbarbutton-icon-fill: currentColor;
       }
     }
   }
 
+<<<<<<< HEAD
   @media (-moz-windows-classic) {
     :root[tabsintitlebar]:not([sizemode=fullscreen]) #TabsToolbar {
       background-image: linear-gradient(transparent, ActiveCaption);
@@ -50,6 +72,17 @@
   
     :root[tabsintitlebar]:not([sizemode=fullscreen]) #TabsToolbar:-moz-window-inactive {
       background-image: linear-gradient(transparent, InactiveCaption);
+=======
+  @media (-moz-platform: windows-win8) {
+    @media (-moz-windows-default-theme) {
+      #TabsToolbar {
+        color: black;
+        --toolbarbutton-icon-fill: currentColor;
+      }
+    }
+    #toolbar-menubar {
+      color: black;
+>>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
     }
   }
 
@@ -66,18 +99,26 @@
     }
   }
 
+<<<<<<< HEAD
   @media (-moz-platform: windows) {
+=======
+  @media (-moz-platform: windows-win7),
+         (-moz-platform: windows-win8) {
+>>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
     @media (-moz-windows-compositor) {
       :root {
         background: transparent !important;
       }
 
+<<<<<<< HEAD
       /* Allows seeing the caption bar on Windows pre-10 */
       #navigator-toolbox,
       #navigator-toolbox-background {
         background-color: transparent !important;
       }
 
+=======
+>>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
       /* Remove lwtheme borders from toolbars in non-maximized windows. */
       #toolbar-menubar,
       #TabsToolbar {
@@ -90,7 +131,11 @@
        These colors are copied from browser.css. */
     @media not (-moz-windows-compositor),
            not (-moz-windows-default-theme),
+<<<<<<< HEAD
            (-moz-platform: windows) {
+=======
+           (-moz-platform: windows-win8) {
+>>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
       :root[tabsintitlebar] {
         color: CaptionText;
       }
@@ -118,7 +163,11 @@
       padding-top: 0 !important;
     }
   }
+<<<<<<< HEAD
   @media (-moz-platform: windows) {
+=======
+  @media (-moz-platform: windows-win8) {
+>>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
     #navigator-toolbox {
       border-top: none !important;
     }

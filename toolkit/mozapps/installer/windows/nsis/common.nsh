@@ -5379,8 +5379,13 @@
         Quit
       ${EndIf}
 
+<<<<<<< HEAD
       ; At least let it try to install on anything.
       ${Unless} ${AtLeastWin95}
+=======
+      ; Windows NT 6.0 (Vista/Server 2008) and lower are not supported.
+      ${Unless} ${AtLeastWin7}
+>>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
         MessageBox MB_OK|MB_ICONSTOP "$R9"
         ; Nothing initialized so no need to call OnEndCommon
         Quit

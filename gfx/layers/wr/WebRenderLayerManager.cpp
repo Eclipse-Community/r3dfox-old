@@ -387,7 +387,11 @@ void WebRenderLayerManager::EndTransactionWithoutLayer(
   if (dumpEnabled) {
     printf_stderr("(window overlay)\n");
     Unused << mDLBuilder->Dump(/*indent*/ 1, Some(builderDumpIndex), Nothing());
+<<<<<<< HEAD
   }  
+=======
+  }
+>>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
 
   if (AsyncPanZoomEnabled()) {
     if (mIsFirstPaint) {

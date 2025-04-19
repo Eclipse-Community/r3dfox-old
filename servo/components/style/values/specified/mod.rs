@@ -112,7 +112,12 @@ pub use self::transform::{TransformBox, TransformOrigin, TransformStyle, Transla
 #[cfg(feature = "gecko")]
 pub use self::ui::CursorImage;
 pub use self::ui::{
+<<<<<<< HEAD
     BoolInteger, Cursor, Inert, PointerEvents, ScrollbarColor, UserFocus, UserInput, UserSelect,
+=======
+    BoolInteger, Cursor, Inert, PointerEvents, ScrollbarColor, UserFocus, UserInput,
+    UserSelect,
+>>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
 };
 pub use super::generics::grid::GridTemplateComponent as GenericGridTemplateComponent;
 

@@ -488,6 +488,10 @@ class MergeState {
             mBuilder->Builder()->ClearGlassDisplayItem();
           }
         }  // aNewItem can't be the glass item on the builder yet.
+<<<<<<< HEAD
+=======
+
+>>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
         if (destItem->IsGlassItem()) {
           if (destItem != oldItem ||
               destItem != mBuilder->Builder()->GetGlassDisplayItem()) {

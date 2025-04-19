@@ -273,6 +273,10 @@ select > button {
   block-size: 100%;
   box-sizing: border-box;
 
+  /* Make sure to size correctly if the combobox has a non-auto height. */
+  block-size: 100%;
+  box-sizing: border-box;
+
   /* Draw the arrow in the select's color */
   color: inherit;
 
@@ -287,6 +291,11 @@ select > button {
 *|*::-moz-display-comboboxcontrol-frame {
   content: inherit;
   overflow: clip;
+<<<<<<< HEAD
+=======
+  pointer-events: none;
+  cursor: unset;
+>>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
   color: unset;
   white-space: nowrap;
   text-align: unset;
@@ -297,10 +306,13 @@ select > button {
   min-inline-size: max-content;
   box-sizing: border-box;
   line-height: -moz-block-height;
+<<<<<<< HEAD
 }
 
 ::-moz-display-comboboxcontrol-frame:read-write {
   user-select: text;
+=======
+>>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
 }
 
 option[label]::before {
@@ -530,12 +542,30 @@ input:is([type=reset], [type=button], [type=submit]) {
   font: -moz-button;
   white-space: pre;
   text-align: center;
+<<<<<<< HEAD
   overflow-clip-box: padding-box;
+=======
+>>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
 }
 
 input[type=color] {
   inline-size: 64px;
   block-size: 32px;
+<<<<<<< HEAD
+=======
+}
+
+@media (-moz-non-native-content-theme) {
+  button,
+  ::file-selector-button,
+  input:is([type=reset], [type=button], [type=submit]) {
+    padding-inline: 4px;
+  }
+
+  input[type=color] {
+    padding: 4px;
+  }
+>>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
 }
 
 @media (-moz-non-native-content-theme) {

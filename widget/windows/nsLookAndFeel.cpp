@@ -15,6 +15,7 @@
 #include "WindowsUIUtils.h"
 #include "mozilla/FontPropertyTypes.h"
 #include "mozilla/Telemetry.h"
+#include "mozilla/WindowsVersion.h"
 #include "mozilla/widget/WinRegistry.h"
 
 // -- native controls patch includes --
@@ -52,6 +53,10 @@ static int32_t GetTooltipOffsetVertical() {
 }
 
 static bool SystemWantsDarkTheme() {
+  if (!IsWin10OrLater()) {
+    return false;
+  }
+
   if (nsUXThemeData::IsHighContrastOn()) {
     return LookAndFeel::IsDarkColor(
         LookAndFeel::Color(StyleSystemColor::Window, ColorScheme::Light,
@@ -178,30 +183,6 @@ nsresult nsLookAndFeel::NativeGetColor(ColorID aID, ColorScheme aScheme,
     return NS_OK;
   }
 
-  // Titlebar colors are color-scheme aware.
-  switch (aID) {
-    case ColorID::Activecaption:
-      aColor = mTitlebarColors.Get(aScheme, true).mBg;
-      return NS_OK;
-    case ColorID::Captiontext:
-      aColor = mTitlebarColors.Get(aScheme, true).mFg;
-      return NS_OK;
-    case ColorID::Activeborder:
-      aColor = mTitlebarColors.Get(aScheme, true).mBorder;
-      return NS_OK;
-    case ColorID::Inactivecaption:
-      aColor = mTitlebarColors.Get(aScheme, false).mBg;
-      return NS_OK;
-    case ColorID::Inactivecaptiontext:
-      aColor = mTitlebarColors.Get(aScheme, false).mFg;
-      return NS_OK;
-    case ColorID::Inactiveborder:
-      aColor = mTitlebarColors.Get(aScheme, false).mBorder;
-      return NS_OK;
-    default:
-      break;
-  }
-
   if (aScheme == ColorScheme::Dark) {
     if (auto color = GenericDarkColor(aID)) {
       aColor = *color;
@@ -241,9 +222,6 @@ nsresult nsLookAndFeel::NativeGetColor(ColorID aID, ColorScheme aScheme,
     case ColorID::MozButtonhoverface:
     case ColorID::MozButtonactiveface:
     case ColorID::MozButtondisabledface:
-    case ColorID::MozColheader:
-    case ColorID::MozColheaderhover:
-    case ColorID::MozColheaderactive:
       idx = COLOR_BTNFACE;
       break;
     case ColorID::Buttonhighlight:
@@ -297,6 +275,24 @@ nsresult nsLookAndFeel::NativeGetColor(ColorID aID, ColorScheme aScheme,
         return NS_OK;
       }
       aColor = NS_TRANSPARENT;
+      return NS_OK;
+    case ColorID::Activecaption:
+      aColor = mTitlebarColors.Get(aScheme, true).mBg;
+      return NS_OK;
+    case ColorID::Captiontext:
+      aColor = mTitlebarColors.Get(aScheme, true).mFg;
+      return NS_OK;
+    case ColorID::Activeborder:
+      aColor = mTitlebarColors.Get(aScheme, true).mBorder;
+      return NS_OK;
+    case ColorID::Inactivecaption:
+      aColor = mTitlebarColors.Get(aScheme, false).mBg;
+      return NS_OK;
+    case ColorID::Inactivecaptiontext:
+      aColor = mTitlebarColors.Get(aScheme, false).mFg;
+      return NS_OK;
+    case ColorID::Inactiveborder:
+      aColor = mTitlebarColors.Get(aScheme, false).mBorder;
       return NS_OK;
     case ColorID::Infobackground:
       idx = COLOR_INFOBK;
@@ -399,8 +395,10 @@ nsresult nsLookAndFeel::NativeGetColor(ColorID aID, ColorScheme aScheme,
     case ColorID::MozDialogtext:
     case ColorID::MozColheadertext:
     case ColorID::MozColheaderhovertext:
-    case ColorID::MozColheaderactivetext:
       idx = COLOR_WINDOWTEXT;
+      break;
+    case ColorID::MozButtondefault:
+      idx = COLOR_3DDKSHADOW;
       break;
     case ColorID::MozNativehyperlinktext:
       idx = COLOR_HOTLIGHT;
@@ -507,15 +505,19 @@ nsresult nsLookAndFeel::NativeGetInt(IntID aID, int32_t& aResult) {
       aResult = nsUXThemeData::IsDefaultWindowTheme();
       break;
     case IntID::DWMCompositor:
+<<<<<<< HEAD
       if (StaticPrefs::widget_native_controls_force_dwm_report_off()) {
         aResult = 0;
         break;
       }
+=======
+>>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
       aResult = gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled();
       break;
     case IntID::WindowsAccentColorInTitlebar:
       aResult = mTitlebarColors.mUseAccent;
       break;
+<<<<<<< HEAD
     case IntID::WindowsGlass: {
       int reportingPref =
           StaticPrefs::widget_native_controls_force_glass_reporting();
@@ -531,6 +533,15 @@ nsresult nsLookAndFeel::NativeGetInt(IntID aID, int32_t& aResult) {
       // Actually not, you can restore it with glass tools
       // It's just that people don't research anymore... smh
       aResult = (gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled());
+=======
+    case IntID::WindowsGlass:
+      // Aero Glass is only available prior to Windows 8 when DWM is used.
+      aResult = (gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled() &&
+                 !IsWin8OrLater());
+      break;
+    case IntID::WindowsMica:
+      aResult = WinUtils::MicaEnabled();
+>>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
       break;
     }
 
@@ -869,26 +880,11 @@ auto nsLookAndFeel::ComputeTitlebarColors() -> TitlebarColors {
                            GetColorForSysColorIndex(COLOR_INACTIVECAPTIONTEXT),
                            GetColorForSysColorIndex(COLOR_INACTIVEBORDER)};
 
-  if (!nsUXThemeData::IsHighContrastOn()) {
-    // Use our non-native colors.
-    result.mActiveLight = {
-        GetStandinForNativeColor(ColorID::Activecaption, ColorScheme::Light),
-        GetStandinForNativeColor(ColorID::Captiontext, ColorScheme::Light),
-        GetStandinForNativeColor(ColorID::Activeborder, ColorScheme::Light)};
-    result.mInactiveLight = {
-        GetStandinForNativeColor(ColorID::Inactivecaption, ColorScheme::Light),
-        GetStandinForNativeColor(ColorID::Inactivecaptiontext,
-                                 ColorScheme::Light),
-        GetStandinForNativeColor(ColorID::Inactiveborder, ColorScheme::Light)};
-  }
-
-  // Our dark colors are always non-native.
-  result.mActiveDark = {*GenericDarkColor(ColorID::Activecaption),
-                        *GenericDarkColor(ColorID::Captiontext),
-                        *GenericDarkColor(ColorID::Activeborder)};
-  result.mInactiveDark = {*GenericDarkColor(ColorID::Inactivecaption),
-                          *GenericDarkColor(ColorID::Inactivecaptiontext),
-                          *GenericDarkColor(ColorID::Inactiveborder)};
+  // Foreground and background taken from Windows Mica material theme colors.
+  result.mActiveDark = {NS_RGB(0x2e, 0x2e, 0x2e), NS_RGB(0xff, 0xff, 0xff),
+                        NS_RGB(57, 57, 57)};
+  result.mInactiveDark = {NS_RGB(0x33, 0x33, 0x33), NS_RGB(0xff, 0xff, 0xff),
+                          NS_RGB(57, 57, 57)};
 
   // TODO(bug 1825241): Somehow get notified when this changes? Hopefully the
   // sys color notification is enough.

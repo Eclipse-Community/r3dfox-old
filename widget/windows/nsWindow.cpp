@@ -348,16 +348,14 @@ static SystemTimeConverter<DWORD>& TimeConverter() {
   return timeConverterSingleton;
 }
 
-static const wchar_t* GetMainWindowClass();
-static const wchar_t* ChooseWindowClass(mozilla::widget::WindowType);
-// This method registers the given window class, and returns the class name.
-static void RegisterWindowClass(const wchar_t* aClassName, UINT aExtraStyle,
-                                LPWSTR aIconID);
-
 // Global event hook for window cloaking. Never deregistered.
 //  - `Nothing` if not yet set.
 //  - `Some(nullptr)` if no attempt should be made to set it.
+<<<<<<< HEAD
 MOZ_RUNINIT static mozilla::Maybe<HWINEVENTHOOK> sWinCloakEventHook =
+=======
+static mozilla::Maybe<HWINEVENTHOOK> sWinCloakEventHook =
+>>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
     IsWin8OrLater() ? Nothing() : Some(HWINEVENTHOOK(nullptr));
 static mozilla::LazyLogModule sCloakingLog("DWMCloaking");
 
@@ -559,6 +557,7 @@ static LRESULT CALLBACK TIPHook(int aCode, WPARAM aWParam, LPARAM aLParam) {
     return ::CallNextHookEx(nullptr, aCode, aWParam, aLParam);
   }
 
+<<<<<<< HEAD
   MSG* msg = reinterpret_cast<MSG*>(aLParam);
   UINT& msgCode = msg->message;
 
@@ -566,11 +565,44 @@ static LRESULT CALLBACK TIPHook(int aCode, WPARAM aWParam, LPARAM aLParam) {
     if (msgCode == sInstance->mMessages[i]) {
       A11yInstantiationBlocker block;
       return ::CallNextHookEx(nullptr, aCode, aWParam, aLParam);
+=======
+  static void CALLBACK ProcessCaretEventsHook(HWINEVENTHOOK aWinEventHook,
+                                              DWORD aEvent, HWND aHwnd,
+                                              LONG aObjectId, LONG aChildId,
+                                              DWORD aGeneratingTid,
+                                              DWORD aEventTime) {
+    A11yInstantiationBlocker block;
+    sProcessCaretEventsStub(aWinEventHook, aEvent, aHwnd, aObjectId, aChildId,
+                            aGeneratingTid, aEventTime);
+  }
+
+  static LRESULT WINAPI SendMessageTimeoutWHook(HWND aHwnd, UINT aMsgCode,
+                                                WPARAM aWParam, LPARAM aLParam,
+                                                UINT aFlags, UINT aTimeout,
+                                                PDWORD_PTR aMsgResult) {
+    // We don't want to handle this unless the message is a WM_GETOBJECT that we
+    // want to block, and the aHwnd is a nsWindow that belongs to the current
+    // (i.e., main) thread.
+    if (!aMsgResult || aMsgCode != WM_GETOBJECT ||
+        static_cast<LONG>(aLParam) != OBJID_CLIENT || !::NS_IsMainThread() ||
+        !WinUtils::GetNSWindowPtr(aHwnd) || !IsA11yBlocked()) {
+      return sSendMessageTimeoutWStub(aHwnd, aMsgCode, aWParam, aLParam, aFlags,
+                                      aTimeout, aMsgResult);
+>>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
     }
   }
 
+<<<<<<< HEAD
   return ::CallNextHookEx(nullptr, aCode, aWParam, aLParam);
 }
+=======
+  static WindowsDllInterceptor sTipTsfInterceptor;
+  static WindowsDllInterceptor::FuncHookType<WINEVENTPROC>
+      sProcessCaretEventsStub;
+  static WindowsDllInterceptor::FuncHookType<decltype(&SendMessageTimeoutW)>
+      sSendMessageTimeoutWStub;
+  static StaticAutoPtr<TIPMessageHandler> sInstance;
+>>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
 
 static void CALLBACK ProcessCaretEventsHook(HWINEVENTHOOK aWinEventHook,
                                             DWORD aEvent, HWND aHwnd,
@@ -582,6 +614,7 @@ static void CALLBACK ProcessCaretEventsHook(HWINEVENTHOOK aWinEventHook,
                           aGeneratingTid, aEventTime);
 }
 
+<<<<<<< HEAD
 static LRESULT WINAPI SendMessageTimeoutWHook(HWND aHwnd, UINT aMsgCode,
                                               WPARAM aWParam, LPARAM aLParam,
                                               UINT aFlags, UINT aTimeout,
@@ -618,6 +651,8 @@ uint32_t mA11yBlockCount;
 }
 ;
 
+=======
+>>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
 WindowsDllInterceptor TIPMessageHandler::sTipTsfInterceptor;
 WindowsDllInterceptor::FuncHookType<WINEVENTPROC>
     TIPMessageHandler::sProcessCaretEventsStub;
@@ -652,6 +687,10 @@ class InitializeVirtualDesktopManagerTask : public Task {
 #endif
 
   virtual TaskResult Run() override {
+    if (!IsWin10OrLater()) {
+      return TaskResult::Complete;
+    }
+
     RefPtr<IVirtualDesktopManager> desktopManager;
     HRESULT hr = ::CoCreateInstance(
         CLSID_VirtualDesktopManager, NULL, CLSCTX_INPROC_SERVER,
@@ -704,7 +743,6 @@ nsWindow::nsWindow(bool aIsChildWindow)
       mBrush(::CreateSolidBrush(NSRGB_2_COLOREF(::GetSysColor(COLOR_BTNFACE)))),
       mFrameState(std::in_place, this),
       mIsChildWindow(aIsChildWindow),
-      mPIPWindow(false),
       mLastPaintEndTime(TimeStamp::Now()),
       mCachedHitTestTime(TimeStamp::Now()),
       mSizeConstraintsScale(GetDefaultScale().scale),
@@ -920,7 +958,6 @@ nsresult nsWindow::Create(nsIWidget* aParent, const LayoutDeviceIntRect& aRect,
       aParent ? (HWND)aParent->GetNativeData(NS_NATIVE_WINDOW) : nullptr;
 
   mIsRTL = aInitData->mRTL;
-  mPIPWindow = aInitData->mPIPWindow;
   mOpeningAnimationSuppressed = aInitData->mIsAnimationSuppressed;
   mAlwaysOnTop = aInitData->mAlwaysOnTop;
   mIsAlert = aInitData->mIsAlert;
@@ -939,19 +976,28 @@ nsresult nsWindow::Create(nsIWidget* aParent, const LayoutDeviceIntRect& aRect,
   }
 
   if (mWindowType == WindowType::Popup) {
+<<<<<<< HEAD
     if (!aParent) {
       parent = nullptr;
     }
+=======
+>>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
 
     if (!IsWin8OrLater() && HasBogusPopupsDropShadowOnMultiMonitor() &&
         ShouldUseOffMainThreadCompositing()) {
       extendedStyle |= WS_EX_COMPOSITED;
     }
+<<<<<<< HEAD
   } else if (mWindowType == WindowType::Invisible) {
     // Make sure CreateWindowEx succeeds at creating a toplevel window
     style &= ~0x40000000;  // WS_CHILDWINDOW
   } else {
     // See if the caller wants to explictly set clip children and clip siblings
+=======
+  }
+  if (mWindowType != WindowType::Popup) {
+    // See if the caller wants to explicitly set clip children and clip siblings
+>>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
     if (aInitData->mClipChildren) {
       style |= WS_CLIPCHILDREN;
     } else {
@@ -989,6 +1035,15 @@ nsresult nsWindow::Create(nsIWidget* aParent, const LayoutDeviceIntRect& aRect,
       mIsCloaked = mozilla::IsCloaked(mWnd);
       mFrameState->ConsumePreXULSkeletonState(WasPreXULSkeletonUIMaximized());
 
+<<<<<<< HEAD
+=======
+      MOZ_ASSERT(BoundsUseDesktopPixels());
+      auto scale = GetDesktopToDeviceScale();
+      mBounds = mLastPaintBounds = LayoutDeviceIntRect::FromUnknownRect(
+          DesktopIntRect::Round(LayoutDeviceRect(GetBounds()) / scale)
+              .ToUnknownRect());
+
+>>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
       // These match the margins set in browser-tabsintitlebar.js with
       // default prefs on Windows. Bug 1673092 tracks lining this up with
       // that more correctly instead of hard-coding it.
@@ -1076,8 +1131,19 @@ nsresult nsWindow::Create(nsIWidget* aParent, const LayoutDeviceIntRect& aRect,
         // that we can explicitly assign to a regular window.
         UINT32 maxLength = MAX_PATH;
         aumid.SetLength(maxLength);
+<<<<<<< HEAD
         Unused << NS_WARN_IF(
             pGetCurrentApplicationUserModelId(&maxLength, aumid.get()));
+=======
+        // `GetCurrentApplicationUserModelId` added in Windows 8.
+        DynamicallyLinkedFunctionPtr<decltype(&GetCurrentApplicationUserModelId)>
+            pGetCurrentApplicationUserModelId(L"kernel32.dll",
+                                              "GetCurrentApplicationUserModelId");
+        if (pGetCurrentApplicationUserModelId) {
+          Unused << NS_WARN_IF(
+              pGetCurrentApplicationUserModelId(&maxLength, aumid.get()));
+        }
+>>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
       }
       if (!FAILED(InitPropVariantFromString(aumid.get(), &pv))) {
         if (!FAILED(pPropStore->SetValue(PKEY_AppUserModel_ID, pv))) {
@@ -1112,6 +1178,13 @@ nsresult nsWindow::Create(nsIWidget* aParent, const LayoutDeviceIntRect& aRect,
 
   // Default to the system color scheme unless getting told otherwise.
   SetColorScheme(Nothing());
+
+  if (WinUtils::MicaEnabled() && !IsPopup()) {
+    // Enable Mica Alt Material if available.
+    const DWM_SYSTEMBACKDROP_TYPE tabbedWindow = DWMSBT_TABBEDWINDOW;
+    DwmSetWindowAttribute(mWnd, DWMWA_SYSTEMBACKDROP_TYPE, &tabbedWindow,
+                          sizeof tabbedWindow);
+  }
 
   if (mOpeningAnimationSuppressed) {
     SuppressAnimation(true);
@@ -1263,40 +1336,65 @@ void nsWindow::Destroy() {
  *
  **************************************************************/
 
-static void RegisterWindowClass(const wchar_t* aClassName, UINT aExtraStyle,
-                                LPWSTR aIconID) {
-  WNDCLASSW wc = {};
+/* static */
+const wchar_t* nsWindow::RegisterWindowClass(const wchar_t* aClassName,
+                                             UINT aExtraStyle, LPWSTR aIconID) {
+  WNDCLASSW wc;
   if (::GetClassInfoW(nsToolkit::mDllInstance, aClassName, &wc)) {
     // already registered
-    return;
+    return aClassName;
   }
 
   wc.style = CS_DBLCLKS | aExtraStyle;
   wc.lpfnWndProc = WinUtils::NonClientDpiScalingDefWindowProcW;
+  wc.cbClsExtra = 0;
+  wc.cbWndExtra = 0;
   wc.hInstance = nsToolkit::mDllInstance;
   wc.hIcon =
       aIconID ? ::LoadIconW(::GetModuleHandleW(nullptr), aIconID) : nullptr;
+  wc.hCursor = nullptr;
+  wc.hbrBackground = nullptr;
+  wc.lpszMenuName = nullptr;
   wc.lpszClassName = aClassName;
 
+<<<<<<< HEAD
   // Failures are ignored as they are handled when ::CreateWindow fails
   ::RegisterClassW(&wc);
+=======
+  // Since we discard WM_ERASEBKGND events, the window-class background brush is
+  // mostly not used -- it shows up when resizing, but scarcely ever otherwise.
+  //
+  // In theory we could listen for theme changes and set this brush to an
+  // appropriate background color as needed; but given the hoops Win32 makes us
+  // jump through to change class data, it's probably not worth the trouble.
+  // (See bug 1901875.) Instead, we just make it dark grey, which is probably
+  // acceptable in either light or dark mode.
+  wc.hbrBackground = (HBRUSH)::GetStockObject(DKGRAY_BRUSH);
+
+  if (!::RegisterClassW(&wc)) {
+    // For older versions of Win32 (i.e., not XP), the registration may
+    // fail with aExtraStyle, so we have to re-register without it.
+    wc.style = CS_DBLCLKS;
+    ::RegisterClassW(&wc);
+  }
+  return aClassName;
+>>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
 }
 
 static LPWSTR const gStockApplicationIcon = MAKEINTRESOURCEW(32512);
 
-static const wchar_t* ChooseWindowClass(WindowType aWindowType) {
-  const wchar_t* className = [aWindowType] {
-    switch (aWindowType) {
-      case WindowType::Dialog:
-        return kClassNameDialog;
-      case WindowType::Popup:
-        return kClassNameDropShadow;
-      default:
-        return GetMainWindowClass();
-    }
-  }();
-  RegisterWindowClass(className, 0, gStockApplicationIcon);
-  return className;
+/* static */
+const wchar_t* nsWindow::ChooseWindowClass(WindowType aWindowType) {
+  switch (aWindowType) {
+    case WindowType::Dialog:
+      return RegisterWindowClass(kClassNameDialog, 0, 0);
+    case WindowType::Popup:
+      return RegisterWindowClass(kClassNameDropShadow, CS_DROPSHADOW,
+                                 gStockApplicationIcon);
+    default:
+      return RegisterWindowClass(GetMainWindowClass(), 0,
+                                 gStockApplicationIcon);
+  }
 }
 
 /**************************************************************
@@ -1380,6 +1478,16 @@ DWORD nsWindow::WindowStyle() {
 
   style &= ~WindowStylesRemovedForBorderStyle(mBorderStyle);
 
+  if (mBorderStyle != BorderStyle::Default &&
+      mBorderStyle != BorderStyle::All) {
+    if (IsPopupWithTitleBar()) {
+      style |= WS_CAPTION;
+      if (mBorderStyle & BorderStyle::Close) {
+        style |= WS_SYSMENU;
+      }
+    }
+  }
+
   if (mIsChildWindow) {
     style |= WS_CLIPCHILDREN;
     if (!(style & WS_POPUP)) {
@@ -1393,6 +1501,7 @@ DWORD nsWindow::WindowStyle() {
 
 // Return nsWindow extended styles
 DWORD nsWindow::WindowExStyle() {
+  MOZ_ASSERT_IF(mIsAlert, mWindowType == WindowType::Dialog);
   switch (mWindowType) {
     case WindowType::Child:
       return 0;
@@ -1403,15 +1512,15 @@ DWORD nsWindow::WindowExStyle() {
       }
       return extendedStyle;
     }
-    case WindowType::Dialog:
+    case WindowType::Dialog: {
+      if (mIsAlert) {
+        return WS_EX_TOOLWINDOW;
+      }
+      return WS_EX_WINDOWEDGE | WS_EX_DLGMODALFRAME;
+    }
     case WindowType::TopLevel:
     case WindowType::Invisible:
       break;
-  }
-  if (mIsAlert) {
-    MOZ_ASSERT(mWindowType == WindowType::Dialog,
-               "Expect alert windows to have type=dialog");
-    return WS_EX_TOOLWINDOW | WS_EX_TOPMOST;
   }
   return WS_EX_WINDOWEDGE;
 }
@@ -1596,7 +1705,12 @@ void nsWindow::Show(bool aState) {
         return false;
       }
       if (HasBogusPopupsDropShadowOnMultiMonitor() &&
+<<<<<<< HEAD
           WinUtils::GetMonitorCount() > 1 && !dwmCompositionEnabled) {
+=======
+          WinUtils::GetMonitorCount() > 1 &&
+          !gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled()) {
+>>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
         // See bug 603793. When we try to draw D3D9/10 windows with a drop
         // shadow without the DWM on a secondary monitor, windows fails to
         // composite our windows correctly. We therefor switch off the drop
@@ -1757,7 +1871,11 @@ bool nsWindow::IsVisible() const { return mIsVisible; }
 // XXX this is apparently still needed in Windows 7 and later
 void nsWindow::ClearThemeRegion() {
   if (!HasGlass() &&
+<<<<<<< HEAD
       (mWindowType == WindowType::Popup &&
+=======
+      (mWindowType == WindowType::Popup && !IsPopupWithTitleBar() &&
+>>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
        (mPopupType == PopupType::Tooltip || mPopupType == PopupType::Panel))) {
     SetWindowRgn(mWnd, nullptr, false);
   }
@@ -1906,6 +2024,7 @@ void nsWindow::Move(double aX, double aY) {
       }
     }
 #endif
+<<<<<<< HEAD
 
     // Normally, when the skeleton UI is disabled, we resize+move the window
     // before showing it in order to ensure that it restores to the correct
@@ -1947,6 +2066,17 @@ void nsWindow::Move(double aX, double aY) {
       if (WinUtils::LogToPhysFactor(mWnd) != oldScale) {
         ChangedDPI();
       }
+=======
+      ClearThemeRegion();
+
+    UINT flags = SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOSIZE;
+    double oldScale = mDefaultScale;
+    mResizeState = IN_SIZEMOVE;
+    VERIFY(::SetWindowPos(mWnd, nullptr, x, y, 0, 0, flags));
+    mResizeState = NOT_RESIZING;
+    if (WinUtils::LogToPhysFactor(mWnd) != oldScale) {
+      ChangedDPI();
+>>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
     }
 
     ResizeDirectManipulationViewport();
@@ -1987,6 +2117,7 @@ void nsWindow::Resize(double aWidth, double aHeight, bool aRepaint) {
   }
 
   if (mWnd) {
+<<<<<<< HEAD
     // Refer to the comment above a similar check in nsWindow::Move
     if (mIsShowingPreXULSkeletonUI && WasPreXULSkeletonUIMaximized()) {
       WINDOWPLACEMENT pl = {sizeof(WINDOWPLACEMENT)};
@@ -2011,6 +2142,19 @@ void nsWindow::Resize(double aWidth, double aHeight, bool aRepaint) {
       if (WinUtils::LogToPhysFactor(mWnd) != oldScale) {
         ChangedDPI();
       }
+=======
+    UINT flags = SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOMOVE;
+    if (!aRepaint) {
+      flags |= SWP_NOREDRAW;
+    }
+      ClearThemeRegion();
+    double oldScale = mDefaultScale;
+    mResizeState = RESIZING;
+    VERIFY(::SetWindowPos(mWnd, nullptr, 0, 0, width, height, flags));
+    mResizeState = NOT_RESIZING;
+    if (WinUtils::LogToPhysFactor(mWnd) != oldScale) {
+      ChangedDPI();
+>>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
     }
     ResizeDirectManipulationViewport();
   }
@@ -2057,12 +2201,24 @@ void nsWindow::Resize(double aX, double aY, double aWidth, double aHeight,
       WINDOWPLACEMENT pl = {sizeof(WINDOWPLACEMENT)};
       VERIFY(::GetWindowPlacement(mWnd, &pl));
 
+<<<<<<< HEAD
       HMONITOR monitor = ::MonitorFromWindow(mWnd, MONITOR_DEFAULTTONULL);
       if (NS_WARN_IF(!monitor)) {
         return;
       }
       MONITORINFO mi = {sizeof(MONITORINFO)};
       VERIFY(::GetMonitorInfo(monitor, &mi));
+=======
+      ClearThemeRegion();
+
+    double oldScale = mDefaultScale;
+    mResizeState = RESIZING;
+    VERIFY(::SetWindowPos(mWnd, nullptr, x, y, width, height, flags));
+    mResizeState = NOT_RESIZING;
+    if (WinUtils::LogToPhysFactor(mWnd) != oldScale) {
+      ChangedDPI();
+    }
+>>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
 
       int32_t deltaX =
           x + mi.rcWork.left - mi.rcMonitor.left - pl.rcNormalPosition.left;
@@ -2101,6 +2257,13 @@ void nsWindow::Resize(double aX, double aY, double aWidth, double aHeight,
   }
 
   if (aRepaint) Invalidate();
+}
+
+mozilla::Maybe<bool> nsWindow::IsResizingNativeWidget() {
+  if (mResizeState == RESIZING) {
+    return Some(true);
+  }
+  return Some(false);
 }
 
 /**************************************************************
@@ -2540,6 +2703,10 @@ static const wchar_t kManageWindowInfoProperty[] = L"ManageWindowInfoProperty";
 typedef BOOL(WINAPI* GetWindowInfoPtr)(HWND hwnd, PWINDOWINFO pwi);
 static WindowsDllInterceptor::FuncHookType<GetWindowInfoPtr>
     sGetWindowInfoPtrStub;
+<<<<<<< HEAD
+=======
+
+>>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
 BOOL WINAPI GetWindowInfoHook(HWND hWnd, PWINDOWINFO pwi) {
   if (!sGetWindowInfoPtrStub) {
     NS_ASSERTION(FALSE, "Something is horribly wrong in GetWindowInfoHook!");
@@ -2556,14 +2723,25 @@ BOOL WINAPI GetWindowInfoHook(HWND hWnd, PWINDOWINFO pwi) {
     pwi->dwWindowStatus = (windowStatus == 1 ? 0 : WS_ACTIVECAPTION);
   return result;
 }
+<<<<<<< HEAD
 void nsWindow::UpdateGetWindowInfoCaptionStatus(bool aActiveCaption) {
   if (!mWnd) return;
+=======
+
+void nsWindow::UpdateGetWindowInfoCaptionStatus(bool aActiveCaption) {
+  if (!mWnd) return;
+
+>>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
   sUser32Intercept.Init("user32.dll");
   sGetWindowInfoPtrStub.Set(sUser32Intercept, "GetWindowInfo",
                             &GetWindowInfoHook);
   if (!sGetWindowInfoPtrStub) {
     return;
   }
+<<<<<<< HEAD
+=======
+
+>>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
   // Update our internally tracked caption status
   SetPropW(mWnd, kManageWindowInfoProperty,
            reinterpret_cast<HANDLE>(static_cast<INT_PTR>(aActiveCaption) + 1));
@@ -2585,10 +2763,14 @@ void nsWindow::SetColorScheme(const Maybe<ColorScheme>& aScheme) {
 }
 
 LayoutDeviceIntMargin nsWindow::NormalWindowNonClientOffset() const {
+<<<<<<< HEAD
   bool glass =
       StaticPrefs::widget_native_controls_force_dwm_report_off()
           ? false
           : gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled();
+=======
+  bool glass = gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled();
+>>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
 
   LayoutDeviceIntMargin nonClientOffset;
 
@@ -2601,34 +2783,58 @@ LayoutDeviceIntMargin nsWindow::NormalWindowNonClientOffset() const {
   // size by that amount.
 
   if (mNonClientMargins.top > 0 && glass) {
+<<<<<<< HEAD
     nonClientOffset.top = std::min(mCaptionHeight, mNonClientMargins.top);
   } else if (mNonClientMargins.top == 0) {
     nonClientOffset.top = mCaptionHeight;
+=======
+    nonClientOffset.top = std::min(mCustomNonClientMetrics.mCaptionHeight, mNonClientMargins.top);
+  } else if (mNonClientMargins.top == 0) {
+    nonClientOffset.top = mCustomNonClientMetrics.mCaptionHeight;
+>>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
   } else {
     nonClientOffset.top = 0;
   }
 
   if (mNonClientMargins.bottom > 0 && glass) {
     nonClientOffset.bottom =
+<<<<<<< HEAD
         std::min(mVertResizeMargin, mNonClientMargins.bottom);
   } else if (mNonClientMargins.bottom == 0) {
     nonClientOffset.bottom = mVertResizeMargin;
+=======
+        std::min(mCustomNonClientMetrics.mVertResizeMargin, mNonClientMargins.bottom);
+  } else if (mNonClientMargins.bottom == 0) {
+    nonClientOffset.bottom = mCustomNonClientMetrics.mVertResizeMargin;
+>>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
   } else {
     nonClientOffset.bottom = 0;
   }
 
   if (mNonClientMargins.left > 0 && glass) {
+<<<<<<< HEAD
     nonClientOffset.left = std::min(mHorResizeMargin, mNonClientMargins.left);
   } else if (mNonClientMargins.left == 0) {
     nonClientOffset.left = mHorResizeMargin;
+=======
+    nonClientOffset.left = std::min(mCustomNonClientMetrics.mHorResizeMargin, mNonClientMargins.left);
+  } else if (mNonClientMargins.left == 0) {
+    nonClientOffset.left = mCustomNonClientMetrics.mHorResizeMargin;
+>>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
   } else {
     nonClientOffset.left = 0;
   }
 
   if (mNonClientMargins.right > 0 && glass) {
+<<<<<<< HEAD
     nonClientOffset.right = std::min(mHorResizeMargin, mNonClientMargins.right);
   } else if (mNonClientMargins.right == 0) {
     nonClientOffset.right = mHorResizeMargin;
+=======
+    nonClientOffset.right = std::min(mCustomNonClientMetrics.mHorResizeMargin, mNonClientMargins.right);
+  } else if (mNonClientMargins.right == 0) {
+    nonClientOffset.right = mCustomNonClientMetrics.mHorResizeMargin;
+>>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
   } else {
     nonClientOffset.right = 0;
   }
@@ -2673,6 +2879,11 @@ bool nsWindow::UpdateNonClientMargins(bool aReflowWindow) {
 
   float dpi = GetDPI();
 
+<<<<<<< HEAD
+=======
+  auto& metrics = mCustomNonClientMetrics;
+
+>>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
   // mCaptionHeight is the default size of the NC area at
   // the top of the window. If the window has a caption,
   // the size is calculated as the sum of:
@@ -2684,7 +2895,11 @@ bool nsWindow::UpdateNonClientMargins(bool aReflowWindow) {
   //
   // If the window does not have a caption, mCaptionHeight will be equal to
   // `WinUtils::GetSystemMetricsForDpi(SM_CYFRAME, dpi)`
+<<<<<<< HEAD
   mCaptionHeight =
+=======
+  metrics.mCaptionHeight =
+>>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
       WinUtils::GetSystemMetricsForDpi(SM_CYFRAME, dpi) +
       (hasCaption ? WinUtils::GetSystemMetricsForDpi(SM_CYCAPTION, dpi) +
                         WinUtils::GetSystemMetricsForDpi(SM_CXPADDEDBORDER, dpi)
@@ -2699,7 +2914,11 @@ bool nsWindow::UpdateNonClientMargins(bool aReflowWindow) {
     //
     // If the window does not have a caption, mHorResizeMargin will be equal to
     // `WinUtils::GetSystemMetricsForDpi(SM_CXFRAME, dpi)`
+<<<<<<< HEAD
     mHorResizeMargin =
+=======
+    metrics.mHorResizeMargin =
+>>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
         WinUtils::GetSystemMetricsForDpi(SM_CXFRAME, dpi) +
         (hasCaption ? WinUtils::GetSystemMetricsForDpi(SM_CXPADDEDBORDER, dpi)
                     : 0);
@@ -2712,7 +2931,11 @@ bool nsWindow::UpdateNonClientMargins(bool aReflowWindow) {
     //
     // If the window does not have a caption, mVertResizeMargin will be equal to
     // `WinUtils::GetSystemMetricsForDpi(SM_CYFRAME, dpi)`
+<<<<<<< HEAD
     mVertResizeMargin =
+=======
+    metrics.mVertResizeMargin =
+>>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
         WinUtils::GetSystemMetricsForDpi(SM_CYFRAME, dpi) +
         (hasCaption ? WinUtils::GetSystemMetricsForDpi(SM_CXPADDEDBORDER, dpi)
                     : 0);
@@ -2729,10 +2952,15 @@ bool nsWindow::UpdateNonClientMargins(bool aReflowWindow) {
     // makes the whole caption part of our client area, allowing us to draw
     // in the whole caption area.  Additionally remove the default frame from
     // the left, right, and bottom.
+<<<<<<< HEAD
     mNonClientOffset.top = mCaptionHeight;
     mNonClientOffset.bottom = mVertResizeMargin;
     mNonClientOffset.left = mHorResizeMargin;
     mNonClientOffset.right = mHorResizeMargin;
+=======
+    metrics.mOffset = metrics.DefaultMargins();
+    metrics.mOffset.top = metrics.mCaptionHeight;
+>>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
   } else if (sizeMode == nsSizeMode_Maximized) {
     // On Windows 10+, we make the entire frame part of the client area. We
     // leave the default frame sizes for left, right and bottom since Windows
@@ -2756,10 +2984,14 @@ bool nsWindow::UpdateNonClientMargins(bool aReflowWindow) {
                       : 0);
     }
 
+<<<<<<< HEAD
     mNonClientOffset.top = mCaptionHeight - verticalResize;
     mNonClientOffset.bottom = 0;
     mNonClientOffset.left = 0;
     mNonClientOffset.right = 0;
+=======
+    metrics.mOffset.top = metrics.mCaptionHeight - verticalResize;
+>>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
 
     mozilla::Maybe<UINT> maybeEdge = GetHiddenTaskbarEdge();
     if (maybeEdge) {
@@ -2772,6 +3004,7 @@ bool nsWindow::UpdateNonClientMargins(bool aReflowWindow) {
         mNonClientOffset.bottom -= kHiddenTaskbarSize;
       }
 
+<<<<<<< HEAD
       // When we are drawing the non-client region, we need
       // to clear the portion of the NC region that is exposed by the
       // hidden taskbar.  As above, we clear the bottom of the NC region
@@ -2785,6 +3018,17 @@ bool nsWindow::UpdateNonClientMargins(bool aReflowWindow) {
     mNonClientOffset.bottom = mVertResizeMargin;
     mNonClientOffset.left = mHorResizeMargin;
     mNonClientOffset.right = mHorResizeMargin;
+=======
+      // On Windows 10+, when we are drawing the non-client region, we need
+      // to clear the portion of the NC region that is exposed by the
+      // hidden taskbar.  As above, we clear the bottom of the NC region
+      // when the taskbar is at the top of the screen.
+      if (IsWin10OrLater()) {
+        UINT clearEdge = (edge == ABE_TOP) ? ABE_BOTTOM : edge;
+        mClearNCEdge = Some(clearEdge);
+      }
+    }
+>>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
   } else {
     mNonClientOffset = NormalWindowNonClientOffset();
   }
@@ -2808,9 +3052,13 @@ nsresult nsWindow::SetNonClientMargins(const LayoutDeviceIntMargin& margins) {
     mFutureMarginsToUse = true;
     return NS_OK;
   }
-
   mFutureMarginsToUse = false;
 
+<<<<<<< HEAD
+  mFutureMarginsToUse = false;
+
+=======
+>>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
   // Request for a reset
   if (margins.top == -1 && margins.left == -1 && margins.right == -1 &&
       margins.bottom == -1) {
@@ -2818,6 +3066,10 @@ nsresult nsWindow::SetNonClientMargins(const LayoutDeviceIntMargin& margins) {
     mNonClientMargins = margins;
     // Force a reflow of content based on the new client
     // dimensions.
+<<<<<<< HEAD
+=======
+    mCustomNonClientMetrics = {};
+>>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
     ResetLayout();
 
     int windowStatus =
@@ -2846,8 +3098,13 @@ nsresult nsWindow::SetNonClientMargins(const LayoutDeviceIntMargin& margins) {
 
 void nsWindow::SetResizeMargin(mozilla::LayoutDeviceIntCoord aResizeMargin) {
   mUseResizeMarginOverrides = true;
+<<<<<<< HEAD
   mHorResizeMargin = aResizeMargin;
   mVertResizeMargin = aResizeMargin;
+=======
+  mCustomNonClientMetrics.mHorResizeMargin = aResizeMargin;
+  mCustomNonClientMetrics.mVertResizeMargin = aResizeMargin;
+>>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
   UpdateNonClientMargins();
 }
 
@@ -2873,10 +3130,17 @@ void nsWindow::InvalidateNonClientRegion() {
   // windows non-client chrome and app non-client chrome
   // in winRgn.
   GetWindowRect(mWnd, &rect);
+<<<<<<< HEAD
   rect.top += mCaptionHeight;
   rect.right -= mHorResizeMargin;
   rect.bottom -= mVertResizeMargin;
   rect.left += mHorResizeMargin;
+=======
+  rect.top += mCustomNonClientMetrics.mCaptionHeight;
+  rect.right -= mCustomNonClientMetrics.mHorResizeMargin;
+  rect.bottom -= mCustomNonClientMetrics.mVertResizeMargin;
+  rect.left += mCustomNonClientMetrics.mHorResizeMargin;
+>>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
   MapWindowPoints(nullptr, mWnd, (LPPOINT)&rect, 2);
   HRGN clientRgn = CreateRectRgnIndirect(&rect);
   CombineRgn(winRgn, winRgn, clientRgn, RGN_DIFF);
@@ -2902,6 +3166,7 @@ HRGN nsWindow::ExcludeNonClientFromPaintRegion(HRGN aRegion) {
   CombineRgn(rgn, rgn, nonClientRgn, RGN_DIFF);
   DeleteObject(nonClientRgn);
   return rgn;
+<<<<<<< HEAD
 }
 
 /**************************************************************
@@ -2917,6 +3182,8 @@ void nsWindow::SetBackgroundColor(const nscolor& aColor) {
   if (mWnd != nullptr) {
     ::SetClassLongPtrW(mWnd, GCLP_HBRBACKGROUND, (LONG_PTR)mBrush);
   }
+=======
+>>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
 }
 
 /**************************************************************
@@ -3110,7 +3377,8 @@ void nsWindow::SetCursor(const Cursor& aCursor) {
  * SECTION: nsIWidget::Get/SetTransparencyMode
  *
  * Manage the transparency mode of the window containing this
- * widget.
+ * widget. Only works for popup and dialog windows when the
+ * Desktop Window Manager compositor is not enabled.
  *
  **************************************************************/
 
@@ -3132,7 +3400,12 @@ void nsWindow::SetTransparencyMode(TransparencyMode aMode) {
   }
 
   if (WindowType::TopLevel == window->mWindowType &&
+<<<<<<< HEAD
       mTransparencyMode != aMode && !dwmCompositionEnabled) {
+=======
+      mTransparencyMode != aMode &&
+      !gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled()) {
+>>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
     NS_WARNING("Cannot set transparency mode on top-level windows.");
     return;
   }
@@ -3142,6 +3415,10 @@ void nsWindow::SetTransparencyMode(TransparencyMode aMode) {
 
 void nsWindow::UpdateOpaqueRegion(const LayoutDeviceIntRegion& aOpaqueRegion) {
   if (!HasGlass() || GetParent()) return;
+<<<<<<< HEAD
+=======
+
+>>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
   // If there is no opaque region or hidechrome=true, set margins
   // to support a full sheet of glass. Comments in MSDN indicate
   // all values must be set to -1 to get a full sheet of glass.
@@ -3161,6 +3438,10 @@ void nsWindow::UpdateOpaqueRegion(const LayoutDeviceIntRegion& aOpaqueRegion) {
     }
     margins.cyTopHeight = largest.Y();
   }
+<<<<<<< HEAD
+=======
+
+>>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
   // Only update glass area if there are changes
   if (memcmp(&mGlassMargins, &margins, sizeof mGlassMargins)) {
     mGlassMargins = margins;
@@ -3183,12 +3464,17 @@ void nsWindow::UpdateWindowDraggingRegion(
 }
 
 void nsWindow::UpdateGlass() {
+<<<<<<< HEAD
   bool dwmCompositionEnabled =
       StaticPrefs::widget_native_controls_force_dwm_report_off()
           ? false
           : gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled();
 
   MARGINS margins = mGlassMargins;
+=======
+  MARGINS margins = mGlassMargins;
+
+>>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
   // DWMNCRP_USEWINDOWSTYLE - The non-client rendering area is
   //                          rendered based on the window style.
   // DWMNCRP_ENABLED        - The non-client area rendering is
@@ -3208,12 +3494,22 @@ void nsWindow::UpdateGlass() {
     default:
       break;
   }
+<<<<<<< HEAD
+=======
+
+>>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
   MOZ_LOG(gWindowsLog, LogLevel::Info,
           ("glass margins: left:%d top:%d right:%d bottom:%d\n",
            margins.cxLeftWidth, margins.cyTopHeight, margins.cxRightWidth,
            margins.cyBottomHeight));
+<<<<<<< HEAD
   // Extends the window frame behind the client area
   if (dwmCompositionEnabled) {
+=======
+
+  // Extends the window frame behind the client area
+  if (gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled()) {
+>>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
     DwmExtendFrameIntoClientArea(mWnd, &margins);
     DwmSetWindowAttribute(mWnd, DWMWA_NCRENDERING_POLICY, &policy,
                           sizeof policy);
@@ -3486,6 +3782,7 @@ NS_IMPL_ISUPPORTS0(FullscreenTransitionData)
 
 /* virtual */
 bool nsWindow::PrepareForFullscreenTransition(nsISupports** aData) {
+<<<<<<< HEAD
   bool dwmCompositionEnabled =
       StaticPrefs::widget_native_controls_force_dwm_report_off()
           ? false
@@ -3495,6 +3792,12 @@ bool nsWindow::PrepareForFullscreenTransition(nsISupports** aData) {
   // enabled, which could make the transition broken and annoying.
   // See bug 1184201.
   if (!dwmCompositionEnabled) {
+=======
+  // We don't support fullscreen transition when composition is not
+  // enabled, which could make the transition broken and annoying.
+  // See bug 1184201.
+  if (!gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled()) {
+>>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
     return false;
   }
 
@@ -3894,7 +4197,7 @@ LayoutDeviceIntPoint nsWindow::WidgetToScreenOffset() {
 }
 
 LayoutDeviceIntMargin nsWindow::ClientToWindowMargin() {
-  if (mWindowType == WindowType::Popup) {
+  if (mWindowType == WindowType::Popup && !IsPopupWithTitleBar()) {
     return {};
   }
 
@@ -4189,16 +4492,20 @@ nsresult nsWindow::OnDefaultButtonLoaded(
 
 void nsWindow::UpdateThemeGeometries(
     const nsTArray<ThemeGeometry>& aThemeGeometries) {
+<<<<<<< HEAD
   bool dwmCompositionEnabled =
       StaticPrefs::widget_native_controls_force_dwm_report_off()
           ? false
           : gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled();
 
+=======
+>>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
   RefPtr<WebRenderLayerManager> layerManager =
       GetWindowRenderer() ? GetWindowRenderer()->AsWebRender() : nullptr;
   if (!layerManager) {
     return;
   }
+<<<<<<< HEAD
   if (!HasGlass() || !dwmCompositionEnabled) {
     return;
   }
@@ -4213,6 +4520,28 @@ void nsWindow::UpdateThemeGeometries(
       bounds.SetWidth(bounds.Width() + 1);
       if (!mWindowButtonsRect) {
         mWindowButtonsRect = Some(bounds);
+=======
+
+  if (!HasGlass() ||
+      !gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled()) {
+    return;
+  }
+
+  mWindowButtonsRect = Nothing();
+
+  if (!IsWin10OrLater()) {
+    for (size_t i = 0; i < aThemeGeometries.Length(); i++) {
+      if (aThemeGeometries[i].mType ==
+          nsNativeThemeWin::eThemeGeometryTypeWindowButtons) {
+        LayoutDeviceIntRect bounds = aThemeGeometries[i].mRect;
+        // Extend the bounds by one pixel to the right, because that's how much
+        // the actual window button shape extends past the client area of the
+        // window (and overlaps the right window frame).
+        bounds.SetWidth(bounds.Width() + 1);
+        if (!mWindowButtonsRect) {
+          mWindowButtonsRect = Some(bounds);
+        }
+>>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
       }
     }
   }
@@ -4232,6 +4561,7 @@ uint32_t nsWindow::GetMaxTouchPoints() const {
 }
 
 void nsWindow::SetIsEarlyBlankWindow(bool aIsEarlyBlankWindow) {
+<<<<<<< HEAD
 //  if (mIsEarlyBlankWindow == aIsEarlyBlankWindow) {
 //    return;
 //  }
@@ -4241,6 +4571,9 @@ void nsWindow::SetIsEarlyBlankWindow(bool aIsEarlyBlankWindow) {
     // ensure we get one to do any work we might have missed.
 //    ::RedrawWindow(mWnd, nullptr, nullptr, RDW_INVALIDATE | RDW_INTERNALPAINT);
 //  }
+=======
+  mIsEarlyBlankWindow = aIsEarlyBlankWindow;
+>>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
 }
 
 /**************************************************************
@@ -5089,9 +5422,17 @@ bool nsWindow::ProcessMessageInternal(UINT msg, WPARAM& wParam, LPARAM& lParam,
 
   // Glass hit testing w/custom transparent margins
   LRESULT dwmHitResult;
+<<<<<<< HEAD
   if (mCustomNonClient && dwmCompositionEnabled  &&
       /* We don't do this for win10 glass with a custom titlebar,
        * in order to avoid the caption buttons breaking. */
+=======
+  if (mCustomNonClient &&
+      gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled() &&
+      /* We don't do this for win10 glass with a custom titlebar,
+       * in order to avoid the caption buttons breaking. */
+      !(IsWin10OrLater() && HasGlass()) &&
+>>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
       DwmDefWindowProc(mWnd, msg, wParam, lParam, &dwmHitResult)) {
     *aRetValue = dwmHitResult;
     return true;
@@ -5341,7 +5682,12 @@ bool nsWindow::ProcessMessageInternal(UINT msg, WPARAM& wParam, LPARAM& lParam,
        * sending the message with an updated title
        */
 
+<<<<<<< HEAD
         if ((mSendingSetText && dwmCompositionEnabled) ||
+=======
+      if ((mSendingSetText &&
+           gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled()) ||
+>>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
           !mCustomNonClient || mNonClientMargins.top == -1)
         break;
 
@@ -5381,7 +5727,11 @@ bool nsWindow::ProcessMessageInternal(UINT msg, WPARAM& wParam, LPARAM& lParam,
 
       // There is a case that rendered result is not kept. Bug 1237617
       if (wParam == TRUE && !gfxEnv::MOZ_DISABLE_FORCE_PRESENT() &&
+<<<<<<< HEAD
           dwmCompositionEnabled) {
+=======
+          gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled()) {
+>>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
         NS_DispatchToMainThread(NewRunnableMethod(
             "nsWindow::ForcePresent", this, &nsWindow::ForcePresent));
       }
@@ -5389,7 +5739,11 @@ bool nsWindow::ProcessMessageInternal(UINT msg, WPARAM& wParam, LPARAM& lParam,
       // let the dwm handle nc painting on glass
       // Never allow native painting if we are on fullscreen
       if (mFrameState->GetSizeMode() != nsSizeMode_Fullscreen &&
+<<<<<<< HEAD
           dwmCompositionEnabled)
+=======
+          gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled())
+>>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
         break;
 
       if (wParam == TRUE) {
@@ -5421,9 +5775,18 @@ bool nsWindow::ProcessMessageInternal(UINT msg, WPARAM& wParam, LPARAM& lParam,
        * non-client areas we paint manually. Then call defwndproc
        * to do the actual painting.
        */
+<<<<<<< HEAD
       if (!mCustomNonClient) break;
       // let the dwm handle nc painting on glass
       if (dwmCompositionEnabled) break;
+=======
+
+      if (!mCustomNonClient) break;
+
+      // let the dwm handle nc painting on glass
+      if (gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled()) break;
+
+>>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
       HRGN paintRgn = ExcludeNonClientFromPaintRegion((HRGN)wParam);
       LRESULT res = CallWindowProcW(GetPrevWindowProc(), mWnd, msg,
                                     (WPARAM)paintRgn, lParam);
@@ -5458,8 +5821,12 @@ bool nsWindow::ProcessMessageInternal(UINT msg, WPARAM& wParam, LPARAM& lParam,
       break;
 
     case WM_PAINT:
-      *aRetValue = (int)OnPaint(0);
+      *aRetValue = (int)OnPaint(nullptr, 0);
       result = true;
+      break;
+
+    case WM_PRINTCLIENT:
+      result = OnPaint((HDC)wParam, 0);
       break;
 
     case WM_HOTKEY:
@@ -6363,6 +6730,10 @@ void nsWindow::FinishLiveResizing(ResizeState aNewState) {
  * Broadcast messages to all windows.
  *
  **************************************************************/
+<<<<<<< HEAD
+=======
+
+>>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
 // Enumerate all child windows sending aMsg to each of them
 BOOL CALLBACK nsWindow::BroadcastMsgToChildren(HWND aWnd, LPARAM aMsg) {
   WNDPROC winProc = (WNDPROC)::GetWindowLongPtrW(aWnd, GWLP_WNDPROC);
@@ -6372,6 +6743,10 @@ BOOL CALLBACK nsWindow::BroadcastMsgToChildren(HWND aWnd, LPARAM aMsg) {
   }
   return TRUE;
 }
+<<<<<<< HEAD
+=======
+
+>>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
 // Enumerate all top level windows specifying that the children of each
 // top level window should be enumerated. Do *not* send the message to
 // each top level window since it is assumed that the toolkit will send
@@ -6394,10 +6769,17 @@ BOOL CALLBACK nsWindow::BroadcastMsg(HWND aTopWindow, LPARAM aMsg) {
 
 LayoutDeviceIntMargin nsWindow::NonClientSizeMargin(
     const LayoutDeviceIntMargin& aNonClientOffset) const {
+<<<<<<< HEAD
   return LayoutDeviceIntMargin(mCaptionHeight - aNonClientOffset.top,
                                mHorResizeMargin - aNonClientOffset.right,
                                mVertResizeMargin - aNonClientOffset.bottom,
                                mHorResizeMargin - aNonClientOffset.left);
+=======
+  return LayoutDeviceIntMargin(mCustomNonClientMetrics.mCaptionHeight - aNonClientOffset.top,
+                               mCustomNonClientMetrics.mHorResizeMargin - aNonClientOffset.right,
+                               mCustomNonClientMetrics.mVertResizeMargin - aNonClientOffset.bottom,
+                               mCustomNonClientMetrics.mHorResizeMargin - aNonClientOffset.left);
+>>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
 }
 
 int32_t nsWindow::ClientMarginHitTestPoint(int32_t aX, int32_t aY) {
@@ -6447,9 +6829,13 @@ int32_t nsWindow::ClientMarginHitTestPoint(int32_t aX, int32_t aY) {
   // E.g., user must expect that Firefox button always opens the popup menu
   // even when the user clicks on the above edge of it.
   LayoutDeviceIntMargin borderSize = nonClientSizeMargin;
+<<<<<<< HEAD
   borderSize.EnsureAtLeast(
       LayoutDeviceIntMargin(mVertResizeMargin, mHorResizeMargin,
                             mVertResizeMargin, mHorResizeMargin));
+=======
+  borderSize.EnsureAtLeast(mCustomNonClientMetrics.ResizeMargins());
+>>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
 
   bool top = false;
   bool bottom = false;
@@ -7690,18 +8076,71 @@ void nsWindow::SetWindowTranslucencyInner(TransparencyMode aMode) {
     return;
   }
 
+<<<<<<< HEAD
   MOZ_ASSERT(WinUtils::GetTopLevelHWND(mWnd, true) == mWnd);
   LONG_PTR exStyle = ::GetWindowLongPtr(mWnd, GWL_EXSTYLE);
   if (aMode == TransparencyMode::Transparent) {
     exStyle |= WS_EX_LAYERED;
   } else {
     exStyle &= ~WS_EX_LAYERED;
+=======
+  // stop on dialogs and popups!
+  HWND hWnd = WinUtils::GetTopLevelHWND(mWnd, true);
+  nsWindow* parent = WinUtils::GetNSWindowPtr(hWnd);
+
+  if (!parent) {
+    NS_WARNING("Trying to use transparent chrome in an embedded context");
+    return;
+>>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
   }
   ::SetWindowLongPtrW(mWnd, GWL_EXSTYLE, exStyle);
+
+<<<<<<< HEAD
+  if (HasGlass()) memset(&mGlassMargins, 0, sizeof mGlassMargins);
+  mTransparencyMode = aMode;
+
+=======
+  if (parent != this) {
+    NS_WARNING(
+        "Setting SetWindowTranslucencyInner on a parent this is not us!");
+  }
+
+  if (aMode == TransparencyMode::Transparent) {
+    // If we're switching to the use of a transparent window, hide the chrome
+    // on our parent.
+    HideWindowChrome(true);
+  } else if (mHideChrome &&
+             mTransparencyMode == TransparencyMode::Transparent) {
+    // if we're switching out of transparent, re-enable our parent's chrome.
+    HideWindowChrome(false);
+  }
+
+  LONG_PTR style = ::GetWindowLongPtrW(hWnd, GWL_STYLE),
+           exStyle = ::GetWindowLongPtr(hWnd, GWL_EXSTYLE);
+
+  if (parent->mIsVisible) {
+    style |= WS_VISIBLE;
+    if (parent->mFrameState->GetSizeMode() == nsSizeMode_Maximized) {
+      style |= WS_MAXIMIZE;
+    } else if (parent->mFrameState->GetSizeMode() == nsSizeMode_Minimized) {
+      style |= WS_MINIMIZE;
+    }
+  }
+
+  if (aMode == TransparencyMode::Transparent) {
+    exStyle |= WS_EX_LAYERED;
+  } else {
+    exStyle &= ~WS_EX_LAYERED;
+  }
+
+  VERIFY_WINDOW_STYLE(style);
+  ::SetWindowLongPtrW(hWnd, GWL_STYLE, style);
+  ::SetWindowLongPtrW(hWnd, GWL_EXSTYLE, exStyle);
 
   if (HasGlass()) memset(&mGlassMargins, 0, sizeof mGlassMargins);
   mTransparencyMode = aMode;
 
+>>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
   if (mCompositorWidgetDelegate) {
     mCompositorWidgetDelegate->UpdateTransparency(aMode);
   }
@@ -8001,6 +8440,23 @@ bool nsWindow::GetPopupsToRollup(nsIRollupListener* aRollupListener,
   return true;
 }
 
+// static
+bool nsWindow::NeedsToHandleNCActivateDelayed(HWND aWnd) {
+  // While popup is open, popup window might be activated by other application.
+  // At this time, we need to take back focus to the previous window but it
+  // causes flickering its nonclient area because WM_NCACTIVATE comes before
+  // WM_ACTIVATE and we cannot know which window will take focus at receiving
+  // WM_NCACTIVATE. Therefore, we need a hack for preventing the flickerling.
+  //
+  // If non-popup window receives WM_NCACTIVATE at deactivating, default
+  // wndproc shouldn't handle it as deactivating. Instead, at receiving
+  // WM_ACTIVIATE after that, WM_NCACTIVATE should be sent again manually.
+  // This returns true if the window needs to handle WM_NCACTIVATE later.
+
+  nsWindow* window = WinUtils::GetNSWindowPtr(aWnd);
+  return window && !window->IsPopup();
+}
+
 static bool IsTouchSupportEnabled(HWND aWnd) {
   nsWindow* topWindow =
       WinUtils::GetNSWindowPtr(WinUtils::GetTopLevelHWND(aWnd, true));
@@ -8054,6 +8510,8 @@ bool nsWindow::DealWithPopups(HWND aWnd, UINT aMessage, WPARAM aWParam,
     return false;
   }
 
+  static bool sSendingNCACTIVATE = false;
+  static bool sPendingNCACTIVATE = false;
   uint32_t popupsToRollup = UINT32_MAX;
 
   bool consumeRollupEvent = false;
@@ -8146,29 +8604,109 @@ bool nsWindow::DealWithPopups(HWND aWnd, UINT aMessage, WPARAM aWParam,
       break;
 
     case WM_ACTIVATE: {
-      // This marker should be useless nowadays, but kept just for safety, see
-      // the discussion in D210302. See also bug 1842170.
       WndProcUrgentInvocation::Marker _marker;
 
-      nsWindow* window = WinUtils::GetNSWindowPtr(aWnd);
-      nsWindow* prevWindow =
-          WinUtils::GetNSWindowPtr(reinterpret_cast<HWND>(aLParam));
-      // Don't rollup popups for WM_ACTIVATE from/to a popup.
-      // When we click on a popup (WA_CLICKACTIVE) we don't want to do it.
-      // WA_ACTIVE/WA_INACTIVE shouldn't really happen, but some old
-      // pre-windows-10 drivers used to do this, see bug 953146.
-      // It might be the case that is no longer needed tho, and we can move
-      // this to the WA_CLICKACTIVE condition.
-      if ((window && window->IsPopup()) ||
-          (prevWindow && prevWindow->IsPopup())) {
-        return false;
-      }
-      if (LOWORD(aWParam) == WA_CLICKACTIVE &&
-          !GetPopupsToRollup(rollupListener, &popupsToRollup)) {
-        return false;
+      // NOTE: Don't handle WA_INACTIVE for preventing popup taking focus
+      // because we cannot distinguish it's caused by mouse or not.
+      if (LOWORD(aWParam) == WA_ACTIVE && aLParam) {
+        nsWindow* window = WinUtils::GetNSWindowPtr(aWnd);
+        if (window && (window->IsPopup() || window->mIsAlert)) {
+          // Cancel notifying widget listeners of deactivating the previous
+          // active window (see WM_KILLFOCUS case in ProcessMessage()).
+          sJustGotDeactivate = false;
+          // Reactivate the window later.
+          ::PostMessageW(aWnd, MOZ_WM_REACTIVATE, aWParam, aLParam);
+          return true;
+        }
+        // Don't rollup the popup when focus moves back to the parent window
+        // from a popup because such case is caused by strange mouse drivers.
+        nsWindow* prevWindow =
+            WinUtils::GetNSWindowPtr(reinterpret_cast<HWND>(aLParam));
+        if (prevWindow && prevWindow->IsPopup()) {
+          // Consume this message here since previous window must not have
+          // been inactivated since we've already stopped accepting the
+          // inactivation below.
+          return true;
+        }
+      } else if (LOWORD(aWParam) == WA_INACTIVE) {
+        nsWindow* activeWindow =
+            WinUtils::GetNSWindowPtr(reinterpret_cast<HWND>(aLParam));
+        if (sPendingNCACTIVATE && NeedsToHandleNCActivateDelayed(aWnd)) {
+          // If focus moves to non-popup widget or focusable popup, the window
+          // needs to update its nonclient area.
+          if (!activeWindow || !activeWindow->IsPopup()) {
+            sSendingNCACTIVATE = true;
+            ::SendMessageW(aWnd, WM_NCACTIVATE, false, 0);
+            sSendingNCACTIVATE = false;
+          }
+          sPendingNCACTIVATE = false;
+        }
+        // If focus moves from/to popup, we don't need to rollup the popup
+        // because such case is caused by strange mouse drivers.  And in
+        // such case, we should consume the message here since we need to
+        // hide this odd focus move from our content.  (If we didn't consume
+        // the message here, ProcessMessage() will notify widget listener of
+        // inactivation and that causes unnecessary reflow for supporting
+        // -moz-window-inactive pseudo class.
+        if (activeWindow) {
+          if (activeWindow->IsPopup()) {
+            return true;
+          }
+          nsWindow* deactiveWindow = WinUtils::GetNSWindowPtr(aWnd);
+          if (deactiveWindow && deactiveWindow->IsPopup()) {
+            return true;
+          }
+        }
+      } else if (LOWORD(aWParam) == WA_CLICKACTIVE) {
+        // If the WM_ACTIVATE message is caused by a click in a popup,
+        // we should not rollup any popups.
+        nsWindow* window = WinUtils::GetNSWindowPtr(aWnd);
+        if ((window && window->IsPopup()) ||
+            !GetPopupsToRollup(rollupListener, &popupsToRollup)) {
+          return false;
+        }
       }
       allowAnimations = nsIRollupListener::AllowAnimations::No;
     } break;
+
+    case MOZ_WM_REACTIVATE:
+      // The previous active window should take back focus.
+      if (::IsWindow(reinterpret_cast<HWND>(aLParam))) {
+        // FYI: Even without this API call, you see expected result (e.g., the
+        //      owner window of the popup keeps active without flickering
+        //      the non-client area).  And also this causes initializing
+        //      TSF and it causes using CPU time a lot.  However, even if we
+        //      consume WM_ACTIVE messages, native focus change has already
+        //      been occurred.  I.e., a popup window is active now.  Therefore,
+        //      you'll see some odd behavior if we don't reactivate the owner
+        //      window here.  For example, if you do:
+        //        1. Turn wheel on a bookmark panel.
+        //        2. Turn wheel on another window.
+        //      then, you'll see that the another window becomes active but the
+        //      owner window of the bookmark panel looks still active and the
+        //      bookmark panel keeps open.  The reason is that the first wheel
+        //      operation gives focus to the bookmark panel.  Therefore, when
+        //      the next operation gives focus to the another window, previous
+        //      focus window is the bookmark panel (i.e., a popup window).
+        //      So, in this case, our hack around here prevents to inactivate
+        //      the owner window and roll up the bookmark panel.
+        ::SetForegroundWindow(reinterpret_cast<HWND>(aLParam));
+      }
+      return true;
+
+    case WM_NCACTIVATE:
+      if (!aWParam && !sSendingNCACTIVATE &&
+          NeedsToHandleNCActivateDelayed(aWnd)) {
+        // Don't just consume WM_NCACTIVATE. It doesn't handle only the
+        // nonclient area state change.
+        ::DefWindowProcW(aWnd, aMessage, TRUE, aLParam);
+        // Accept the deactivating because it's necessary to receive following
+        // WM_ACTIVATE.
+        *aResult = TRUE;
+        sPendingNCACTIVATE = true;
+        return true;
+      }
+      return false;
 
     case WM_MOUSEACTIVATE:
       if (!EventIsInsideWindow(popupWindow) &&
@@ -8350,7 +8888,7 @@ bool nsWindow::CanTakeFocus() {
   return false;
 }
 
-static const wchar_t* GetMainWindowClass() {
+/* static */ const wchar_t* nsWindow::GetMainWindowClass() {
   static const wchar_t* sMainWindowClass = nullptr;
   if (!sMainWindowClass) {
     nsAutoString className;
@@ -8679,12 +9217,16 @@ void nsWindow::GetCompositorWidgetInitData(
 }
 
 bool nsWindow::SynchronouslyRepaintOnResize() {
+<<<<<<< HEAD
   bool dwmCompositionEnabled =
       StaticPrefs::widget_native_controls_force_dwm_report_off()
           ? false
           : gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled();
 
   return !dwmCompositionEnabled;
+=======
+  return !gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled();
+>>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
 }
 
 void nsWindow::MaybeDispatchInitialFocusEvent() {
@@ -8916,45 +9458,41 @@ nsresult nsWindow::ClearNativeTouchSequence(nsIObserver* aObserver) {
   return NS_OK;
 }
 
-#if !defined(NTDDI_WIN10_RS5) || (NTDDI_VERSION < NTDDI_WIN10_RS5)
-static CreateSyntheticPointerDevicePtr CreateSyntheticPointerDevice;
-static DestroySyntheticPointerDevicePtr DestroySyntheticPointerDevice;
-static InjectSyntheticPointerInputPtr InjectSyntheticPointerInput;
-#endif
+static CreateSyntheticPointerDevicePtr fnCreateSyntheticPointerDevice;
+static DestroySyntheticPointerDevicePtr fnDestroySyntheticPointerDevice;
+static InjectSyntheticPointerInputPtr fnInjectSyntheticPointerInput;
 static HSYNTHETICPOINTERDEVICE sSyntheticPenDevice;
 
 static bool InitPenInjection() {
   if (sSyntheticPenDevice) {
     return true;
   }
-#if !defined(NTDDI_WIN10_RS5) || (NTDDI_VERSION < NTDDI_WIN10_RS5)
   HMODULE hMod = LoadLibraryW(kUser32LibName);
   if (!hMod) {
     return false;
   }
-  CreateSyntheticPointerDevice =
+  fnCreateSyntheticPointerDevice =
       (CreateSyntheticPointerDevicePtr)GetProcAddress(
           hMod, "CreateSyntheticPointerDevice");
-  if (!CreateSyntheticPointerDevice) {
+  if (!fnCreateSyntheticPointerDevice) {
     WinUtils::Log("CreateSyntheticPointerDevice not available.");
     return false;
   }
-  DestroySyntheticPointerDevice =
+  fnDestroySyntheticPointerDevice =
       (DestroySyntheticPointerDevicePtr)GetProcAddress(
           hMod, "DestroySyntheticPointerDevice");
-  if (!DestroySyntheticPointerDevice) {
+  if (!fnDestroySyntheticPointerDevice) {
     WinUtils::Log("DestroySyntheticPointerDevice not available.");
     return false;
   }
-  InjectSyntheticPointerInput = (InjectSyntheticPointerInputPtr)GetProcAddress(
+  fnInjectSyntheticPointerInput = (InjectSyntheticPointerInputPtr)GetProcAddress(
       hMod, "InjectSyntheticPointerInput");
-  if (!InjectSyntheticPointerInput) {
+  if (!fnInjectSyntheticPointerInput) {
     WinUtils::Log("InjectSyntheticPointerInput not available.");
     return false;
   }
-#endif
   sSyntheticPenDevice =
-      CreateSyntheticPointerDevice(PT_PEN, 1, POINTER_FEEDBACK_DEFAULT);
+      fnCreateSyntheticPointerDevice(PT_PEN, 1, POINTER_FEEDBACK_DEFAULT);
   return !!sSyntheticPenDevice;
 }
 
@@ -9017,7 +9555,7 @@ nsresult nsWindow::SynthesizeNativePenInput(
     info.penInfo.tiltX = aTiltX;
     info.penInfo.tiltY = aTiltY;
 
-    return InjectSyntheticPointerInput(sSyntheticPenDevice, &info, 1)
+    return fnInjectSyntheticPointerInput(sSyntheticPenDevice, &info, 1)
                ? NS_OK
                : NS_ERROR_UNEXPECTED;
   });

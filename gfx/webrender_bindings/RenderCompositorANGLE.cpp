@@ -228,6 +228,7 @@ bool RenderCompositorANGLE::CreateSwapChain(nsACString& aError) {
     dxgiFactory2 = nullptr;
   }
 
+<<<<<<< HEAD
   CreateSwapChainForDCompIfPossible(dxgiFactory2);
   if (gfx::gfxVars::UseWebRenderDCompWin() && !mSwapChain) {
     MOZ_ASSERT(GetCompositorHwnd());
@@ -236,6 +237,10 @@ bool RenderCompositorANGLE::CreateSwapChain(nsACString& aError) {
   }
 
   if (!mSwapChain && dxgiFactory2) {
+=======
+  HWND hwnd = mWidget->AsWindows()->GetHwnd();
+  if (dxgiFactory2) {
+>>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
     RefPtr<IDXGISwapChain1> swapChain1;
     bool useTripleBuffering = false;
 
@@ -277,7 +282,13 @@ bool RenderCompositorANGLE::CreateSwapChain(nsACString& aError) {
       mSwapChain = swapChain1;
       mSwapChain1 = swapChain1;
       mUseTripleBuffering = useTripleBuffering;
+<<<<<<< HEAD
     } else if (useFlipSequential) {
+=======
+      return true;
+    }
+    if (useFlipSequential) {
+>>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
       gfxCriticalNoteOnce << "FLIP_SEQUENTIAL is not supported. Fallback";
     }
   }
@@ -312,12 +323,40 @@ bool RenderCompositorANGLE::CreateSwapChain(nsACString& aError) {
       return false;
     }
 
+<<<<<<< HEAD
     RefPtr<IDXGISwapChain1> swapChain1;
     hr = mSwapChain->QueryInterface(
         (IDXGISwapChain1**)getter_AddRefs(swapChain1));
     if (SUCCEEDED(hr)) {
       mSwapChain1 = swapChain1;
     }
+=======
+  RefPtr<IDXGISwapChain1> swapChain1;
+  hr =
+      mSwapChain->QueryInterface((IDXGISwapChain1**)getter_AddRefs(swapChain1));
+  if (SUCCEEDED(hr)) {
+      mSwapChain1 = swapChain1;
+  } else {
+    mSwapChain1 = nullptr;
+  }
+  return true;
+}
+
+bool RenderCompositorANGLE::CreateSwapChain(nsACString& aError) {
+  MOZ_ASSERT(!UseCompositor());
+
+  mFirstPresent = true;
+  CreateSwapChainForDCompIfPossible();
+  if (gfx::gfxVars::UseWebRenderDCompWin() && !mSwapChain) {
+    MOZ_ASSERT(GetCompositorHwnd());
+    aError.Assign("RcANGLE(create swapchain for dcomp failed)"_ns);
+    return false;
+  }
+
+  if (!mSwapChain && !CreateSwapChainForHWND()) {
+    aError.Assign("RcANGLE(swap chain create failed)"_ns);
+    return false;
+>>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
   }
 
   // We need this because we don't want DXGI to respond to Alt+Enter.
@@ -361,6 +400,7 @@ void RenderCompositorANGLE::CreateSwapChainForDCompIfPossible(
     mSwapChain1 = swapChain1;
     mUseAlpha = useAlpha;
     mUseTripleBuffering = useTripleBuffering;
+    mUseAlpha = useAlpha;
     mDCLayerTree->SetDefaultSwapChain(swapChain1);
   } else {
     // Clear CLayerTree on falire
@@ -379,9 +419,18 @@ RefPtr<IDXGISwapChain1> RenderCompositorANGLE::CreateSwapChainForDComp(
     RefPtr<IDXGIAdapter> adapter;
     dxgiDevice->GetAdapter(getter_AddRefs(adapter));
 
+<<<<<<< HEAD
     adapter->GetParent(
         IID_PPV_ARGS((IDXGIFactory**)getter_AddRefs(dxgiFactory)));
   }
+=======
+RefPtr<IDXGISwapChain1> RenderCompositorANGLE::CreateSwapChainForDComp(
+    bool aUseTripleBuffering, bool aUseAlpha) {
+  RefPtr<IDXGIDevice> dxgiDevice;
+  mDevice->QueryInterface((IDXGIDevice**)getter_AddRefs(dxgiDevice));
+
+  RefPtr<IDXGIFactory> dxgiFactory = DXGIFactory();
+>>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
 
   RefPtr<IDXGIFactory2> dxgiFactory2;
   hr = dxgiFactory->QueryInterface(
@@ -437,6 +486,10 @@ bool RenderCompositorANGLE::BeginFrame() {
       if (useAlpha != mUseAlpha) {
         DestroyEGLSurface();
         mBufferSize.reset();
+<<<<<<< HEAD
+=======
+
+>>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
         RefPtr<IDXGISwapChain1> swapChain1 =
             CreateSwapChainForDComp(mUseTripleBuffering, useAlpha);
         if (swapChain1) {
@@ -456,6 +509,7 @@ bool RenderCompositorANGLE::BeginFrame() {
         }
       }
     }
+
     if (!ResizeBufferIfNeeded()) {
       return false;
     }
@@ -875,29 +929,11 @@ void RenderCompositorANGLE::Bind(wr::NativeTileId aId,
 
 void RenderCompositorANGLE::Unbind() { mDCLayerTree->Unbind(); }
 
-void RenderCompositorANGLE::BindSwapChain(wr::NativeSurfaceId aId) {
-  mDCLayerTree->BindSwapChain(aId);
-}
-void RenderCompositorANGLE::PresentSwapChain(wr::NativeSurfaceId aId) {
-  mDCLayerTree->PresentSwapChain(aId);
-}
-
 void RenderCompositorANGLE::CreateSurface(wr::NativeSurfaceId aId,
                                           wr::DeviceIntPoint aVirtualOffset,
                                           wr::DeviceIntSize aTileSize,
                                           bool aIsOpaque) {
   mDCLayerTree->CreateSurface(aId, aVirtualOffset, aTileSize, aIsOpaque);
-}
-
-void RenderCompositorANGLE::CreateSwapChainSurface(wr::NativeSurfaceId aId,
-                                                   wr::DeviceIntSize aSize,
-                                                   bool aIsOpaque) {
-  mDCLayerTree->CreateSwapChainSurface(aId, aSize, aIsOpaque);
-}
-
-void RenderCompositorANGLE::ResizeSwapChainSurface(wr::NativeSurfaceId aId,
-                                                   wr::DeviceIntSize aSize) {
-  mDCLayerTree->ResizeSwapChainSurface(aId, aSize);
 }
 
 void RenderCompositorANGLE::CreateExternalSurface(wr::NativeSurfaceId aId,
@@ -957,11 +993,19 @@ void RenderCompositorANGLE::EnableNativeCompositor(bool aEnable) {
   mDCLayerTree->DisableNativeCompositor();
 
   bool useAlpha = mWidget->AsWindows()->HasGlass();
+<<<<<<< HEAD
 
   DestroyEGLSurface();
   mBufferSize.reset();
 
   RefPtr<IDXGISwapChain1> swapChain1 =
+=======
+  DestroyEGLSurface();
+  mBufferSize.reset();
+
+  if (mDCLayerTree) {
+    RefPtr<IDXGISwapChain1> swapChain1 =
+>>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
       CreateSwapChainForDComp(mUseTripleBuffering, useAlpha);
   if (swapChain1) {
     mSwapChain = swapChain1;
@@ -977,6 +1021,14 @@ void RenderCompositorANGLE::EnableNativeCompositor(bool aEnable) {
     gfxCriticalNote << "Failed to re-create SwapChain";
     RenderThread::Get()->HandleWebRenderError(WebRenderError::NEW_SURFACE);
     return;
+<<<<<<< HEAD
+=======
+   }
+  } else {
+    if (NS_WARN_IF(!CreateSwapChainForHWND())) {
+      return;
+    }
+>>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
   }
   mDisablingNativeCompositor = true;
 }

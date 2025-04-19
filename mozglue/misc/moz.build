@@ -99,7 +99,15 @@ if CONFIG["OS_ARCH"] == "WINNT":
         "WindowsUnicode.cpp",
     ]
 
+<<<<<<< HEAD
     OS_LIBS += ["dbghelp", "oleaut32", "ole32"]
+=======
+    OS_LIBS += [
+        "dbghelp",
+        "oleaut32",
+        "ole32",
+    ]
+>>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
 
     if not CONFIG["JS_STANDALONE"]:
         SOURCES += [

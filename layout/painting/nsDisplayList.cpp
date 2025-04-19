@@ -839,6 +839,10 @@ void nsDisplayListBuilder::SetGlassDisplayItem(nsDisplayItem* aItem) {
   // own elements (as long as they are root frames, which is rare as each doc
   // only gets one near the root). We only care about the first one, since that
   // will be the background of the root window.
+<<<<<<< HEAD
+=======
+
+>>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
   if (IsPartialUpdate()) {
     if (aItem->Frame()->Style()->IsRootElementStyle()) {
 #ifdef DEBUG
@@ -853,6 +857,10 @@ void nsDisplayListBuilder::SetGlassDisplayItem(nsDisplayItem* aItem) {
     }
     return;
   }
+<<<<<<< HEAD
+=======
+
+>>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
   if (aItem->Frame()->Style()->IsRootElementStyle()) {
 #ifdef DEBUG
     if (mGlassDisplayItem) {
@@ -865,6 +873,10 @@ void nsDisplayListBuilder::SetGlassDisplayItem(nsDisplayItem* aItem) {
     }
   }
 }
+<<<<<<< HEAD
+=======
+
+>>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
 bool nsDisplayListBuilder::NeedToForceTransparentSurfaceForItem(
     nsDisplayItem* aItem) {
   return aItem == mGlassDisplayItem;
@@ -1890,6 +1902,8 @@ void nsDisplayListBuilder::RemoveModifiedWindowRegions() {
   mRetainedWindowNoDraggingRegion.RemoveModifiedFramesAndRects();
   mWindowExcludeGlassRegion.RemoveModifiedFramesAndRects();
   mRetainedWindowOpaqueRegion.RemoveModifiedFramesAndRects();
+
+  mHasGlassItemDuringPartial = false;
 }
 
 void nsDisplayListBuilder::ClearRetainedWindowRegions() {

@@ -38,11 +38,11 @@ use tracy_rs::register_thread_with_profiler;
 use webrender::sw_compositor::SwCompositor;
 use webrender::{
     api::units::*, api::*, create_webrender_instance, render_api::*, set_profiler_hooks, AsyncPropertySampler,
-    AsyncScreenshotHandle, Compositor, LayerCompositor, CompositorCapabilities, CompositorConfig, CompositorSurfaceTransform, Device,
+    AsyncScreenshotHandle, Compositor, CompositorCapabilities, CompositorConfig, CompositorSurfaceTransform, Device,
     MappableCompositor, MappedTileInfo, NativeSurfaceId, NativeSurfaceInfo, NativeTileId, PartialPresentCompositor,
     PipelineInfo, ProfilerHooks, RecordedFrameHandle, RenderBackendHooks, Renderer, RendererStats,
     SWGLCompositeSurfaceInfo, SceneBuilderHooks, ShaderPrecacheFlags, Shaders, SharedShaders, TextureCacheConfig,
-    UploadMethod, WebRenderOptions, WindowVisibility, ONE_TIME_USAGE_HINT, CompositorInputConfig, CompositorSurfaceUsage,
+    UploadMethod, WebRenderOptions, WindowVisibility, ONE_TIME_USAGE_HINT,
 };
 use wr_malloc_size_of::MallocSizeOfOps;
 
@@ -1278,13 +1278,6 @@ extern "C" {
         tile_size: DeviceIntSize,
         is_opaque: bool,
     );
-    fn wr_compositor_create_swapchain_surface(
-        compositor: *mut c_void,
-        id: NativeSurfaceId,
-        size: DeviceIntSize,
-        is_opaque: bool,
-    );
-    fn wr_compositor_resize_swapchain(compositor: *mut c_void, id: NativeSurfaceId, size: DeviceIntSize);
     fn wr_compositor_create_external_surface(compositor: *mut c_void, id: NativeSurfaceId, is_opaque: bool);
     fn wr_compositor_create_backdrop_surface(compositor: *mut c_void, id: NativeSurfaceId, color: ColorF);
     fn wr_compositor_destroy_surface(compositor: *mut c_void, id: NativeSurfaceId);
@@ -1325,8 +1318,6 @@ extern "C" {
     fn wr_compositor_deinit(compositor: *mut c_void);
     fn wr_compositor_get_capabilities(compositor: *mut c_void, caps: *mut CompositorCapabilities);
     fn wr_compositor_get_window_visibility(compositor: *mut c_void, caps: *mut WindowVisibility);
-    fn wr_compositor_bind_swapchain(compositor: *mut c_void, id: NativeSurfaceId);
-    fn wr_compositor_present_swapchain(compositor: *mut c_void, id: NativeSurfaceId);
     fn wr_compositor_map_tile(
         compositor: *mut c_void,
         id: NativeTileId,
@@ -1501,212 +1492,6 @@ impl Compositor for WrCompositor {
     }
 }
 
-struct NativeLayer {
-    id: NativeSurfaceId,
-    size: DeviceIntSize,
-    is_opaque: bool,
-    frames_since_used: usize,
-    usage: CompositorSurfaceUsage,
-}
-
-pub struct WrLayerCompositor {
-    compositor: *mut c_void,
-    next_layer_id: u64,
-    surface_pool: Vec<NativeLayer>,
-    visual_tree: Vec<NativeLayer>,
-}
-
-impl WrLayerCompositor {
-    fn new(compositor: *mut c_void) -> Self {
-        WrLayerCompositor {
-            compositor,
-            next_layer_id: 0,
-            surface_pool: Vec::new(),
-            visual_tree: Vec::new(),
-        }
-    }
-}
-
-impl LayerCompositor for WrLayerCompositor {
-    // Begin compositing a frame with the supplied input config
-    fn begin_frame(
-        &mut self,
-        input: &CompositorInputConfig,
-    ) {
-        unsafe {
-            wr_compositor_begin_frame(self.compositor);
-        }
-
-        assert!(self.visual_tree.is_empty());
-
-        for request in input.layers {
-            let size = request.clip_rect.size();
-
-            let existing_index = self.surface_pool.iter().position(|layer| {
-                layer.is_opaque == request.is_opaque &&
-                layer.usage.matches(&request.usage)
-            });
-
-            let mut layer = match existing_index {
-                Some(existing_index) => {
-                    let mut layer = self.surface_pool.swap_remove(existing_index);
-
-                    layer.frames_since_used = 0;
-
-                    // Copy across (potentially) updated external image id
-                    layer.usage = request.usage;
-
-                    layer
-                }
-                None => {
-                    let id = NativeSurfaceId(self.next_layer_id);
-                    self.next_layer_id += 1;
-
-                    unsafe {
-                        match request.usage {
-                            CompositorSurfaceUsage::Content => {
-                                wr_compositor_create_swapchain_surface(
-                                    self.compositor,
-                                    id,
-                                    size,
-                                    request.is_opaque,
-                                );
-                            }
-                            CompositorSurfaceUsage::External { .. } => {
-                                wr_compositor_create_external_surface(
-                                    self.compositor,
-                                    id,
-                                    request.is_opaque,
-                                );
-                            }
-                        }
-                    }
-
-                    NativeLayer {
-                        id,
-                        size,
-                        is_opaque: request.is_opaque,
-                        frames_since_used: 0,
-                        usage: request.usage,
-                    }
-                }
-            };
-
-            match layer.usage {
-                CompositorSurfaceUsage::Content => {
-                    if layer.size.width != size.width || layer.size.height != size.height {
-                        unsafe {
-                            wr_compositor_resize_swapchain(
-                                self.compositor,
-                                layer.id,
-                                size
-                            );
-                        }
-                        layer.size = size;
-                    }
-                }
-                CompositorSurfaceUsage::External { external_image_id, .. } => {
-                    unsafe {
-                        wr_compositor_attach_external_image(
-                            self.compositor,
-                            layer.id,
-                            external_image_id,
-                        );
-                    }
-                }
-            }
-
-            self.visual_tree.push(layer);
-        }
-
-        for layer in &mut self.surface_pool {
-            layer.frames_since_used += 1;
-        }
-    }
-
-    // Bind a layer by index for compositing into
-    fn bind_layer(&mut self, index: usize) {
-        let layer = &self.visual_tree[index];
-
-        unsafe {
-            wr_compositor_bind_swapchain(
-                self.compositor,
-                layer.id,
-            );
-        }
-    }
-
-    // Finish compositing a layer and present the swapchain
-    fn present_layer(&mut self, index: usize) {
-        let layer = &self.visual_tree[index];
-
-        unsafe {
-            wr_compositor_present_swapchain(
-                self.compositor,
-                layer.id,
-            );
-        }
-    }
-
-    fn add_surface(
-        &mut self,
-        index: usize,
-        transform: CompositorSurfaceTransform,
-        clip_rect: DeviceIntRect,
-        image_rendering: ImageRendering,
-    ) {
-        let layer = &self.visual_tree[index];
-
-        unsafe {
-            wr_compositor_add_surface(
-                self.compositor,
-                layer.id,
-                &transform,
-                clip_rect,
-                image_rendering,
-            );
-        }
-    }
-
-    // Finish compositing this frame
-    fn end_frame(&mut self) {
-        unsafe {
-            wr_compositor_end_frame(self.compositor);
-        }
-
-        // Destroy any unused surface pool entries
-        let mut layers_to_destroy = Vec::new();
-
-        self.surface_pool.retain(|layer| {
-            let keep = layer.frames_since_used < 3;
-
-            if !keep {
-                layers_to_destroy.push(layer.id);
-            }
-
-            keep
-        });
-
-        for layer_id in layers_to_destroy {
-            unsafe {
-                wr_compositor_destroy_surface(self.compositor, layer_id);
-            }
-        }
-
-        self.surface_pool.append(&mut self.visual_tree);
-    }
-}
-
-impl Drop for WrLayerCompositor {
-    fn drop(&mut self) {
-        for layer in self.surface_pool.iter().chain(self.visual_tree.iter()) {
-            unsafe {
-                wr_compositor_destroy_surface(self.compositor, layer.id);
-            }
-        }
-    }
-}
-
 extern "C" {
     fn wr_swgl_lock_composite_surface(
         ctx: *mut c_void,
@@ -1855,7 +1640,6 @@ pub extern "C" fn wr_window_new(
     low_quality_pinch_zoom: bool,
     max_shared_surface_size: i32,
     enable_subpixel_aa: bool,
-    use_layer_compositor: bool,
 ) -> bool {
     assert!(unsafe { is_in_render_thread() });
 
@@ -1918,19 +1702,13 @@ pub extern "C" fn wr_window_new(
         CompositorConfig::Native {
             compositor: Box::new(SwCompositor::new(
                 sw_gl.unwrap(),
-                    Box::new(WrCompositor(compositor)),
-                    use_native_compositor,
-                )),
-            }
+                Box::new(WrCompositor(compositor)),
+                use_native_compositor,
+            )),
+        }
     } else if use_native_compositor {
-        if use_layer_compositor {
-            CompositorConfig::Layer {
-                compositor: Box::new(WrLayerCompositor::new(compositor)),
-            }
-        } else {
-            CompositorConfig::Native {
-                compositor: Box::new(WrCompositor(compositor)),
-            }
+        CompositorConfig::Native {
+            compositor: Box::new(WrCompositor(compositor)),
         }
     } else {
         CompositorConfig::Draw {

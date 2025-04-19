@@ -765,6 +765,7 @@ function Set-DefaultHandlerRegistry($Association, $Path, $ProgID, $Hash, $RegRen
 nsresult SetDefaultExtensionHandlersUserChoiceImpl(
     const wchar_t* aAumi, const wchar_t* const aSid, const bool aRegRename,
     const nsTArray<nsString>& aFileExtensions) {
+<<<<<<< HEAD
 	
   // `GetCurrentPackageFullName` added in Windows 8.
   DynamicallyLinkedFunctionPtr<decltype(&GetCurrentPackageFullName)>
@@ -777,6 +778,18 @@ nsresult SetDefaultExtensionHandlersUserChoiceImpl(
   UINT32 pfnLen = 0;
   bool inMsix =
       pGetCurrentPackageFullName(&pfnLen, nullptr) != APPMODEL_ERROR_NO_PACKAGE;
+=======
+  static LONG (*plat_fn)(UINT32*, PWSTR);
+  if (!plat_fn) {
+    if (auto* module = GetModuleHandle(L"Kernel32.dll"); module) {
+      plat_fn = reinterpret_cast<decltype(plat_fn)>(
+          GetProcAddress(module, "GetCurrentPackageFullName"));
+    }
+  }
+  UINT32 pfnLen = 0;
+  bool inMsix =plat_fn ? 
+      ((*plat_fn)(&pfnLen, nullptr) != APPMODEL_ERROR_NO_PACKAGE) : false;
+>>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
 
   if (inMsix) {
     return SetDefaultExtensionHandlersUserChoiceImplMsix(

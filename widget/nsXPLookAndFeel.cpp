@@ -150,6 +150,11 @@ static const char sIntPrefs[][45] = {
     "ui.treeScrollLinesMax",
     "ui.chosenMenuItemsShouldBlink",
     "ui.windowsAccentColorInTitlebar",
+    "ui.windowsDefaultTheme",
+    "ui.dwmCompositor",
+    "ui.windowsClassic",
+    "ui.windowsGlass",
+    "ui.macGraphiteTheme",
     "ui.windowsMica",
     "ui.windowsDefaultTheme",
     "ui.dwmCompositor",
@@ -258,6 +263,7 @@ static const char sColorPrefs[][41] = {
     "ui.window",
     "ui.windowframe",
     "ui.windowtext",
+    "ui.-moz-buttondefault",
     "ui.-moz-default-color",
     "ui.-moz-default-background-color",
     "ui.-moz-dialog",
@@ -298,12 +304,8 @@ static const char sColorPrefs[][41] = {
     "ui.-moz-hyperlinktext",
     "ui.-moz-activehyperlinktext",
     "ui.-moz-visitedhyperlinktext",
-    "ui.-moz-colheader",
     "ui.-moz-colheadertext",
-    "ui.-moz-colheaderhover",
     "ui.-moz-colheaderhovertext",
-    "ui.-moz-colheaderactive",
-    "ui.-moz-colheaderactivetext",
     "ui.textSelectDisabledBackground",
     "ui.textSelectAttentionBackground",
     "ui.textSelectAttentionForeground",
@@ -499,7 +501,15 @@ bool LookAndFeel::WindowsNonNativeMenusEnabled() {
     case 1:
       return true;
     default:
+<<<<<<< HEAD
       return false;
+=======
+#ifdef XP_WIN
+      return IsWin10OrLater();
+#else
+      return false;
+#endif
+>>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
   }
 }
 
@@ -676,6 +686,7 @@ nscolor nsXPLookAndFeel::GetStandinForNativeColor(ColorID aID,
       // deprecated in CSS Color Level 4, same as Buttonborder:
       COLOR(Windowframe, 0xE3, 0xE3, 0xE3)
       COLOR(Windowtext, 0x00, 0x00, 0x00)
+      COLOR(MozButtondefault, 0x69, 0x69, 0x69)
       COLOR(Field, 0xFF, 0xFF, 0xFF)
       COLORA(MozDisabledfield, 0xFF, 0xFF, 0xFF, 128)
       COLOR(Fieldtext, 0x00, 0x00, 0x00)
@@ -766,12 +777,7 @@ Maybe<nscolor> nsXPLookAndFeel::GenericDarkColor(ColorID aID) {
     case ColorID::MozButtonactivetext:
     case ColorID::MozHeaderbartext:
     case ColorID::MozHeaderbarinactivetext:
-    case ColorID::Captiontext:
-    case ColorID::Inactivecaptiontext:  // TODO(emilio): Maybe make
                                         // Inactivecaptiontext Graytext?
-    case ColorID::MozColheadertext:
-    case ColorID::MozColheaderhovertext:
-    case ColorID::MozColheaderactivetext:
       color = kWindowText;
       break;
     case ColorID::Buttonshadow:
@@ -797,7 +803,6 @@ Maybe<nscolor> nsXPLookAndFeel::GenericDarkColor(ColorID aID) {
     case ColorID::Field:
     case ColorID::Buttonface:  // --in-content-button-background
     case ColorID::Buttonhighlight:
-    case ColorID::MozColheader:
     case ColorID::Threedface:
     case ColorID::MozCombobox:
     case ColorID::MozCellhighlighttext:
@@ -813,11 +818,9 @@ Maybe<nscolor> nsXPLookAndFeel::GenericDarkColor(ColorID aID) {
       color = NS_ComposeColors(kWindowBackground, NS_RGBA(43, 42, 51, 102));
       break;
     case ColorID::MozButtonhoverface:  // --in-content-button-background-hover
-    case ColorID::MozColheaderhover:
       color = NS_RGB(82, 82, 94);
       break;
     case ColorID::MozButtonactiveface:  // --in-content-button-background-active
-    case ColorID::MozColheaderactive:
       color = NS_RGB(91, 91, 102);
       break;
     case ColorID::Highlight:
@@ -842,14 +845,8 @@ Maybe<nscolor> nsXPLookAndFeel::GenericDarkColor(ColorID aID) {
       // other options too.
       color = NS_RGB(0xff, 0x66, 0x66);
       break;
-    case ColorID::Activeborder:
-    case ColorID::Inactiveborder:
-      color = NS_RGB(57, 57, 57);
-      break;
     case ColorID::MozHeaderbar:
     case ColorID::MozHeaderbarinactive:
-    case ColorID::Activecaption:
-    case ColorID::Inactivecaption:
       color = NS_RGB(28, 27, 34);
       break;
     case ColorID::MozAutofillBackground:

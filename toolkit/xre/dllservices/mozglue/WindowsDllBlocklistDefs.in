@@ -432,6 +432,9 @@ UTILITY_PROCESSES += [
     DllBlocklistEntry("ipseng32.dll", ALL_VERSIONS),
     DllBlocklistEntry("kwsui64.dll", ALL_VERSIONS),
 
+    # Messes with user32 and breaks Utility on Win7 x86
+    DllBlocklistEntry("aswhook.dll", ALL_VERSIONS, BLOCK_WIN7_AND_OLDER),
+
     # Causes crashes in the LPAC utility process for PlayReady, bug 1895174
     DllBlocklistEntry("WRusr.dll", ALL_VERSIONS),
 

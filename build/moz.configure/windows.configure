@@ -595,7 +595,11 @@ with only_when(depends(c_compiler)(lambda c: c.type == "clang-cl")):
     set_define("HAVE_IO_H", True)
 
     def win32_subsystem_version():
+<<<<<<< HEAD
         return "6.00"
+=======
+        return "5.01"
+>>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
 
     set_config(
         "WIN32_CONSOLE_EXE_LDFLAGS",

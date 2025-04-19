@@ -79,6 +79,10 @@ class nsComboboxControlFrame final : public nsBlockFrame,
   nscoord IntrinsicISize(const mozilla::IntrinsicSizeInput& aInput,
                          mozilla::IntrinsicISizeType aType) final;
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
   void Reflow(nsPresContext* aCX, ReflowOutput& aDesiredSize,
               const ReflowInput& aReflowInput, nsReflowStatus& aStatus) final;
 
@@ -220,6 +224,7 @@ class nsComboboxControlFrame final : public nsBlockFrame,
   int32_t mRecentSelectedIndex;
   int32_t mDisplayedIndex;
   nsString mDisplayedOptionTextOrPreview;
+
   RefPtr<mozilla::HTMLSelectEventListener> mEventListener;
 
   // See comment in HandleRedisplayTextEvent().

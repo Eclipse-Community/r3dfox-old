@@ -9,6 +9,7 @@ const lazy = {};
 
 ChromeUtils.defineESModuleGetters(lazy, {
   NimbusFeatures: "resource://nimbus/ExperimentAPI.sys.mjs",
+  WindowsRegistry: "resource://gre/modules/WindowsRegistry.sys.mjs",
   ASRouter: "resource:///modules/asrouter/ASRouter.sys.mjs",
   WindowsRegistry: "resource://gre/modules/WindowsRegistry.sys.mjs",
 });
@@ -395,6 +396,7 @@ let ShellServiceInternal = {
   },
 
   async setAsDefault() {
+    let claimAllTypes = true;
     let setAsDefaultError = false;
     if (AppConstants.platform == "win") {
       try {

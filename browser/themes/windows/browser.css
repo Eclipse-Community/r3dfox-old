@@ -7,15 +7,19 @@
 
 @namespace html url("http://www.w3.org/1999/xhtml");
 
+<<<<<<< HEAD
 :root {
   --sidebar-border-color: ThreeDLightShadow;
 }
 
+=======
+>>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
 #menubar-items {
   flex-direction: column; /* for flex hack */
   justify-content: normal; /* align the menubar to the top also in customize mode */
 }
 
+<<<<<<< HEAD
 #main-menubar > menu {
   appearance: none;
   color: inherit;
@@ -39,6 +43,24 @@
   @media not (-moz-platform: windows-modern) {
     #toolbar-menubar:not([lwtheme]):-moz-window-inactive {
       color: ThreeDShadow;
+=======
+@media (-moz-windows-accent-color-in-titlebar) or (-moz-windows-mica) {
+  :root[tabsintitlebar] {
+    @media (-moz-windows-mica) {
+      &:not([lwtheme]) {
+        background-color: transparent;
+
+        /* Accent color in titlebar overrides Mica. */
+        @media not (-moz-windows-accent-color-in-titlebar) {
+          /* Hide the Firefox buttons since Windows draws their own.
+           * FIXME(emilio): Find a way of hiding the native buttons, or make them
+           * taller, this is very hacky. */
+          .titlebar-buttonbox {
+            opacity: 0;
+          }
+        }
+      }
+>>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
     }
   }
 }
@@ -68,6 +90,7 @@
   }
 }
 
+<<<<<<< HEAD
 @media not (-moz-windows-compositor),
        not (-moz-windows-default-theme),
        (-moz-platform: windows-modern) {
@@ -80,6 +103,44 @@
 
   :root[tabsintitlebar]:not([lwtheme]):-moz-window-inactive {
     color: InactiveCaptionText;
+=======
+@media not (-moz-platform: windows-win7) {
+  @media not (-moz-platform: windows-win8) {
+    /* On Windows 10, when temporarily showing the menu bar, make it at least as
+     * tall as the tab bar such that the window controls don't appear to move up. */
+    :root[tabsintitlebar] #toolbar-menubar[autohide="true"] {
+      height: calc(var(--tab-min-height) - var(--tabs-navbar-shadow-size));
+    }
+    :root[tabsintitlebar][sizemode="normal"] #toolbar-menubar[autohide="true"] {
+      height: calc(var(--tab-min-height) - var(--tabs-navbar-shadow-size));
+    }
+  }
+}
+
+/* Add 4px extra margin on top of the tabs toolbar on Windows 7. */
+@media (-moz-platform: windows-win7) {
+  :root[sizemode="normal"][chromehidden~="menubar"] #TabsToolbar > .toolbar-items,
+  :root[sizemode="normal"] #toolbar-menubar[autohide="true"][inactive] ~ :is(#TabsToolbar, #nav-bar) > .toolbar-items {
+    padding-top: 4px;
+  }
+}
+/* Add a fog for background tabs to be visible on Windows 7 glass window background */
+@media (-moz-platform: windows-win7) {
+  @media (-moz-windows-default-theme) {
+    &:not([lwtheme]) #TabsToolbar {
+    isolation: isolate;
+    position: relative;
+     &::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  height: 100%;
+  width: 100%;
+      background-image: radial-gradient(ellipse at bottom, rgba(255,255,255,0.8), rgba(255,255,255,0.5) 80%, transparent);
+  z-index: -1;
+     }
+    }
+>>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
   }
 }
 
@@ -100,7 +161,11 @@
   }
 
   /* Add a window top border for webextension themes */
+<<<<<<< HEAD
   :root[lwtheme][tabsintitlebar][sizemode="normal"] #navigator-toolbox {
+=======
+  :root[tabsintitlebar][sizemode="normal"] #navigator-toolbox[lwtheme] {
+>>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
     background-image: linear-gradient(to bottom,
           ThreeDLightShadow 0, ThreeDLightShadow 1px,
           ThreeDHighlight 1px, ThreeDHighlight 2px,
@@ -112,18 +177,53 @@
   }
 }
 
+<<<<<<< HEAD
 /* Titlebar */
 
 :root[tabsintitlebar][sizemode="normal"] #titlebar {
+=======
+@media not (-moz-windows-compositor) {
+  #nav-bar[tabs-hidden="true"] {
+    box-shadow: none;
+  }
+}
+/* Titlebar */
+
+:root[tabsintitlebar][sizemode="normal"] .browser-titlebar {
+>>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
   appearance: auto;
   -moz-default-appearance: -moz-window-titlebar;
 }
 
+<<<<<<< HEAD
 :root[tabsintitlebar][sizemode="maximized"] #titlebar {
+=======
+:root[tabsintitlebar][sizemode="maximized"] .browser-titlebar {
+>>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
   appearance: auto;
   -moz-default-appearance: -moz-window-titlebar-maximized;
 }
 
+<<<<<<< HEAD
+=======
+@media not (-moz-windows-compositor) {
+  /**
+   * Anytime we're not using the compositor on Windows, the -moz-window-titlebar
+   * and -moz-window-titlebar-maximized values for -moz-appearance override
+   * backgrounds supplied by lwthemes. We make the #titlebar itself hidden, but
+   * it's children visible in order to hide the background but keep the margin and
+   * padding that comes from those -moz-window-titlebar rules.
+   */
+  :root:not([inFullscreen]) .browser-titlebar[lwtheme] {
+    visibility: hidden;
+  }
+  :root:not([inFullscreen], [chromehidden~="menubar"]) #toolbar-menubar[lwtheme],
+  :root:not([inFullscreen], [chromehidden~="toolbar"]) #TabsToolbar[lwtheme] {
+    visibility: visible;
+  }
+}
+
+>>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
 @media (-moz-windows-classic) {
   :root[tabsintitlebar][sizemode="normal"] #toolbar-menubar {
     margin-top: 4px;
@@ -150,7 +250,12 @@
   align-items: stretch;
 }
 
+<<<<<<< HEAD
 @media (-moz-platform: windows) {
+=======
+@media (-moz-platform: windows-win7),
+       (-moz-platform: windows-win8) {
+>>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
   /* Preserve window control buttons position at the top of the button box. */
   .titlebar-buttonbox-container {
     align-items: flex-start;
@@ -286,7 +391,11 @@
 }
 
 @media not (-moz-windows-default-theme) {
+<<<<<<< HEAD
   /* For high contrast themes. */
+=======
+  /* For high contrast themes. XXX is this needed anymore? */
+>>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
   #tabbrowser-tabpanels,
   :root[privatebrowsingmode=temporary] #tabbrowser-tabpanels {
     background-color: -moz-default-background-color;
@@ -343,6 +452,7 @@ menupopup[touchmode] :is(menu, menuitem, menucaption) {
   #context-navigation {
     background-color: menu;
   }
+<<<<<<< HEAD
 
   #context-sep-navigation {
     margin-inline-start: -28px;
@@ -435,4 +545,14 @@ menupopup[touchmode] :is(menu, menuitem, menucaption) {
   #context-sep-navigation {
     padding-inline: 0;
   }
+=======
+}
+
+@media (-moz-windows-non-native-menus) {
+/* Other menu separators don't extend all the way to the menu edges, but the
+   one below the navigation buttons in the content context menu should. */
+#context-sep-navigation {
+  padding-inline: 0;
+>>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
+}
 }

@@ -114,6 +114,18 @@ static GtkWidget* CreateFrameWidget() {
   return widget;
 }
 
+static GtkWidget* CreateToolbarWidget() {
+  GtkWidget* widget = gtk_toolbar_new();
+  gtk_container_add(GTK_CONTAINER(GetWidget(MOZ_GTK_GRIPPER)), widget);
+  return widget;
+}
+
+static GtkWidget* CreateToolbarSeparatorWidget() {
+  GtkWidget* widget = GTK_WIDGET(gtk_separator_tool_item_new());
+  AddToWindowContainer(widget);
+  return widget;
+}
+
 static GtkWidget* CreateButtonWidget() {
   GtkWidget* widget = gtk_button_new_with_label("M");
   AddToWindowContainer(widget);
@@ -386,6 +398,13 @@ static GtkWidget* CreateTreeHeaderCellWidget() {
 
   /* Use the middle column's header for our button */
   return gtk_tree_view_column_get_button(middleTreeViewColumn);
+}
+
+static GtkWidget* CreateTreeHeaderSortArrowWidget() {
+  /* TODO, but it can't be NULL */
+  GtkWidget* widget = gtk_button_new();
+  AddToWindowContainer(widget);
+  return widget;
 }
 
 static GtkWidget* CreateHPanedWidget() {
@@ -701,6 +720,12 @@ static GtkWidget* CreateWidget(WidgetNodeType aAppearance) {
       return CreateExpanderWidget();
     case MOZ_GTK_FRAME:
       return CreateFrameWidget();
+    case MOZ_GTK_GRIPPER:
+      return CreateGripperWidget();
+    case MOZ_GTK_TOOLBAR:
+      return CreateToolbarWidget();
+    case MOZ_GTK_TOOLBAR_SEPARATOR:
+      return CreateToolbarSeparatorWidget();
     case MOZ_GTK_SPINBUTTON:
       return CreateSpinWidget();
     case MOZ_GTK_BUTTON:
@@ -718,6 +743,8 @@ static GtkWidget* CreateWidget(WidgetNodeType aAppearance) {
       return CreateTreeViewWidget();
     case MOZ_GTK_TREE_HEADER_CELL:
       return CreateTreeHeaderCellWidget();
+    case MOZ_GTK_TREE_HEADER_SORTARROW:
+      return CreateTreeHeaderSortArrowWidget();
     case MOZ_GTK_SPLITTER_HORIZONTAL:
       return CreateHPanedWidget();
     case MOZ_GTK_SPLITTER_VERTICAL:
@@ -1037,6 +1064,10 @@ static GtkStyleContext* GetCssNodeStyleInternal(WidgetNodeType aNodeType) {
     case MOZ_GTK_PROGRESS_CHUNK:
       style = CreateChildCSSNode("progress", MOZ_GTK_PROGRESS_TROUGH);
       break;
+    case MOZ_GTK_GRIPPER:
+      // TODO - create from CSS node
+      style = CreateSubStyleWithClass(MOZ_GTK_GRIPPER, GTK_STYLE_CLASS_GRIP);
+      break;
     case MOZ_GTK_SPINBUTTON_ENTRY:
       // TODO - create from CSS node
       style =
@@ -1078,6 +1109,11 @@ static GtkStyleContext* GetCssNodeStyleInternal(WidgetNodeType aNodeType) {
     case MOZ_GTK_TREEVIEW_VIEW:
       // TODO - create from CSS node
       style = CreateSubStyleWithClass(MOZ_GTK_TREEVIEW, GTK_STYLE_CLASS_VIEW);
+      break;
+    case MOZ_GTK_TREEVIEW_EXPANDER:
+      // TODO - create from CSS node
+      style =
+          CreateSubStyleWithClass(MOZ_GTK_TREEVIEW, GTK_STYLE_CLASS_EXPANDER);
       break;
     case MOZ_GTK_SPLITTER_SEPARATOR_HORIZONTAL:
       style = CreateChildCSSNode("separator", MOZ_GTK_SPLITTER_HORIZONTAL);
@@ -1183,6 +1219,9 @@ static GtkStyleContext* GetWidgetStyleInternal(WidgetNodeType aNodeType) {
                                       GTK_STYLE_CLASS_PROGRESSBAR);
       gtk_style_context_remove_class(style, GTK_STYLE_CLASS_TROUGH);
       break;
+    case MOZ_GTK_GRIPPER:
+      style = CreateSubStyleWithClass(MOZ_GTK_GRIPPER, GTK_STYLE_CLASS_GRIP);
+      break;
     case MOZ_GTK_SPINBUTTON_ENTRY:
       style =
           CreateSubStyleWithClass(MOZ_GTK_SPINBUTTON, GTK_STYLE_CLASS_ENTRY);
@@ -1212,6 +1251,10 @@ static GtkStyleContext* GetWidgetStyleInternal(WidgetNodeType aNodeType) {
       return GetWidgetRootStyle(MOZ_GTK_FRAME);
     case MOZ_GTK_TREEVIEW_VIEW:
       style = CreateSubStyleWithClass(MOZ_GTK_TREEVIEW, GTK_STYLE_CLASS_VIEW);
+      break;
+    case MOZ_GTK_TREEVIEW_EXPANDER:
+      style =
+          CreateSubStyleWithClass(MOZ_GTK_TREEVIEW, GTK_STYLE_CLASS_EXPANDER);
       break;
     case MOZ_GTK_SPLITTER_SEPARATOR_HORIZONTAL:
       style = CreateSubStyleWithClass(MOZ_GTK_SPLITTER_HORIZONTAL,

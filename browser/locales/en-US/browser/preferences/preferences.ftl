@@ -228,6 +228,11 @@ r3dfox-modern =
 
 r3dfox-modern-desc = Enable for standard Firefox Windows 10 UI on all platforms.
 
+r3dfox-csp =
+    .label = Disable Content Security Policy (CSP)
+
+r3dfox-csp-desc = CSP is a security feature, improperly designed websites may require disabling CSP.  Not recommended unless you know what you are doing.
+
 r3dfox-e10s =
     .label = Disable content multiprocess (e10s) (BETA)
 

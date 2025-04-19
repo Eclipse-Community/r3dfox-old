@@ -51,6 +51,7 @@ InProcessWinCompositorWidget::InProcessWinCompositorWidget(
       mWindow(aWindow),
       mWnd(reinterpret_cast<HWND>(aInitData.hWnd())),
       mTransparentSurfaceLock("mTransparentSurfaceLock"),
+      mTransparencyMode(uint32_t(aInitData.transparencyMode())),
       mMemoryDC(nullptr),
       mCompositeDC(nullptr),
       mLockedBackBufferData(nullptr) {
@@ -79,6 +80,8 @@ bool InProcessWinCompositorWidget::OnWindowResize(
 bool InProcessWinCompositorWidget::DrawsToMemoryDC() const {
   return ::GetWindowLongPtrW(mWnd, GWL_EXSTYLE) & WS_EX_LAYERED;
 }
+
+void InProcessWinCompositorWidget::OnWindowModeChange(nsSizeMode aSizeMode) {}
 
 bool InProcessWinCompositorWidget::PreRender(WidgetRenderingContext* aContext) {
   // This can block waiting for WM_SETTEXT to finish
@@ -268,7 +271,7 @@ void InProcessWinCompositorWidget::UpdateTransparency(TransparencyMode aMode) {
     return;
   }
 
-  SetTransparencyMode(aMode);
+  mTransparencyMode = uint32_t(aMode);
   mTransparentSurface = nullptr;
   mMemoryDC = nullptr;
 
@@ -278,13 +281,25 @@ void InProcessWinCompositorWidget::UpdateTransparency(TransparencyMode aMode) {
 }
 
 void InProcessWinCompositorWidget::NotifyVisibilityUpdated(
-    bool aIsFullyOccluded) {
+    nsSizeMode aSizeMode, bool aIsFullyOccluded) {
+  mSizeMode = aSizeMode;
   mIsFullyOccluded = aIsFullyOccluded;
+}
+
+nsSizeMode InProcessWinCompositorWidget::GetWindowSizeMode() const {
+  nsSizeMode sizeMode = mSizeMode;
+  return sizeMode;
 }
 
 bool InProcessWinCompositorWidget::GetWindowIsFullyOccluded() const {
   bool isFullyOccluded = mIsFullyOccluded;
   return isFullyOccluded;
+}
+
+bool InProcessWinCompositorWidget::HasGlass() const {
+  MOZ_ASSERT(layers::CompositorThreadHolder::IsInCompositorThread() ||
+             wr::RenderThread::IsInRenderThread());
+  return TransparencyModeIs(TransparencyMode::BorderlessGlass);
 }
 
 void InProcessWinCompositorWidget::ClearTransparentWindow() {

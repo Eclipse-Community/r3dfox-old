@@ -546,14 +546,7 @@ void nsBaseWidget::Destroy() {
 
 nsIWidget* nsIWidget::GetTopLevelWidget() {
   auto* cur = this;
-  while (true) {
-    if (cur->IsTopLevelWidget()) {
-      break;
-    }
-    nsIWidget* parent = cur->GetParent();
-    if (!parent) {
-      break;
-    }
+  while (nsIWidget* parent = cur->GetParent()) {
     cur = parent;
   }
   return cur;
@@ -1801,6 +1794,12 @@ nsresult nsBaseWidget::GetRestoredBounds(LayoutDeviceIntRect& aRect) {
 LayoutDeviceIntPoint nsBaseWidget::GetClientOffset() {
   return LayoutDeviceIntPoint(0, 0);
 }
+
+nsresult nsBaseWidget::SetNonClientMargins(const LayoutDeviceIntMargin&) {
+  return NS_ERROR_NOT_IMPLEMENTED;
+}
+
+void nsBaseWidget::SetResizeMargin(LayoutDeviceIntCoord aResizeMargin) {}
 
 uint32_t nsBaseWidget::GetMaxTouchPoints() const { return 0; }
 

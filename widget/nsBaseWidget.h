@@ -257,9 +257,11 @@ class nsBaseWidget : public nsIWidget, public nsSupportsWeakReference {
   LayoutDeviceIntRect GetClientBounds() override;
   LayoutDeviceIntRect GetScreenBounds() override;
   [[nodiscard]] nsresult GetRestoredBounds(LayoutDeviceIntRect& aRect) override;
+  nsresult SetNonClientMargins(const LayoutDeviceIntMargin&) override;
   LayoutDeviceIntPoint GetClientOffset() override;
   void EnableDragDrop(bool aEnable) override {};
   nsresult AsyncEnableDragDrop(bool aEnable) override;
+  void SetResizeMargin(mozilla::LayoutDeviceIntCoord aResizeMargin) override;
   [[nodiscard]] nsresult GetAttention(int32_t aCycleCount) override {
     return NS_OK;
   }
@@ -359,6 +361,13 @@ class nsBaseWidget : public nsIWidget, public nsSupportsWeakReference {
   bool IsSmallPopup() const;
 
   PopupLevel GetPopupLevel() { return mPopupLevel; }
+
+  // return true if this is a popup widget with a native titlebar
+  bool IsPopupWithTitleBar() const {
+    return (mWindowType == WindowType::Popup &&
+            mBorderStyle != BorderStyle::Default &&
+            mBorderStyle & BorderStyle::Title);
+  }
 
   const SizeConstraints GetSizeConstraints() override;
   void SetSizeConstraints(const SizeConstraints& aConstraints) override;

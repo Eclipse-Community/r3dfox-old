@@ -36,6 +36,11 @@ enum class PopupLevel : uint8_t {
   // The popup appears just above its parent and maintains its position
   // relative to the parent.
   Parent,
+  // The popup is a floating popup used for tool palettes. A parent window must
+  // be specified, but a platform implementation need not use this. On Windows,
+  // floating is generally equivalent to parent. On Mac, floating puts the
+  // popup at toplevel, but it will hide when the application is deactivated.
+  Floating,
   // The popup appears on top of other windows, including those of other
   // applications.
   Top,
@@ -68,8 +73,11 @@ enum class BorderStyle : int16_t {
 MOZ_MAKE_ENUM_CLASS_BITWISE_OPERATORS(BorderStyle)
 
 enum class TransparencyMode : uint8_t {
-  Opaque = 0,   // Fully opaque
-  Transparent,  // Parts of the window may be transparent
+  Opaque = 0,       // Fully opaque
+  Transparent,      // Parts of the window may be transparent
+  BorderlessGlass,  // Transparent parts of the window has windows 7
+                    // glass effect, without a border around opaque
+                    // areas.
   // If you add to the end here, you must update the serialization code in
   // WidgetMessageUtils.h
 };

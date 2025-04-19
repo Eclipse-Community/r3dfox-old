@@ -663,7 +663,7 @@ nsBrowserContentHandler.prototype = {
       // is an implementation of an interface method and changing it to be async would be complicated
       // and ultimately nothing here needs the result of setDefaultBrowser, so we do not bother doing
       // an await.
-      lazy.ShellService.setDefaultBrowser(true).catch(e => {
+      lazy.ShellService.setDefaultBrowser(true, true).catch(e => {
         console.error("setDefaultBrowser failed:", e);
       });
     }
@@ -1192,6 +1192,20 @@ nsBrowserContentHandler.prototype = {
       ) {
         throw Components.Exception("", Cr.NS_ERROR_ABORT);
       }
+      var isDefault = false;
+      try {
+        var url =
+          Services.urlFormatter.formatURLPref("app.support.baseURL") +
+          "win10-default-browser";
+        if (urlParam == url) {
+          isDefault = lazy.ShellService.isDefaultBrowser(false, false);
+        }
+      } catch (ex) {}
+      if (isDefault) {
+        // Firefox is already the default HTTP handler.
+        // We don't have to show the instruction page.
+        throw Components.Exception("", Cr.NS_ERROR_ABORT);
+      }
     }
   },
 };
@@ -1608,7 +1622,7 @@ nsDefaultCommandLineHandler.prototype = {
       }
     } else if (!cmdLine.preventDefault) {
       if (
-        AppConstants.platform == "win" &&
+        AppConstants.isPlatformAndVersionAtLeast("win", "10") &&
         cmdLine.state != Ci.nsICommandLine.STATE_INITIAL_LAUNCH &&
         lazy.WindowsUIUtils.inWin10TabletMode
       ) {

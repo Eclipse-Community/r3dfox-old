@@ -6114,13 +6114,6 @@
   mirror: always
 #endif
 
-# If true, open system preferences for the user when geolocation is requested
-# by the user but OS geolocation permission is not available.
-- name: geo.prompt.open_system_prefs
-  type: bool
-  value: true
-  mirror: always
-
 #---------------------------------------------------------------------------
 # Prefs starting with "gfx."
 #---------------------------------------------------------------------------
@@ -6442,6 +6435,11 @@
 - name: gfx.color_management.rec2020_gamma_as_rec709
   type: RelaxedAtomicBool
   value: true # Match naive behavior, but hopefully we can stop soon!
+  mirror: always
+
+- name: gfx.compositor.clearstate
+  type: RelaxedAtomicBool
+  value: false
   mirror: always
 
 # Whether GL contexts can be migrated to a different GPU (to match the one the
@@ -7205,15 +7203,6 @@
 #endif
   mirror: once
 
-#ifdef NIGHTLY_BUILD
-  # Keep this pref hidden on non-nightly builds to avoid people accidentally
-  # turning it on.
-- name: gfx.webrender.layer-compositor
-  type: bool
-  value: false
-  mirror: once
-#endif
-
 - name: gfx.webrender.scissored-cache-clears.enabled
   type: bool
   value: true
@@ -7337,6 +7326,10 @@
     type: RelaxedAtomicBool
     value: false
     mirror: always
+-   name: gfx.video.convert-i420-to-nv12.force-enabled
+    type: bool
+    value: false
+    mirror: once
 -   name: gfx.video.convert-yuv-to-nv12.image-host-win
     type: RelaxedAtomicBool
     value: true
@@ -9689,6 +9682,13 @@
   mirror: always
   rust: true
 
+# Is support for CSS overflow: overlay enabled
+- name: layout.css.overflow-overlay.enabled
+  type: RelaxedAtomicBool
+  value: true
+  mirror: always
+  rust: true
+
 # Is support for overscroll-behavior enabled?
 - name: layout.css.overscroll-behavior.enabled
   type: bool
@@ -11343,6 +11343,11 @@
 -   name: media.wmf.dxva.max-videos
     type: RelaxedAtomicUint32
     value: 8
+    mirror: always
+
+-   name: media.wmf.dxva.d3d9.amd-pre-uvd4.disabled
+    type: RelaxedAtomicBool
+    value: true
     mirror: always
 
 -   name: media.wmf.use-nv12-format
@@ -16069,6 +16074,7 @@
   # Run content processes in headless mode and disallow
   # connections to the X server.  Requires:
   # * `webgl.out-of-process` (or else WebGL breaks)
+  # * `widget.non-native-theme.enabled` (scrollbars & form controls)
   # Changing it requires a restart because sandbox policy information
   # dependent on it is cached.  See bug 1640345 for details.
 - name: security.sandbox.content.headless
@@ -16276,6 +16282,17 @@
   type: bool
   value: false
   mirror: once
+
+# On Windows 8.1, if the following preference is 2, we will attempt to detect
+# whether the Family Safety TLS interception feature has been enabled.
+# If so, we will behave as if the enterprise roots feature has been enabled
+# (i.e. import and trust third party root certificates from the OS).
+# With any other value of the pref or on any other platform, this does nothing.
+# This preference takes precedence over "security.enterprise_roots.enabled".
+- name: security.family_safety.mode
+  type: RelaxedAtomicUint32
+  value: 2
+  mirror: always
 
 # Whether or not to import and trust third party root certificates from the OS.
 - name: security.enterprise_roots.enabled
@@ -17740,6 +17757,15 @@
 # Prefs starting with "widget."
 #---------------------------------------------------------------------------
 
+# Global user preference for disabling native theme in content processes.
+#
+# NOTE(emilio): When changing this make sure to update the non_native_theme
+# entry in python/mozbuild/mozbuild/mozinfo.py and test_fission_autostart.py
+- name: widget.non-native-theme.enabled
+  type: RelaxedAtomicBool
+  value: true
+  mirror: always
+
 # Whether the non-native theme should always use system colors. Useful mostly
 # for testing forced colors mode.
 - name: widget.non-native-theme.always-high-contrast
@@ -18203,13 +18229,6 @@
   value: true
   mirror: always
 
-# Whether PiP windows have window decorations (borders and shadows).
-# Off for now while we fix bug 1934760 and related issues.
-- name: widget.windows.pip-decorations.enabled
-  type: bool
-  value: false
-  mirror: always
-
 # Whether we use the accent color for highlight as some other UWP apps do.
 #
 # false for now since it can cause some contrast-with-background issues
@@ -18257,6 +18276,19 @@
 #  *  3: remotely, falling back to locally except on crashes
 #  * -1: locally, no fallback
 - name: widget.windows.utility_process_file_picker
+  type: RelaxedAtomicInt32
+  value: 0
+  mirror: always
+
+# Whether to apply a workaround intended to prevent Windows from treating
+# non-foreground-marked fullscreen windows as fullscreen on Windows 7 and
+# earlier. (See bug 1732517.)
+#
+# Valid values:
+#  * -1: the workaround is never used.
+#  *  1: the workaround is always used.
+#  *  0: the workaround is used if we think it should be. (Default.)
+- name: widget.windows.fullscreen_marking_workaround
   type: RelaxedAtomicInt32
   value: 0
   mirror: always

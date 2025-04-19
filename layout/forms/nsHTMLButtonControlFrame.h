@@ -7,13 +7,16 @@
 #ifndef nsHTMLButtonControlFrame_h___
 #define nsHTMLButtonControlFrame_h___
 
+#include "mozilla/Attributes.h"
 #include "nsContainerFrame.h"
-#include "nsCSSRenderingBorders.h"
+#include "nsIFormControlFrame.h"
+#include "nsButtonFrameRenderer.h"
 
 class gfxContext;
 class nsPresContext;
 
-class nsHTMLButtonControlFrame : public nsContainerFrame {
+class nsHTMLButtonControlFrame : public nsContainerFrame,
+                                 public nsIFormControlFrame {
  public:
   explicit nsHTMLButtonControlFrame(ComputedStyle* aStyle,
                                     nsPresContext* aPresContext)
@@ -67,6 +70,10 @@ class nsHTMLButtonControlFrame : public nsContainerFrame {
   }
 #endif
 
+  // nsIFormControlFrame
+  void SetFocus(bool aOn, bool aRepaint) override;
+  nsresult SetFormProperty(nsAtom* aName, const nsAString& aValue) override;
+
   // Inserted child content gets its frames parented by our child block
   nsContainerFrame* GetContentInsertionFrame() override {
     return PrincipalChildList().FirstChild()->GetContentInsertionFrame();
@@ -75,14 +82,6 @@ class nsHTMLButtonControlFrame : public nsContainerFrame {
   // Return the ::-moz-button-content anonymous box.
   void AppendDirectlyOwnedAnonBoxes(nsTArray<OwnedAnonBox>& aResult) override;
 
-  mozilla::Maybe<nsCSSBorderRenderer> CreateInnerFocusBorderRenderer(
-      nsDisplayListBuilder* aBuilder, gfxContext* aRenderingContext,
-      const nsRect& aDirtyRect, const nsRect& aRect, bool* aBorderIsEmpty);
-
-  void PaintInnerFocusBorder(nsDisplayListBuilder* aBuilder,
-                             gfxContext& aRenderingContext,
-                             const nsRect& aDirtyRect, const nsRect& aRect);
-
  protected:
   nsHTMLButtonControlFrame(ComputedStyle* aStyle, nsPresContext* aPresContext,
                            nsIFrame::ClassID aID);
@@ -90,7 +89,7 @@ class nsHTMLButtonControlFrame : public nsContainerFrame {
   // Indicates whether we should clip our children's painting to our
   // border-box (either because of "overflow" or because of legacy reasons
   // about how <input>-flavored buttons work).
-  bool ShouldClipPaintingToBorderBox() const;
+  bool ShouldClipPaintingToBorderBox();
 
   // Reflows the button's sole child frame, and computes the desired size
   // of the button itself from the results.
@@ -104,7 +103,7 @@ class nsHTMLButtonControlFrame : public nsContainerFrame {
       mozilla::WritingMode aWM,
       BaselineSharingGroup aBaselineGroup) const override;
 
-  RefPtr<mozilla::ComputedStyle> mInnerFocusStyle;
+  nsButtonFrameRenderer mRenderer;
 };
 
 #endif

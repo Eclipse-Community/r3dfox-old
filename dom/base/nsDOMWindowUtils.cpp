@@ -292,30 +292,6 @@ CompositorBridgeChild* nsDOMWindowUtils::GetCompositorBridge() {
   return nullptr;
 }
 
-nsresult nsDOMWindowUtils::GetWidgetOpaqueRegion(
-    nsTArray<RefPtr<DOMRect>>& aRects) {
-  nsIWidget* widget = GetWidget();
-  if (!widget) {
-    return NS_ERROR_FAILURE;
-  }
-  auto AddRect = [&](const LayoutDeviceIntRect& aRect) {
-    RefPtr rect = new DOMRect(mWindow);
-    CSSRect cssRect = aRect / widget->GetDefaultScale();
-    rect->SetRect(cssRect.x, cssRect.y, cssRect.width, cssRect.height);
-    aRects.AppendElement(std::move(rect));
-  };
-  if (widget->GetTransparencyMode() == TransparencyMode::Opaque) {
-    AddRect(
-        LayoutDeviceIntRect(LayoutDeviceIntPoint(), widget->GetClientSize()));
-    return NS_OK;
-  }
-  auto region = widget->GetOpaqueRegionForTesting();
-  for (auto iter = region.RectIter(); !iter.Done(); iter.Next()) {
-    AddRect(iter.Get());
-  }
-  return NS_OK;
-}
-
 NS_IMETHODIMP
 nsDOMWindowUtils::GetLastOverWindowPointerLocationInCSSPixels(float* aX,
                                                               float* aY) {
@@ -4212,27 +4188,32 @@ nsDOMWindowUtils::PostRestyleSelfEvent(Element* aElement) {
 }
 
 NS_IMETHODIMP
-nsDOMWindowUtils::SetCustomTitlebar(bool aCustomTitlebar) {
-  // TODO(emilio): Can't we use nsDOMWindowUtils::GetWidget()?
-  if (nsCOMPtr<nsPIDOMWindowOuter> window = do_QueryReferent(mWindow)) {
-    if (nsCOMPtr<nsIBaseWindow> baseWindow =
-            do_QueryInterface(window->GetDocShell())) {
+nsDOMWindowUtils::SetChromeMargin(int32_t aTop, int32_t aRight, int32_t aBottom,
+                                  int32_t aLeft) {
+  nsCOMPtr<nsPIDOMWindowOuter> window = do_QueryReferent(mWindow);
+  if (window) {
+    nsCOMPtr<nsIBaseWindow> baseWindow =
+        do_QueryInterface(window->GetDocShell());
+    if (baseWindow) {
       nsCOMPtr<nsIWidget> widget;
       baseWindow->GetMainWidget(getter_AddRefs(widget));
       if (widget) {
-        widget->SetCustomTitlebar(aCustomTitlebar);
+        LayoutDeviceIntMargin margins(aTop, aRight, aBottom, aLeft);
+        return widget->SetNonClientMargins(margins);
       }
     }
   }
+
   return NS_OK;
 }
 
 NS_IMETHODIMP
 nsDOMWindowUtils::SetResizeMargin(int32_t aResizeMargin) {
-  // TODO(emilio): Can't we use nsDOMWindowUtils::GetWidget()?
-  if (nsCOMPtr<nsPIDOMWindowOuter> window = do_QueryReferent(mWindow)) {
-    if (nsCOMPtr<nsIBaseWindow> baseWindow =
-            do_QueryInterface(window->GetDocShell())) {
+  nsCOMPtr<nsPIDOMWindowOuter> window = do_QueryReferent(mWindow);
+  if (window) {
+    nsCOMPtr<nsIBaseWindow> baseWindow =
+        do_QueryInterface(window->GetDocShell());
+    if (baseWindow) {
       nsCOMPtr<nsIWidget> widget;
       baseWindow->GetMainWidget(getter_AddRefs(widget));
       if (widget) {

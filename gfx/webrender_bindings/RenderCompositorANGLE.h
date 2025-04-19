@@ -32,7 +32,7 @@ namespace wr {
 
 class DCLayerTree;
 
-class RenderCompositorANGLE final : public RenderCompositor {
+class RenderCompositorANGLE : public RenderCompositor {
  public:
   static UniquePtr<RenderCompositor> Create(
       const RefPtr<widget::CompositorWidget>& aWidget, nsACString& aError);
@@ -86,8 +86,6 @@ class RenderCompositorANGLE final : public RenderCompositor {
             wr::DeviceIntRect aDirtyRect,
             wr::DeviceIntRect aValidRect) override;
   void Unbind() override;
-  void BindSwapChain(wr::NativeSurfaceId aId) override;
-  void PresentSwapChain(wr::NativeSurfaceId aId) override;
   void CreateSurface(wr::NativeSurfaceId aId, wr::DeviceIntPoint aVirtualOffset,
                      wr::DeviceIntSize aTileSize, bool aIsOpaque) override;
   void CreateExternalSurface(wr::NativeSurfaceId aId, bool aIsOpaque) override;
@@ -96,10 +94,6 @@ class RenderCompositorANGLE final : public RenderCompositor {
   void DestroyTile(wr::NativeSurfaceId aId, int32_t aX, int32_t aY) override;
   void AttachExternalImage(wr::NativeSurfaceId aId,
                            wr::ExternalImageId aExternalImage) override;
-  void CreateSwapChainSurface(wr::NativeSurfaceId aId, wr::DeviceIntSize aSize,
-                              bool aIsOpaque) override;
-  void ResizeSwapChainSurface(wr::NativeSurfaceId aId,
-                              wr::DeviceIntSize aSize) override;
   void AddSurface(wr::NativeSurfaceId aId,
                   const wr::CompositorSurfaceTransform& aTransform,
                   wr::DeviceIntRect aClipRect,
@@ -118,8 +112,7 @@ class RenderCompositorANGLE final : public RenderCompositor {
                      bool* aNeedsYFlip) override;
 
  protected:
-  bool UseCompositor() const;
-  bool RecreateNonNativeCompositorSwapChain();
+  bool UseCompositor();
   void InitializeUsePartialPresent();
   void InsertGraphicsCommandsFinishedWaitQuery(
       RenderedFrameId aRenderedFrameId);
@@ -131,21 +124,22 @@ class RenderCompositorANGLE final : public RenderCompositor {
   bool CreateSwapChain(nsACString& aError);
   void CreateSwapChainForDCompIfPossible();
   bool CreateSwapChainForHWND();
-  RefPtr<IDXGISwapChain1> CreateSwapChainForDComp(bool aUseTripleBuffering);
+  RefPtr<IDXGISwapChain1> CreateSwapChainForDComp(bool aUseTripleBuffering,
+                                                  bool aUseAlpha);
   RefPtr<ID3D11Query> GetD3D11Query();
   void ReleaseNativeCompositorResources();
   HWND GetCompositorHwnd();
-  bool ShouldUseAlpha() const;
 
   RefPtr<IDXGIDevice> DXGIDevice();
   RefPtr<IDXGIFactory> DXGIFactory();
 
   RefPtr<gl::GLContext> mGL;
 
-  EGLConfig mEGLConfig = nullptr;
-  EGLSurface mEGLSurface = nullptr;
+  EGLConfig mEGLConfig;
+  EGLSurface mEGLSurface;
 
-  bool mUseTripleBuffering = false;
+  bool mUseTripleBuffering;
+  bool mUseAlpha;
 
   RefPtr<ID3D11Device> mDevice;
   RefPtr<ID3D11DeviceContext> mCtx;
@@ -160,14 +154,12 @@ class RenderCompositorANGLE final : public RenderCompositor {
   RenderedFrameId mLastCompletedFrameId;
 
   Maybe<LayoutDeviceIntSize> mBufferSize;
-  bool mUseNativeCompositor = true;
-  bool mUsePartialPresent = false;
-  bool mFullRender = false;
+  bool mUseNativeCompositor;
+  bool mUsePartialPresent;
+  bool mFullRender;
   // Used to know a timing of disabling native compositor.
-  bool mDisablingNativeCompositor = false;
+  bool mDisablingNativeCompositor;
   bool mFirstPresent = true;
-  // Wether we're currently using alpha.
-  bool mSwapChainUsingAlpha = false;
 };
 
 }  // namespace wr

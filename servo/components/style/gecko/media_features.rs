@@ -534,6 +534,10 @@ fn eval_moz_print_preview(context: &Context) -> bool {
     is_print_preview
 }
 
+fn eval_moz_non_native_content_theme(context: &Context) -> bool {
+    unsafe { bindings::Gecko_MediaFeatures_ShouldAvoidNativeTheme(context.device().document()) }
+}
+
 fn eval_moz_is_resource_document(context: &Context) -> bool {
     unsafe { bindings::Gecko_MediaFeatures_IsResourceDocument(context.device().document()) }
 }
@@ -555,6 +559,12 @@ pub enum Platform {
     Macos,
     /// Matches any Windows version.
     Windows,
+    /// Matches only Windows 7.
+    WindowsWin7,
+    /// Matches only Windows 8.
+    WindowsWin8,
+    /// Matches windows 10 and actually matches windows 11 too, as of right now.
+    WindowsWin10,
 }
 
 fn eval_moz_platform(_: &Context, query_value: Option<Platform>) -> bool {
@@ -611,6 +621,10 @@ fn eval_scripting(context: &Context, query_value: Option<Scripting>) -> bool {
         Some(v) => v == scripting,
         None => scripting != Scripting::None,
     }
+}
+
+fn eval_moz_windows_non_native_menus(context: &Context) -> bool {
+    unsafe { bindings::Gecko_MediaFeatures_WindowsNonNativeMenus(context.device().document()) }
 }
 
 fn eval_moz_overlay_scrollbars(context: &Context) -> bool {
@@ -671,7 +685,7 @@ macro_rules! lnf_int_feature {
 /// to support new types in these entries and (2) ensuring that either
 /// nsPresContext::MediaFeatureValuesChanged is called when the value that
 /// would be returned by the evaluator function could change.
-pub static MEDIA_FEATURES: [QueryFeatureDescription; 61] = [
+pub static MEDIA_FEATURES: [QueryFeatureDescription; 68] = [
     feature!(
         atom!("width"),
         AllowsRanges::Yes,
@@ -931,6 +945,18 @@ pub static MEDIA_FEATURES: [QueryFeatureDescription; 61] = [
         FeatureFlags::CHROME_AND_UA_ONLY,
     ),
     feature!(
+        atom!("-moz-non-native-content-theme"),
+        AllowsRanges::No,
+        Evaluator::BoolInteger(eval_moz_non_native_content_theme),
+        FeatureFlags::CHROME_AND_UA_ONLY,
+    ),
+    feature!(
+        atom!("-moz-windows-non-native-menus"),
+        AllowsRanges::No,
+        Evaluator::BoolInteger(eval_moz_windows_non_native_menus),
+        FeatureFlags::CHROME_AND_UA_ONLY,
+    ),
+    feature!(
         atom!("-moz-overlay-scrollbars"),
         AllowsRanges::No,
         Evaluator::BoolInteger(eval_moz_overlay_scrollbars),
@@ -963,12 +989,17 @@ pub static MEDIA_FEATURES: [QueryFeatureDescription; 61] = [
         get_scrollbar_end_forward
     ),
     lnf_int_feature!(atom!("-moz-menubar-drag"), MenuBarDrag),
+    lnf_int_feature!(atom!("-moz-windows-default-theme"), WindowsDefaultTheme),
+    lnf_int_feature!(atom!("-moz-mac-graphite-theme"), MacGraphiteTheme),
     lnf_int_feature!(atom!("-moz-mac-big-sur-theme"), MacBigSurTheme),
     lnf_int_feature!(atom!("-moz-mac-rtl"), MacRTL),
     lnf_int_feature!(
         atom!("-moz-windows-accent-color-in-titlebar"),
         WindowsAccentColorInTitlebar
     ),
+    lnf_int_feature!(atom!("-moz-windows-compositor"), DWMCompositor),
+    lnf_int_feature!(atom!("-moz-windows-classic"), WindowsClassic),
+    lnf_int_feature!(atom!("-moz-windows-glass"), WindowsGlass),
     lnf_int_feature!(atom!("-moz-windows-mica"), WindowsMica),
     lnf_int_feature!(atom!("-moz-swipe-animation-enabled"), SwipeAnimationEnabled),
     lnf_int_feature!(atom!("-moz-gtk-csd-available"), GTKCSDAvailable),

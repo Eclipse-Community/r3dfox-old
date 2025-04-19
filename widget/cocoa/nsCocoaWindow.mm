@@ -2452,7 +2452,18 @@ void nsCocoaWindow::SetDrawsTitle(bool aDrawTitle) {
   NS_OBJC_END_TRY_IGNORE_BLOCK;
 }
 
-void nsCocoaWindow::SetCustomTitlebar(bool aState) {
+nsresult nsCocoaWindow::SetNonClientMargins(
+    const LayoutDeviceIntMargin& margins) {
+  NS_OBJC_BEGIN_TRY_BLOCK_RETURN;
+
+  SetDrawsInTitlebar(margins.top == 0);
+
+  return NS_OK;
+
+  NS_OBJC_END_TRY_BLOCK_RETURN(NS_ERROR_FAILURE);
+}
+
+void nsCocoaWindow::SetDrawsInTitlebar(bool aState) {
   NS_OBJC_BEGIN_TRY_IGNORE_BLOCK;
 
   if (mWindow) {
@@ -2533,10 +2544,18 @@ void nsCocoaWindow::SetPopupWindowLevel() {
   if (!mWindow) {
     return;
   }
-  // Otherwise, this is a top-level or parent popup. Parent popups always
-  // appear just above their parent and essentially ignore the level.
-  mWindow.level = NSPopUpMenuWindowLevel;
-  mWindow.hidesOnDeactivate = NO;
+
+  // Floating popups are at the floating level and hide when the window is
+  // deactivated.
+  if (mPopupLevel == PopupLevel::Floating) {
+    mWindow.level = NSFloatingWindowLevel;
+    mWindow.hidesOnDeactivate = YES;
+  } else {
+    // Otherwise, this is a top-level or parent popup. Parent popups always
+    // appear just above their parent and essentially ignore the level.
+    mWindow.level = NSPopUpMenuWindowLevel;
+    mWindow.hidesOnDeactivate = NO;
+  }
 }
 
 void nsCocoaWindow::SetInputContext(const InputContext& aContext,

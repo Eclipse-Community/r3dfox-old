@@ -28,6 +28,7 @@
 #include "mozilla/StaticPrefs_media.h"
 #include "mozilla/SyncRunnable.h"
 #include "mozilla/Telemetry.h"
+#include "mozilla/WindowsVersion.h"
 #include "mozilla/gfx/DeviceManagerDx.h"
 #include "mozilla/gfx/gfxVars.h"
 #include "mozilla/layers/LayersTypes.h"
@@ -45,6 +46,35 @@ using mozilla::layers::LayersBackend;
 using mozilla::media::TimeUnit;
 
 namespace mozilla {
+
+static bool IsWin7H264Decoder4KCapable() {
+  WCHAR systemPath[MAX_PATH + 1];
+  if (!ConstructSystem32Path(L"msmpeg2vdec.dll", systemPath, MAX_PATH + 1)) {
+    // Cannot build path -> Assume it's the old DLL or it's missing.
+    return false;
+  }
+
+  DWORD zero;
+  DWORD infoSize = GetFileVersionInfoSizeW(systemPath, &zero);
+  if (infoSize == 0) {
+    // Can't get file info -> Assume it's the old DLL or it's missing.
+    return false;
+  }
+  auto infoData = MakeUnique<unsigned char[]>(infoSize);
+  VS_FIXEDFILEINFO* vInfo;
+  UINT vInfoLen;
+  if (GetFileVersionInfoW(systemPath, 0, infoSize, infoData.get()) &&
+      VerQueryValueW(infoData.get(), L"\\", (LPVOID*)&vInfo, &vInfoLen)) {
+    uint64_t version = uint64_t(vInfo->dwFileVersionMS) << 32 |
+                       uint64_t(vInfo->dwFileVersionLS);
+    // 12.0.9200.16426 & later allow for >1920x1088 resolutions.
+    const uint64_t minimum =
+        (uint64_t(12) << 48) | (uint64_t(9200) << 16) | uint64_t(16426);
+    return version >= minimum;
+  }
+  // Can't get file version -> Assume it's the old DLL.
+  return false;
+}
 
 LayersBackend GetCompositorBackendType(
     layers::KnowsCompositor* aKnowsCompositor) {
@@ -143,6 +173,10 @@ bool WMFVideoMFTManager::InitializeDXVA() {
         StaticPrefs::GetPrefName_media_wmf_dxva_d3d11_enabled());
     d3d11 = false;
   }
+  if (!IsWin8OrLater()) {
+    mDXVAFailureReason.AssignLiteral("D3D11: Requires Windows 8 or later");
+    d3d11 = false;
+  }
 
   if (d3d11) {
     mDXVAFailureReason.AppendLiteral("D3D11: ");
@@ -151,6 +185,17 @@ bool WMFVideoMFTManager::InitializeDXVA() {
     if (mDXVA2Manager) {
       return true;
     }
+  }
+
+  // Try again with d3d9, but record the failure reason
+  // into a new var to avoid overwriting the d3d11 failure.
+  nsAutoCString d3d9Failure;
+  mDXVA2Manager.reset(
+      DXVA2Manager::CreateD3D9DXVA(mKnowsCompositor, d3d9Failure));
+  // Make sure we include the messages from both attempts (if applicable).
+  if (!d3d9Failure.IsEmpty()) {
+    mDXVAFailureReason.AppendLiteral("; D3D9: ");
+    mDXVAFailureReason.Append(d3d9Failure);
   }
 
   return mDXVA2Manager != nullptr;
@@ -169,7 +214,10 @@ MediaResult WMFVideoMFTManager::ValidateVideoInfo() {
         // have this limitation, but it still might have maximum resolution
         // limitation.
         // https://msdn.microsoft.com/en-us/library/windows/desktop/dd797815(v=vs.85).aspx
-        static const int32_t MAX_H264_PIXEL_COUNT = 4096 * 2304;
+        const bool Is4KCapable =
+            IsWin8OrLater() || IsWin7H264Decoder4KCapable();
+        static const int32_t MAX_H264_PIXEL_COUNT =
+            Is4KCapable ? 4096 * 2304 : 1920 * 1088;
         const CheckedInt32 pixelCount =
             CheckedInt32(mVideoInfo.mImage.width) * mVideoInfo.mImage.height;
 
@@ -200,7 +248,11 @@ MediaResult WMFVideoMFTManager::Init() {
   if (NS_SUCCEEDED(result) && mDXVA2Manager) {
     // If we had some failures but eventually made it work,
     // make sure we preserve the messages.
-    mDXVAFailureReason.AppendLiteral("Using D3D11 API");
+    if (mDXVA2Manager->IsD3D11()) {
+      mDXVAFailureReason.AppendLiteral("Using D3D11 API");
+    } else {
+      mDXVAFailureReason.AppendLiteral("Using D3D9 API");
+    }
   }
 
   return result;
@@ -240,7 +292,8 @@ MediaResult WMFVideoMFTManager::InitInternal() {
     attr->GetUINT32(MF_SA_D3D_AWARE, &aware);
     attr->SetUINT32(CODECAPI_AVDecNumWorkerThreads,
                     WMFDecoderModule::GetNumDecoderThreads());
-    bool lowLatency = StaticPrefs::media_wmf_low_latency_enabled();
+    bool lowLatency =
+        (StaticPrefs::media_wmf_low_latency_enabled() || IsWin10OrLater());
     if (mLowLatency || lowLatency) {
       HRESULT hr = attr->SetUINT32(CODECAPI_AVLowLatencyMode, TRUE);
       if (SUCCEEDED(hr)) {
@@ -991,7 +1044,10 @@ nsCString WMFVideoMFTManager::GetDescriptionName() const {
     if (!mDXVA2Manager) {
       return "no DXVA";
     }
-    return "D3D11";
+    if (mDXVA2Manager->IsD3D11()) {
+      return "D3D11";
+    }
+    return "D3D9";
   }();
 
   return nsPrintfCString("wmf %s codec %s video decoder - %s, %s",

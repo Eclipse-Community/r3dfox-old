@@ -131,13 +131,6 @@ class NewRenderer : public RendererEvent {
       }
     }
 
-    // Only allow the layer compositor in nightly builds, for now.
-    bool use_layer_compositor = false;
-#ifdef NIGHTLY_BUILD
-    use_layer_compositor =
-        StaticPrefs::gfx_webrender_layer_compositor_AtStartup();
-#endif
-
     if (!wr_window_new(
             aWindowId, mSize.width, mSize.height,
             mWindowKind == WindowKind::MAIN, supportLowPriorityTransactions,
@@ -158,8 +151,7 @@ class NewRenderer : public RendererEvent {
             gfx::gfxVars::WebRenderRequiresHardwareDriver(),
             StaticPrefs::gfx_webrender_low_quality_pinch_zoom_AtStartup(),
             StaticPrefs::gfx_webrender_max_shared_surface_size_AtStartup(),
-            StaticPrefs::gfx_webrender_enable_subpixel_aa_AtStartup(),
-            use_layer_compositor)) {
+            StaticPrefs::gfx_webrender_enable_subpixel_aa_AtStartup())) {
       // wr_window_new puts a message into gfxCriticalNote if it returns false
       MOZ_ASSERT(errorMessage);
       mError->AssignASCII(errorMessage);
@@ -376,7 +368,7 @@ already_AddRefed<WebRenderAPI> WebRenderAPI::Create(
   bool useDComp = false;
   bool useTripleBuffering = false;
   bool supportsExternalBufferTextures = false;
-  layers::SyncHandle syncHandle = {};
+  layers::SyncHandle syncHandle = 0;
 
   // Dispatch a synchronous task because the DocumentHandle object needs to be
   // created on the render thread. If need be we could delay waiting on this

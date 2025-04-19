@@ -434,7 +434,6 @@
 #include "nsStringIterator.h"
 #include "nsStyleSheetService.h"
 #include "nsStyleStruct.h"
-#include "nsTextControlFrame.h"
 #include "nsSubDocumentFrame.h"
 #include "nsTextNode.h"
 #include "nsUnicharUtils.h"
@@ -14233,8 +14232,9 @@ already_AddRefed<nsDOMCaretPosition> Document::CaretPositionFromPoint(
     nsINode* nonChrome =
         node->AsContent()->FindFirstNonChromeOnlyAccessContent();
     HTMLTextAreaElement* textArea = HTMLTextAreaElement::FromNode(nonChrome);
-    nsTextControlFrame* textFrame =
+    nsITextControlFrame* textFrame =
         do_QueryFrame(nonChrome->AsContent()->GetPrimaryFrame());
+
     if (!textFrame) {
       return nullptr;
     }
@@ -19674,7 +19674,8 @@ void Document::AddPendingFrameStaticClone(nsFrameLoaderOwner* aElement,
 }
 
 bool Document::ShouldAvoidNativeTheme() const {
-  return !IsInChromeDocShell() || XRE_IsContentProcess();
+  return StaticPrefs::widget_non_native_theme_enabled() &&
+         (!IsInChromeDocShell() || XRE_IsContentProcess());
 }
 
 bool Document::UseRegularPrincipal() const {

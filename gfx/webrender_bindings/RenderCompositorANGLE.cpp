@@ -66,7 +66,16 @@ UniquePtr<RenderCompositor> RenderCompositorANGLE::Create(
 RenderCompositorANGLE::RenderCompositorANGLE(
     const RefPtr<widget::CompositorWidget>& aWidget,
     RefPtr<gl::GLContext>&& aGL)
-    : RenderCompositor(aWidget), mGL(aGL) {
+    : RenderCompositor(aWidget),
+      mGL(aGL),
+      mEGLConfig(nullptr),
+      mEGLSurface(nullptr),
+      mUseTripleBuffering(false),
+      mUseAlpha(false),
+      mUseNativeCompositor(true),
+      mUsePartialPresent(false),
+      mFullRender(false),
+      mDisablingNativeCompositor(false) {
   MOZ_ASSERT(mGL);
   LOG("RenderCompositorANGLE::RenderCompositorANGLE()");
 }
@@ -204,7 +213,6 @@ bool RenderCompositorANGLE::CreateSwapChainForHWND() {
   }
 
   HWND hwnd = mWidget->AsWindows()->GetHwnd();
-  const bool alpha = ShouldUseAlpha();
   if (dxgiFactory2) {
     RefPtr<IDXGISwapChain1> swapChain1;
     bool useTripleBuffering = false;
@@ -236,8 +244,6 @@ bool RenderCompositorANGLE::CreateSwapChainForHWND() {
       desc.SwapEffect = DXGI_SWAP_EFFECT_SEQUENTIAL;
       desc.Scaling = DXGI_SCALING_STRETCH;
     }
-    desc.AlphaMode =
-        alpha ? DXGI_ALPHA_MODE_PREMULTIPLIED : DXGI_ALPHA_MODE_IGNORE;
     desc.Flags = 0;
 
     hr = dxgiFactory2->CreateSwapChainForHwnd(
@@ -248,7 +254,6 @@ bool RenderCompositorANGLE::CreateSwapChainForHWND() {
       mSwapChain = swapChain1;
       mSwapChain1 = swapChain1;
       mUseTripleBuffering = useTripleBuffering;
-      mSwapChainUsingAlpha = alpha;
       return true;
     }
     if (useFlipSequential) {
@@ -287,11 +292,10 @@ bool RenderCompositorANGLE::CreateSwapChainForHWND() {
   hr =
       mSwapChain->QueryInterface((IDXGISwapChain1**)getter_AddRefs(swapChain1));
   if (SUCCEEDED(hr)) {
-    mSwapChain1 = std::move(swapChain1);
+      mSwapChain1 = swapChain1;
   } else {
     mSwapChain1 = nullptr;
   }
-  mSwapChainUsingAlpha = alpha;
   return true;
 }
 
@@ -342,12 +346,15 @@ void RenderCompositorANGLE::CreateSwapChainForDCompIfPossible() {
   // It does not support triple buffering.
   const bool useTripleBuffering =
       gfx::gfxVars::UseWebRenderTripleBufferingWin() && !UseCompositor();
+  // Non Glass window is common since Windows 10.
+  bool useAlpha = false;
   RefPtr<IDXGISwapChain1> swapChain1 =
-      CreateSwapChainForDComp(useTripleBuffering);
+      CreateSwapChainForDComp(useTripleBuffering, useAlpha);
   if (swapChain1) {
     mSwapChain = swapChain1;
     mSwapChain1 = swapChain1;
     mUseTripleBuffering = useTripleBuffering;
+    mUseAlpha = useAlpha;
     mDCLayerTree->SetDefaultSwapChain(swapChain1);
   } else {
     // Clear DCLayerTree on falire
@@ -371,7 +378,7 @@ RefPtr<IDXGIFactory> RenderCompositorANGLE::DXGIFactory() {
 }
 
 RefPtr<IDXGISwapChain1> RenderCompositorANGLE::CreateSwapChainForDComp(
-    bool aUseTripleBuffering) {
+    bool aUseTripleBuffering, bool aUseAlpha) {
   RefPtr<IDXGIDevice> dxgiDevice;
   mDevice->QueryInterface((IDXGIDevice**)getter_AddRefs(dxgiDevice));
 
@@ -402,10 +409,12 @@ RefPtr<IDXGISwapChain1> RenderCompositorANGLE::CreateSwapChainForDComp(
   // DXGI_SCALING_NONE caused swap chain creation failure.
   desc.Scaling = DXGI_SCALING_STRETCH;
   desc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL;
-  const bool alpha = ShouldUseAlpha();
-  // See if we need to use transparency.
-  desc.AlphaMode =
-      alpha ? DXGI_ALPHA_MODE_PREMULTIPLIED : DXGI_ALPHA_MODE_IGNORE;
+  if (aUseAlpha) {
+    // This could degrade performance. Use it only when it is necessary.
+    desc.AlphaMode = DXGI_ALPHA_MODE_PREMULTIPLIED;
+  } else {
+    desc.AlphaMode = DXGI_ALPHA_MODE_IGNORE;
+  }
   desc.Flags = 0;
 
   hr = dxgiFactory2->CreateSwapChainForComposition(mDevice, &desc, nullptr,
@@ -413,28 +422,43 @@ RefPtr<IDXGISwapChain1> RenderCompositorANGLE::CreateSwapChainForDComp(
   if (SUCCEEDED(hr) && swapChain1) {
     DXGI_RGBA color = {1.0f, 1.0f, 1.0f, 1.0f};
     swapChain1->SetBackgroundColor(&color);
-    mSwapChainUsingAlpha = alpha;
     return swapChain1;
   }
 
   return nullptr;
 }
 
-bool RenderCompositorANGLE::ShouldUseAlpha() const {
-  return mWidget->AsWindows()->TransparencyModeIs(
-      widget::TransparencyMode::Transparent);
-}
-
 bool RenderCompositorANGLE::BeginFrame() {
   mWidget->AsWindows()->UpdateCompositorWndSizeIfNecessary();
 
   if (!UseCompositor()) {
-    if (NS_WARN_IF(!mSwapChainUsingAlpha && ShouldUseAlpha())) {
-      if (NS_WARN_IF(!RecreateNonNativeCompositorSwapChain())) {
-        return false;
+    if (mDCLayerTree) {
+      bool useAlpha = mWidget->AsWindows()->HasGlass();
+      // When Alpha usage is changed, SwapChain needs to be recreatd.
+      if (useAlpha != mUseAlpha) {
+        DestroyEGLSurface();
+        mBufferSize.reset();
+
+        RefPtr<IDXGISwapChain1> swapChain1 =
+            CreateSwapChainForDComp(mUseTripleBuffering, useAlpha);
+        if (swapChain1) {
+          mSwapChain = swapChain1;
+          mUseAlpha = useAlpha;
+          mDCLayerTree->SetDefaultSwapChain(swapChain1);
+          // When alpha is used, we want to disable partial present.
+          // See Bug 1595027.
+          if (useAlpha) {
+            mFullRender = true;
+          }
+        } else {
+          gfxCriticalNote << "Failed to re-create SwapChain";
+          RenderThread::Get()->HandleWebRenderError(
+              WebRenderError::NEW_SURFACE);
+          return false;
+        }
       }
-      MOZ_ASSERT(mSwapChainUsingAlpha);
     }
+
     if (!ResizeBufferIfNeeded()) {
       return false;
     }
@@ -481,7 +505,14 @@ RenderedFrameId RenderCompositorANGLE::EndFrame(
     const UINT flags = 0;
 
     const LayoutDeviceIntSize& bufferSize = mBufferSize.ref();
-    if (mUsePartialPresent && mSwapChain1) {
+
+    // During high contrast mode, alpha is used. In this case,
+    // IDXGISwapChain1::Present1 shows nothing with compositor window.
+    // In this case, we want to disable partial present by full render.
+    // See Bug 1595027
+    MOZ_ASSERT_IF(mUsePartialPresent && mUseAlpha, mFullRender);
+
+    if (mUsePartialPresent && !mUseAlpha && mSwapChain1) {
       // Clear full render flag.
       mFullRender = false;
       // If there is no diry rect, we skip SwapChain present.
@@ -811,9 +842,15 @@ gfx::DeviceResetReason RenderCompositorANGLE::IsContextLost(bool aForce) {
   return layers::DXGIErrorToDeviceResetReason(reason);
 }
 
-bool RenderCompositorANGLE::UseCompositor() const {
-  return mUseNativeCompositor && mDCLayerTree &&
-         gfx::gfxVars::UseWebRenderCompositor();
+bool RenderCompositorANGLE::UseCompositor() {
+  if (!mUseNativeCompositor) {
+    return false;
+  }
+
+  if (!mDCLayerTree || !gfx::gfxVars::UseWebRenderCompositor()) {
+    return false;
+  }
+  return true;
 }
 
 bool RenderCompositorANGLE::SupportAsyncScreenshot() {
@@ -841,29 +878,11 @@ void RenderCompositorANGLE::Bind(wr::NativeTileId aId,
 
 void RenderCompositorANGLE::Unbind() { mDCLayerTree->Unbind(); }
 
-void RenderCompositorANGLE::BindSwapChain(wr::NativeSurfaceId aId) {
-  mDCLayerTree->BindSwapChain(aId);
-}
-void RenderCompositorANGLE::PresentSwapChain(wr::NativeSurfaceId aId) {
-  mDCLayerTree->PresentSwapChain(aId);
-}
-
 void RenderCompositorANGLE::CreateSurface(wr::NativeSurfaceId aId,
                                           wr::DeviceIntPoint aVirtualOffset,
                                           wr::DeviceIntSize aTileSize,
                                           bool aIsOpaque) {
   mDCLayerTree->CreateSurface(aId, aVirtualOffset, aTileSize, aIsOpaque);
-}
-
-void RenderCompositorANGLE::CreateSwapChainSurface(wr::NativeSurfaceId aId,
-                                                   wr::DeviceIntSize aSize,
-                                                   bool aIsOpaque) {
-  mDCLayerTree->CreateSwapChainSurface(aId, aSize, aIsOpaque);
-}
-
-void RenderCompositorANGLE::ResizeSwapChainSurface(wr::NativeSurfaceId aId,
-                                                   wr::DeviceIntSize aSize) {
-  mDCLayerTree->ResizeSwapChainSurface(aId, aSize);
 }
 
 void RenderCompositorANGLE::CreateExternalSurface(wr::NativeSurfaceId aId,
@@ -922,34 +941,34 @@ void RenderCompositorANGLE::EnableNativeCompositor(bool aEnable) {
   mUseNativeCompositor = false;
   mDCLayerTree->DisableNativeCompositor();
 
-  if (!RecreateNonNativeCompositorSwapChain()) {
-    gfxCriticalNote << "Failed to re-create SwapChain";
-    RenderThread::Get()->HandleWebRenderError(WebRenderError::NEW_SURFACE);
-    return;
-  }
-
-  mDisablingNativeCompositor = true;
-}
-
-bool RenderCompositorANGLE::RecreateNonNativeCompositorSwapChain() {
+  bool useAlpha = mWidget->AsWindows()->HasGlass();
   DestroyEGLSurface();
   mBufferSize.reset();
 
   if (mDCLayerTree) {
     RefPtr<IDXGISwapChain1> swapChain1 =
-        CreateSwapChainForDComp(mUseTripleBuffering);
-    if (!swapChain1) {
-      return false;
-    }
+      CreateSwapChainForDComp(mUseTripleBuffering, useAlpha);
+  if (swapChain1) {
     mSwapChain = swapChain1;
-    mSwapChain1 = swapChain1;
+    mUseAlpha = useAlpha;
     mDCLayerTree->SetDefaultSwapChain(swapChain1);
+    // When alpha is used, we want to disable partial present.
+    // See Bug 1595027.
+    if (useAlpha) {
+      mFullRender = true;
+    }
+    ResizeBufferIfNeeded();
+  } else {
+    gfxCriticalNote << "Failed to re-create SwapChain";
+    RenderThread::Get()->HandleWebRenderError(WebRenderError::NEW_SURFACE);
+    return;
+   }
   } else {
     if (NS_WARN_IF(!CreateSwapChainForHWND())) {
-      return false;
+      return;
     }
   }
-  return ResizeBufferIfNeeded();
+  mDisablingNativeCompositor = true;
 }
 
 void RenderCompositorANGLE::InitializeUsePartialPresent() {

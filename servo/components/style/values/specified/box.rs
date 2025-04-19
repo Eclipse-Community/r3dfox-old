@@ -1525,9 +1525,40 @@ pub enum Appearance {
     /// A dual toolbar button (e.g., a Back button with a dropdown)
     #[parse(condition = "ParserContext::chrome_rules_enabled")]
     Dualbutton,
+    /// A groupbox.
+    #[parse(condition = "ParserContext::chrome_rules_enabled")]
+    Groupbox,
+    /// Menu Bar background
+    #[parse(condition = "ParserContext::chrome_rules_enabled")]
+    Menubar,
+    /// <menu> and <menuitem> appearances
+    #[parse(condition = "ParserContext::chrome_rules_enabled")]
+    Menuitem,
+    #[parse(condition = "ParserContext::chrome_rules_enabled")]
+    Checkmenuitem,
+    #[parse(condition = "ParserContext::chrome_rules_enabled")]
+    Radiomenuitem,
+    /// For text on non-iconic menuitems only
+    #[parse(condition = "ParserContext::chrome_rules_enabled")]
+    Menuitemtext,
+    /// The text part of a dropdown list, to left of button.
+    #[parse(condition = "ParserContext::chrome_rules_enabled")]
+    MenulistText,
     /// Menu Popup background.
     #[parse(condition = "ParserContext::chrome_rules_enabled")]
     Menupopup,
+    /// menu checkbox/radio appearances
+    #[parse(condition = "ParserContext::chrome_rules_enabled")]
+    Menucheckbox,
+    #[parse(condition = "ParserContext::chrome_rules_enabled")]
+    Menuradio,
+    #[parse(condition = "ParserContext::chrome_rules_enabled")]
+    Menuseparator,
+    #[parse(condition = "ParserContext::chrome_rules_enabled")]
+    Menuarrow,
+    /// An image in the menu gutter, like in bookmarks or history.
+    #[parse(condition = "ParserContext::chrome_rules_enabled")]
+    Menuimage,
     /// The meter bar's meter indicator.
     #[parse(condition = "ParserContext::chrome_rules_enabled")]
     Meterchunk,
@@ -1543,6 +1574,18 @@ pub enum Appearance {
     /// The progress bar's progress indicator
     #[parse(condition = "ParserContext::chrome_rules_enabled")]
     Progresschunk,
+    /// A generic container that always repaints on state changes. This is a
+    /// hack to make XUL checkboxes and radio buttons work.
+    #[parse(condition = "ParserContext::chrome_rules_enabled")]
+    CheckboxContainer,
+    #[parse(condition = "ParserContext::chrome_rules_enabled")]
+    RadioContainer,
+    /// The label part of a checkbox or radio button, used for painting a focus
+    /// outline.
+    #[parse(condition = "ParserContext::chrome_rules_enabled")]
+    CheckboxLabel,
+    #[parse(condition = "ParserContext::chrome_rules_enabled")]
+    RadioLabel,
     /// nsRangeFrame and its subparts
     #[parse(condition = "ParserContext::chrome_rules_enabled")]
     Range,
@@ -1607,12 +1650,21 @@ pub enum Appearance {
     TabScrollArrowBack,
     #[parse(condition = "ParserContext::chrome_rules_enabled")]
     TabScrollArrowForward,
+    /// A toolbar in an application window.
+    #[parse(condition = "ParserContext::chrome_rules_enabled")]
+    Toolbar,
     /// A single toolbar button (with no associated dropdown).
     #[parse(condition = "ParserContext::chrome_rules_enabled")]
     Toolbarbutton,
     /// The dropdown portion of a toolbar button
     #[parse(condition = "ParserContext::chrome_rules_enabled")]
     ToolbarbuttonDropdown,
+    /// The gripper for a toolbar.
+    #[parse(condition = "ParserContext::chrome_rules_enabled")]
+    Toolbargripper,
+    /// The toolbox that contains the toolbars.
+    #[parse(condition = "ParserContext::chrome_rules_enabled")]
+    Toolbox,
     /// A tooltip.
     #[parse(condition = "ParserContext::chrome_rules_enabled")]
     Tooltip,
@@ -1620,6 +1672,43 @@ pub enum Appearance {
     /// Sidebar appearance.
     #[parse(condition = "ParserContext::chrome_rules_enabled")]
     MozSidebar,
+    /// A listbox or tree widget header
+    #[parse(condition = "ParserContext::chrome_rules_enabled")]
+    Treeheader,
+    /// An individual header cell
+    #[parse(condition = "ParserContext::chrome_rules_enabled")]
+    Treeheadercell,
+    /// The sort arrow for a header.
+    #[parse(condition = "ParserContext::chrome_rules_enabled")]
+    Treeheadersortarrow,
+    /// A tree item.
+    #[parse(condition = "ParserContext::chrome_rules_enabled")]
+    Treeitem,
+    /// A tree widget branch line
+    #[parse(condition = "ParserContext::chrome_rules_enabled")]
+    Treeline,
+    /// A tree widget twisty.
+    #[parse(condition = "ParserContext::chrome_rules_enabled")]
+    Treetwisty,
+    /// Open tree widget twisty.
+    #[parse(condition = "ParserContext::chrome_rules_enabled")]
+    Treetwistyopen,
+    /// A tree widget.
+    #[parse(condition = "ParserContext::chrome_rules_enabled")]
+    Treeview,
+
+    /// Vista Rebars.
+    #[parse(condition = "ParserContext::chrome_rules_enabled")]
+    MozWinCommunicationsToolbox,
+    #[parse(condition = "ParserContext::chrome_rules_enabled")]
+    MozWinMediaToolbox,
+    #[parse(condition = "ParserContext::chrome_rules_enabled")]
+    MozWinBrowsertabbarToolbox,
+    #[parse(condition = "ParserContext::chrome_rules_enabled")]
+    MozWinBorderlessGlass,
+    /// -moz-apperance style used in setting proper glass margins.
+    #[parse(condition = "ParserContext::chrome_rules_enabled")]
+    MozWinExcludeGlass,
 
     /// Mac help button.
     #[parse(condition = "ParserContext::chrome_rules_enabled")]
@@ -1634,6 +1723,8 @@ pub enum Appearance {
     /// Windows themed window frame elements.
     #[parse(condition = "ParserContext::chrome_rules_enabled")]
     MozWindowButtonBox,
+    #[parse(condition = "ParserContext::chrome_rules_enabled")]
+    MozWindowButtonBoxMaximized,
     #[parse(condition = "ParserContext::chrome_rules_enabled")]
     MozWindowButtonClose,
     #[parse(condition = "ParserContext::chrome_rules_enabled")]
@@ -1832,12 +1923,15 @@ impl Parse for Overflow {
             "visible" => Self::Visible,
             "hidden" => Self::Hidden,
             "scroll" => Self::Scroll,
-            "auto" | "overlay" => Self::Auto,
+            "auto" => Self::Auto,
             #[cfg(feature = "gecko")]
             "clip" => Self::Clip,
             #[cfg(feature = "gecko")]
             "-moz-hidden-unscrollable" if static_prefs::pref!("layout.css.overflow-moz-hidden-unscrollable.enabled") => {
                 Overflow::Clip
+            },
+            "overlay" if static_prefs::pref!("layout.css.overflow-overlay.enabled") => {
+                Overflow::Auto
             },
         })
     }

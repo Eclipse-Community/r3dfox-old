@@ -43,6 +43,7 @@ forbid-mscom-init:
         - toolkit/crashreporter/google-breakpad/src/common/windows/pdb_source_line_writer.cc
         - toolkit/mozapps/defaultagent/proxy/main.cpp
         - uriloader/exthandler/win/nsOSHelperAppService.cpp
+        - widget/windows/InkCollector.cpp
         - widget/windows/TaskbarPreview.cpp
         - widget/windows/WinTaskbar.cpp
         - widget/windows/nsAppShell.cpp
@@ -72,3 +73,5 @@ forbid-apartment-region:
         - ipc/mscom/ProcessRuntime.cpp
         - ipc/mscom/ProcessRuntime.h
         - widget/windows/filedialog/WinFileDialogCommands.cpp
+        # These files are existing uses that must eventually be fixed.
+        - widget/windows/LegacyJumpListBuilder.cpp

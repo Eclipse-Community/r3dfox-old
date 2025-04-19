@@ -27,13 +27,15 @@ class PlatformCompositorWidgetDelegate : public CompositorWidgetDelegate {
   virtual void LeavePresentLock() = 0;
   virtual void OnDestroyWindow() = 0;
   virtual bool OnWindowResize(const LayoutDeviceIntSize& aSize) = 0;
+  virtual void OnWindowModeChange(nsSizeMode aSizeMode) = 0;
 
   // Transparency handling.
   virtual void UpdateTransparency(TransparencyMode aMode) = 0;
   virtual void ClearTransparentWindow() = 0;
 
   // Deliver visibility info
-  virtual void NotifyVisibilityUpdated(bool aIsFullyOccluded) = 0;
+  virtual void NotifyVisibilityUpdated(nsSizeMode aSizeMode,
+                                       bool aIsFullyOccluded) = 0;
 
   // CompositorWidgetDelegate Overrides
 
@@ -74,27 +76,22 @@ class WinCompositorWidget : public CompositorWidget {
   bool HasFxrOutputHandler() const { return !!mFxrHandler; }
   FxROutputHandler* GetFxrOutputHandler() const { return mFxrHandler.get(); }
 
+  virtual bool HasGlass() const = 0;
+
+  virtual nsSizeMode GetWindowSizeMode() const = 0;
   virtual bool GetWindowIsFullyOccluded() const = 0;
 
   virtual void UpdateCompositorWnd(const HWND aCompositorWnd,
                                    const HWND aParentWnd) = 0;
   virtual void SetRootLayerTreeID(const layers::LayersId& aRootLayerTreeId) = 0;
 
-  bool TransparencyModeIs(TransparencyMode aMode) const {
-    return TransparencyMode(uint32_t(mTransparencyMode)) == aMode;
-  }
-
  protected:
-  void SetTransparencyMode(TransparencyMode aMode) {
-    mTransparencyMode = uint32_t(aMode);
-  }
-
-  bool mSetParentCompleted = false;
+  bool mSetParentCompleted;
 
  private:
   uintptr_t mWidgetKey;
   HWND mWnd;
-  mozilla::Atomic<uint32_t, MemoryOrdering::Relaxed> mTransparencyMode;
+
   WinCompositorWnds mCompositorWnds;
   LayoutDeviceIntSize mLastCompositorWndSize;
 

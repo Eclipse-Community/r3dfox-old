@@ -2,7 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-use api::{ColorF, ExternalImageId, ImageBufferKind, ImageKey, ImageRendering, YuvFormat, YuvRangedColorSpace};
+use api::{ColorF, YuvRangedColorSpace, YuvFormat, ImageRendering, ExternalImageId, ImageBufferKind};
 use api::units::*;
 use api::ColorDepth;
 use crate::image_source::resolve_image;
@@ -204,8 +204,6 @@ pub struct ExternalSurfaceDescriptor {
     /// If the native surface needs to be updated, this will contain the size
     /// of the native surface as Some(size). If not dirty, this is None.
     pub update_params: Option<DeviceIntSize>,
-    /// If using external compositing, a user key for the client
-    pub external_image_id: Option<ExternalImageId>,
 }
 
 impl ExternalSurfaceDescriptor {
@@ -285,8 +283,6 @@ pub struct ResolvedExternalSurface {
     pub image_buffer_kind: ImageBufferKind,
     // Update information for a native surface if it's dirty
     pub update_params: Option<(NativeSurfaceId, DeviceIntSize)>,
-    /// If using external compositing, a user key for the client
-    pub external_image_id: Option<ExternalImageId>,
 }
 
 /// Public interface specified in `WebRenderOptions` that configures
@@ -307,12 +303,6 @@ pub enum CompositorConfig {
         /// Required if webrender must query the backbuffer's age.
         partial_present: Option<Box<dyn PartialPresentCompositor>>,
     },
-    Layer {
-        /// If supplied, composite the frame using the new experimental compositing
-        /// interface. If this is set, it overrides `compositor_config`. These will
-        /// be unified as the interface stabilises.
-        compositor: Box<dyn LayerCompositor>,
-    },
     /// Use a native OS compositor to draw tiles. This requires clients to implement
     /// the Compositor trait, but can be significantly more power efficient on operating
     /// systems that support it.
@@ -328,7 +318,7 @@ impl CompositorConfig {
             CompositorConfig::Native { ref mut compositor, .. } => {
                 Some(compositor)
             }
-            CompositorConfig::Draw { .. } | CompositorConfig::Layer { .. } => {
+            CompositorConfig::Draw { .. } => {
                 None
             }
         }
@@ -342,25 +332,9 @@ impl CompositorConfig {
             CompositorConfig::Draw { ref mut partial_present, .. } => {
                 partial_present.as_mut()
             }
-            CompositorConfig::Layer { .. } => {
-                None
-            }
         }
     }
 
-    pub fn layer_compositor(&mut self) -> Option<&mut Box<dyn LayerCompositor>> {
-        match self {
-            CompositorConfig::Native { .. } => {
-                None
-            }
-            CompositorConfig::Draw { .. } => {
-                None
-            }
-            CompositorConfig::Layer { ref mut compositor } => {
-                Some(compositor)
-            }
-        }
-    }
 }
 
 impl Default for CompositorConfig {
@@ -388,9 +362,6 @@ pub enum CompositorKind {
         /// Draw previous regions when doing partial present.
         draw_previous_partial_present_regions: bool,
     },
-    Layer {
-
-    },
     /// Native OS compositor.
     Native {
         /// The capabilities of the underlying platform.
@@ -411,7 +382,7 @@ impl Default for CompositorKind {
 impl CompositorKind {
     pub fn get_virtual_surface_size(&self) -> i32 {
         match self {
-            CompositorKind::Draw { .. } | CompositorKind::Layer {  .. }=> 0,
+            CompositorKind::Draw { .. } => 0,
             CompositorKind::Native { capabilities, .. } => capabilities.virtual_surface_size,
         }
     }
@@ -422,7 +393,6 @@ impl CompositorKind {
                 // When partial present is enabled, we need to force redraw.
                 *max_partial_present_rects > 0
             }
-            CompositorKind::Layer {  } => false,    // TODO(gwc): Is this correct?
             CompositorKind::Native { capabilities, .. } => capabilities.redraw_on_invalidation,
         }
     }
@@ -459,38 +429,6 @@ impl From<&TileSurface> for TileSurfaceKind {
 pub struct CompositeTileDescriptor {
     pub tile_id: TileId,
     pub surface_kind: TileSurfaceKind,
-}
-
-// Whether a compositor surface / swapchain is being used
-// by WR to render content, or is an external swapchain for video
-#[cfg_attr(feature = "capture", derive(Serialize))]
-#[cfg_attr(feature = "replay", derive(Deserialize))]
-#[derive(Debug, Copy, Clone)]
-pub enum CompositorSurfaceUsage {
-    Content,
-    External {
-        image_key: ImageKey,
-        external_image_id: ExternalImageId,
-        transform_index: CompositorTransformIndex,
-    },
-}
-
-impl CompositorSurfaceUsage {
-    // Returns true if usage is compatible
-    pub fn matches(&self, other: &CompositorSurfaceUsage) -> bool {
-        match (self, other) {
-            // Surfaces used for content are always compatible
-            (CompositorSurfaceUsage::Content, CompositorSurfaceUsage::Content) => true,
-
-            (CompositorSurfaceUsage::Content, CompositorSurfaceUsage::External { .. }) |
-            (CompositorSurfaceUsage::External { .. }, CompositorSurfaceUsage::Content) => false,
-
-            // External surfaces are matched by image-key (which doesn't change per-frame)
-            (CompositorSurfaceUsage::External { image_key: key1, .. }, CompositorSurfaceUsage::External { image_key: key2, .. }) => {
-                key1 == key2
-            }
-        }
-    }
 }
 
 /// Describes the properties that identify a surface composition uniquely.
@@ -778,7 +716,7 @@ impl CompositeState {
         // when drawing with the simple (Draw) compositor, and to schedule compositing
         // of any required updates into the surfaces.
         let needs_external_surface_update = match self.compositor_kind {
-            CompositorKind::Draw { .. } | CompositorKind::Layer { .. } => true,
+            CompositorKind::Draw { .. } => true,
             _ => external_surface.update_params.is_some(),
         };
         let external_surface_index = if needs_external_surface_update {
@@ -1061,7 +999,6 @@ impl CompositeState {
                         },
                     image_buffer_kind,
                     update_params,
-                    external_image_id: external_surface.external_image_id,
                 });
             },
             ExternalSurfaceDependency::Rgb { .. } => {
@@ -1074,7 +1011,6 @@ impl CompositeState {
                     },
                     image_buffer_kind,
                     update_params,
-                    external_image_id: external_surface.external_image_id,
                 });
             },
         }
@@ -1178,13 +1114,25 @@ impl Default for CompositorCapabilities {
 
 #[repr(C)]
 #[derive(Copy, Clone, Debug)]
+pub enum WindowSizeMode {
+    Normal,
+    Minimized,
+    Maximized,
+    Fullscreen,
+    Invalid,
+}
+
+#[repr(C)]
+#[derive(Copy, Clone, Debug)]
 pub struct WindowVisibility {
+    pub size_mode: WindowSizeMode,
     pub is_fully_occluded: bool,
 }
 
 impl Default for WindowVisibility {
     fn default() -> Self {
         WindowVisibility {
+            size_mode: WindowSizeMode::Normal,
             is_fully_occluded: false,
         }
     }
@@ -1359,53 +1307,29 @@ pub trait Compositor {
     fn get_window_visibility(&self, device: &mut Device) -> WindowVisibility;
 }
 
-// Describes the configuration for an input layer that the compositor
-// implemention should prepare
-#[derive(Debug)]
-pub struct CompositorInputLayer {
-    // Device space location of the layer (pre-clip)
-    pub offset: DeviceIntPoint,
-    // Device space clip-rect of the layer
-    pub clip_rect: DeviceIntRect,
-    // Whether a content or external surface
-    pub usage: CompositorSurfaceUsage,
-    // If true, layer is opaque, blend can be disabled
-    pub is_opaque: bool,
-}
-
 // Provides the parameters about the frame to the compositor implementation.
 // TODO(gw): Include information about picture cache slices and external surfaces.
-#[derive(Debug)]
-pub struct CompositorInputConfig<'a> {
-    pub layers: &'a [CompositorInputLayer],
+pub struct CompositorInputConfig {
+    pub framebuffer_size: DeviceIntSize,
 }
 
-// Trait for implementors of swapchain based compositing.
+// Provides the configuration that the compositor selected based on the input
+// config.
+// TODO(gw): Return information about promoted surfaces and swapchain count.
+pub struct CompositorOutputConfig {
+
+}
+
+// Skeleton trait for implementors of swapchain based compositing. For now
+// the implementation simply binds a framebuffer-sized surface that can
+// be presented by the native compositor.
 // TODO(gw): Extend to handle external surfaces, layers, swgl, etc.
-pub trait LayerCompositor {
-    // Prepare to composite a frame. Ensure that layers are constructed
-    // to match the input config
+pub trait Compositor2 {
     fn begin_frame(
         &mut self,
         input: &CompositorInputConfig,
-    );
+    ) -> CompositorOutputConfig;
 
-    // Bind a layer (by index in the input config) to begin rendering
-    // content to it.
-    fn bind_layer(&mut self, index: usize);
-
-    // Complete rendering of a layer and present / swap buffers
-    fn present_layer(&mut self, index: usize);
-
-    fn add_surface(
-        &mut self,
-        index: usize,
-        transform: CompositorSurfaceTransform,
-        clip_rect: DeviceIntRect,
-        image_rendering: ImageRendering,
-    );
-
-    // Finish compositing this frame - commit the visual tree to the OS
     fn end_frame(&mut self);
 }
 

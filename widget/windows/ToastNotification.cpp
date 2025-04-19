@@ -24,6 +24,7 @@
 #include "mozilla/Logging.h"
 #include "mozilla/Services.h"
 #include "mozilla/WidgetUtils.h"
+#include "mozilla/WindowsVersion.h"
 #include "nsAppRunner.h"
 #include "nsComponentManagerUtils.h"
 #include "nsCOMPtr.h"
@@ -37,6 +38,7 @@
 #include "prenv.h"
 #include "ToastNotificationHandler.h"
 #include "ToastNotificationHeaderOnlyUtils.h"
+#include "WinTaskbar.h"
 
 namespace mozilla {
 namespace widget {
@@ -65,6 +67,10 @@ ToastNotification::ToastNotification() = default;
 ToastNotification::~ToastNotification() = default;
 
 nsresult ToastNotification::Init() {
+  if (!IsWin8OrLater()) {
+    return NS_ERROR_NOT_IMPLEMENTED;
+  }
+
   if (!PR_GetEnv("XPCSHELL_TEST_PROFILE_DIR")) {
     // Windows Toast Notification requires AppId.  But allow `xpcshell` to
     // create the service to test other functionality.
@@ -102,6 +108,18 @@ bool ToastNotification::EnsureAumidRegistered() {
     return true;
   }
 
+  // Fall back to start menu shortcut for Windows 8; toast AUMID registration in
+  // the registry only works in Windows 10+.
+  if (!IsWin10OrLater()) {
+    nsAutoString aumid;
+    if (!WinTaskbar::GetAppUserModelID(aumid)) {
+      return false;
+    }
+
+    mAumid = Some(aumid);
+    return true;
+  }
+
   nsAutoString installHash;
   nsresult rv = gDirServiceProvider->GetInstallHash(installHash);
   NS_ENSURE_SUCCESS(rv, false);
@@ -133,16 +151,24 @@ bool ToastNotification::EnsureAumidRegistered() {
 }
 
 bool ToastNotification::AssignIfMsixAumid(Maybe<nsAutoString>& aAumid) {
+  // `GetCurrentApplicationUserModelId` added in Windows 8.
+  DynamicallyLinkedFunctionPtr<decltype(&GetCurrentApplicationUserModelId)>
+      pGetCurrentApplicationUserModelId(L"kernel32.dll",
+                                        "GetCurrentApplicationUserModelId");
+  if (!pGetCurrentApplicationUserModelId) {
+    return false;
+  }
+
   UINT32 len = 0;
   // ERROR_INSUFFICIENT_BUFFER signals that we're in an MSIX package, and
   // therefore should use the package's AUMID.
-  if (GetCurrentApplicationUserModelId(&len, nullptr) !=
+  if (pGetCurrentApplicationUserModelId(&len, nullptr) !=
       ERROR_INSUFFICIENT_BUFFER) {
     MOZ_LOG(sWASLog, LogLevel::Debug, ("Not an MSIX package"));
     return false;
   }
   mozilla::Buffer<wchar_t> buffer(len);
-  LONG success = GetCurrentApplicationUserModelId(&len, buffer.Elements());
+  LONG success = pGetCurrentApplicationUserModelId(&len, buffer.Elements());
   NS_ENSURE_TRUE(success == ERROR_SUCCESS, false);
 
   aAumid.emplace(buffer.Elements());

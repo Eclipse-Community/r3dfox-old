@@ -88,6 +88,10 @@ class DeviceManagerDx final {
   // need to avoid it.
   bool CanInitializeKeyedMutexTextures();
 
+  // Intel devices on older windows versions seem to occasionally have
+  // stability issues when supplying InitData to CreateTexture2D.
+  bool HasCrashyInitData();
+
   // Enumerate and return all outputs on the current adapter.
   nsTArray<DXGI_OUTPUT_DESC1> EnumerateOutputs();
 
@@ -127,6 +131,10 @@ class DeviceManagerDx final {
   // Returns whether a reset occurred not whether reacquiring
   // was successful.
   bool MaybeResetAndReacquireDevices();
+
+  // Test whether we can acquire a DXGI 1.2-compatible adapter. This should
+  // only be called on startup before devices are initialized.
+  bool CheckRemotePresentSupport();
 
   // Device reset helpers.
   bool HasDeviceReset(DeviceResetReason* aOutReason = nullptr);

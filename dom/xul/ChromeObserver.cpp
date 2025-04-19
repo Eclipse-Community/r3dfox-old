@@ -91,8 +91,6 @@ void ChromeObserver::AttributeChanged(dom::Element* aElement,
       SetCustomTitlebar(added);
     } else if (aName == nsGkAtoms::drawtitle) {
       SetDrawsTitle(added);
-    } else if (aName == nsGkAtoms::windowsmica) {
-      SetMica(added);
     }
   }
   if (aName == nsGkAtoms::localedir) {
@@ -108,12 +106,6 @@ void ChromeObserver::AttributeChanged(dom::Element* aElement,
 
 void ChromeObserver::NodeWillBeDestroyed(nsINode* aNode) {
   mDocument = nullptr;
-}
-
-void ChromeObserver::SetMica(bool aEnable) {
-  if (nsIWidget* mainWidget = GetWindowWidget()) {
-    mainWidget->SetMicaBackdrop(aEnable);
-  }
 }
 
 void ChromeObserver::SetCustomTitlebar(bool aCustomTitlebar) {

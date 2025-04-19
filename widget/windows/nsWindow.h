@@ -649,7 +649,6 @@ class nsWindow final : public nsBaseWidget {
   }
 
   void SetColorScheme(const mozilla::Maybe<mozilla::ColorScheme>&) override;
-  void SetMicaBackdrop(bool) override;
 
   bool DispatchTouchEventFromWMPointer(UINT msg, LPARAM aLParam,
                                        const WinPointerInfo& aPointerInfo,

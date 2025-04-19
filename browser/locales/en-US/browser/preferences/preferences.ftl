@@ -229,9 +229,9 @@ r3dfox-modern =
 r3dfox-modern-desc = Enable for standard Firefox Windows 10 UI on all platforms.
 
 r3dfox-e10s =
-    .label = (BETA) Disable e10s (multiprocess)
+    .label = Disable content multiprocess (e10s) (BETA)
 
-r3dfox-e10s-desc = Disables e10s/electrolysis. There are still multiple processes from other browser components with this enabled. Not recommended unless you know what you are doing.
+r3dfox-e10s-desc = Disables e10s/electrolysis content multiprocess. There are still multiple processes from other browser components with this enabled. Not recommended unless you know what you are doing.
 
 r3dfox-accessibility = Accessibility services
 

@@ -168,7 +168,7 @@ void SiteHSTSState::ToString(nsCString& aString) {
 }
 
 nsSiteSecurityService::nsSiteSecurityService()
-    : mUsePreloadList(true), mPreloadListTimeOffset(0), mDafsa(kDafsa) {}
+    : mUsePreloadList(true), mPreloadListTimeOffset(0), mUseStsService(true), mDafsa(kDafsa) {}
 
 nsSiteSecurityService::~nsSiteSecurityService() = default;
 
@@ -185,6 +185,10 @@ nsresult nsSiteSecurityService::Init() {
       "network.stricttransportsecurity.preloadlist", true);
   mozilla::Preferences::AddStrongObserver(
       this, "network.stricttransportsecurity.preloadlist");
+  mUseStsService = mozilla::Preferences::GetBool(
+    "network.stricttransportsecurity.enabled", true);
+  mozilla::Preferences::AddStrongObserver(
+      this, "network.stricttransportsecurity.enabled");
   mPreloadListTimeOffset =
       mozilla::Preferences::GetInt("test.currentTimeOffsetSeconds", 0);
   mozilla::Preferences::AddStrongObserver(this,
@@ -314,6 +318,11 @@ nsresult nsSiteSecurityService::SetHSTSState(
 
   MOZ_ASSERT(aHSTSState == SecurityPropertySet,
              "HSTS State must be SecurityPropertySet");
+
+  // Exit early if STS not enabled
+  if (!mUseStsService) {
+    return NS_OK;
+  }
 
   int64_t expiretime = ExpireTimeFromMaxAge(maxage);
   SiteHSTSState siteState(hostname, aOriginAttributes, expiretime, aHSTSState,
@@ -742,6 +751,13 @@ nsSiteSecurityService::IsSecureURI(nsIURI* aURI,
   nsAutoCString hostname;
   nsresult rv = GetHost(aURI, hostname);
   NS_ENSURE_SUCCESS(rv, rv);
+
+  // Exit early if STS not enabled
+  if (!mUseStsService) {
+    *aResult = false;
+    return NS_OK;
+  }
+
   /* An IP address never qualifies as a secure URI. */
   if (HostIsIPAddress(hostname)) {
     *aResult = false;
@@ -928,6 +944,11 @@ nsresult nsSiteSecurityService::IsSecureHost(
   NS_ENSURE_ARG(aResult);
   *aResult = false;
 
+  // Exit early if STS not enabled
+  if (!mUseStsService) {
+    return NS_OK;
+  }
+
   /* An IP address never qualifies as a secure URI. */
   const nsCString& flatHost = PromiseFlatCString(aHost);
   if (HostIsIPAddress(flatHost)) {
@@ -1008,6 +1029,8 @@ nsSiteSecurityService::Observe(nsISupports* /*subject*/, const char* topic,
   if (strcmp(topic, NS_PREFBRANCH_PREFCHANGE_TOPIC_ID) == 0) {
     mUsePreloadList = mozilla::Preferences::GetBool(
         "network.stricttransportsecurity.preloadlist", true);
+    mUseStsService = mozilla::Preferences::GetBool(
+      "network.stricttransportsecurity.enabled", true);
     mPreloadListTimeOffset =
         mozilla::Preferences::GetInt("test.currentTimeOffsetSeconds", 0);
   }

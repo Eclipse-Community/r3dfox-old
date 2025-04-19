@@ -14333,6 +14333,12 @@
   value: 1048576
   mirror: always
 
+# Master switch for HSTS usage (security <-> privacy tradeoff)
+- name: network.stricttransportsecurity.enabled
+  type: RelaxedAtomicBool
+  value: true
+  mirror: always
+
 # If true, use the HSTS preload list.
 - name: network.stricttransportsecurity.preloadlist
   type: RelaxedAtomicBool

@@ -146,6 +146,7 @@
     #main-menubar:not([lwtheme]) {
       color: black;
     }
+  }
 }
 
 @media (-moz-bool-pref: "r3dfox.aero.fog") {

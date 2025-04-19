@@ -3120,12 +3120,6 @@ ImgDrawResult nsTreeBodyFrame::PaintTwisty(
       if (image) {
         nsPoint anchorPoint = twistyRect.TopLeft();
 
-      // Get the image for drawing.
-      nsCOMPtr<imgIContainer> image;
-      GetImage(aRowIndex, aColumn, true, twistyContext, getter_AddRefs(image));
-      if (image) {
-        nsPoint anchorPoint = twistyRect.TopLeft();
-
         // Center the image. XXX Obey vertical-align style prop?
         if (imageSize.height < twistyRect.height) {
           anchorPoint.y += (twistyRect.height - imageSize.height) / 2;

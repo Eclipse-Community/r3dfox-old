@@ -3402,13 +3402,13 @@ impl Renderer {
             self.gpu_profiler.finish_sampler(opaque_sampler);
         }
 
-        // Draw alpha tiles
-        if !layer.alpha_items.is_empty() {
+        // Draw clear tiles
+        if !layer.clear_tiles.is_empty() {
             let transparent_sampler = self.gpu_profiler.start_sampler(GPU_SAMPLER_TAG_TRANSPARENT);
             self.set_blend(true, FramebufferKind::Main);
-            self.set_blend_mode_premultiplied_alpha(FramebufferKind::Main);
+            self.device.set_blend_mode_premultiplied_dest_out();
             self.draw_tile_list(
-                layer.alpha_items.iter(),
+                layer.clear_tiles.iter(),
                 &composite_state,
                 &composite_state.external_surfaces,
                 projection,
@@ -3417,13 +3417,13 @@ impl Renderer {
             self.gpu_profiler.finish_sampler(transparent_sampler);
         }
 
-        // Draw clear tiles
-        if !layer.clear_tiles.is_empty() {
+        // Draw alpha tiles
+        if !layer.alpha_items.is_empty() {
             let transparent_sampler = self.gpu_profiler.start_sampler(GPU_SAMPLER_TAG_TRANSPARENT);
             self.set_blend(true, FramebufferKind::Main);
-            self.device.set_blend_mode_premultiplied_dest_out();
+            self.set_blend_mode_premultiplied_alpha(FramebufferKind::Main);
             self.draw_tile_list(
-                layer.clear_tiles.iter(),
+                layer.alpha_items.iter(),
                 &composite_state,
                 &composite_state.external_surfaces,
                 projection,
@@ -3463,7 +3463,7 @@ impl Renderer {
 
         for (idx, tile) in composite_state.tiles.iter().enumerate() {
             // Clear tiles overwrite whatever is under them, so they are treated as opaque.
-            let is_opaque = tile.kind == TileKind::Opaque;
+            let is_opaque = tile.kind != TileKind::Alpha;
 
             let device_tile_box = composite_state.get_device_rect(
                 &tile.local_rect,
@@ -3495,7 +3495,6 @@ impl Renderer {
             match tile.kind {
                 TileKind::Opaque | TileKind::Alpha => {
                     // Store (index of tile, index of layer) so we can segment them below 
-                    // occlusion add shit is here now
                     occlusion.add(&rect, is_opaque, idx); // (idx, input_layers.len() - 1));
                 }
                 TileKind::Clear => {
@@ -4687,9 +4686,9 @@ impl Renderer {
             // Invalidate any native surface tiles that might be updated by passes.
             if !frame.has_been_rendered {
                 for tile in &frame.composite_state.tiles {
-                    //if tile.kind == TileKind::Clear {
-                    //    continue;
-                    //}
+                    if tile.kind == TileKind::Clear {
+                        continue;
+                    }
                     if !tile.local_dirty_rect.is_empty() {
                         if let CompositeTileSurface::Texture { surface: ResolvedSurfaceTexture::Native { id, .. } } = tile.surface {
                             let valid_rect = frame.composite_state.get_surface_rect(

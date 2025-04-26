@@ -171,7 +171,6 @@ static const char sIntPrefs[][45] = {
     "ui.scrollbarFadeDuration",
     "ui.contextMenuOffsetVertical",
     "ui.contextMenuOffsetHorizontal",
-    "ui.tooltipOffsetVertical",
     "ui.GtkCSDAvailable",
     "ui.GtkCSDMinimizeButton",
     "ui.GtkCSDMaximizeButton",

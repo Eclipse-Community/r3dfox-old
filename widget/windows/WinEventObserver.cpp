@@ -24,7 +24,6 @@
 #include "mozilla/Logging.h"
 #include "mozilla/LookAndFeel.h"
 #include "mozilla/WindowsVersion.h"
-#include "nsLookAndFeel.h"
 #include "nsStringFwd.h"
 #include "nsWindowDbg.h"
 #include "nsdefs.h"
@@ -177,11 +176,10 @@ static void OnSettingsChange(WPARAM wParam, LPARAM lParam) {
     case SPI_SETCLIENTAREAANIMATION:
     case SPI_SETKEYBOARDDELAY:
     case SPI_SETMOUSEVANISH:
-    case MOZ_SPI_SETCURSORSIZE:
       // These need to update LookAndFeel cached values.
       //
       // They affect reduced motion settings / caret blink count / show pointer
-      // while typing / tooltip offset, so no need to invalidate style / layout.
+      // while typing, so no need to invalidate style / layout.
       NotifyThemeChanged(widget::ThemeChangeKind::MediaQueriesOnly);
       return;
 

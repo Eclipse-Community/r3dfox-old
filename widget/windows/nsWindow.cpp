@@ -79,7 +79,6 @@
 
 #include "mozilla/widget/WinEventObserver.h"
 #include "mozilla/widget/WinMessages.h"
-#include "nsLookAndFeel.h"
 #include "nsWindow.h"
 #include "nsWindowTaskbarConcealer.h"
 #include "nsAppRunner.h"

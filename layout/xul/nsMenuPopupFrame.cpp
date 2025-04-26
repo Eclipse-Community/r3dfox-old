@@ -2166,12 +2166,6 @@ nsMargin nsMenuPopupFrame::GetMargin() const {
     margin.left += auOffset.x;
     margin.right += auOffset.x;
   }
-  if (mPopupType == PopupType::Tooltip && !IsAnchored()) {
-    const auto auOffset =
-        CSSPixel::ToAppUnits(LookAndFeel::TooltipOffsetVertical());
-    margin.top += auOffset;
-    margin.bottom += auOffset;
-  }
   // TODO(emilio): We should consider make these properly mirrored (that is,
   // changing -= to += here, and removing the rtl special case), but some tests
   // rely on the old behavior of the anchor moving physically regardless of

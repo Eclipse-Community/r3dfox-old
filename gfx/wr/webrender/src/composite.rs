@@ -1348,6 +1348,7 @@ pub struct CompositorInputLayer {
 // TODO(gw): Include information about picture cache slices and external surfaces.
 pub struct CompositorInputConfig<'a> {
     pub layers: &'a [CompositorInputLayer],
+    pub framebuffer_size: DeviceIntSize,
 }
 
 // Trait for implementors of swapchain based compositing.

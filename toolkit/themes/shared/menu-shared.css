@@ -4,7 +4,6 @@
 
 @namespace url("http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul");
 
-<<<<<<< HEAD
 *|*:root {
   --menu-icon-opacity: 1;
   --menu-arrow-width: 1em;
@@ -49,8 +48,6 @@ menuseparator::before {
   }
 }
 
-=======
->>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
 /* Scroll buttons */
 
 /* Hide arrow buttons when there's nothing to scroll in that direction */
@@ -165,7 +162,6 @@ menuitem:is([default="true"], .spell-suggestion),
 menucaption {
   font-weight: bold;
 }
-<<<<<<< HEAD
 
 /* Don't leave space for icons on Win10. */
 @media (-moz-windows-non-native-menus) {
@@ -221,5 +217,3 @@ menucaption {
     margin-inline-start: 25px;
   }
 }
-=======
->>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")

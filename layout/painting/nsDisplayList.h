@@ -1448,10 +1448,7 @@ class nsDisplayListBuilder {
   void AddWindowExcludeGlassRegion(nsIFrame* aFrame, const nsRect& aBounds) {
     mWindowExcludeGlassRegion.Add(aFrame, aBounds);
   }
-<<<<<<< HEAD
 
-=======
->>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
   /**
    * Returns the window exclude glass region.
    */

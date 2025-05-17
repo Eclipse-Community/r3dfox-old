@@ -112,12 +112,8 @@ pub use self::transform::{TransformBox, TransformOrigin, TransformStyle, Transla
 #[cfg(feature = "gecko")]
 pub use self::ui::CursorImage;
 pub use self::ui::{
-<<<<<<< HEAD
     BoolInteger, Cursor, Inert, PointerEvents, ScrollbarColor, UserFocus, UserInput,
     UserSelect,
-=======
-    BoolInteger, Cursor, Inert, PointerEvents, ScrollbarColor, UserFocus, UserInput, UserSelect,
->>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
 };
 pub use super::generics::grid::GridTemplateComponent as GenericGridTemplateComponent;
 

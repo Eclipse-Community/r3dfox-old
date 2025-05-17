@@ -17757,53 +17757,13 @@
 # Prefs starting with "widget."
 #---------------------------------------------------------------------------
 
-<<<<<<< HEAD
-=======
-- name: widget.native-controls.force-dwm-report-off
-  type: bool
-  value: false
-  mirror: always
-  
-- name: widget.native-controls.force-glass-reporting
-  type: int32_t
-  value: 0
-  mirror: always
-  
-- name: widget.native-controls.override-aero-caption-buttons-mask-width
-  type: int32_t
-  value: 0
-  mirror: always
-  
-- name: widget.native-controls.override-aero-caption-buttons-mask-height
-  type: int32_t
-  value: 0
-  mirror: always
-  
-- name: widget.native-controls.scrollbar-style
-  type: int32_t
-  value: 0
-  mirror: always
-  
-- name: widget.native-controls.tooltip-style
-  type: int32_t
-  value: 0
-  mirror: always
-
->>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
 # Global user preference for disabling native theme in content processes.
 #
 # NOTE(emilio): When changing this make sure to update the non_native_theme
 # entry in python/mozbuild/mozbuild/mozinfo.py and test_fission_autostart.py
-<<<<<<< HEAD
 - name: widget.non-native-theme.enabled
   type: RelaxedAtomicBool
   value: true
-=======
-# erm no LOLOLOLOLOLO -eriz
-- name: widget.non-native-theme.enabled
-  type: RelaxedAtomicBool
-  value: false
->>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
   mirror: always
 
 # Whether the non-native theme should always use system colors. Useful mostly

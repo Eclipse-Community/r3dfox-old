@@ -290,15 +290,9 @@ class nsTreeBodyFrame final : public mozilla::SimpleXULLeafFrame,
 
   // Retrieve the area for the twisty for a cell.
   nsITheme* GetTwistyRect(int32_t aRowIndex, nsTreeColumn* aColumn,
-<<<<<<< HEAD
                           nsRect& aImageRect, nsRect& aTwistyRect,
                           nsPresContext* aPresContext,
                           ComputedStyle* aTwistyContext);
-=======
-                     nsRect& aImageRect, nsRect& aTwistyRect,
-                     nsPresContext* aPresContext,
-                     ComputedStyle* aTwistyContext);
->>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
 
   // Fetch an image from the image cache, or request it.
   already_AddRefed<imgIContainer> GetImage(int32_t aRowIndex,

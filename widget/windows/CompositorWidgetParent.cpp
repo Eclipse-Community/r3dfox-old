@@ -121,10 +121,7 @@ bool CompositorWidgetParent::InitCompositor(layers::Compositor* aCompositor) {
 bool CompositorWidgetParent::HasGlass() const {
   MOZ_ASSERT(layers::CompositorThreadHolder::IsInCompositorThread() ||
              wr::RenderThread::IsInRenderThread());
-<<<<<<< HEAD
 
-=======
->>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
   return mTransparencyMode == uint32_t(TransparencyMode::BorderlessGlass);
 }
 

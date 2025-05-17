@@ -40,7 +40,6 @@
 #include "mozilla/SpinEventLoopUntil.h"
 #include "nsThreadUtils.h"
 #if defined(XP_WIN)
-#include "mozilla/WindowsVersion.h"
 #  include "WinUtils.h"
 #endif
 #include "mozilla/widget/CompositorWidget.h"
@@ -365,15 +364,7 @@ bool CompositorBridgeChild::SendFlushRenderingAsync(
   if (!mCanSend) {
     return false;
   }
-<<<<<<< HEAD
   return PCompositorBridgeChild::SendFlushRendering(aReasons);
-=======
-  if (!IsWin8OrLater() && !gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled()) {
-  return PCompositorBridgeChild::SendFlushRendering(aReasons);
-  } else {
-  return PCompositorBridgeChild::SendFlushRenderingAsync(aReasons);
-  }
->>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
 }
 
 void CompositorBridgeChild::SetForceSyncFlushRendering(

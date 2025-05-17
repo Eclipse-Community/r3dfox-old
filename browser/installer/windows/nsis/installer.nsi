@@ -1872,13 +1872,8 @@ Function .onInit
   ; SSE2 instruction set is available. Result returned in $R7.
   System::Call "kernel32::IsProcessorFeaturePresent(i 10)i .R7"
 
-<<<<<<< HEAD
   ; Windows NT 6.0 (Vista/Server 2008) and lower are not supported.
   ${Unless} ${AtLeastWin7}
-=======
-  ; At least let it try to install on anything.
-  ${Unless} ${AtLeastWin95}
->>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
     ${If} "$R7" == "0"
       strCpy $R7 "$(WARN_MIN_SUPPORTED_OSVER_CPU_MSG)"
     ${Else}

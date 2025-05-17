@@ -357,12 +357,6 @@ bool nsNativeThemeGTK::GetGtkWidgetAndState(StyleAppearance aAppearance,
       break;
     case StyleAppearance::MenulistText:
       return false;  // nothing to do, but prevents the bg from being drawn
-<<<<<<< HEAD
-=======
-    case StyleAppearance::MozMenulistArrowButton:
-      aGtkWidgetType = MOZ_GTK_DROPDOWN_ARROW;
-      break;
->>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
     case StyleAppearance::ToolbarbuttonDropdown:
     case StyleAppearance::ButtonArrowDown:
     case StyleAppearance::ButtonArrowUp:
@@ -1022,14 +1016,8 @@ bool nsNativeThemeGTK::GetWidgetOverflow(nsDeviceContext* aContext,
   return true;
 }
 
-<<<<<<< HEAD
 auto nsNativeThemeGTK::IsWidgetNonNative(
     nsIFrame* aFrame, StyleAppearance aAppearance) -> NonNative {
-=======
-auto nsNativeThemeGTK::IsWidgetNonNative(nsIFrame* aFrame,
-                                         StyleAppearance aAppearance)
-    -> NonNative {
->>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
   if (IsWidgetScrollbarPart(aAppearance) ||
       aAppearance == StyleAppearance::FocusOutline) {
     return NonNative::Always;
@@ -1274,10 +1262,7 @@ nsNativeThemeGTK::ThemeSupportsWidget(nsPresContext* aPresContext,
     case StyleAppearance::Radio:
     case StyleAppearance::Checkbox:
     case StyleAppearance::Toolbox:  // N/A
-<<<<<<< HEAD
     case StyleAppearance::Toolbar:
-=======
->>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
     case StyleAppearance::Toolbarbutton:
     case StyleAppearance::Dualbutton:  // so we can override the border with 0
     case StyleAppearance::ToolbarbuttonDropdown:

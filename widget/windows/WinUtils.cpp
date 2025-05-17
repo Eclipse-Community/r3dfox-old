@@ -548,10 +548,7 @@ static BOOL CALLBACK AddMonitor(HMONITOR, HDC, LPRECT, LPARAM aParam) {
   (*(int32_t*)aParam)++;
   return TRUE;
 }
-<<<<<<< HEAD
 
-=======
->>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
 /* static */
 int32_t WinUtils::GetMonitorCount() {
   int32_t monitorCount = 0;

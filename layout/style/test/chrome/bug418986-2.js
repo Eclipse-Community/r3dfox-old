@@ -58,13 +58,9 @@ var suppressed_toggles = [
   "-moz-scrollbar-end-forward",
   "-moz-scrollbar-start-backward",
   "-moz-scrollbar-start-forward",
-<<<<<<< HEAD
   "-moz-windows-compositor",
   "-moz-windows-default-theme",
   "-moz-windows-glass",
-=======
-  "-moz-windows-default-theme",
->>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
   "-moz-gtk-csd-available",
   "-moz-gtk-csd-minimize-button",
   "-moz-gtk-csd-maximize-button",

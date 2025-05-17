@@ -55,7 +55,8 @@ UniquePtr<ExternalTextureDMABuf> ExternalTextureDMABuf::Create(
     return nullptr;
   }
 
-  auto fd = mozilla::UniqueFileHandle(rawFd);
+  RefPtr<gfx::FileHandleWrapper> fd =
+      new gfx::FileHandleWrapper(UniqueFileHandle(rawFd));
 
   RefPtr<DMABufSurface> surface = DMABufSurfaceRGBA::CreateDMABufSurface(
       std::move(fd), dmaBufInfo, aWidth, aHeight);
@@ -147,7 +148,7 @@ void ExternalTextureDMABuf::GetSnapshot(const ipc::Shmem& aDestShmem,
 }
 
 UniqueFileHandle ExternalTextureDMABuf::CloneDmaBufFd() {
-  return mSurfaceDescriptor.fds()[0].ClonePlatformHandle();
+  return mSurfaceDescriptor.fds()[0]->ClonePlatformHandle();
 }
 
 const ffi::WGPUVkImageHandle* ExternalTextureDMABuf::GetHandle() {

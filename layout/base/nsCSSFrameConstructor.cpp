@@ -3184,7 +3184,7 @@ nsIFrame* nsCSSFrameConstructor::ConstructFieldSetFrame(
 
   const nsStyleDisplay* fieldsetContentDisplay =
       fieldsetContentStyle->StyleDisplay();
-  bool isScrollable = fieldsetContentDisplay->IsScrollableOverflow();
+  const bool isScrollable = fieldsetContentDisplay->IsScrollableOverflow();
   nsContainerFrame* scrollFrame = nullptr;
   if (isScrollable) {
     fieldsetContentStyle = BeginBuildingScrollContainerFrame(
@@ -3537,15 +3537,9 @@ nsCSSFrameConstructor::FindHTMLData(const Element& aElement,
                "Unexpected parent for fieldset content anon box");
 
   if (aElement.IsInNativeAnonymousSubtree()) {
-<<<<<<< HEAD
    if (aElement.NodeInfo()->NameAtom() == nsGkAtoms::label &&
       aParentFrame->IsFileControlFrame()) {
     static constexpr FrameConstructionData sFileLabelData(
-=======
-    if (aElement.NodeInfo()->NameAtom() == nsGkAtoms::label &&
-      aParentFrame->IsFileControlFrame()) {
-      static constexpr FrameConstructionData sFileLabelData(
->>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
         NS_NewFileControlLabelFrame);
     return &sFileLabelData;
     }

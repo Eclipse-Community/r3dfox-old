@@ -268,10 +268,7 @@ select > button {
   position: static;
   appearance: auto;
   -moz-default-appearance: -moz-menulist-arrow-button;
-
-  /* Make sure to size correctly if the combobox has a non-auto height. */
-  block-size: 100%;
-  box-sizing: border-box;
+  pointer-events: none;
 
   /* Make sure to size correctly if the combobox has a non-auto height. */
   block-size: 100%;
@@ -291,11 +288,8 @@ select > button {
 *|*::-moz-display-comboboxcontrol-frame {
   content: inherit;
   overflow: clip;
-<<<<<<< HEAD
   pointer-events: none;
   cursor: unset;
-=======
->>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
   color: unset;
   white-space: nowrap;
   text-align: unset;
@@ -306,13 +300,6 @@ select > button {
   min-inline-size: max-content;
   box-sizing: border-box;
   line-height: -moz-block-height;
-<<<<<<< HEAD
-=======
-}
-
-::-moz-display-comboboxcontrol-frame:read-write {
-  user-select: text;
->>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
 }
 
 option[label]::before {
@@ -542,16 +529,11 @@ input:is([type=reset], [type=button], [type=submit]) {
   font: -moz-button;
   white-space: pre;
   text-align: center;
-<<<<<<< HEAD
-=======
-  overflow-clip-box: padding-box;
->>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
 }
 
 input[type=color] {
   inline-size: 64px;
   block-size: 32px;
-<<<<<<< HEAD
 }
 
 @media (-moz-non-native-content-theme) {
@@ -564,20 +546,12 @@ input[type=color] {
   input[type=color] {
     padding: 4px;
   }
-=======
->>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
 }
 
-@media (-moz-non-native-content-theme) {
-  button,
-  ::file-selector-button,
-  input:is([type=reset], [type=button], [type=submit]) {
-    padding-inline: 4px;
-  }
-
-  input[type=color] {
-    padding: 4px;
-  }
+/* https://github.com/whatwg/html/issues/9976 */
+input:not([type=image i], [type=range i], [type=checkbox i], [type=radio i]) {
+  overflow: clip !important;
+  overflow-clip-margin: 0 !important;
 }
 
 button,

@@ -92,12 +92,6 @@ void MFCDMChild::EnsureRemote() {
     return;
   }
 
-  if (!IsWin10OrLater()) {
-    LOG("only support MF CDM on Windows 10+");
-    mState = NS_ERROR_NOT_AVAILABLE;
-    return RemotePromise::CreateAndReject(mState, __func__);
-  }
-
   mRemotePromise = mRemotePromiseHolder.Ensure(__func__);
 
   if (!IsWin10OrLater()) {

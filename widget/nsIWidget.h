@@ -900,7 +900,9 @@ class nsIWidget : public nsISupports {
   }
 
   /**
-   * Set the background color for this widget
+   * Set the native background color for this widget.
+   *
+   * Deprecated. Currently only implemented for iOS. (See bug 1901896.)
    *
    * @param aColor the new background color
    */

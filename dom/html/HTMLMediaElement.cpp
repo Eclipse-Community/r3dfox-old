@@ -4846,10 +4846,10 @@ void HTMLMediaElement::ReleaseAudioWakeLockIfExists() {
     }
     LOG(LogLevel::Debug,
         ("%p Delaying audio wakelock release by %u ms", this, delayMs));
-    TimeStamp target =
-        TimeStamp ::Now() + TimeDuration::FromMilliseconds(delayMs);
+    AwakeTimeStamp target =
+        AwakeTimeStamp ::Now() + AwakeTimeDuration::FromMilliseconds(delayMs);
     mAudioWakelockReleaseScheduler.emplace(
-        DelayedScheduler<TimeStamp>{GetMainThreadSerialEventTarget()});
+        DelayedScheduler<AwakeTimeStamp>{GetMainThreadSerialEventTarget()});
     mAudioWakelockReleaseScheduler->Ensure(
         target,
         [self = RefPtr<HTMLMediaElement>(this), this]() {

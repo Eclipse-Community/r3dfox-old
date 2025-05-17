@@ -657,11 +657,7 @@ static bool CanUseJob() {
   // for now and adding telemetry to see if we can restrict this to just remote.
   nsAutoString localRemote(::GetSystemMetrics(SM_REMOTESESSION) ? u"remote"
                                                                 : u"local");
-<<<<<<< HEAD
   TelemetryScalar::Set(Telemetry::ScalarID::SANDBOX_NO_JOB, localRemote, true);
-=======
-  //Telemetry::ScalarSet(Telemetry::ScalarID::SANDBOX_NO_JOB, localRemote, true);
->>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
 
   // Allow running without the job object in this case. This slightly reduces
   // the ability of the sandbox to protect its children from spawning new

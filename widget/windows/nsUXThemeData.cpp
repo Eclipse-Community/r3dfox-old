@@ -14,10 +14,6 @@
 #include "nsUXThemeConstants.h"
 #include "gfxWindowsPlatform.h"
 
-// -- native controls patch includes --
-#include "mozilla/StaticPrefs_widget.h"
-// -- end native controls patch includes --
-
 using namespace mozilla;
 using namespace mozilla::widget;
 
@@ -90,11 +86,6 @@ const wchar_t* nsUXThemeData::GetClassName(nsUXThemeClass cls) {
       return L"Button";
     case eUXEdit:
       return L"Edit";
-<<<<<<< HEAD
-=======
-    case eUXTooltip:
-      return L"Tooltip";
->>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
     case eUXRebar:
       return L"Rebar";
     case eUXMediaRebar:
@@ -103,11 +94,6 @@ const wchar_t* nsUXThemeData::GetClassName(nsUXThemeClass cls) {
       return L"Communications::Rebar";
     case eUXBrowserTabBarRebar:
       return L"BrowserTabBar::Rebar";
-<<<<<<< HEAD
-=======
-    case eUXScrollbar:
-      return L"Scrollbar";
->>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
     case eUXToolbar:
       return L"Toolbar";
     case eUXMediaToolbar:
@@ -122,11 +108,6 @@ const wchar_t* nsUXThemeData::GetClassName(nsUXThemeClass cls) {
       return L"Trackbar";
     case eUXSpin:
       return L"Spin";
-<<<<<<< HEAD
-=======
-    case eUXStatus:
-      return L"Status";
->>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
     case eUXCombobox:
       return L"Combobox";
     case eUXHeader:
@@ -197,24 +178,9 @@ void nsUXThemeData::EnsureCommandButtonBoxMetrics() {
 void nsUXThemeData::UpdateTitlebarInfo(HWND aWnd) {
   if (!aWnd) return;
 
-<<<<<<< HEAD
   if (!sTitlebarInfoPopulatedAero &&
       gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled()) {
     RECT captionButtons;
-=======
-  bool dwmCompositionEnabled =
-      StaticPrefs::widget_native_controls_force_dwm_report_off()
-          ? false
-          : gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled();
-
-  if (!sTitlebarInfoPopulatedAero && dwmCompositionEnabled) {
-    RECT captionButtons;
-    int overrideCaptionButtonsWidth = StaticPrefs::
-        widget_native_controls_override_aero_caption_buttons_mask_width();
-    int overrideCaptionButtonsHeight = StaticPrefs::
-        widget_native_controls_override_aero_caption_buttons_mask_height();
-
->>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
     if (SUCCEEDED(DwmGetWindowAttribute(aWnd, DWMWA_CAPTION_BUTTON_BOUNDS,
                                         &captionButtons,
                                         sizeof(captionButtons)))) {
@@ -222,35 +188,16 @@ void nsUXThemeData::UpdateTitlebarInfo(HWND aWnd) {
           captionButtons.right - captionButtons.left - 3;
       sCommandButtonBoxMetrics.cy =
           (captionButtons.bottom - captionButtons.top) - 1;
-<<<<<<< HEAD
       sCommandButtonBoxMetricsInitialized = true;
       MOZ_ASSERT(
           sCommandButtonBoxMetrics.cx > 0 && sCommandButtonBoxMetrics.cy > 0,
           "We must not cache bad command button box dimensions");
-=======
-
-      if (overrideCaptionButtonsWidth > 0) {
-        sCommandButtonBoxMetrics.cx = overrideCaptionButtonsWidth;
-      }
-      if (overrideCaptionButtonsHeight > 0) {
-        sCommandButtonBoxMetrics.cy = overrideCaptionButtonsHeight;
-      }
-
-      sCommandButtonBoxMetricsInitialized = true;
-      //MOZ_ASSERT(
-      //    sCommandButtonBoxMetrics.cx > 0 && sCommandButtonBoxMetrics.cy > 0,
-      //    "We must not cache bad command button box dimensions");
->>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
       sTitlebarInfoPopulatedAero = true;
     }
   }
 
   // NB: sTitlebarInfoPopulatedThemed is always true pre-vista.
-<<<<<<< HEAD
   if (sTitlebarInfoPopulatedThemed || IsWin8OrLater()) return;
-=======
-  if (sTitlebarInfoPopulatedThemed) return;
->>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
 
   // Query a temporary, visible window with command buttons to get
   // the right metrics.
@@ -280,13 +227,9 @@ void nsUXThemeData::UpdateTitlebarInfo(HWND aWnd) {
   // We try to avoid activating this window, but on Aero basic (aero without
   // compositor) and aero lite (special theme for win server 2012/2013) we may
   // get the wrong information if the window isn't activated, so we have to:
-<<<<<<< HEAD
   if (sThemeId == WindowsTheme::AeroLite ||
       (sThemeId == WindowsTheme::Aero &&
        !gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled())) {
-=======
-  if (!dwmCompositionEnabled) {
->>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
     showType = SW_SHOW;
   }
   ShowWindow(hWnd, showType);
@@ -394,11 +337,7 @@ void nsUXThemeData::UpdateNativeThemeInfo() {
   // themes "don't count" as default themes, so we specifically check for high
   // contrast mode in that situation.
   sIsDefaultWindowsTheme = [&] {
-<<<<<<< HEAD
     if (sIsHighContrastOn && IsWin8OrLater()) {
-=======
-    if (sIsHighContrastOn) {
->>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
       return false;
     }
     return sThemeId == WindowsTheme::Aero ||

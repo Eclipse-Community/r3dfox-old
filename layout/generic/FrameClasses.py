@@ -54,11 +54,7 @@ FRAME_CLASSES = [
     Frame("nsCheckboxRadioFrame", "CheckboxRadio", REPLACED | LEAF),
     Frame("nsColorControlFrame", "ColorControl", REPLACED | LEAF),
     Frame("nsColumnSetFrame", "ColumnSet", COMMON),
-<<<<<<< HEAD
     Frame("ColumnSetWrapperFrame", "ColumnSetWrapper", BLOCK | BFC),
-=======
-    Frame("ColumnSetWrapperFrame", "ColumnSetWrapper", BLOCK),
->>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
     Frame("nsComboboxControlFrame", "ComboboxControl", BLOCK | REPLACED),
     # FIXME(emilio, bug 1362907): Revisit these after that bug, this is the
     # only frame that has ReplacedContainsBlock but not Replaced, which is

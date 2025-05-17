@@ -246,11 +246,7 @@ class gfxWindowsPlatform final : public gfxPlatform {
   bool mInitializedDevices = false;
 
   mozilla::Atomic<DwmCompositionStatus, mozilla::ReleaseAcquire>
-<<<<<<< HEAD
       mDwmCompositionStatus;
-=======
-    mDwmCompositionStatus;
->>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
 
   // Cached contents of the output color profile file
   nsTArray<uint8_t> mCachedOutputColorProfile;

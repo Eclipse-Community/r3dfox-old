@@ -51,19 +51,7 @@
 dropmarker {
   pointer-events: none;
   flex: 0;
-<<<<<<< HEAD
   align-self: center;
-=======
-
-  :host(:not([native])) & {
-    display: flex;
-    appearance: none;
-    content: url(chrome://global/skin/icons/arrow-down-12.svg);
-    -moz-context-properties: fill;
-    fill: currentColor;
-    align-self: center;
-  }
->>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
 }
 
 dropmarker:not([native]) {

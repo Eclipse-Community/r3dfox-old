@@ -274,12 +274,8 @@ class D3DSharedTexturesReporter final : public nsIMemoryReporter {
 NS_IMPL_ISUPPORTS(D3DSharedTexturesReporter, nsIMemoryReporter)
 
 gfxWindowsPlatform::gfxWindowsPlatform()
-<<<<<<< HEAD
     : mRenderMode(RENDER_GDI),
       mDwmCompositionStatus(DwmCompositionStatus::Unknown) {
-=======
-    : mRenderMode(RENDER_GDI), mDwmCompositionStatus(DwmCompositionStatus::Unknown) {
->>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
   // If win32k is locked down then we can't use COM STA and shouldn't need it.
   // Also, we won't be using any GPU memory in this process.
   if (!IsWin32kLockedDown()) {
@@ -422,19 +418,13 @@ void gfxWindowsPlatform::InitAcceleration() {
       gfxVars::SetDwmCompositionEnabled(true);
     }
   }
-<<<<<<< HEAD
 
-=======
->>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
   // gfxVars are not atomic, but multiple threads can query DWM status
   // Therefore, mirror value into an atomic
   mDwmCompositionStatus = gfxVars::DwmCompositionEnabled()
                               ? DwmCompositionStatus::Enabled
                               : DwmCompositionStatus::Disabled;
-<<<<<<< HEAD
 
-=======
->>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
   gfxVars::SetDwmCompositionEnabledListener([this] {
     this->mDwmCompositionStatus = gfxVars::DwmCompositionEnabled()
                                       ? DwmCompositionStatus::Enabled
@@ -1779,10 +1769,7 @@ void gfxWindowsPlatform::InitGPUProcessSupport() {
 
 bool gfxWindowsPlatform::DwmCompositionEnabled() {
   MOZ_RELEASE_ASSERT(mDwmCompositionStatus != DwmCompositionStatus::Unknown);
-<<<<<<< HEAD
 
-=======
->>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
   return mDwmCompositionStatus == DwmCompositionStatus::Enabled;
 }
 

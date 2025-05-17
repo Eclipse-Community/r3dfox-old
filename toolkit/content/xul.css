@@ -384,36 +384,24 @@ tooltip {
 }
 
 @media (-moz-platform: windows) {
-  @media not (-moz-bool-pref: "widget.non-native-theme.enabled") {
-    tooltip {
-      color-scheme: light;
-    }
+  tooltip {
+    appearance: none;
+    border: 1px solid;
   }
 
-<<<<<<< HEAD
   @media (-moz-windows-default-theme) {
-=======
-  @media (-moz-bool-pref: "widget.non-native-theme.enabled") {
->>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
     tooltip {
-      appearance: none;
-      border: 1px solid;
+      background-color: #f9f9fb;
+      color: black;
+      border-color: #67676c;
+      border-radius: 4px;
     }
 
-    @media (-moz-windows-default-theme) {
+    @media (prefers-color-scheme: dark) {
       tooltip {
-        background-color: #f9f9fb;
-        color: black;
-        border-color: #67676c;
-        border-radius: 4px;
-      }
-  
-      @media (prefers-color-scheme: dark) {
-        tooltip {
-          background-color: #2b2a33;
-          color: white;
-          border-color: #f9f9fb;
-        }
+        background-color: #2b2a33;
+        color: white;
+        border-color: #f9f9fb;
       }
     }
   }

@@ -12,11 +12,8 @@
   }
 }
 
-<<<<<<< HEAD
 @media not (-moz-platform: windows-win7) {
   @media not (-moz-platform: windows-win8) {
-=======
->>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
   &:where([tabsintitlebar]) {
     --toolbox-bgcolor: ActiveCaption;
     --toolbox-textcolor: CaptionText;
@@ -30,8 +27,6 @@
   --sidebar-text-color: -moz-sidebartext;
   --sidebar-border-color: -moz-sidebarborder;
 
-  --panel-separator-color: color-mix(in srgb, currentColor 25%, transparent);
-  --panel-shortcut-color: inherit;
   --tabs-navbar-separator-color: ThreeDShadow;
   --tabs-navbar-separator-style: solid;
 
@@ -47,8 +42,6 @@
   --urlbar-box-hover-text-color: var(--urlbar-box-text-color);
   --urlbar-icon-fill-opacity: 0.9;
   @media (prefers-contrast) {
-    --autocomplete-popup-separator-color: color-mix(in srgb, currentColor 86%, transparent);
-    --panel-separator-color: currentColor;
     --urlbar-icon-fill-opacity: 1;
   }
 

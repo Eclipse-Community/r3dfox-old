@@ -37,6 +37,7 @@
 #include "mozilla/widget/va_drmcommon.h"
 #include "YCbCrUtils.h"
 #include "mozilla/gfx/2D.h"
+#include "mozilla/gfx/FileHandleWrapper.h"
 #include "GLContextTypes.h"  // for GLContext, etc
 #include "GLContextEGL.h"
 #include "GLContextProvider.h"
@@ -234,14 +235,10 @@ DMABufSurface::DMABufSurface(SurfaceType aSurfaceType)
       mGbmBufferObject(),
       mMappedRegion(),
       mMappedRegionStride(),
-      mSyncFd(-1),
       mSync(nullptr),
       mGlobalRefCountFd(0),
       mUID(gNewSurfaceUID++),
       mSurfaceLock("DMABufSurface") {
-  for (auto& slot : mDmabufFds) {
-    slot = -1;
-  }
   for (auto& modifier : mBufferModifiers) {
     modifier = DRM_FORMAT_MOD_INVALID;
   }
@@ -276,9 +273,8 @@ already_AddRefed<DMABufSurface> DMABufSurface::CreateDMABufSurface(
 }
 
 void DMABufSurface::FenceDelete() {
-  if (mSyncFd > 0) {
-    close(mSyncFd);
-    mSyncFd = -1;
+  if (mSyncFd) {
+    mSyncFd = nullptr;
   }
 
   if (!mGL) {
@@ -308,7 +304,8 @@ void DMABufSurface::FenceSet() {
 
     mSync = egl->fCreateSync(LOCAL_EGL_SYNC_NATIVE_FENCE_ANDROID, nullptr);
     if (mSync) {
-      mSyncFd = egl->fDupNativeFenceFDANDROID(mSync);
+      auto rawFd = egl->fDupNativeFenceFDANDROID(mSync);
+      mSyncFd = new gfx::FileHandleWrapper(UniqueFileHandle(rawFd));
       mGL->fFlush();
       return;
     }
@@ -320,7 +317,7 @@ void DMABufSurface::FenceSet() {
 }
 
 void DMABufSurface::FenceWait() {
-  if (!mGL || mSyncFd < 0) {
+  if (!mGL || !mSyncFd) {
     MOZ_DIAGNOSTIC_ASSERT(mGL,
                           "DMABufSurface::FenceWait() missing GL context!");
     return;
@@ -328,21 +325,20 @@ void DMABufSurface::FenceWait() {
 
   const auto& gle = gl::GLContextEGL::Cast(mGL);
   const auto& egl = gle->mEgl;
+  auto syncFd = mSyncFd->ClonePlatformHandle();
+  // No need to try mSyncFd twice.
+  mSyncFd = nullptr;
 
-  const EGLint attribs[] = {LOCAL_EGL_SYNC_NATIVE_FENCE_FD_ANDROID, mSyncFd,
-                            LOCAL_EGL_NONE};
+  const EGLint attribs[] = {LOCAL_EGL_SYNC_NATIVE_FENCE_FD_ANDROID,
+                            syncFd.get(), LOCAL_EGL_NONE};
   EGLSync sync = egl->fCreateSync(LOCAL_EGL_SYNC_NATIVE_FENCE_ANDROID, attribs);
   if (!sync) {
     MOZ_ASSERT(false, "DMABufSurface::FenceWait(): Failed to create GLFence!");
-    // We failed to create GLFence so clear mSyncFd to avoid another try.
-    close(mSyncFd);
-    mSyncFd = -1;
     return;
   }
 
-  // mSyncFd is owned by GLFence so clear local reference to avoid double close
-  // at DMABufSurface::FenceDelete().
-  mSyncFd = -1;
+  // syncFd is owned by GLFence so clear local reference to avoid double.
+  Unused << syncFd.release();
 
   egl->fClientWaitSync(sync, 0, LOCAL_EGL_FOREVER);
   egl->fDestroySync(sync);
@@ -505,7 +501,7 @@ DMABufSurfaceRGBA::~DMABufSurfaceRGBA() { ReleaseSurface(); }
 
 bool DMABufSurfaceRGBA::OpenFileDescriptorForPlane(
     const MutexAutoLock& aProofOfLock, int aPlane) {
-  if (mDmabufFds[aPlane] >= 0) {
+  if (mDmabufFds[aPlane]) {
     return true;
   }
   gbm_bo* bo = mGbmBufferObject[0];
@@ -518,13 +514,29 @@ bool DMABufSurfaceRGBA::OpenFileDescriptorForPlane(
 
   if (mBufferPlaneCount == 1) {
     MOZ_ASSERT(aPlane == 0, "DMABuf: wrong surface plane!");
-    mDmabufFds[0] = GbmLib::GetFd(bo);
+    auto rawFd = GbmLib::GetFd(bo);
+    if (rawFd >= 0) {
+      mDmabufFds[0] = new gfx::FileHandleWrapper(UniqueFileHandle(rawFd));
+    } else {
+      gfxCriticalNoteOnce << "GbmLib::GetFd() failed";
+      LOGDMABUF(
+          ("DMABufSurfaceRGBA::OpenFileDescriptorForPlane: GbmLib::GetFd() "
+           "failed"));
+    }
   } else {
-    mDmabufFds[aPlane] = GetDMABufDevice()->GetDmabufFD(
+    auto rawFd = GetDMABufDevice()->GetDmabufFD(
         GbmLib::GetHandleForPlane(bo, aPlane).u32);
+    if (rawFd >= 0) {
+      mDmabufFds[aPlane] = new gfx::FileHandleWrapper(UniqueFileHandle(rawFd));
+    } else {
+      gfxCriticalNoteOnce << "DMABufDevice::GetDmabufFD() failed";
+      LOGDMABUF(
+          ("DMABufSurfaceRGBA::OpenFileDescriptorForPlane: "
+           "DMABufDevice::GetDmabufFD() failed"));
+    }
   }
 
-  if (mDmabufFds[aPlane] < 0) {
+  if (!mDmabufFds[aPlane]) {
     CloseFileDescriptors(aProofOfLock);
     return false;
   }
@@ -534,9 +546,8 @@ bool DMABufSurfaceRGBA::OpenFileDescriptorForPlane(
 
 void DMABufSurfaceRGBA::CloseFileDescriptorForPlane(
     const MutexAutoLock& aProofOfLock, int aPlane, bool aForceClose = false) {
-  if ((aForceClose || mGbmBufferObject[0]) && mDmabufFds[aPlane] >= 0) {
-    close(mDmabufFds[aPlane]);
-    mDmabufFds[aPlane] = -1;
+  if ((aForceClose || mGbmBufferObject[0]) && mDmabufFds[aPlane]) {
+    mDmabufFds[aPlane] = nullptr;
   }
 }
 
@@ -650,15 +661,22 @@ bool DMABufSurfaceRGBA::Create(mozilla::gl::GLContext* aGLContext,
     mBufferPlaneCount = DMABUF_BUFFER_PLANES;
     return false;
   }
-  if (!egl->fExportDMABUFImage(mEGLImage, mDmabufFds, mStrides, mOffsets)) {
+  int fds[DMABUF_BUFFER_PLANES] = {-1};
+  if (!egl->fExportDMABUFImage(mEGLImage, fds, mStrides, mOffsets)) {
     LOGDMABUF(("  ExportDMABUFImageMESA failed, quit\n"));
     return false;
+  }
+
+  for (int i = 0; i < mBufferPlaneCount; i++) {
+    if (fds[i] > 0) {
+      mDmabufFds[i] = new gfx::FileHandleWrapper(UniqueFileHandle(fds[i]));
+    }
   }
 
   // A broken driver can return dmabuf without valid file descriptors
   // which leads to fails later so quit now.
   for (int i = 0; i < mBufferPlaneCount; i++) {
-    if (mDmabufFds[i] < 0) {
+    if (!mDmabufFds[i]) {
       LOGDMABUF(
           ("  ExportDMABUFImageMESA failed, mDmabufFds[%d] is invalid, quit",
            i));
@@ -673,7 +691,7 @@ bool DMABufSurfaceRGBA::Create(mozilla::gl::GLContext* aGLContext,
 }
 
 bool DMABufSurfaceRGBA::Create(
-    mozilla::UniqueFileHandle&& aFd,
+    RefPtr<mozilla::gfx::FileHandleWrapper>&& aFd,
     const mozilla::webgpu::ffi::WGPUDMABufInfo& aDMABufInfo, int aWidth,
     int aHeight) {
   LOGDMABUF(("DMABufSurfaceRGBA::Create() UID %d size %d x %d\n", mUID, mWidth,
@@ -691,20 +709,12 @@ bool DMABufSurfaceRGBA::Create(
   }
   mBufferPlaneCount = aDMABufInfo.plane_count;
 
-  ipc::FileDescriptor fd = ipc::FileDescriptor(std::move(aFd));
+  RefPtr<gfx::FileHandleWrapper> fd = std::move(aFd);
 
   for (uint32_t i = 0; i < aDMABufInfo.plane_count; i++) {
-    auto clonedFd = fd.ClonePlatformHandle();
-
-    mDmabufFds[i] = clonedFd.release();
+    mDmabufFds[i] = fd;
     mStrides[i] = aDMABufInfo.strides[i];
     mOffsets[i] = aDMABufInfo.offsets[i];
-  }
-
-  if (mDmabufFds[0] < 0) {
-    LOGDMABUF(
-        ("  ExportDMABUFImageMESA failed, mDmabufFds[0] is invalid, quit"));
-    return false;
   }
 
   LOGDMABUF(("  imported size %d x %d format %x planes %d modifiers %" PRIx64,
@@ -730,12 +740,7 @@ bool DMABufSurfaceRGBA::ImportSurfaceDescriptor(
        mUID, mWidth, mHeight));
 
   for (int i = 0; i < mBufferPlaneCount; i++) {
-    mDmabufFds[i] = desc.fds()[i].ClonePlatformHandle().release();
-    if (mDmabufFds[i] < 0) {
-      LOGDMABUF(
-          ("    failed to get DMABuf file descriptor: %s", strerror(errno)));
-      return false;
-    }
+    mDmabufFds[i] = desc.fds()[i];
     mStrides[i] = desc.strides()[i];
     mOffsets[i] = desc.offsets()[i];
     mDrmFormats[i] = desc.format()[i];
@@ -768,12 +773,12 @@ bool DMABufSurfaceRGBA::Serialize(
   AutoTArray<uint32_t, DMABUF_BUFFER_PLANES> width;
   AutoTArray<uint32_t, DMABUF_BUFFER_PLANES> height;
   AutoTArray<uint32_t, DMABUF_BUFFER_PLANES> format;
-  AutoTArray<ipc::FileDescriptor, DMABUF_BUFFER_PLANES> fds;
+  AutoTArray<NotNull<RefPtr<gfx::FileHandleWrapper>>, DMABUF_BUFFER_PLANES> fds;
   AutoTArray<uint32_t, DMABUF_BUFFER_PLANES> strides;
   AutoTArray<uint32_t, DMABUF_BUFFER_PLANES> offsets;
   AutoTArray<uintptr_t, DMABUF_BUFFER_PLANES> images;
   AutoTArray<uint64_t, DMABUF_BUFFER_PLANES> modifiers;
-  AutoTArray<ipc::FileDescriptor, 1> fenceFDs;
+  AutoTArray<NotNull<RefPtr<gfx::FileHandleWrapper>>, 1> fenceFDs;
   AutoTArray<ipc::FileDescriptor, 1> refCountFDs;
 
   LOGDMABUF(("DMABufSurfaceRGBA::Serialize() UID %d\n", mUID));
@@ -786,7 +791,7 @@ bool DMABufSurfaceRGBA::Serialize(
   width.AppendElement(mWidth);
   height.AppendElement(mHeight);
   for (int i = 0; i < mBufferPlaneCount; i++) {
-    fds.AppendElement(ipc::FileDescriptor(mDmabufFds[i]));
+    fds.AppendElement(WrapNotNull(mDmabufFds[i]));
     strides.AppendElement(mStrides[i]);
     offsets.AppendElement(mOffsets[i]);
     format.AppendElement(mDrmFormats[i]);
@@ -795,8 +800,8 @@ bool DMABufSurfaceRGBA::Serialize(
 
   CloseFileDescriptors(lockFD);
 
-  if (mSync) {
-    fenceFDs.AppendElement(ipc::FileDescriptor(mSyncFd));
+  if (mSync && mSyncFd) {
+    fenceFDs.AppendElement(WrapNotNull(mSyncFd));
   }
 
   if (mGlobalRefCountFd) {
@@ -826,7 +831,7 @@ bool DMABufSurfaceRGBA::CreateTexture(GLContext* aGLContext, int aPlane) {
 #define ADD_PLANE_ATTRIBS(plane_idx)                                        \
   {                                                                         \
     attribs.AppendElement(LOCAL_EGL_DMA_BUF_PLANE##plane_idx##_FD_EXT);     \
-    attribs.AppendElement(mDmabufFds[plane_idx]);                           \
+    attribs.AppendElement(mDmabufFds[plane_idx]->GetHandle());              \
     attribs.AppendElement(LOCAL_EGL_DMA_BUF_PLANE##plane_idx##_OFFSET_EXT); \
     attribs.AppendElement((int)mOffsets[plane_idx]);                        \
     attribs.AppendElement(LOCAL_EGL_DMA_BUF_PLANE##plane_idx##_PITCH_EXT);  \
@@ -962,7 +967,7 @@ wl_buffer* DMABufSurfaceRGBA::CreateWlBuffer() {
   LOGDMABUF(("  layer [0] modifier %" PRIx64, mBufferModifiers[0]));
   for (int i = 0; i < mBufferPlaneCount; i++) {
     zwp_linux_buffer_params_v1_add(
-        params, mDmabufFds[i], i, mOffsets[i], mStrides[i],
+        params, mDmabufFds[i]->GetHandle(), i, mOffsets[i], mStrides[i],
         mBufferModifiers[0] >> 32, mBufferModifiers[0] & 0xffffffff);
   }
 
@@ -1047,7 +1052,7 @@ void* DMABufSurface::MapInternal(uint32_t aX, uint32_t aY, uint32_t aWidth,
 
   MutexAutoLock lockFD(mSurfaceLock);
   if (OpenFileDescriptorForPlane(lockFD, aPlane)) {
-    SyncDmaBuf(mDmabufFds[aPlane], DMA_BUF_SYNC_START);
+    SyncDmaBuf(mDmabufFds[aPlane]->GetHandle(), DMA_BUF_SYNC_START);
     CloseFileDescriptorForPlane(lockFD, aPlane);
   }
 
@@ -1079,7 +1084,7 @@ void DMABufSurface::Unmap(int aPlane) {
     LOGDMABUF(("DMABufSurface::Unmap() UID %d plane %d\n", mUID, aPlane));
     MutexAutoLock lockFD(mSurfaceLock);
     if (OpenFileDescriptorForPlane(lockFD, aPlane)) {
-      SyncDmaBuf(mDmabufFds[aPlane], DMA_BUF_SYNC_END);
+      SyncDmaBuf(mDmabufFds[aPlane]->GetHandle(), DMA_BUF_SYNC_END);
       CloseFileDescriptorForPlane(lockFD, aPlane);
     }
     GbmLib::Unmap(mGbmBufferObject[aPlane], mMappedRegionData[aPlane]);
@@ -1189,7 +1194,7 @@ already_AddRefed<DMABufSurface> DMABufSurfaceRGBA::CreateDMABufSurface(
 }
 
 already_AddRefed<DMABufSurface> DMABufSurfaceRGBA::CreateDMABufSurface(
-    mozilla::UniqueFileHandle&& aFd,
+    RefPtr<mozilla::gfx::FileHandleWrapper>&& aFd,
     const mozilla::webgpu::ffi::WGPUDMABufInfo& aDMABufInfo, int aWidth,
     int aHeight) {
   RefPtr<DMABufSurfaceRGBA> surf = new DMABufSurfaceRGBA();
@@ -1252,7 +1257,7 @@ bool DMABufSurfaceYUV::OpenFileDescriptorForPlane(
   // This can happen when we import dmabuf surface from VA-API decoder,
   // mGbmBufferObject is null and we don't close
   // file descriptors for surface as they are our only reference to it.
-  if (mDmabufFds[aPlane] >= 0) {
+  if (mDmabufFds[aPlane]) {
     return true;
   }
 
@@ -1263,19 +1268,20 @@ bool DMABufSurfaceYUV::OpenFileDescriptorForPlane(
     return false;
   }
 
-  mDmabufFds[aPlane] = GbmLib::GetFd(mGbmBufferObject[aPlane]);
-  if (mDmabufFds[aPlane] < 0) {
+  auto rawFd = GbmLib::GetFd(mGbmBufferObject[aPlane]);
+  if (rawFd < 0) {
     CloseFileDescriptors(aProofOfLock);
     return false;
   }
+  mDmabufFds[aPlane] = new gfx::FileHandleWrapper(UniqueFileHandle(rawFd));
+
   return true;
 }
 
 void DMABufSurfaceYUV::CloseFileDescriptorForPlane(
     const MutexAutoLock& aProofOfLock, int aPlane, bool aForceClose = false) {
-  if ((aForceClose || mGbmBufferObject[aPlane]) && mDmabufFds[aPlane] >= 0) {
-    close(mDmabufFds[aPlane]);
-    mDmabufFds[aPlane] = -1;
+  if ((aForceClose || mGbmBufferObject[aPlane]) && mDmabufFds[aPlane]) {
+    mDmabufFds[aPlane] = nullptr;
   }
 }
 
@@ -1285,7 +1291,7 @@ bool DMABufSurfaceYUV::ImportPRIMESurfaceDescriptor(
       ("DMABufSurfaceYUV::ImportPRIMESurfaceDescriptor() UID %d FOURCC %x",
        mUID, aDesc.fourcc));
   // Already exists?
-  MOZ_DIAGNOSTIC_ASSERT(mDmabufFds[0] < 0);
+  MOZ_DIAGNOSTIC_ASSERT(!mDmabufFds[0]);
 
   if (aDesc.num_layers > DMABUF_BUFFER_PLANES ||
       aDesc.num_objects > DMABUF_BUFFER_PLANES) {
@@ -1325,7 +1331,8 @@ bool DMABufSurfaceYUV::MoveYUVDataImpl(const VADRMPRIMESurfaceDescriptor& aDesc,
     unsigned int object = aDesc.layers[i].object_index[0];
     // Keep VADRMPRIMESurfaceDescriptor untouched and dup() dmabuf
     // file descriptors.
-    mDmabufFds[i] = dup(aDesc.objects[object].fd);
+    auto rawFd = dup(aDesc.objects[object].fd);
+    mDmabufFds[i] = new gfx::FileHandleWrapper(UniqueFileHandle(rawFd));
   }
   return true;
 }
@@ -1441,7 +1448,7 @@ bool DMABufSurfaceYUV::CreateLinearYUVPlane(int aPlane, int aWidth, int aHeight,
   }
 
   mStrides[aPlane] = GbmLib::GetStride(mGbmBufferObject[aPlane]);
-  mDmabufFds[aPlane] = -1;
+  mDmabufFds[aPlane] = nullptr;
 
   return true;
 }
@@ -1543,12 +1550,7 @@ bool DMABufSurfaceYUV::ImportSurfaceDescriptor(
 
   MOZ_RELEASE_ASSERT(mBufferPlaneCount <= DMABUF_BUFFER_PLANES);
   for (int i = 0; i < mBufferPlaneCount; i++) {
-    mDmabufFds[i] = aDesc.fds()[i].ClonePlatformHandle().release();
-    if (mDmabufFds[i] < 0) {
-      LOGDMABUF(("    failed to get DMABuf plane file descriptor: %s",
-                 strerror(errno)));
-      return false;
-    }
+    mDmabufFds[i] = aDesc.fds()[i];
     mWidth[i] = aDesc.width()[i];
     mHeight[i] = aDesc.height()[i];
     mWidthAligned[i] = aDesc.widthAligned()[i];
@@ -1557,8 +1559,9 @@ bool DMABufSurfaceYUV::ImportSurfaceDescriptor(
     mStrides[i] = aDesc.strides()[i];
     mOffsets[i] = aDesc.offsets()[i];
     mBufferModifiers[i] = aDesc.modifier()[i];
-    LOGDMABUF(("    plane %d fd %d size %d x %d format %x", i, mDmabufFds[i],
-               mWidth[i], mHeight[i], mDrmFormats[i]));
+    LOGDMABUF(("    plane %d fd %d size %d x %d format %x", i,
+               mDmabufFds[i]->GetHandle(), mWidth[i], mHeight[i],
+               mDrmFormats[i]));
   }
 
   if (aDesc.fence().Length() > 0) {
@@ -1579,11 +1582,11 @@ bool DMABufSurfaceYUV::Serialize(
   AutoTArray<uint32_t, DMABUF_BUFFER_PLANES> widthBytes;
   AutoTArray<uint32_t, DMABUF_BUFFER_PLANES> heightBytes;
   AutoTArray<uint32_t, DMABUF_BUFFER_PLANES> format;
-  AutoTArray<ipc::FileDescriptor, DMABUF_BUFFER_PLANES> fds;
+  AutoTArray<NotNull<RefPtr<gfx::FileHandleWrapper>>, DMABUF_BUFFER_PLANES> fds;
   AutoTArray<uint32_t, DMABUF_BUFFER_PLANES> strides;
   AutoTArray<uint32_t, DMABUF_BUFFER_PLANES> offsets;
   AutoTArray<uint64_t, DMABUF_BUFFER_PLANES> modifiers;
-  AutoTArray<ipc::FileDescriptor, 1> fenceFDs;
+  AutoTArray<NotNull<RefPtr<gfx::FileHandleWrapper>>, 1> fenceFDs;
   AutoTArray<ipc::FileDescriptor, 1> refCountFDs;
 
   LOGDMABUF(("DMABufSurfaceYUV::Serialize() UID %d", mUID));
@@ -1599,7 +1602,7 @@ bool DMABufSurfaceYUV::Serialize(
     widthBytes.AppendElement(mWidthAligned[i]);
     heightBytes.AppendElement(mHeightAligned[i]);
     format.AppendElement(mDrmFormats[i]);
-    fds.AppendElement(ipc::FileDescriptor(mDmabufFds[i]));
+    fds.AppendElement(WrapNotNull(mDmabufFds[i]));
     strides.AppendElement(mStrides[i]);
     offsets.AppendElement(mOffsets[i]);
     modifiers.AppendElement(mBufferModifiers[i]);
@@ -1607,8 +1610,8 @@ bool DMABufSurfaceYUV::Serialize(
 
   CloseFileDescriptors(lockFD);
 
-  if (mSync) {
-    fenceFDs.AppendElement(ipc::FileDescriptor(mSyncFd));
+  if (mSync && mSyncFd) {
+    fenceFDs.AppendElement(WrapNotNull(mSyncFd));
   }
 
   if (mGlobalRefCountFd) {
@@ -1648,7 +1651,7 @@ bool DMABufSurfaceYUV::CreateEGLImage(GLContext* aGLContext, int aPlane) {
   attribs.AppendElement(mDrmFormats[aPlane]);
 #define ADD_PLANE_ATTRIBS_NV12(plane_idx)                                 \
   attribs.AppendElement(LOCAL_EGL_DMA_BUF_PLANE##plane_idx##_FD_EXT);     \
-  attribs.AppendElement(mDmabufFds[aPlane]);                              \
+  attribs.AppendElement(mDmabufFds[aPlane]->GetHandle());                 \
   attribs.AppendElement(LOCAL_EGL_DMA_BUF_PLANE##plane_idx##_OFFSET_EXT); \
   attribs.AppendElement((int)mOffsets[aPlane]);                           \
   attribs.AppendElement(LOCAL_EGL_DMA_BUF_PLANE##plane_idx##_PITCH_EXT);  \

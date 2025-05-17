@@ -121,11 +121,6 @@ treecol,
 .tree-columnpicker-button {
   appearance: auto;
   -moz-default-appearance: treeheadercell;
-<<<<<<< HEAD:toolkit/themes/shared/tree.css
-=======
-  background-color: -moz-ColHeader;
-  color: -moz-ColHeaderText;
->>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith"):toolkit/themes/shared/tree/tree.css
   align-items: center;
   justify-content: center;
   color: -moz-ColHeaderText;
@@ -133,27 +128,9 @@ treecol,
   margin: 0;
 }
 
-<<<<<<< HEAD:toolkit/themes/shared/tree.css
 treecol:where(:hover),
 .tree-columnpicker-button:where(:hover) {
   color: -moz-ColHeaderHoverText;
-=======
-  border-inline-start: 1px solid ThreeDLightShadow;
-
-  @media (-moz-platform: linux) or (prefers-color-scheme: dark) {
-    appearance: none;
-    box-shadow: inset 0 -1px ThreeDLightShadow;
-  }
-
-  &:where(:hover) {
-    background-color: -moz-ColHeaderHover;
-    color: -moz-ColHeaderHoverText;
-  }
-  &:where(:hover:active) {
-    background-color: -moz-ColHeaderActive;
-    color: -moz-ColHeaderActiveText;
-  }
->>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith"):toolkit/themes/shared/tree/tree.css
 }
 
 .treecol-text {
@@ -315,26 +292,6 @@ html|input.tree-input {
       border-bottom-color: ThreeDHighlight;
       border-inline-start-color: ThreeDShadow;
     }
-  }
-}
-
-@media (-moz-windows-classic) {
-  treecol,
-  .tree-columnpicker-button {
-    border: 1px solid;
-    border-top-color: ThreeDHighlight;
-    border-inline-end-color: ThreeDShadow;
-    border-bottom-color: ThreeDShadow;
-    border-inline-start-color: ThreeDHighlight;
-    box-shadow: none;
-    background-color: -moz-Dialog;
-  }
-  treecol:where(:hover:active),
-  .tree-columnpicker-button:where(:hover:active) {
-    border-top-color: ThreeDShadow;
-    border-inline-end-color: ThreeDHighlight;
-    border-bottom-color: ThreeDHighlight;
-    border-inline-start-color: ThreeDShadow;
   }
 }
 

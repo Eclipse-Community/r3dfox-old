@@ -14,7 +14,6 @@
 #include <dwrite.h>
 #include <versionhelpers.h>
 #include <float.h>
-#include <versionhelpers.h>
 #include "2D.h"
 #include "Logging.h"
 #include "ImageScaling.h"

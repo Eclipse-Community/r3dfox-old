@@ -7955,13 +7955,8 @@ void nsBlockFrame::BuildDisplayList(nsDisplayListBuilder* aBuilder,
   //    (A) we are not honoring the document colors
   //    (B) the backplate feature is preffed on
   //    (C) the force color adjust property is set to auto
-<<<<<<< HEAD
   if (PresContext()->ForcingColors() && !IsComboboxControlFrame() &&
       StaticPrefs::browser_display_permit_backplate() &&
-=======
-  if (StaticPrefs::browser_display_permit_backplate() &&
-      PresContext()->ForcingColors() && !IsComboboxControlFrame() &&
->>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
       StyleText()->mForcedColorAdjust != StyleForcedColorAdjust::None) {
     backplateColor.emplace(GetBackplateColor(this));
   }

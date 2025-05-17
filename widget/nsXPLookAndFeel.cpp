@@ -156,10 +156,6 @@ static const char sIntPrefs[][45] = {
     "ui.windowsGlass",
     "ui.macGraphiteTheme",
     "ui.windowsMica",
-    "ui.windowsDefaultTheme",
-    "ui.dwmCompositor",
-    "ui.windowsClassic",
-    "ui.windowsGlass",
     "ui.macBigSurTheme",
     "ui.macRTL",
     "ui.macTitlebarHeight",
@@ -501,15 +497,11 @@ bool LookAndFeel::WindowsNonNativeMenusEnabled() {
     case 1:
       return true;
     default:
-<<<<<<< HEAD
 #ifdef XP_WIN
       return IsWin10OrLater();
 #else
       return false;
 #endif
-=======
-      return false;
->>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
   }
 }
 

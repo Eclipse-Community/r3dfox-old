@@ -15,11 +15,7 @@
      broken. So instead just show the normal titlebar in that case, and override
      the window color as transparent when the compositor is available. */
   @media not (-moz-windows-compositor) {
-<<<<<<< HEAD
     :root[tabsintitlebar][lwtheme]:not([inDOMFullscreen]) .browser-titlebar {
-=======
-    :root[tabsintitlebar]:not([inDOMFullscreen]) #titlebar:-moz-lwtheme {
->>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
       visibility: visible;
     }
 
@@ -36,7 +32,6 @@
   }
 
   /* Add a fog for background tabs to be visible on Windows 7 glass window background */
-<<<<<<< HEAD
   @media (-moz-platform: windows-win7) {
     @media (-moz-windows-default-theme) {
       #TabsToolbar {
@@ -51,19 +46,12 @@
         background-image: radial-gradient(ellipse at bottom, rgba(255,255,255,0.8), rgba(255,255,255,0.5) 80%, transparent);
   z-index: -1;
        }
-=======
-  @media (-moz-platform: windows) {
-    @media (-moz-windows-default-theme) {
-      #TabsToolbar {
-        background-image: radial-gradient(ellipse at bottom, rgba(255,255,255,0.8), rgba(255,255,255,0.5) 40%, transparent);
->>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
         color: black;
         --toolbarbutton-icon-fill: currentColor;
       }
     }
   }
 
-<<<<<<< HEAD
   @media (-moz-platform: windows-win8) {
     @media (-moz-windows-default-theme) {
       #TabsToolbar {
@@ -73,16 +61,6 @@
     }
     #toolbar-menubar {
       color: black;
-=======
-  @media (-moz-windows-classic) {
-    :root[tabsintitlebar]:not([sizemode=fullscreen]) #TabsToolbar {
-      background-image: linear-gradient(transparent, ActiveCaption);
-      background-size: auto 200%;
-    }
-  
-    :root[tabsintitlebar]:not([sizemode=fullscreen]) #TabsToolbar:-moz-window-inactive {
-      background-image: linear-gradient(transparent, InactiveCaption);
->>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
     }
   }
 
@@ -99,26 +77,13 @@
     }
   }
 
-<<<<<<< HEAD
   @media (-moz-platform: windows-win7),
          (-moz-platform: windows-win8) {
-=======
-  @media (-moz-platform: windows) {
->>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
     @media (-moz-windows-compositor) {
       :root {
         background: transparent !important;
       }
 
-<<<<<<< HEAD
-=======
-      /* Allows seeing the caption bar on Windows pre-10 */
-      #navigator-toolbox,
-      #navigator-toolbox-background {
-        background-color: transparent !important;
-      }
-
->>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
       /* Remove lwtheme borders from toolbars in non-maximized windows. */
       #toolbar-menubar,
       #TabsToolbar {
@@ -131,11 +96,7 @@
        These colors are copied from browser.css. */
     @media not (-moz-windows-compositor),
            not (-moz-windows-default-theme),
-<<<<<<< HEAD
            (-moz-platform: windows-win8) {
-=======
-           (-moz-platform: windows) {
->>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
       :root[tabsintitlebar] {
         color: CaptionText;
       }
@@ -163,11 +124,7 @@
       padding-top: 0 !important;
     }
   }
-<<<<<<< HEAD
   @media (-moz-platform: windows-win8) {
-=======
-  @media (-moz-platform: windows) {
->>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
     #navigator-toolbox {
       border-top: none !important;
     }

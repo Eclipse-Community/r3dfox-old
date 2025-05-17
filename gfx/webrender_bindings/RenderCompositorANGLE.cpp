@@ -203,24 +203,8 @@ HWND RenderCompositorANGLE::GetCompositorHwnd() {
   return hwnd;
 }
 
-bool RenderCompositorANGLE::CreateSwapChain(nsACString& aError) {
-  MOZ_ASSERT(!UseCompositor());
-
-  mFirstPresent = true;
-  HWND hwnd = mWidget->AsWindows()->GetHwnd();
-
-  RefPtr<IDXGIDevice> dxgiDevice;
-  mDevice->QueryInterface((IDXGIDevice**)getter_AddRefs(dxgiDevice));
-
-  RefPtr<IDXGIFactory> dxgiFactory;
-  {
-    RefPtr<IDXGIAdapter> adapter;
-    dxgiDevice->GetAdapter(getter_AddRefs(adapter));
-
-    adapter->GetParent(
-        IID_PPV_ARGS((IDXGIFactory**)getter_AddRefs(dxgiFactory)));
-  }
-
+bool RenderCompositorANGLE::CreateSwapChainForHWND() {
+  RefPtr<IDXGIFactory> dxgiFactory = DXGIFactory();
   RefPtr<IDXGIFactory2> dxgiFactory2;
   HRESULT hr = dxgiFactory->QueryInterface(
       (IDXGIFactory2**)getter_AddRefs(dxgiFactory2));
@@ -228,19 +212,8 @@ bool RenderCompositorANGLE::CreateSwapChain(nsACString& aError) {
     dxgiFactory2 = nullptr;
   }
 
-<<<<<<< HEAD
   HWND hwnd = mWidget->AsWindows()->GetHwnd();
   if (dxgiFactory2) {
-=======
-  CreateSwapChainForDCompIfPossible(dxgiFactory2);
-  if (gfx::gfxVars::UseWebRenderDCompWin() && !mSwapChain) {
-    MOZ_ASSERT(GetCompositorHwnd());
-    aError.Assign("RcANGLE(create swapchain for dcomp failed)"_ns);
-    return false;
-  }
-
-  if (!mSwapChain && dxgiFactory2) {
->>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
     RefPtr<IDXGISwapChain1> swapChain1;
     bool useTripleBuffering = false;
 
@@ -251,7 +224,6 @@ bool RenderCompositorANGLE::CreateSwapChain(nsACString& aError) {
     desc.SampleDesc.Count = 1;
     desc.SampleDesc.Quality = 0;
     desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-
     bool useFlipSequential = gfx::gfxVars::UseWebRenderFlipSequentialWin();
     if (useFlipSequential && !mWidget->AsWindows()->GetCompositorHwnd()) {
       useFlipSequential = false;
@@ -282,48 +254,40 @@ bool RenderCompositorANGLE::CreateSwapChain(nsACString& aError) {
       mSwapChain = swapChain1;
       mSwapChain1 = swapChain1;
       mUseTripleBuffering = useTripleBuffering;
-<<<<<<< HEAD
       return true;
     }
     if (useFlipSequential) {
-=======
-    } else if (useFlipSequential) {
->>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
       gfxCriticalNoteOnce << "FLIP_SEQUENTIAL is not supported. Fallback";
     }
   }
 
-  if (!mSwapChain) {
-    if (mWidget->AsWindows()->GetCompositorHwnd()) {
-      // Destroy compositor window.
-      mWidget->AsWindows()->DestroyCompositorWindow();
-      hwnd = mWidget->AsWindows()->GetHwnd();
-    }
+  if (mWidget->AsWindows()->GetCompositorHwnd()) {
+    // Destroy compositor window.
+    mWidget->AsWindows()->DestroyCompositorWindow();
+    hwnd = mWidget->AsWindows()->GetHwnd();
+  }
 
-    DXGI_SWAP_CHAIN_DESC swapDesc{};
-    swapDesc.BufferDesc.Width = 0;
-    swapDesc.BufferDesc.Height = 0;
-    swapDesc.BufferDesc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
-    swapDesc.BufferDesc.RefreshRate.Numerator = 60;
-    swapDesc.BufferDesc.RefreshRate.Denominator = 1;
-    swapDesc.SampleDesc.Count = 1;
-    swapDesc.SampleDesc.Quality = 0;
-    swapDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-    swapDesc.BufferCount = 1;
-    swapDesc.OutputWindow = hwnd;
-    swapDesc.Windowed = TRUE;
-    swapDesc.Flags = 0;
-    swapDesc.SwapEffect = DXGI_SWAP_EFFECT_SEQUENTIAL;
+  DXGI_SWAP_CHAIN_DESC swapDesc{};
+  swapDesc.BufferDesc.Width = 0;
+  swapDesc.BufferDesc.Height = 0;
+  swapDesc.BufferDesc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
+  swapDesc.BufferDesc.RefreshRate.Numerator = 60;
+  swapDesc.BufferDesc.RefreshRate.Denominator = 1;
+  swapDesc.SampleDesc.Count = 1;
+  swapDesc.SampleDesc.Quality = 0;
+  swapDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+  swapDesc.BufferCount = 1;
+  swapDesc.OutputWindow = hwnd;
+  swapDesc.Windowed = TRUE;
+  swapDesc.Flags = 0;
+  swapDesc.SwapEffect = DXGI_SWAP_EFFECT_SEQUENTIAL;
 
-    HRESULT hr = dxgiFactory->CreateSwapChain(dxgiDevice, &swapDesc,
-                                              getter_AddRefs(mSwapChain));
-    if (FAILED(hr)) {
-      aError.Assign(
-          nsPrintfCString("RcANGLE(swap chain create failed %lx)", hr));
-      return false;
-    }
+  hr = dxgiFactory->CreateSwapChain(DXGIDevice().get(), &swapDesc,
+                                    getter_AddRefs(mSwapChain));
+  if (FAILED(hr)) {
+    return false;
+  }
 
-<<<<<<< HEAD
   RefPtr<IDXGISwapChain1> swapChain1;
   hr =
       mSwapChain->QueryInterface((IDXGISwapChain1**)getter_AddRefs(swapChain1));
@@ -349,30 +313,21 @@ bool RenderCompositorANGLE::CreateSwapChain(nsACString& aError) {
   if (!mSwapChain && !CreateSwapChainForHWND()) {
     aError.Assign("RcANGLE(swap chain create failed)"_ns);
     return false;
-=======
-    RefPtr<IDXGISwapChain1> swapChain1;
-    hr = mSwapChain->QueryInterface(
-        (IDXGISwapChain1**)getter_AddRefs(swapChain1));
-    if (SUCCEEDED(hr)) {
-      mSwapChain1 = swapChain1;
-    }
->>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
   }
 
   // We need this because we don't want DXGI to respond to Alt+Enter.
-  dxgiFactory->MakeWindowAssociation(hwnd, DXGI_MWA_NO_WINDOW_CHANGES);
+  HWND hwnd = mWidget->AsWindows()->GetHwnd();
+  DXGIFactory()->MakeWindowAssociation(hwnd, DXGI_MWA_NO_WINDOW_CHANGES);
 
   if (!ResizeBufferIfNeeded()) {
     aError.Assign("RcANGLE(resize buffer failed)"_ns);
     return false;
   }
-
   return true;
 }
 
-void RenderCompositorANGLE::CreateSwapChainForDCompIfPossible(
-    IDXGIFactory2* aDXGIFactory2) {
-  if (!aDXGIFactory2 || !mDCLayerTree) {
+void RenderCompositorANGLE::CreateSwapChainForDCompIfPossible() {
+  if (!mDCLayerTree) {
     return;
   }
 
@@ -389,7 +344,7 @@ void RenderCompositorANGLE::CreateSwapChainForDCompIfPossible(
 
   // When compositor is enabled, CompositionSurface is used for rendering.
   // It does not support triple buffering.
-  bool useTripleBuffering =
+  const bool useTripleBuffering =
       gfx::gfxVars::UseWebRenderTripleBufferingWin() && !UseCompositor();
   // Non Glass window is common since Windows 10.
   bool useAlpha = false;
@@ -398,42 +353,39 @@ void RenderCompositorANGLE::CreateSwapChainForDCompIfPossible(
   if (swapChain1) {
     mSwapChain = swapChain1;
     mSwapChain1 = swapChain1;
-    mUseAlpha = useAlpha;
     mUseTripleBuffering = useTripleBuffering;
     mUseAlpha = useAlpha;
     mDCLayerTree->SetDefaultSwapChain(swapChain1);
   } else {
-    // Clear CLayerTree on falire
+    // Clear DCLayerTree on falire
     mDCLayerTree = nullptr;
   }
 }
 
-RefPtr<IDXGISwapChain1> RenderCompositorANGLE::CreateSwapChainForDComp(
-    bool aUseTripleBuffering, bool aUseAlpha) {
-  HRESULT hr;
+RefPtr<IDXGIDevice> RenderCompositorANGLE::DXGIDevice() {
   RefPtr<IDXGIDevice> dxgiDevice;
   mDevice->QueryInterface((IDXGIDevice**)getter_AddRefs(dxgiDevice));
+  return dxgiDevice;
+}
+
+RefPtr<IDXGIFactory> RenderCompositorANGLE::DXGIFactory() {
+  RefPtr<IDXGIAdapter> adapter;
+  DXGIDevice()->GetAdapter(getter_AddRefs(adapter));
 
   RefPtr<IDXGIFactory> dxgiFactory;
-  {
-    RefPtr<IDXGIAdapter> adapter;
-    dxgiDevice->GetAdapter(getter_AddRefs(adapter));
+  adapter->GetParent(IID_PPV_ARGS((IDXGIFactory**)getter_AddRefs(dxgiFactory)));
+  return dxgiFactory;
+}
 
-<<<<<<< HEAD
 RefPtr<IDXGISwapChain1> RenderCompositorANGLE::CreateSwapChainForDComp(
     bool aUseTripleBuffering, bool aUseAlpha) {
   RefPtr<IDXGIDevice> dxgiDevice;
   mDevice->QueryInterface((IDXGIDevice**)getter_AddRefs(dxgiDevice));
 
   RefPtr<IDXGIFactory> dxgiFactory = DXGIFactory();
-=======
-    adapter->GetParent(
-        IID_PPV_ARGS((IDXGIFactory**)getter_AddRefs(dxgiFactory)));
-  }
->>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
 
   RefPtr<IDXGIFactory2> dxgiFactory2;
-  hr = dxgiFactory->QueryInterface(
+  HRESULT hr = dxgiFactory->QueryInterface(
       (IDXGIFactory2**)getter_AddRefs(dxgiFactory2));
   if (FAILED(hr)) {
     return nullptr;
@@ -486,10 +438,7 @@ bool RenderCompositorANGLE::BeginFrame() {
       if (useAlpha != mUseAlpha) {
         DestroyEGLSurface();
         mBufferSize.reset();
-<<<<<<< HEAD
 
-=======
->>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
         RefPtr<IDXGISwapChain1> swapChain1 =
             CreateSwapChainForDComp(mUseTripleBuffering, useAlpha);
         if (swapChain1) {
@@ -993,19 +942,11 @@ void RenderCompositorANGLE::EnableNativeCompositor(bool aEnable) {
   mDCLayerTree->DisableNativeCompositor();
 
   bool useAlpha = mWidget->AsWindows()->HasGlass();
-<<<<<<< HEAD
   DestroyEGLSurface();
   mBufferSize.reset();
 
   if (mDCLayerTree) {
     RefPtr<IDXGISwapChain1> swapChain1 =
-=======
-
-  DestroyEGLSurface();
-  mBufferSize.reset();
-
-  RefPtr<IDXGISwapChain1> swapChain1 =
->>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
       CreateSwapChainForDComp(mUseTripleBuffering, useAlpha);
   if (swapChain1) {
     mSwapChain = swapChain1;
@@ -1021,14 +962,11 @@ void RenderCompositorANGLE::EnableNativeCompositor(bool aEnable) {
     gfxCriticalNote << "Failed to re-create SwapChain";
     RenderThread::Get()->HandleWebRenderError(WebRenderError::NEW_SURFACE);
     return;
-<<<<<<< HEAD
    }
   } else {
     if (NS_WARN_IF(!CreateSwapChainForHWND())) {
       return;
     }
-=======
->>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
   }
   mDisablingNativeCompositor = true;
 }

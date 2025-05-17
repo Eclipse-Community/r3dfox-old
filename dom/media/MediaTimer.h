@@ -10,6 +10,7 @@
 #  include <queue>
 
 #  include "mozilla/AbstractThread.h"
+#  include "mozilla/AwakeTimeStamp.h"
 #  include "mozilla/Monitor.h"
 #  include "mozilla/MozPromise.h"
 #  include "mozilla/RefPtr.h"
@@ -158,6 +159,7 @@ class DelayedScheduler {
 };
 
 using MediaTimerTimeStamp = MediaTimer<TimeStamp>;
+using MediaTimerAwakeTimeStamp = MediaTimer<AwakeTimeStamp>;
 
 }  // namespace mozilla
 

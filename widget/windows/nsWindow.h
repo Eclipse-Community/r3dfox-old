@@ -187,7 +187,6 @@ class nsWindow final : public nsBaseWidget {
   [[nodiscard]] nsresult GetRestoredBounds(LayoutDeviceIntRect& aRect) override;
   LayoutDeviceIntRect GetClientBounds() override;
   LayoutDeviceIntPoint GetClientOffset() override;
-  void SetBackgroundColor(const nscolor& aColor) override;
   void SetCursor(const Cursor&) override;
   bool PrepareForFullscreenTransition(nsISupports** aData) override;
   void PerformFullscreenTransition(FullscreenTransitionStage aStage,
@@ -290,9 +289,6 @@ class nsWindow final : public nsBaseWidget {
   WindowHook& GetWindowHook() { return mWindowHook; }
   nsWindow* GetParentWindow(bool aIncludeOwner);
 
-  /**
-   * Misc.
-   */
   bool WidgetTypeSupportsAcceleration() override;
 
   void ForcePresent();
@@ -520,10 +516,7 @@ class nsWindow final : public nsBaseWidget {
   void ResetLayout();
   void InvalidateNonClientRegion();
   HRGN ExcludeNonClientFromPaintRegion(HRGN aRegion);
-<<<<<<< HEAD
   static const wchar_t* GetMainWindowClass();
-=======
->>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
   bool HasGlass() const {
     return mTransparencyMode == TransparencyMode::BorderlessGlass;
   }
@@ -595,16 +588,12 @@ class nsWindow final : public nsBaseWidget {
   DWORD WindowStyle();
   DWORD WindowExStyle();
 
-<<<<<<< HEAD
   static const wchar_t* ChooseWindowClass(WindowType);
   // This method registers the given window class, and returns the class name.
   static const wchar_t* RegisterWindowClass(const wchar_t* aClassName,
                                             UINT aExtraStyle, LPWSTR aIconID);
 
   /**
-=======
-    /**
->>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
    * XP and Vista theming support for windows with rounded edges
    */
   void ClearThemeRegion();
@@ -748,7 +737,6 @@ class nsWindow final : public nsBaseWidget {
   HWND mWnd = nullptr;
   HWND mTransitionWnd = nullptr;
   mozilla::Maybe<WNDPROC> mPrevWndProc;
-  HBRUSH mBrush;
   IMEContext mDefaultIMC;
   HDEVNOTIFY mDeviceNotifyHandle = nullptr;
   bool mInDtor = false;
@@ -789,23 +777,22 @@ class nsWindow final : public nsBaseWidget {
   PlatformCompositorWidgetDelegate* mCompositorWidgetDelegate = nullptr;
 
   LayoutDeviceIntMargin NonClientSizeMargin() const {
-    return NonClientSizeMargin(mNonClientOffset);
+    return NonClientSizeMargin(mCustomNonClientMetrics.mOffset);
   }
   LayoutDeviceIntMargin NonClientSizeMargin(
       const LayoutDeviceIntMargin& aNonClientOffset) const;
   LayoutDeviceIntMargin NormalWindowNonClientOffset() const;
 
-  // Non-client margin settings
-  // Pre-calculated outward offset applied to default frames
-  LayoutDeviceIntMargin mNonClientOffset;
-  // Margins set by the owner
-  LayoutDeviceIntMargin mNonClientMargins{-1, -1, -1, -1};
-  // Margins we'd like to set once chrome is reshown:
-  LayoutDeviceIntMargin mFutureMarginsOnceChromeShows;
-  // Indicates we need to apply margins once toggling chrome into showing:
-  bool mFutureMarginsToUse = false;
+  struct CustomNonClientMetrics {
+    // Width of the left and right portions of the resize region
+    mozilla::LayoutDeviceIntCoord mHorResizeMargin;
+    // Height of the top and bottom portions of the resize region
+    mozilla::LayoutDeviceIntCoord mVertResizeMargin;
+    // Height of the caption plus border
+    mozilla::LayoutDeviceIntCoord mCaptionHeight;
+    // Pre-calculated outward offset applied to the default frame
+    LayoutDeviceIntMargin mOffset;
 
-<<<<<<< HEAD
     LayoutDeviceIntMargin ResizeMargins() const {
       return {mVertResizeMargin, mHorResizeMargin, mVertResizeMargin,
               mHorResizeMargin};
@@ -824,21 +811,10 @@ class nsWindow final : public nsBaseWidget {
   // Indicates we need to apply margins once toggling chrome into showing:
   bool mFutureMarginsToUse = false;
 
-=======
->>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
   // Indicates custom frames are enabled
   bool mCustomNonClient = false;
   // Indicates custom resize margins are in effect
   bool mUseResizeMarginOverrides = false;
-<<<<<<< HEAD
-=======
-  // Width of the left and right portions of the resize region
-  mozilla::LayoutDeviceIntCoord mHorResizeMargin;
-  // Height of the top and bottom portions of the resize region
-  mozilla::LayoutDeviceIntCoord mVertResizeMargin;
-  // Height of the caption plus border
-  mozilla::LayoutDeviceIntCoord mCaptionHeight;
->>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
 
   // not yet set, will be calculated on first use
   double mDefaultScale = -1.0;

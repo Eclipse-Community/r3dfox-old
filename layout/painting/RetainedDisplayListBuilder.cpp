@@ -488,10 +488,7 @@ class MergeState {
             mBuilder->Builder()->ClearGlassDisplayItem();
           }
         }  // aNewItem can't be the glass item on the builder yet.
-<<<<<<< HEAD
 
-=======
->>>>>>> ca46b212509d (Revert "Bug 1922278 - Remove unexpected redundant D3D texture copy r=gfx-reviewers,aosmond a=dsmith")
         if (destItem->IsGlassItem()) {
           if (destItem != oldItem ||
               destItem != mBuilder->Builder()->GetGlassDisplayItem()) {

@@ -206,22 +206,6 @@ bool GLBlitHelper::BlitImage(layers::D3D11ZeroCopyTextureImage* const srcImage,
 
 // -------------------------------------
 
-bool GLBlitHelper::BlitImage(layers::D3D11YCbCrImage* const srcImage,
-                             const gfx::IntSize& destSize,
-                             const OriginPos destOrigin) const {
-  const auto& data = srcImage->GetData();
-  if (!data) return false;
-
-  const WindowsHandle handles[3] = {(WindowsHandle)data->mHandles[0],
-                                    (WindowsHandle)data->mHandles[1],
-                                    (WindowsHandle)data->mHandles[2]};
-  return BlitAngleYCbCr(handles, srcImage->mPictureRect, srcImage->GetYSize(),
-                        srcImage->GetCbCrSize(), srcImage->mColorSpace,
-                        destSize, destOrigin);
-}
-
-// -------------------------------------
-
 bool GLBlitHelper::BlitDescriptor(const layers::SurfaceDescriptorD3D10& desc,
                                   const gfx::IntSize& destSize,
                                   const OriginPos destOrigin) const {

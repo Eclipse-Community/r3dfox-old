@@ -174,7 +174,8 @@ body {
 }
 
 .browser-toolbox-background {
-  @media (-moz-windows-modern) {
+  @media not (-moz-platform: windows-win7) {
+  @media not (-moz-platform: windows-win8) {
   position: relative;
   background-color: var(--toolbox-bgcolor);
   color: var(--toolbox-textcolor);
@@ -185,6 +186,7 @@ body {
   &:-moz-window-inactive {
     background-color: var(--toolbox-bgcolor-inactive);
     color: var(--toolbox-textcolor-inactive);
+  }
   }
   }
 

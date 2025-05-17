@@ -17746,12 +17746,6 @@
 # Prefs starting with "widget."
 #---------------------------------------------------------------------------
 
-# Whether enable windows-modern mode for stylesheets
-- name: widget.windows-style.modern
-  type: bool
-  value: false
-  mirror: always
-
 - name: widget.native-controls.force-dwm-report-off
   type: bool
   value: false

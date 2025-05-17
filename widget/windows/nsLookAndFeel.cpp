@@ -533,17 +533,7 @@ nsresult nsLookAndFeel::NativeGetInt(IntID aID, int32_t& aResult) {
       aResult = (gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled());
       break;
     }
-    case IntID::WindowsModern: {
-      int reportingPref =
-          StaticPrefs::widget_windows_style_modern();
-      if (reportingPref != 0) {
-        aResult = (reportingPref == 1) ? 1 : 0;
-        break;
-      }
 
-      aResult = 0;
-      break;
-    }
     case IntID::AlertNotificationOrigin:
       aResult = 0;
       {

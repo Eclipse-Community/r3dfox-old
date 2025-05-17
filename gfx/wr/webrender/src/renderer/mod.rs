@@ -54,11 +54,11 @@ use crate::batch::{AlphaBatchContainer, BatchKind, BatchFeatures, BatchTextures,
 use crate::batch::ClipMaskInstanceList;
 #[cfg(any(feature = "capture", feature = "replay"))]
 use crate::capture::{CaptureConfig, ExternalCaptureImage, PlainExternalImage};
-use crate::composite::{CompositeState, CompositeTileSurface, ResolvedExternalSurface, CompositorSurfaceTransform};
+use crate::composite::{CompositeState, CompositeTileSurface, CompositorInputLayer, CompositorSurfaceTransform, ResolvedExternalSurface};
 use crate::composite::{CompositorKind, Compositor, NativeTileId, CompositeFeatures, CompositeSurfaceFormat, ResolvedExternalSurfaceColorData};
 use crate::composite::{CompositorConfig, NativeSurfaceOperationDetails, NativeSurfaceId, NativeSurfaceOperation};
 use crate::composite::TileKind;
-use crate::{debug_colors, Compositor2, CompositorInputConfig};
+use crate::{debug_colors, CompositorInputConfig, CompositorSurfaceUsage};
 use crate::device::{DepthFunction, Device, DrawTarget, ExternalTexture, GpuFrameId, UploadPBOPool};
 use crate::device::{ReadTarget, ShaderError, Texture, TextureFilter, TextureFlags, TextureSlot, Texel};
 use crate::device::query::{GpuSampler, GpuTimer};
@@ -264,6 +264,15 @@ const GPU_TAG_COMPOSITE: GpuProfileTag = GpuProfileTag {
     label: "Composite",
     color: debug_colors::TOMATO,
 };
+
+#[derive(Debug)]
+// Defines the content that we will draw to a given swapchain / layer, calculated
+// after occlusion culling.
+struct SwapChainLayer {
+    opaque_items: Vec<occlusion::Item<usize>>,
+    alpha_items: Vec<occlusion::Item<usize>>,
+    clear_tiles: Vec<occlusion::Item<usize>>,
+}
 
 /// The clear color used for the texture cache when the debug display is enabled.
 /// We use a shade of blue so that we can still identify completely blue items in
@@ -864,7 +873,6 @@ pub struct Renderer {
     /// The compositing config, affecting how WR composites into the final scene.
     compositor_config: CompositorConfig,
     current_compositor_kind: CompositorKind,
-    compositor2: Option<Box<dyn Compositor2>>,
 
     /// Maintains a set of allocated native composite surfaces. This allows any
     /// currently allocated surfaces to be cleaned up as soon as deinit() is
@@ -1697,7 +1705,7 @@ impl Renderer {
             //           with the (non-compositor) surface y-flip options.
             let surface_origin_is_top_left = match self.current_compositor_kind {
                 CompositorKind::Native { .. } => true,
-                CompositorKind::Draw { .. } => self.device.surface_origin_is_top_left(),
+                CompositorKind::Draw { .. } | CompositorKind::Layer { .. } => self.device.surface_origin_is_top_left(),
             };
             // If there is a debug overlay, render it. Otherwise, just clear
             // the debug renderer.
@@ -3327,17 +3335,18 @@ impl Renderer {
         }
     }
 
-    // Composite tiles in a swapchain. When using Compositor2, we may
+    // Composite tiles in a swapchain. When using LayerCompositor, we may
     // split the compositing in to multiple swapchains.
     fn composite_pass(
         &mut self,
         composite_state: &CompositeState,
         draw_target: DrawTarget,
+        clear_color: ColorF,
         projection: &default::Transform3D<f32>,
         results: &mut RenderResults,
         partial_present_mode: Option<PartialPresentMode>,
         occlusion: &occlusion::FrontToBackBuilder<usize>,
-        clear_tiles: &[occlusion::Item<usize>],
+        layer: &SwapChainLayer,
     ) {
         self.device.bind_draw_target(draw_target);
         self.device.disable_depth_write();
@@ -3355,7 +3364,7 @@ impl Renderer {
         }
 
         // Clear the framebuffer
-        let clear_color = Some(self.clear_color.to_array());
+        let clear_color = Some(clear_color.to_array());
 
         match partial_present_mode {
             Some(PartialPresentMode::Single { dirty_rect }) => {
@@ -3378,11 +3387,12 @@ impl Renderer {
             }
         }
 
-        if !occlusion.opaque_items().is_empty() {
+        // Draw opaque tiles
+        if !layer.opaque_items.is_empty() {
             let opaque_sampler = self.gpu_profiler.start_sampler(GPU_SAMPLER_TAG_OPAQUE);
             self.set_blend(false, FramebufferKind::Main);
             self.draw_tile_list(
-                occlusion.opaque_items().iter(),
+                layer.opaque_items.iter(),
                 &composite_state,
                 &composite_state.external_surfaces,
                 projection,
@@ -3391,12 +3401,13 @@ impl Renderer {
             self.gpu_profiler.finish_sampler(opaque_sampler);
         }
 
-        if !clear_tiles.is_empty() {
+        // Draw clear tiles
+        if !layer.clear_tiles.is_empty() {
             let transparent_sampler = self.gpu_profiler.start_sampler(GPU_SAMPLER_TAG_TRANSPARENT);
             self.set_blend(true, FramebufferKind::Main);
             self.device.set_blend_mode_premultiplied_dest_out();
             self.draw_tile_list(
-                clear_tiles.iter(),
+                layer.clear_tiles.iter(),
                 &composite_state,
                 &composite_state.external_surfaces,
                 projection,
@@ -3406,12 +3417,12 @@ impl Renderer {
         }
 
         // Draw alpha tiles
-        if !occlusion.alpha_items().is_empty() {
+        if !layer.alpha_items.is_empty() {
             let transparent_sampler = self.gpu_profiler.start_sampler(GPU_SAMPLER_TAG_TRANSPARENT);
             self.set_blend(true, FramebufferKind::Main);
             self.set_blend_mode_premultiplied_alpha(FramebufferKind::Main);
             self.draw_tile_list(
-                occlusion.alpha_items().iter().rev(),
+                layer.alpha_items.iter(),
                 &composite_state,
                 &composite_state.external_surfaces,
                 projection,
@@ -3428,15 +3439,20 @@ impl Renderer {
     fn composite_simple(
         &mut self,
         composite_state: &CompositeState,
-        draw_target: DrawTarget,
+        fb_draw_target: DrawTarget,
         projection: &default::Transform3D<f32>,
         results: &mut RenderResults,
         partial_present_mode: Option<PartialPresentMode>,
+        device_size: DeviceIntSize,
     ) {
         let _gm = self.gpu_profiler.start_marker("framebuffer");
         let _timer = self.gpu_profiler.start_timer(GPU_TAG_COMPOSITE);
 
+        let mut input_layers: Vec<CompositorInputLayer> = Vec::new();
+        let mut swapchain_layers = Vec::new();
         let cap = composite_state.tiles.len();
+        let mut occlusion = occlusion::FrontToBackBuilder::with_capacity(cap, cap);
+        let mut clear_tiles = Vec::new();
 
         // We are only interested in tiles backed with actual cached pixels so we don't
         // count clear tiles here.
@@ -3444,9 +3460,6 @@ impl Renderer {
             .iter()
             .filter(|tile| tile.kind != TileKind::Clear).count();
         self.profile.set(profiler::PICTURE_TILES, num_tiles);
-
-        let mut occlusion = occlusion::FrontToBackBuilder::with_capacity(cap, cap);
-        let mut clear_tiles = Vec::new();
 
         for (idx, tile) in composite_state.tiles.iter().enumerate() {
             // Clear tiles overwrite whatever is under them, so they are treated as opaque.
@@ -3477,41 +3490,237 @@ impl Renderer {
                 continue;
             }
 
-            if tile.kind == TileKind::Clear {
-                // Clear tiles are specific to how we render the window buttons on
-                // Windows 8. They clobber what's under them so they can be treated as opaque,
-                // but require a different blend state so they will be rendered after the opaque
-                // tiles and before transparent ones.
-                clear_tiles.push(occlusion::Item { rectangle: rect, key: idx });
-                continue;
+            // For normal tiles, add to occlusion tracker. For clear tiles, add directly
+            // to the swapchain tile list
+            match tile.kind {
+                TileKind::Opaque | TileKind::Alpha => {
+                    // Store (index of tile, index of layer) so we can segment them below 
+                    occlusion.add(&rect, is_opaque, idx); // (idx, input_layers.len() - 1));
+                }
+                TileKind::Clear => {
+                    // Clear tiles are specific to how we render the window buttons on
+                    // Windows 8. They clobber what's under them so they can be treated as opaque,
+                    // but require a different blend state so they will be rendered after the opaque
+                    // tiles and before transparent ones.
+                    clear_tiles.push(occlusion::Item { rectangle: rect, key: idx });
+                }
             }
-            occlusion.add(&rect, is_opaque, idx);
         }
 
-        // If experimental compositor is enabled, notify it that we are beginning
-        // a frame composite. As this expands, we'll likely split it in to a different
-        // function that `composite_simple`, as it begins to diverge.
-        if let Some(ref mut compositor) = self.compositor2 {
-            let input = CompositorInputConfig {
-                framebuffer_size: draw_target.dimensions(),
+        assert_eq!(swapchain_layers.len(), input_layers.len());
+
+        for item in occlusion.opaque_items().iter().chain(occlusion.alpha_items().iter().rev()) {
+            let tile = &composite_state.tiles[item.key];
+            // Clear tiles overwrite whatever is under them, so they are treated as opaque.
+            let is_opaque = tile.kind != TileKind::Alpha;
+
+            // Determine if the tile is an external surface or content
+            let usage = match tile.surface {
+                CompositeTileSurface::Texture { .. } |
+                CompositeTileSurface::Color { .. } |
+                CompositeTileSurface::Clear => {
+                    CompositorSurfaceUsage::Content
+                }
+                CompositeTileSurface::ExternalSurface { external_surface_index } => {
+                    match self.current_compositor_kind {
+                        CompositorKind::Native { .. } | CompositorKind::Draw { .. } => {
+                            CompositorSurfaceUsage::Content
+                        }
+                        CompositorKind::Layer { .. } => {
+                            let surface = &composite_state.external_surfaces[external_surface_index.0];
+
+                            // TODO(gwc): For now, we only select a hardware overlay swapchain if we
+                            // have an external image, but it may make sense to do for compositor
+                            // surfaces without in future.
+                            match surface.external_image_id {
+                                Some(external_image_id) => {
+                                    let image_key = match surface.color_data {
+                                        ResolvedExternalSurfaceColorData::Rgb { image_dependency, .. } => image_dependency.key,
+                                        ResolvedExternalSurfaceColorData::Yuv { image_dependencies, .. } => image_dependencies[0].key,
+                                    };
+
+                                    CompositorSurfaceUsage::External {
+                                        image_key,
+                                        external_image_id,
+                                        transform_index: tile.transform_index,
+                                    }
+                                }
+                                None => {
+                                    CompositorSurfaceUsage::Content
+                                }
+                            }
+                        }
+                    }
+                }
             };
 
+            // Determine whether we need a new layer, and if so, what kind
+            let new_layer_kind = match input_layers.last() {
+                Some(curr_layer) => {
+                    match (curr_layer.usage, usage) {
+                        // Content -> content, composite in to same layer
+                        (CompositorSurfaceUsage::Content, CompositorSurfaceUsage::Content) => None,
+                        (CompositorSurfaceUsage::External { .. }, CompositorSurfaceUsage::Content) => Some(usage),
+
+                        // Switch of layer type, or video -> video, need new swapchain
+                        (CompositorSurfaceUsage::Content, CompositorSurfaceUsage::External { .. }) |
+                        (CompositorSurfaceUsage::External { .. }, CompositorSurfaceUsage::External { .. }) => {
+                            // Only create a new layer if we're using LayerCompositor
+                            match self.compositor_config {
+                                CompositorConfig::Draw { .. } | CompositorConfig::Native { .. } => None,
+                                CompositorConfig::Layer { .. } => {
+                                    Some(usage)
+                                }
+                            }
+                        }
+                    }
+                }
+                None => {
+                    // No layers yet, so we need a new one
+                    Some(usage)
+                }
+            };
+
+            if let Some(new_layer_kind) = new_layer_kind {
+                let (offset, clip_rect, is_opaque) = match usage {
+                    CompositorSurfaceUsage::Content => {
+                        (DeviceIntPoint::zero(), device_size.into(), input_layers.is_empty())
+                    }
+                    CompositorSurfaceUsage::External { .. } => {
+                        let rect = composite_state.get_device_rect(
+                            &tile.local_rect,
+                            tile.transform_index
+                        );
+
+                        let clip_rect = tile.device_clip_rect.to_i32();
+
+                        (rect.min.to_i32(), clip_rect, is_opaque)
+                    }
+                };
+
+                input_layers.push(CompositorInputLayer {
+                    usage: new_layer_kind,
+                    is_opaque,
+                    offset,
+                    clip_rect,
+                });
+
+                swapchain_layers.push(SwapChainLayer {
+                    opaque_items: Vec::new(),
+                    alpha_items: Vec::new(),
+                    clear_tiles: Vec::new(),
+                })
+            }
+
+            let item = occlusion::Item {
+                rectangle: item.rectangle,
+                key: item.key,
+            };
+
+            let layer = swapchain_layers.last_mut().unwrap();
+            if is_opaque {
+                layer.opaque_items.push(item);
+            } else {
+                layer.alpha_items.push(item);
+            }
+        }
+
+        // If no tiles were present, add an empty layer to force
+        // a composite that clears the screen, to match existing
+        // semantics.
+        if input_layers.is_empty() {
+            input_layers.push(CompositorInputLayer {
+                usage: CompositorSurfaceUsage::Content,
+                is_opaque: true,
+                offset: DeviceIntPoint::zero(),
+                clip_rect: device_size.into(),
+            });
+
+            swapchain_layers.push(SwapChainLayer {
+                opaque_items: Vec::new(),
+                alpha_items: Vec::new(),
+                clear_tiles: Vec::new(),
+            })
+        }
+
+        // Start compositing if using OS compositor
+        if let Some(ref mut compositor) = self.compositor_config.layer_compositor() {
+            let input = CompositorInputConfig {
+                layers: &input_layers,
+            };
             compositor.begin_frame(&input);
         }
 
-        // Draw each compositing pass in to a swap chain
-        self.composite_pass(
-            composite_state,
-            draw_target,
-            projection,
-            results,
-            partial_present_mode,
-            &occlusion,
-            &clear_tiles,
-        );
+        for (layer_index, (layer, swapchain_layer)) in input_layers.iter().zip(swapchain_layers.iter()).enumerate() {
+            self.device.reset_state();
+
+            // Skip compositing external images
+            match layer.usage {
+                CompositorSurfaceUsage::Content => {}
+                CompositorSurfaceUsage::External { .. } => {
+                    continue;
+                }
+            }
+
+            let clear_color = if layer_index == 0 {
+                self.clear_color
+            } else {
+                ColorF::TRANSPARENT
+            };
+
+            let draw_target = match self.compositor_config {
+                CompositorConfig::Layer { ref mut compositor } => {
+                    compositor.bind_layer(layer_index);
+
+                    DrawTarget::NativeSurface {
+                        offset: -layer.offset,
+                        external_fbo_id: 0,
+                        dimensions: fb_draw_target.dimensions(),
+                    }
+                }
+                // Native can be hit when switching compositors (disable when using Layer)
+                CompositorConfig::Draw { .. } | CompositorConfig::Native { .. } => {
+                    fb_draw_target
+                }
+            };
+
+            // TODO(gwc): When supporting external attached swapchains, need to skip the composite pass here
+
+            // Draw each compositing pass in to a swap chain
+            self.composite_pass(
+                composite_state,
+                draw_target,
+                clear_color,
+                projection,
+                results,
+                partial_present_mode,
+                &occlusion,
+                swapchain_layer,
+            );
+
+            if let Some(ref mut compositor) = self.compositor_config.layer_compositor() {
+                compositor.present_layer(layer_index);
+            }
+        }
 
         // End frame notify for experimental compositor
-        if let Some(ref mut compositor) = self.compositor2 {
+        if let Some(ref mut compositor) = self.compositor_config.layer_compositor() {
+            for (layer_index, layer) in input_layers.iter().enumerate() {
+                // External surfaces need transform applied, but content
+                // surfaces are always at identity
+                let transform = match layer.usage {
+                    CompositorSurfaceUsage::Content => CompositorSurfaceTransform::identity(),
+                    CompositorSurfaceUsage::External { transform_index, .. } => composite_state.get_compositor_transform(transform_index),
+                };
+
+                compositor.add_surface(
+                    layer_index,
+                    transform,
+                    layer.clip_rect,
+                    ImageRendering::Auto,
+                );
+            }
+
             compositor.end_frame();
         }
     }
@@ -4256,6 +4465,9 @@ impl Renderer {
             CompositorKind::Draw { draw_previous_partial_present_regions, max_partial_present_rects } => {
                 (max_partial_present_rects, draw_previous_partial_present_regions)
             }
+            CompositorKind::Layer { .. } => {
+                (0, false)
+            }
         };
 
         if max_partial_present_rects > 0 {
@@ -4410,7 +4622,7 @@ impl Renderer {
                     }
                 }
             }
-            CompositorConfig::Draw { .. } => {
+            CompositorConfig::Draw { .. } | CompositorConfig::Layer { .. } => {
                 // Ensure nothing is added in simple composite mode, since otherwise
                 // memory will leak as this doesn't get drained
                 debug_assert!(self.pending_native_surface_updates.is_empty());
@@ -4617,7 +4829,7 @@ impl Renderer {
                                         picture_target.valid_rect,
                                     )
                                 }
-                                CompositorKind::Draw { .. } => {
+                                CompositorKind::Draw { .. } | CompositorKind::Layer { .. } => {
                                     unreachable!();
                                 }
                             };
@@ -4654,7 +4866,7 @@ impl Renderer {
                                 let compositor = self.compositor_config.compositor().unwrap();
                                 compositor.unbind(&mut self.device);
                             }
-                            CompositorKind::Draw { .. } => {
+                            CompositorKind::Draw { .. } | CompositorKind::Layer { .. } => {
                                 unreachable!();
                             }
                         }
@@ -4774,13 +4986,14 @@ impl Renderer {
                         results,
                     );
                 }
-                CompositorKind::Draw { .. } => {
+                CompositorKind::Draw { .. } | CompositorKind::Layer { .. } => {
                     self.composite_simple(
                         &frame.composite_state,
                         draw_target,
                         &projection,
                         results,
                         present_mode,
+                        device_size,
                     );
                 }
             }

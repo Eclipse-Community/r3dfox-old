@@ -20,11 +20,12 @@
 
 #include "modules/desktop_capture/desktop_capturer.h"
 #include "modules/desktop_capture/desktop_geometry.h"
-#include "mozilla/WindowsVersion.h"  // See Bug 1837647
 #include "rtc_base/checks.h"
 #include "rtc_base/logging.h"
 #include "rtc_base/string_utils.h"
 #include "rtc_base/win32.h"
+
+#include "mozilla/WindowsVersion.h" // See Bug 1837647
 
 namespace webrtc {
 

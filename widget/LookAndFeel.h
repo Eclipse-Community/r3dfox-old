@@ -104,6 +104,9 @@ class LookAndFeel {
      */
     WindowsAccentColorInTitlebar,
 
+    /* Whether Windows mica effect is enabled and available */
+    WindowsMica,
+
     /*
      * A Boolean value to determine whether the Windows default theme is
      * being used.
@@ -144,9 +147,6 @@ class LookAndFeel {
      * being used.
      */
     MacGraphiteTheme,
-
-    /* Whether Windows mica effect is enabled and available */
-    WindowsMica,
 
     /*
      * A Boolean value to determine whether the macOS Big Sur-specific
@@ -437,14 +437,14 @@ class LookAndFeel {
 
   using FontID = mozilla::StyleSystemFont;
 
-  static bool WindowsNonNativeMenusEnabled();
-
   enum class PointingDeviceKinds : uint8_t {
     None = 0,
     Mouse = 1 << 0,
     Touch = 1 << 1,
     Pen = 1 << 2,
   };
+
+  static bool WindowsNonNativeMenusEnabled();
 
   static ColorScheme SystemColorScheme() {
     return GetInt(IntID::SystemUsesDarkTheme) ? ColorScheme::Dark

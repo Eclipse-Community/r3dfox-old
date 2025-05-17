@@ -8158,23 +8158,23 @@ var TabBarVisibility = {
       // In vertical tabs mode, the toolbar with the horizontal tabstrip gets hidden
       // and the navbar becomes a titlebar.
       hideTabstrip = true;
-      CustomTitlebar.allowedBy("tabs-visible", true);
+      TabsInTitlebar.allowedBy("tabs-visible", true);
     } else {
-      CustomTitlebar.allowedBy("tabs-visible", !hideTabstrip);
+      TabsInTitlebar.allowedBy("tabs-visible", !hideTabstrip);
     }
 
     gNavToolbox.toggleAttribute("tabs-hidden", hideTabstrip);
     // Should the nav-bar look and function like a titlebar?
     navbar.classList.toggle(
       "browser-titlebar",
-      CustomTitlebar.enabled && hideTabstrip
+      TabsInTitlebar.enabled && hideTabstrip
     );
 
     document
       .getElementById("browser")
       .classList.toggle(
         "browser-toolbox-background",
-        CustomTitlebar.enabled && nonPopupWithVerticalTabs
+        TabsInTitlebar.enabled && nonPopupWithVerticalTabs
       );
 
     if (

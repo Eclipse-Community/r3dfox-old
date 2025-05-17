@@ -155,6 +155,8 @@ enum WidgetNodeType : int {
   MOZ_GTK_SPINBUTTON_UP,
   MOZ_GTK_SPINBUTTON_DOWN,
   MOZ_GTK_SPINBUTTON_ENTRY,
+  /* Paints the gripper of a GtkHandleBox. */
+  MOZ_GTK_GRIPPER,
   /* Paints a GtkEntry. */
   MOZ_GTK_ENTRY,
   /* Paints a GtkExpander. */
@@ -171,6 +173,10 @@ enum WidgetNodeType : int {
   /* Paints an entry in an editable option menu */
   MOZ_GTK_DROPDOWN_ENTRY,
 
+  /* Paints the background of a GtkHandleBox. */
+  MOZ_GTK_TOOLBAR,
+  /* Paints a toolbar separator */
+  MOZ_GTK_TOOLBAR_SEPARATOR,
   /* Paints a GtkToolTip */
   MOZ_GTK_TOOLTIP,
   /* Paints a GtkBox from GtkToolTip  */
@@ -212,6 +218,8 @@ enum WidgetNodeType : int {
   MOZ_GTK_TREEVIEW_VIEW,
   /* Paints treeheader cells */
   MOZ_GTK_TREE_HEADER_CELL,
+  /* Paints sort arrows in treeheader cells */
+  MOZ_GTK_TREE_HEADER_SORTARROW,
   /* Paints an expander for a GtkTreeView */
   MOZ_GTK_TREEVIEW_EXPANDER,
   /* Paints the background of menus, context menus. */

@@ -133,9 +133,3 @@ if CONFIG["CC_TYPE"] in ("clang", "gcc"):
 
 with Files("**"):
     BUG_COMPONENT = ("Core", "Gecko Profiler")
-
-DEFINES["PSAPI_VERSION"] = "1"
-
-OS_LIBS += [
-    'psapi',
-]

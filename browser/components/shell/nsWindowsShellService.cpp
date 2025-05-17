@@ -331,11 +331,6 @@ nsresult nsWindowsShellService::LaunchControlPanelDefaultsSelectionUI() {
 }
 
 nsresult nsWindowsShellService::LaunchControlPanelDefaultPrograms() {
-  // This Default Programs feature is Win7+ only.
-  if (!IsWin7OrLater()) {
-    return NS_ERROR_FAILURE;
-  }
-
   return ::LaunchControlPanelDefaultPrograms() ? NS_OK : NS_ERROR_FAILURE;
 }
 

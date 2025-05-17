@@ -132,7 +132,7 @@ public:
      * </pre>
      * @return          The class ID for all objects of this class.
      */
-    U_I18N_API static UClassID U_EXPORT2 getStaticClassID(void);
+    U_I18N_API static UClassID U_EXPORT2 getStaticClassID();
 
     /**
      * Returns a unique class ID POLYMORPHICALLY. Pure virtual override. This
@@ -144,7 +144,7 @@ public:
      *                  given class have the same class ID.  Objects of
      *                  other classes have different class IDs.
      */
-    virtual UClassID getDynamicClassID(void) const;
+    virtual UClassID getDynamicClassID() const;
 
 private:
     UnicodeString &format(int32_t numDigits, UnicodeString &appendTo, const wchar_t *format, ...) const;
@@ -154,6 +154,8 @@ private:
     int32_t fLCID;
     FormatInfo *fFormatInfo;
     UBool fFractionDigitsSet;
+
+    UnicodeString* fWindowsLocaleName; // Stores the equivalent Windows locale name.
 };
 
 U_NAMESPACE_END

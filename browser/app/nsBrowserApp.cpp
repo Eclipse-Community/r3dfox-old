@@ -10,6 +10,7 @@
 #include "application.ini.h"
 #include "mozilla/Bootstrap.h"
 #include "mozilla/ProcessType.h"
+#include "mozilla/RuntimeExceptionModule.h"
 #include "mozilla/ScopeExit.h"
 #include "BrowserDefines.h"
 #if defined(XP_WIN)
@@ -28,11 +29,9 @@
 #include "nsCOMPtr.h"
 
 #ifdef XP_WIN
-#  ifdef MOZ_LAUNCHER_PROCESS
-#    include "mozilla/PreXULSkeletonUI.h"
-#    include "freestanding/SharedSection.h"
-#    include "LauncherProcessWin.h"
-#  endif
+#  include "mozilla/PreXULSkeletonUI.h"
+#  include "freestanding/SharedSection.h"
+#  include "LauncherProcessWin.h"
 #  include "mozilla/GeckoArgs.h"
 #  include "mozilla/mscom/ProcessRuntime.h"
 #  include "mozilla/WindowsDllBlocklist.h"
@@ -323,6 +322,15 @@ int main(int argc, char* argv[], char* envp[]) {
   AUTO_BASE_PROFILER_INIT;
   AUTO_BASE_PROFILER_LABEL("nsBrowserApp main", OTHER);
 
+  // Register an external module to report on otherwise uncatchable exceptions.
+  // Note that in child processes this must be called after Gecko process type
+  // has been set.
+  CrashReporter::RegisterRuntimeExceptionModule();
+
+  // Make sure we unregister the runtime exception module before returning.
+  auto unregisterRuntimeExceptionModule =
+      MakeScopeExit([] { CrashReporter::UnregisterRuntimeExceptionModule(); });
+
 #ifdef MOZ_BROWSER_CAN_BE_CONTENTPROC
   // We are launching as a content process, delegate to the appropriate
   // main
@@ -434,14 +442,12 @@ int main(int argc, char* argv[], char* envp[]) {
     (void)result;  // Ignore errors since some tools block DPI calls
   }
 
-  #if defined(MOZ_LAUNCHER_PROCESS)
-    // Once the browser process hits the main function, we no longer need
-    // a writable section handle because all dependent modules have been
-    // loaded.
-    mozilla::freestanding::gSharedSection.ConvertToReadOnly();
+  // Once the browser process hits the main function, we no longer need
+  // a writable section handle because all dependent modules have been
+  // loaded.
+  mozilla::freestanding::gSharedSection.ConvertToReadOnly();
 
-    mozilla::CreateAndStorePreXULSkeletonUI(GetModuleHandle(nullptr), argc, argv);
-  #endif
+  mozilla::CreateAndStorePreXULSkeletonUI(GetModuleHandle(nullptr), argc, argv);
 #endif
 
   nsresult rv = InitXPCOMGlue(LibLoadingStrategy::ReadAhead);
@@ -457,9 +463,7 @@ int main(int argc, char* argv[], char* envp[]) {
 
   int result = do_main(argc, argv, envp);
 
-#if defined(XP_WIN) && defined(MOZ_LAUNCHER_PROCESS)
-  // This is used by the pre-XUL skeleton, so we only compile it when the
-  // launcher process is enabled.
+#if defined(XP_WIN)
   CleanupProcessRuntime();
 #endif
 

@@ -3449,7 +3449,6 @@ impl Renderer {
         projection: &default::Transform3D<f32>,
         results: &mut RenderResults,
         partial_present_mode: Option<PartialPresentMode>,
-        device_size: DeviceIntSize,
     ) {
         let _gm = self.gpu_profiler.start_marker("framebuffer");
         let _timer = self.gpu_profiler.start_timer(GPU_TAG_COMPOSITE);
@@ -3517,6 +3516,7 @@ impl Renderer {
 
         for item in occlusion.opaque_items().iter().chain(occlusion.alpha_items().iter().rev()) {
             let tile = &composite_state.tiles[item.key];
+
             // Clear tiles overwrite whatever is under them, so they are treated as opaque.
             let is_opaque = tile.kind != TileKind::Alpha;
 
@@ -3560,7 +3560,7 @@ impl Renderer {
             if let Some(new_layer_kind) = new_layer_kind {
                 let (offset, clip_rect, is_opaque) = match usage {
                     CompositorSurfaceUsage::Content => {
-                        (DeviceIntPoint::zero(), device_size.into(), input_layers.is_empty())
+                        (DeviceIntPoint::zero(), fb_draw_target.dimensions().into(), input_layers.is_empty())
                     }
                     CompositorSurfaceUsage::External => {
                         let rect = composite_state.get_device_rect(
@@ -3609,7 +3609,7 @@ impl Renderer {
                 usage: CompositorSurfaceUsage::Content,
                 is_opaque: true,
                 offset: DeviceIntPoint::zero(),
-                clip_rect: device_size.into(),
+                clip_rect: DeviceIntRect::zero(),
             });
 
             swapchain_layers.push(SwapChainLayer {
@@ -3623,7 +3623,9 @@ impl Renderer {
         if let Some(ref mut compositor) = self.compositor_config.layer_compositor() {
             let input = CompositorInputConfig {
                 layers: &input_layers,
+                framebuffer_size: fb_draw_target.dimensions(),
             };
+
             compositor.begin_frame(&input);
         }
 
@@ -4953,7 +4955,6 @@ impl Renderer {
                         &projection,
                         results,
                         present_mode,
-                        device_size,
                     );
                 }
             }

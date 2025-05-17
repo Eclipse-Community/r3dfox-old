@@ -310,13 +310,8 @@ nsresult nsTextControlFrame::EnsureEditorInitialized() {
      public:
       explicit EnsureSetFocus(nsTextControlFrame* aFrame) : mFrame(aFrame) {}
       ~EnsureSetFocus() {
-<<<<<<< HEAD
         if (nsFocusManager::GetFocusedElementStatic() == (mFrame->GetContent()))
         mFrame->SetFocus(true, false);
-=======
-        if (nsFocusManager::GetFocusedElementStatic() == mFrame->GetContent())
-          mFrame->SetFocus(true, false);
->>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
       }
 
      private:

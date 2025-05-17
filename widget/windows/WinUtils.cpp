@@ -548,10 +548,6 @@ static BOOL CALLBACK AddMonitor(HMONITOR, HDC, LPRECT, LPARAM aParam) {
   (*(int32_t*)aParam)++;
   return TRUE;
 }
-<<<<<<< HEAD
-=======
-
->>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
 /* static */
 int32_t WinUtils::GetMonitorCount() {
   int32_t monitorCount = 0;

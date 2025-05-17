@@ -6114,6 +6114,13 @@
   mirror: always
 #endif
 
+# If true, open system preferences for the user when geolocation is requested
+# by the user but OS geolocation permission is not available.
+- name: geo.prompt.open_system_prefs
+  type: bool
+  value: true
+  mirror: always
+
 #---------------------------------------------------------------------------
 # Prefs starting with "gfx."
 #---------------------------------------------------------------------------
@@ -7203,6 +7210,15 @@
 #endif
   mirror: once
 
+#ifdef NIGHTLY_BUILD
+  # Keep this pref hidden on non-nightly builds to avoid people accidentally
+  # turning it on.
+- name: gfx.webrender.layer-compositor
+  type: bool
+  value: false
+  mirror: once
+#endif
+
 - name: gfx.webrender.scissored-cache-clears.enabled
   type: bool
   value: true
@@ -7326,10 +7342,6 @@
     type: RelaxedAtomicBool
     value: false
     mirror: always
--   name: gfx.video.convert-i420-to-nv12.force-enabled
-    type: bool
-    value: false
-    mirror: once
 -   name: gfx.video.convert-yuv-to-nv12.image-host-win
     type: RelaxedAtomicBool
     value: true
@@ -9682,13 +9694,6 @@
   mirror: always
   rust: true
 
-# Is support for CSS overflow: overlay enabled
-- name: layout.css.overflow-overlay.enabled
-  type: RelaxedAtomicBool
-  value: true
-  mirror: always
-  rust: true
-
 # Is support for overscroll-behavior enabled?
 - name: layout.css.overscroll-behavior.enabled
   type: bool
@@ -11343,11 +11348,6 @@
 -   name: media.wmf.dxva.max-videos
     type: RelaxedAtomicUint32
     value: 8
-    mirror: always
-
--   name: media.wmf.dxva.d3d9.amd-pre-uvd4.disabled
-    type: RelaxedAtomicBool
-    value: true
     mirror: always
 
 -   name: media.wmf.use-nv12-format
@@ -16283,17 +16283,6 @@
   value: false
   mirror: once
 
-# On Windows 8.1, if the following preference is 2, we will attempt to detect
-# whether the Family Safety TLS interception feature has been enabled.
-# If so, we will behave as if the enterprise roots feature has been enabled
-# (i.e. import and trust third party root certificates from the OS).
-# With any other value of the pref or on any other platform, this does nothing.
-# This preference takes precedence over "security.enterprise_roots.enabled".
-- name: security.family_safety.mode
-  type: RelaxedAtomicUint32
-  value: 2
-  mirror: always
-
 # Whether or not to import and trust third party root certificates from the OS.
 - name: security.enterprise_roots.enabled
   type: RelaxedAtomicBool
@@ -17757,7 +17746,6 @@
 # Prefs starting with "widget."
 #---------------------------------------------------------------------------
 
-<<<<<<< HEAD
 - name: widget.native-controls.force-dwm-report-off
   type: bool
   value: false
@@ -17788,22 +17776,14 @@
   value: 0
   mirror: always
 
-=======
->>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
 # Global user preference for disabling native theme in content processes.
 #
 # NOTE(emilio): When changing this make sure to update the non_native_theme
 # entry in python/mozbuild/mozbuild/mozinfo.py and test_fission_autostart.py
-<<<<<<< HEAD
 # erm no LOLOLOLOLOLO -eriz
 - name: widget.non-native-theme.enabled
   type: RelaxedAtomicBool
   value: false
-=======
-- name: widget.non-native-theme.enabled
-  type: RelaxedAtomicBool
-  value: true
->>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
   mirror: always
 
 # Whether the non-native theme should always use system colors. Useful mostly
@@ -18267,6 +18247,13 @@
 - name: widget.windows.uwp-system-colors.enabled
   type: bool
   value: true
+  mirror: always
+
+# Whether PiP windows have window decorations (borders and shadows).
+# Off for now while we fix bug 1934760 and related issues.
+- name: widget.windows.pip-decorations.enabled
+  type: bool
+  value: false
   mirror: always
 
 # Whether we use the accent color for highlight as some other UWP apps do.

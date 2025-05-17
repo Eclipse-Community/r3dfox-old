@@ -79,8 +79,6 @@ bool InProcessWinCompositorWidget::OnWindowResize(
 
 void InProcessWinCompositorWidget::OnWindowModeChange(nsSizeMode aSizeMode) {}
 
-void InProcessWinCompositorWidget::OnWindowModeChange(nsSizeMode aSizeMode) {}
-
 bool InProcessWinCompositorWidget::PreRender(WidgetRenderingContext* aContext) {
   // This can block waiting for WM_SETTEXT to finish
   // Using PreRender is unnecessarily pessimistic because

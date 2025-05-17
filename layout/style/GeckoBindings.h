@@ -578,15 +578,9 @@ int32_t Gecko_GetNumStyleThreads();
 mozilla::StyleDisplayMode Gecko_MediaFeatures_GetDisplayMode(
     const mozilla::dom::Document*);
 
-<<<<<<< HEAD
 bool Gecko_MediaFeatures_ShouldAvoidNativeTheme(const mozilla::dom::Document*);
 bool Gecko_MediaFeatures_WindowsNonNativeMenus(const mozilla::dom::Document*);
 
-=======
-bool Gecko_MediaFeatures_WindowsNonNativeMenus(const mozilla::dom::Document*);
-
-bool Gecko_MediaFeatures_ShouldAvoidNativeTheme(const mozilla::dom::Document*);
->>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
 bool Gecko_MediaFeatures_UseOverlayScrollbars(const mozilla::dom::Document*);
 int32_t Gecko_MediaFeatures_GetColorDepth(const mozilla::dom::Document*);
 int32_t Gecko_MediaFeatures_GetMonochromeBitsPerPixel(

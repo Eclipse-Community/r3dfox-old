@@ -3537,15 +3537,9 @@ nsCSSFrameConstructor::FindHTMLData(const Element& aElement,
                "Unexpected parent for fieldset content anon box");
 
   if (aElement.IsInNativeAnonymousSubtree()) {
-<<<<<<< HEAD
     if (aElement.NodeInfo()->NameAtom() == nsGkAtoms::label &&
       aParentFrame->IsFileControlFrame()) {
       static constexpr FrameConstructionData sFileLabelData(
-=======
-   if (aElement.NodeInfo()->NameAtom() == nsGkAtoms::label &&
-      aParentFrame->IsFileControlFrame()) {
-    static constexpr FrameConstructionData sFileLabelData(
->>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
         NS_NewFileControlLabelFrame);
     return &sFileLabelData;
     }

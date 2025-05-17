@@ -33,10 +33,7 @@ var gFileMigrators = null;
 var gProfileStartup = null;
 var gL10n = null;
 var gPreviousDefaultBrowserKey = "";
-<<<<<<< HEAD
 var gHasOpenedLegacyWizard = false;
-=======
->>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
 
 let gForceExitSpinResolve = false;
 let gKeepUndoData = false;

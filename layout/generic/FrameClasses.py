@@ -54,11 +54,7 @@ FRAME_CLASSES = [
     Frame("nsCheckboxRadioFrame", "CheckboxRadio", REPLACED | LEAF),
     Frame("nsColorControlFrame", "ColorControl", REPLACED | LEAF),
     Frame("nsColumnSetFrame", "ColumnSet", COMMON),
-<<<<<<< HEAD
     Frame("ColumnSetWrapperFrame", "ColumnSetWrapper", BLOCK),
-=======
-    Frame("ColumnSetWrapperFrame", "ColumnSetWrapper", BLOCK | BFC),
->>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
     Frame("nsComboboxControlFrame", "ComboboxControl", BLOCK | REPLACED),
     # FIXME(emilio, bug 1362907): Revisit these after that bug, this is the
     # only frame that has ReplacedContainsBlock but not Replaced, which is

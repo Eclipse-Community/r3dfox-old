@@ -4,53 +4,6 @@
 
 @namespace url("http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul");
 
-<<<<<<< HEAD
-=======
-*|*:root {
-  --menu-icon-opacity: 1;
-  --menu-arrow-width: 1em;
-
-@media (-moz-windows-non-native-menus) {
-  @media (-moz-platform: windows) {
-    --menu-arrow-width: max(1em, 16px);
-
-    @media (prefers-color-scheme: light) {
-      --menu-icon-opacity: 0.7;
-    }
-  }
-}
-}
-
-/* Menu separator */
-
-menuseparator {
-  /* Using padding instead of margin to increase the hit area, as some
-     separators (e.g. in bookmarks menus) can be dragged or have a context
-     menu. */
-  padding-block: 4px;
-
-  @media (-moz-platform: macos) {
-    padding-block: 5px;
-    margin-inline: 9px;
-  }
-}
-
-menuseparator::before {
-  border-top: 1px solid var(--panel-separator-color);
-  content: "";
-  display: block;
-  flex: 1;
-}
-
-/* Accel text */
-
-@media not (prefers-contrast) {
-  menuitem:not([disabled]) > .menu-accel-container > :is(.menu-accel, .menu-iconic-accel) {
-    color: var(--text-color-disabled);
-  }
-}
-
->>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
 /* Scroll buttons */
 
 /* Hide arrow buttons when there's nothing to scroll in that direction */
@@ -98,8 +51,6 @@ menuseparator::before {
 menu,
 menuitem,
 menucaption {
-  appearance: auto;
-  -moz-default-appearance: menuitem;
   border-radius: calc(var(--panel-border-radius) / 2);
   align-items: center;
   flex-shrink: 0;
@@ -115,24 +66,6 @@ menucaption {
   }
 }
 
-@media (-moz-windows-non-native-menus) {
-  /* For Windows 10, prevent using native OS drawing of certain menu elements,
-     especially background colors and shadows. */
-  menu, menuitem, menucaption {
-    appearance: none;
-  }
-
-  /* Menu item text also needs native drawing disabled. */
-  menu > .menu-text,
-  menuitem > .menu-text,
-  menu > .menu-iconic-text,
-  menuitem > .menu-iconic-text {
-    appearance: none;
-    margin-inline-start: 0 !important; /* need !important to override the other !important below... */
-    padding-inline-end: 0;
-  }
-}
-
 menu,
 menuitem {
   &:where([disabled="true"]) {
@@ -140,7 +73,6 @@ menuitem {
     text-shadow: none;
   }
 
-@media (-moz-windows-non-native-menus) {
   &:where([_moz-menuactive]:not([disabled="true"])) {
     color: -moz-menuhovertext;
     background-color: -moz-menuhover;
@@ -150,76 +82,8 @@ menuitem {
     background-color: -moz-menuhoverdisabled;
   }
 }
-}
-
-@media (-moz-windows-classic) {
-  menu[disabled="true"],
-  menubar > menu[disabled="true"][_moz-menuactive="true"],
-  menuitem[disabled="true"] {
-    color: ThreeDShadow;
-    text-shadow: 1px 1px ThreeDHighlight;
-  }
-}
 
 menuitem:is([default="true"], .spell-suggestion),
 menucaption {
   font-weight: bold;
 }
-<<<<<<< HEAD
-=======
-
-/* Don't leave space for icons on Win10. */
-@media (-moz-windows-non-native-menus) {
-  .menu-text {
-    padding-inline-start: 0 !important;
-  }
-}
-
-/* ..... menu arrow box ..... */
-
-.menu-right {
-  appearance: auto;
-  -moz-default-appearance: menuarrow;
-  margin-inline-end: -2px;
-  list-style-image: none;
-  width: 1.28em;
-  padding-top: 1px;
-}
-
-/* Override the native menu arrow with a custom one for Win10. */
-@media (-moz-windows-non-native-menus) {
-.menu-right {
-  list-style-image: url("chrome://global/skin/icons/arrow-right.svg");
-  -moz-context-properties: fill, fill-opacity;
-  fill: currentColor;
-  fill-opacity: var(--menu-icon-opacity);
-
-  &:-moz-locale-dir(rtl) {
-    list-style-image: url("chrome://global/skin/icons/arrow-left.svg");
-  }
-
-  > image {
-    width: var(--menu-arrow-width);
-  }
-
-  @media (-moz-platform: linux) {
-    margin-block: 0;
-    margin-inline: 6px 0;
-  }
-
-  @media (-moz-platform: macos) {
-    margin-inline: 22px -3px;
-  }
-
-  @media (-moz-platform: windows) {
-    margin-inline-end: 1em;
-  }
-}
-}
-
-@media (-moz-platform: macos) {
-  :is(.menu-accel, .menu-iconic-accel)[value] {
-    margin-inline-start: 25px;
-  }
-}
->>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")

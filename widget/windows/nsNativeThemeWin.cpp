@@ -66,7 +66,6 @@ nsNativeThemeWin::nsNativeThemeWin()
 
 nsNativeThemeWin::~nsNativeThemeWin() { nsUXThemeData::Invalidate(); }
 
-<<<<<<< HEAD
 auto nsNativeThemeWin::IsWidgetNonNative(nsIFrame* aFrame,
                                          StyleAppearance aAppearance)
     -> NonNative {
@@ -93,13 +92,6 @@ auto nsNativeThemeWin::IsWidgetNonNative(nsIFrame* aFrame,
   if (aAppearance == StyleAppearance::FocusOutline &&
       StaticPrefs::widget_native_controls_tooltip_style() == 0) {
     return NonNative::No;
-=======
-auto nsNativeThemeWin::IsWidgetNonNative(
-    nsIFrame* aFrame, StyleAppearance aAppearance) -> NonNative {
-  if (IsWidgetScrollbarPart(aAppearance) ||
-      aAppearance == StyleAppearance::FocusOutline) {
-    return NonNative::Always;
->>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
   }
 
   // We only know how to draw light widgets, so we defer to the non-native
@@ -134,10 +126,7 @@ static int32_t GetTopLevelWindowActiveState(nsIFrame* aFrame) {
 
   if (window->GetWindowHandle() == ::GetActiveWindow())
     return mozilla::widget::themeconst::FS_ACTIVE;
-<<<<<<< HEAD
 
-=======
->>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
   return mozilla::widget::themeconst::FS_INACTIVE;
 }
 
@@ -155,10 +144,7 @@ static int32_t GetWindowFrameButtonState(nsIFrame* aFrame,
       return mozilla::widget::themeconst::BS_PUSHED;
     return mozilla::widget::themeconst::BS_HOT;
   }
-<<<<<<< HEAD
 
-=======
->>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
   return mozilla::widget::themeconst::BS_NORMAL;
 }
 
@@ -169,10 +155,7 @@ static int32_t GetClassicWindowFrameButtonState(ElementState elementState) {
   return DFCS_BUTTONPUSH;
 }
 
-<<<<<<< HEAD
 
-=======
->>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
 static bool IsTopLevelMenu(nsIFrame* aFrame) {
   auto* menu = dom::XULButtonElement::FromNodeOrNull(aFrame->GetContent());
   return menu && menu->IsOnMenuBar();
@@ -301,39 +284,20 @@ static HRESULT DrawThemeBGRTLAware(HANDLE aTheme, HDC aHdc, int aPart,
   NS_ASSERTION(aHdc, "Bad hdc.");
   NS_ASSERTION(aWidgetRect, "Bad rect.");
   NS_ASSERTION(aClipRect, "Bad clip rect.");
-<<<<<<< HEAD
-=======
-
->>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
   if (!aIsRtl) {
     return DrawThemeBackground(aTheme, aHdc, aPart, aState, aWidgetRect,
                                aClipRect);
   }
-<<<<<<< HEAD
   HGDIOBJ hObj = GetCurrentObject(aHdc, OBJ_BITMAP);
   BITMAP bitmap;
   POINT vpOrg;
-=======
-
-  HGDIOBJ hObj = GetCurrentObject(aHdc, OBJ_BITMAP);
-  BITMAP bitmap;
-  POINT vpOrg;
-
->>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
   if (hObj && GetObject(hObj, sizeof(bitmap), &bitmap) &&
       GetViewportOrgEx(aHdc, &vpOrg)) {
     RECT newWRect(*aWidgetRect);
     newWRect.left = bitmap.bmWidth - (aWidgetRect->right + 2 * vpOrg.x);
     newWRect.right = bitmap.bmWidth - (aWidgetRect->left + 2 * vpOrg.x);
-<<<<<<< HEAD
     RECT newCRect;
     RECT* newCRectPtr = nullptr;
-=======
-
-    RECT newCRect;
-    RECT* newCRectPtr = nullptr;
-
->>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
     if (aClipRect) {
       newCRect.top = aClipRect->top;
       newCRect.bottom = aClipRect->bottom;
@@ -341,10 +305,6 @@ static HRESULT DrawThemeBGRTLAware(HANDLE aTheme, HDC aHdc, int aPart,
       newCRect.right = bitmap.bmWidth - (aClipRect->left + 2 * vpOrg.x);
       newCRectPtr = &newCRect;
     }
-<<<<<<< HEAD
-=======
-
->>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
     SetLayout(aHdc, LAYOUT_RTL);
     HRESULT hr = DrawThemeBackground(aTheme, aHdc, aPart, aState, &newWRect,
                                      newCRectPtr);
@@ -726,10 +686,6 @@ nsresult nsNativeThemeWin::GetCachedMinimumWidgetSize(
       aResult->width += gutterSize.cx;
       break;
     }
-<<<<<<< HEAD
-=======
-
->>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
     case StyleAppearance::Menuarrow:
       // Use the width of the arrow glyph as padding. See the drawing
       // code for details.
@@ -762,11 +718,8 @@ mozilla::Maybe<nsUXThemeClass> nsNativeThemeWin::GetThemeClass(
     case StyleAppearance::Textarea:
     case StyleAppearance::FocusOutline:
       return Some(eUXEdit);
-<<<<<<< HEAD
     case StyleAppearance::Tooltip:
       return Some(eUXTooltip);
-=======
->>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
     case StyleAppearance::Toolbox:
       return Some(eUXRebar);
     case StyleAppearance::MozWinMediaToolbox:
@@ -802,23 +755,16 @@ mozilla::Maybe<nsUXThemeClass> nsNativeThemeWin::GetThemeClass(
     case StyleAppearance::SpinnerUpbutton:
     case StyleAppearance::SpinnerDownbutton:
       return Some(eUXSpin);
-<<<<<<< HEAD
     case StyleAppearance::Statusbar:
     case StyleAppearance::Statusbarpanel:
     case StyleAppearance::Resizerpanel:
     case StyleAppearance::Resizer:
       return Some(eUXStatus);
-=======
->>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
     case StyleAppearance::Menulist:
     case StyleAppearance::MenulistButton:
     case StyleAppearance::MozMenulistArrowButton:
       return Some(eUXCombobox);
     case StyleAppearance::Treeheadercell:
-<<<<<<< HEAD
-=======
-    case StyleAppearance::Treeheadersortarrow:
->>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
       return Some(eUXHeader);
     case StyleAppearance::Listbox:
     case StyleAppearance::Treeview:
@@ -1165,14 +1111,11 @@ nsresult nsNativeThemeWin::GetThemePartAndState(nsIFrame* aFrame,
       }
       return NS_OK;
     }
-<<<<<<< HEAD
     case StyleAppearance::Scrollcorner: {
       aState = 0;
       aPart = RP_BACKGROUND;
       return NS_OK;
     }
-=======
->>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
     case StyleAppearance::SpinnerUpbutton:
     case StyleAppearance::SpinnerDownbutton: {
       aPart = (aAppearance == StyleAppearance::SpinnerUpbutton) ? SPNP_UP
@@ -1190,12 +1133,8 @@ nsresult nsNativeThemeWin::GetThemePartAndState(nsIFrame* aFrame,
     case StyleAppearance::Toolbox:
     case StyleAppearance::MozWinMediaToolbox:
     case StyleAppearance::MozWinCommunicationsToolbox:
-<<<<<<< HEAD
     case StyleAppearance::MozWinBrowsertabbarToolbox:
     case StyleAppearance::Statusbar: {
-=======
-    case StyleAppearance::MozWinBrowsertabbarToolbox: {
->>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
       aState = 0;
       aPart = RP_BACKGROUND;
       return NS_OK;
@@ -1216,7 +1155,6 @@ nsresult nsNativeThemeWin::GetThemePartAndState(nsIFrame* aFrame,
       }
       return NS_OK;
     }
-<<<<<<< HEAD
     case StyleAppearance::Statusbarpanel:
     case StyleAppearance::Resizerpanel:
     case StyleAppearance::Resizer: {
@@ -1237,8 +1175,6 @@ nsresult nsNativeThemeWin::GetThemePartAndState(nsIFrame* aFrame,
       aState = TS_NORMAL;
       return NS_OK;
     }
-=======
->>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
     case StyleAppearance::Treeview:
     case StyleAppearance::Listbox: {
       aPart = TREEVIEW_BODY;
@@ -1276,15 +1212,6 @@ nsresult nsNativeThemeWin::GetThemePartAndState(nsIFrame* aFrame,
 
       return NS_OK;
     }
-<<<<<<< HEAD
-=======
-    case StyleAppearance::Treeheadersortarrow: {
-      // XXX Probably will never work due to a bug in the Luna theme.
-      aPart = 4;
-      aState = 1;
-      return NS_OK;
-    }
->>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
     case StyleAppearance::Treeheadercell: {
       aPart = 1;
       if (!aFrame) {
@@ -1399,89 +1326,6 @@ nsresult nsNativeThemeWin::GetThemePartAndState(nsIFrame* aFrame,
       }
       return NS_OK;
     }
-<<<<<<< HEAD
-=======
-    case StyleAppearance::Menupopup: {
-      aPart = MENU_POPUPBACKGROUND;
-      aState = MB_ACTIVE;
-      return NS_OK;
-    }
-    case StyleAppearance::Menuitem:
-    case StyleAppearance::Checkmenuitem:
-    case StyleAppearance::Radiomenuitem: {
-      ElementState elementState = GetContentState(aFrame, aAppearance);
-
-      auto* menu = dom::XULButtonElement::FromNodeOrNull(aFrame->GetContent());
-
-      const bool isTopLevel = IsTopLevelMenu(aFrame);
-      const bool isOpen = menu && menu->IsMenuPopupOpen();
-      const bool isHover = IsMenuActive(aFrame, aAppearance);
-
-      if (isTopLevel) {
-        aPart = MENU_BARITEM;
-
-        if (isOpen)
-          aState = MBI_PUSHED;
-        else if (isHover)
-          aState = MBI_HOT;
-        else
-          aState = MBI_NORMAL;
-
-        // the disabled states are offset by 3
-        if (elementState.HasState(ElementState::DISABLED)) {
-          aState += 3;
-        }
-      } else {
-        aPart = MENU_POPUPITEM;
-
-        if (isHover)
-          aState = MPI_HOT;
-        else
-          aState = MPI_NORMAL;
-
-        // the disabled states are offset by 2
-        if (elementState.HasState(ElementState::DISABLED)) {
-          aState += 2;
-        }
-      }
-
-      return NS_OK;
-    }
-    case StyleAppearance::Menuseparator:
-      aPart = MENU_POPUPSEPARATOR;
-      aState = 0;
-      return NS_OK;
-    case StyleAppearance::Menuarrow: {
-      aPart = MENU_POPUPSUBMENU;
-      ElementState elementState = GetContentState(aFrame, aAppearance);
-      aState = elementState.HasState(ElementState::DISABLED) ? MSM_DISABLED
-                                                             : MSM_NORMAL;
-      return NS_OK;
-    }
-    case StyleAppearance::Menucheckbox:
-    case StyleAppearance::Menuradio: {
-      ElementState elementState = GetContentState(aFrame, aAppearance);
-
-      aPart = MENU_POPUPCHECK;
-      aState = MC_CHECKMARKNORMAL;
-
-      // Radio states are offset by 2
-      if (aAppearance == StyleAppearance::Menuradio) aState += 2;
-
-      // the disabled states are offset by 1
-      if (elementState.HasState(ElementState::DISABLED)) {
-        aState += 1;
-      }
-
-      return NS_OK;
-    }
-    case StyleAppearance::Menuitemtext:
-    case StyleAppearance::Menuimage:
-      aPart = -1;
-      aState = 0;
-      return NS_OK;
-
->>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
     case StyleAppearance::MozWindowTitlebar:
       aPart = mozilla::widget::themeconst::WP_CAPTION;
       aState = GetTopLevelWindowActiveState(aFrame);
@@ -1516,7 +1360,6 @@ nsresult nsNativeThemeWin::GetThemePartAndState(nsIFrame* aFrame,
       aPart = -1;
       aState = 0;
       return NS_OK;
-<<<<<<< HEAD
     case StyleAppearance::Menupopup: {
       aPart = MENU_POPUPBACKGROUND;
       aState = MB_ACTIVE;
@@ -1584,8 +1427,6 @@ nsresult nsNativeThemeWin::GetThemePartAndState(nsIFrame* aFrame,
       aPart = -1;
       aState = 0;
       return NS_OK;
-=======
->>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
     default:
       aPart = 0;
       aState = 0;
@@ -1644,11 +1485,7 @@ nsNativeThemeWin::DrawWidgetBackground(gfxContext* aContext, nsIFrame* aFrame,
                                        aDirtyRect);
 
   // ^^ without the right sdk, assume xp theming and fall through.
-<<<<<<< HEAD
   if (dwmCompositionEnabled) {
-=======
-  if (gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled()) {
->>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
     switch (aAppearance) {
       case StyleAppearance::MozWindowTitlebar:
       case StyleAppearance::MozWindowTitlebarMaximized:
@@ -1800,51 +1637,26 @@ RENDER_AGAIN:
              aAppearance == StyleAppearance::Menuradio) {
     bool isChecked = false;
     isChecked = CheckBooleanAttr(aFrame, nsGkAtoms::checked);
-<<<<<<< HEAD
     if (isChecked) {
       int bgState = MCB_NORMAL;
       ElementState elementState = GetContentState(aFrame, aAppearance);
-=======
-
-    if (isChecked) {
-      int bgState = MCB_NORMAL;
-      ElementState elementState = GetContentState(aFrame, aAppearance);
-
->>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
       // the disabled states are offset by 1
       if (elementState.HasState(ElementState::DISABLED)) {
         bgState += 1;
       }
-<<<<<<< HEAD
       SIZE checkboxBGSize(GetCheckboxBGSize(theme, hdc));
-=======
-
-      SIZE checkboxBGSize(GetCheckboxBGSize(theme, hdc));
-
->>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
       RECT checkBGRect = widgetRect;
       if (IsFrameRTL(aFrame)) {
         checkBGRect.left = checkBGRect.right - checkboxBGSize.cx;
       } else {
         checkBGRect.right = checkBGRect.left + checkboxBGSize.cx;
       }
-<<<<<<< HEAD
-=======
-
->>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
       // Center the checkbox background vertically in the menuitem
       checkBGRect.top +=
           (checkBGRect.bottom - checkBGRect.top) / 2 - checkboxBGSize.cy / 2;
       checkBGRect.bottom = checkBGRect.top + checkboxBGSize.cy;
-<<<<<<< HEAD
       DrawThemeBackground(theme, hdc, MENU_POPUPCHECKBACKGROUND, bgState,
                           &checkBGRect, &clipRect);
-=======
-
-      DrawThemeBackground(theme, hdc, MENU_POPUPCHECKBACKGROUND, bgState,
-                          &checkBGRect, &clipRect);
-
->>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
       MARGINS checkMargins = GetCheckboxMargins(theme, hdc);
       RECT checkRect = checkBGRect;
       checkRect.left += checkMargins.cxLeftWidth;
@@ -1860,27 +1672,14 @@ RENDER_AGAIN:
     SIZE borderSize;
     GetThemePartSize(theme, hdc, MENU_POPUPBORDERS, 0, nullptr, TS_TRUE,
                      &borderSize);
-<<<<<<< HEAD
-=======
-
->>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
     RECT bgRect = widgetRect;
     bgRect.top += borderSize.cy;
     bgRect.bottom -= borderSize.cy;
     bgRect.left += borderSize.cx;
     bgRect.right -= borderSize.cx;
-<<<<<<< HEAD
     DrawThemeBackground(theme, hdc, MENU_POPUPBACKGROUND, /* state */ 0,
                         &bgRect, &clipRect);
     SIZE gutterSize(GetGutterSize(theme, hdc));
-=======
-
-    DrawThemeBackground(theme, hdc, MENU_POPUPBACKGROUND, /* state */ 0,
-                        &bgRect, &clipRect);
-
-    SIZE gutterSize(GetGutterSize(theme, hdc));
-
->>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
     RECT gutterRect;
     gutterRect.top = bgRect.top;
     gutterRect.bottom = bgRect.bottom;
@@ -1891,27 +1690,15 @@ RENDER_AGAIN:
       gutterRect.left = bgRect.left;
       gutterRect.right = gutterRect.left + gutterSize.cx;
     }
-<<<<<<< HEAD
-=======
-
->>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
     DrawThemeBGRTLAware(theme, hdc, MENU_POPUPGUTTER, /* state */ 0,
                         &gutterRect, &clipRect, IsFrameRTL(aFrame));
   } else if (aAppearance == StyleAppearance::Menuseparator) {
     SIZE gutterSize(GetGutterSize(theme, hdc));
-<<<<<<< HEAD
-=======
-
->>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
     RECT sepRect = widgetRect;
     if (IsFrameRTL(aFrame))
       sepRect.right -= gutterSize.cx;
     else
       sepRect.left += gutterSize.cx;
-<<<<<<< HEAD
-=======
-
->>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
     DrawThemeBackground(theme, hdc, MENU_POPUPSEPARATOR, /* state */ 0,
                         &sepRect, &clipRect);
   } else if (aAppearance == StyleAppearance::Menuarrow) {
@@ -1920,21 +1707,10 @@ RENDER_AGAIN:
     // For StyleAppearance::Menuarrow, layout may hand us a widget rect larger
     // than the glyph rect we request in GetMinimumWidgetSize. To prevent
     // distortion we have to position and scale what we draw.
-<<<<<<< HEAD
     SIZE glyphSize;
     GetThemePartSize(theme, hdc, part, state, nullptr, TS_TRUE, &glyphSize);
     int32_t widgetHeight = widgetRect.bottom - widgetRect.top;
     RECT renderRect = widgetRect;
-=======
-
-    SIZE glyphSize;
-    GetThemePartSize(theme, hdc, part, state, nullptr, TS_TRUE, &glyphSize);
-
-    int32_t widgetHeight = widgetRect.bottom - widgetRect.top;
-
-    RECT renderRect = widgetRect;
-
->>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
     // We request (glyph width * 2, glyph height) in GetMinimumWidgetSize. In
     // Firefox some menu items provide the full height of the item to us, in
     // others our widget rect is the exact dims of our arrow glyph. Adjust the
@@ -1956,12 +1732,8 @@ RENDER_AGAIN:
                         IsFrameRTL(aFrame));
   }
   // The following widgets need to be RTL-aware
-<<<<<<< HEAD
   else if (aAppearance == StyleAppearance::Resizer ||
            aAppearance == StyleAppearance::MozMenulistArrowButton) {
-=======
-  else if (aAppearance == StyleAppearance::MozMenulistArrowButton) {
->>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
     DrawThemeBGRTLAware(theme, hdc, part, state, &widgetRect, &clipRect,
                         IsFrameRTL(aFrame));
   } else if (aAppearance == StyleAppearance::NumberInput ||
@@ -2038,7 +1810,6 @@ RENDER_AGAIN:
     widgetRect.bottom = widgetRect.top + TB_SEPARATOR_HEIGHT;
     DrawThemeEdge(theme, hdc, RP_BAND, 0, &widgetRect, EDGE_ETCHED, BF_TOP,
                   nullptr);
-<<<<<<< HEAD
   } else if (aAppearance == StyleAppearance::ScrollbarthumbHorizontal ||
              aAppearance == StyleAppearance::ScrollbarthumbVertical) {
     // Draw the decorative gripper for the scrollbar thumb button, if it fits
@@ -2057,8 +1828,6 @@ RENDER_AGAIN:
             widgetRect.bottom - widgetRect.top) {
       DrawThemeBackground(theme, hdc, gripPart, state, &widgetRect, &clipRect);
     }
-=======
->>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
   }
 
   nativeDrawing.EndNativeDrawing();
@@ -2123,16 +1892,12 @@ LayoutDeviceIntMargin nsNativeThemeWin::GetWidgetBorder(
       aAppearance == StyleAppearance::MozWinMediaToolbox ||
       aAppearance == StyleAppearance::MozWinCommunicationsToolbox ||
       aAppearance == StyleAppearance::MozWinBrowsertabbarToolbox ||
-<<<<<<< HEAD
       aAppearance == StyleAppearance::Statusbar ||
       aAppearance == StyleAppearance::Resizer ||
       aAppearance == StyleAppearance::Tabpanel ||
       aAppearance == StyleAppearance::ScrollbarHorizontal ||
       aAppearance == StyleAppearance::ScrollbarVertical ||
       aAppearance == StyleAppearance::Scrollcorner ||
-=======
-      aAppearance == StyleAppearance::Tabpanel ||
->>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
       aAppearance == StyleAppearance::Menuitem ||
       aAppearance == StyleAppearance::Checkmenuitem ||
       aAppearance == StyleAppearance::Radiomenuitem ||
@@ -2191,14 +1956,11 @@ bool nsNativeThemeWin::GetWidgetPadding(nsDeviceContext* aContext,
                                         nsIFrame* aFrame,
                                         StyleAppearance aAppearance,
                                         LayoutDeviceIntMargin* aResult) {
-<<<<<<< HEAD
   bool dwmCompositionEnabled =
       StaticPrefs::widget_native_controls_force_dwm_report_off()
           ? false
           : gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled();
 
-=======
->>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
   switch (aAppearance) {
     // Radios and checkboxes return a fixed size in GetMinimumWidgetSize
     // and have a meaningful baseline, so they can't have
@@ -2216,15 +1978,8 @@ bool nsNativeThemeWin::GetWidgetPadding(nsDeviceContext* aContext,
   if (aAppearance == StyleAppearance::MozWindowButtonBox ||
       aAppearance == StyleAppearance::MozWindowButtonBoxMaximized) {
     aResult->SizeTo(0, 0, 0, 0);
-<<<<<<< HEAD
     // aero glass doesn't display custom buttons
     if (dwmCompositionEnabled) return true;
-=======
-
-    // aero glass doesn't display custom buttons
-    if (gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled()) return true;
-
->>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
     // button padding for standard windows
     if (aAppearance == StyleAppearance::MozWindowButtonBox) {
       aResult->top = GetSystemMetrics(SM_CXFRAME);
@@ -2242,12 +1997,7 @@ bool nsNativeThemeWin::GetWidgetPadding(nsDeviceContext* aContext,
     // adding padding to the top of the window that is the size of the caption
     // area and then "removing" it when calculating the client area for
     // WM_NCCALCSIZE.  See bug 618353,
-<<<<<<< HEAD
     if (aAppearance == StyleAppearance::MozWindowTitlebarMaximized) {
-=======
-    if (!IsWin10OrLater() &&
-        aAppearance == StyleAppearance::MozWindowTitlebarMaximized) {
->>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
       nsCOMPtr<nsIWidget> rootWidget;
       if (WinUtils::HasSystemMetricsForDpi()) {
         rootWidget = aFrame->PresContext()->GetRootWidget();
@@ -2413,14 +2163,11 @@ bool nsNativeThemeWin::GetWidgetOverflow(nsDeviceContext* aContext,
 LayoutDeviceIntSize nsNativeThemeWin::GetMinimumWidgetSize(
     nsPresContext* aPresContext, nsIFrame* aFrame,
     StyleAppearance aAppearance) {
-<<<<<<< HEAD
   bool dwmCompositionEnabled =
       StaticPrefs::widget_native_controls_force_dwm_report_off()
           ? false
           : gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled();
 
-=======
->>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
   if (IsWidgetNonNative(aFrame, aAppearance) == NonNative::Always) {
     return Theme::GetMinimumWidgetSize(aPresContext, aFrame, aAppearance);
   }
@@ -2446,10 +2193,7 @@ LayoutDeviceIntSize nsNativeThemeWin::GetMinimumWidgetSize(
     case StyleAppearance::MozWinCommunicationsToolbox:
     case StyleAppearance::MozWinBrowsertabbarToolbox:
     case StyleAppearance::Toolbar:
-<<<<<<< HEAD
     case StyleAppearance::Statusbar:
-=======
->>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
     case StyleAppearance::Progresschunk:
     case StyleAppearance::Tabpanels:
     case StyleAppearance::Tabpanel:
@@ -2521,7 +2265,6 @@ LayoutDeviceIntSize nsNativeThemeWin::GetMinimumWidgetSize(
   //  Windows appears to always use metrics when drawing standard scrollbars)
   THEMESIZE sizeReq = TS_TRUE;  // Best-fit size
   switch (aAppearance) {
-<<<<<<< HEAD
     case StyleAppearance::ScrollbarthumbHorizontal:
     case StyleAppearance::ScrollbarthumbVertical:
     case StyleAppearance::ScrollbarbuttonUp:
@@ -2530,8 +2273,6 @@ LayoutDeviceIntSize nsNativeThemeWin::GetMinimumWidgetSize(
     case StyleAppearance::ScrollbarbuttonRight:
     case StyleAppearance::ScrollbarHorizontal:
     case StyleAppearance::ScrollbarVertical:
-=======
->>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
     case StyleAppearance::MozMenulistArrowButton: {
       auto result = ClassicGetMinimumWidgetSize(aFrame, aAppearance);
       ScaleForFrameDPI(&result, aFrame);
@@ -2547,10 +2288,6 @@ LayoutDeviceIntSize nsNativeThemeWin::GetMinimumWidgetSize(
         return result;
       }
       break;
-<<<<<<< HEAD
-=======
-
->>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
     case StyleAppearance::Menuimage:
     case StyleAppearance::Menucheckbox:
     case StyleAppearance::Menuradio: {
@@ -2559,15 +2296,8 @@ LayoutDeviceIntSize nsNativeThemeWin::GetMinimumWidgetSize(
       ScaleForFrameDPI(&result, aFrame);
       return result;
     }
-<<<<<<< HEAD
     case StyleAppearance::Menuitemtext:
       return {};
-=======
-
-    case StyleAppearance::Menuitemtext:
-      return {};
-
->>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
     case StyleAppearance::ProgressBar:
       // Best-fit size for progress meters is too large for most
       // themes. We want these widgets to be able to really shrink
@@ -2622,65 +2352,6 @@ LayoutDeviceIntSize nsNativeThemeWin::GetMinimumWidgetSize(
       }
       break;
 
-    case StyleAppearance::MozWindowButtonMaximize:
-    case StyleAppearance::MozWindowButtonRestore: {
-      // The only way to get accurate titlebar button info is to query a
-      // window w/buttons when it's visible. nsWindow takes care of this and
-      // stores that info in nsUXThemeData.
-      SIZE sz = nsUXThemeData::GetCommandButtonMetrics(CMDBUTTONIDX_RESTORE);
-      LayoutDeviceIntSize result(sz.cx, sz.cy);
-      AddPaddingRect(&result, CAPTIONBUTTON_RESTORE);
-      return result;
-    }
-
-    case StyleAppearance::MozWindowButtonMinimize: {
-      SIZE sz = nsUXThemeData::GetCommandButtonMetrics(CMDBUTTONIDX_MINIMIZE);
-      LayoutDeviceIntSize result(sz.cx, sz.cy);
-      AddPaddingRect(&result, CAPTIONBUTTON_MINIMIZE);
-      return result;
-    }
-
-    case StyleAppearance::MozWindowButtonClose: {
-      SIZE sz = nsUXThemeData::GetCommandButtonMetrics(CMDBUTTONIDX_CLOSE);
-      LayoutDeviceIntSize result(sz.cx, sz.cy);
-      AddPaddingRect(&result, CAPTIONBUTTON_CLOSE);
-      return result;
-    }
-
-    case StyleAppearance::MozWindowTitlebar:
-    case StyleAppearance::MozWindowTitlebarMaximized: {
-      LayoutDeviceIntSize result;
-      result.height = GetSystemMetrics(SM_CYCAPTION);
-      result.height += GetSystemMetrics(SM_CYFRAME);
-      result.height += GetSystemMetrics(SM_CXPADDEDBORDER);
-      // On Win8.1, we don't want this scaling, because Windows doesn't scale
-      // the non-client area of the window, and we can end up with ugly overlap
-      // of the window frame controls into the tab bar or content area. But on
-      // Win10, we render the window controls ourselves, and the result looks
-      // better if we do apply this scaling (particularly with themes such as
-      // DevEdition; see bug 1267636).
-      if (IsWin10OrLater()) {
-        ScaleForFrameDPI(&result, aFrame);
-      }
-      return result;
-    }
-
-    case StyleAppearance::MozWindowButtonBox:
-    case StyleAppearance::MozWindowButtonBoxMaximized: {
-      if (gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled()) {
-        SIZE sz = nsUXThemeData::GetCommandButtonBoxMetrics();
-        LayoutDeviceIntSize result(sz.cx,
-                                   sz.cy - GetSystemMetrics(SM_CYFRAME) -
-                                       GetSystemMetrics(SM_CXPADDEDBORDER));
-        if (aAppearance == StyleAppearance::MozWindowButtonBoxMaximized) {
-          result.width += 1;
-          result.height -= 2;
-        }
-        return result;
-      }
-      break;
-    }
-
     default:
       break;
   }
@@ -2706,15 +2377,11 @@ bool nsNativeThemeWin::WidgetAttributeChangeRequiresRepaint(
       aAppearance == StyleAppearance::MozWinCommunicationsToolbox ||
       aAppearance == StyleAppearance::MozWinBrowsertabbarToolbox ||
       aAppearance == StyleAppearance::Toolbar ||
-<<<<<<< HEAD
       aAppearance == StyleAppearance::Statusbar ||
       aAppearance == StyleAppearance::Statusbarpanel ||
       aAppearance == StyleAppearance::Resizerpanel ||
       aAppearance == StyleAppearance::Progresschunk ||
       aAppearance == StyleAppearance::Tooltip ||
-=======
-      aAppearance == StyleAppearance::Progresschunk ||
->>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
       aAppearance == StyleAppearance::ProgressBar ||
       aAppearance == StyleAppearance::Tabpanels ||
       aAppearance == StyleAppearance::Tabpanel ||
@@ -2728,18 +2395,12 @@ bool nsNativeThemeWin::WidgetAttributeChangeRequiresRepaint(
       aAppearance == StyleAppearance::MozWindowButtonClose ||
       aAppearance == StyleAppearance::MozWindowButtonMinimize ||
       aAppearance == StyleAppearance::MozWindowButtonMaximize ||
-<<<<<<< HEAD
       aAppearance == StyleAppearance::MozWindowButtonRestore ||
       aAppearance == StyleAppearance::Menulist ||
       aAppearance == StyleAppearance::MenulistButton ||
       aAppearance == StyleAppearance::MozMenulistArrowButton) {
     return true;
   }  
-=======
-      aAppearance == StyleAppearance::MozWindowButtonRestore) {
-    return true;
-  }
->>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
 
   return Theme::WidgetAttributeChangeRequiresRepaint(aAppearance, aAttribute);
 }
@@ -2759,13 +2420,10 @@ bool nsNativeThemeWin::ThemeSupportsWidget(nsPresContext* aPresContext,
   // XXXdwh We can go even further and call the API to ask if support exists for
   // specific widgets.
 
-<<<<<<< HEAD
   if (aAppearance == StyleAppearance::FocusOutline) {
     return true;
   }
 
-=======
->>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
   if (IsWidgetNonNative(aFrame, aAppearance) == NonNative::Always) {
     return Theme::ThemeSupportsWidget(aPresContext, aFrame, aAppearance);
   }
@@ -2778,11 +2436,8 @@ bool nsNativeThemeWin::ThemeSupportsWidget(nsPresContext* aPresContext,
   else
     theme = GetTheme(aAppearance);
 
-<<<<<<< HEAD
   if (theme && aAppearance == StyleAppearance::Resizer) return true;
 
-=======
->>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
   if (theme || ClassicThemeSupportsWidget(aFrame, aAppearance))
     // turn off theming for some HTML widgets styled by the page
     return (!IsWidgetStyled(aPresContext, aFrame, aAppearance));
@@ -2852,7 +2507,6 @@ nsITheme::Transparency nsNativeThemeWin::GetWidgetTransparency(
   }
 
   switch (aAppearance) {
-<<<<<<< HEAD
     case StyleAppearance::Resizer: {
       // The classic native resizer has an opaque grey background which doesn't
       // match the usually white background of the scrollable container, so
@@ -2861,8 +2515,6 @@ nsITheme::Transparency nsNativeThemeWin::GetWidgetTransparency(
       return (!parentFrame || !parentFrame->IsScrollContainerFrame()) ? eTransparent
                                                              : eOpaque;
     }
-=======
->>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
     case StyleAppearance::MozWinBorderlessGlass:
     case StyleAppearance::ProgressBar:
     case StyleAppearance::Progresschunk:
@@ -2876,12 +2528,8 @@ nsITheme::Transparency nsNativeThemeWin::GetWidgetTransparency(
   // For the classic theme we don't really have a way of knowing
   if (!theme) {
     // menu backgrounds which can't be themed are opaque
-<<<<<<< HEAD
     if (aAppearance == StyleAppearance::Tooltip ||
         aAppearance == StyleAppearance::Menupopup) {
-=======
-    if (aAppearance == StyleAppearance::Menupopup) {
->>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
       return eOpaque;
     }
     return eUnknownTransparency;
@@ -2908,7 +2556,6 @@ nsITheme::Transparency nsNativeThemeWin::GetWidgetTransparency(
 bool nsNativeThemeWin::ClassicThemeSupportsWidget(nsIFrame* aFrame,
                                                   StyleAppearance aAppearance) {
   switch (aAppearance) {
-<<<<<<< HEAD
     case StyleAppearance::Resizer: {
       // The classic native resizer has an opaque grey background which doesn't
       // match the usually white background of the scrollable container, so
@@ -2916,8 +2563,6 @@ bool nsNativeThemeWin::ClassicThemeSupportsWidget(nsIFrame* aFrame,
       nsIFrame* parentFrame = aFrame->GetParent();
       return !parentFrame || !parentFrame->IsScrollContainerFrame();
     }
-=======
->>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
     case StyleAppearance::Menubar:
     case StyleAppearance::Menupopup:
       // Classic non-flat menus are handled almost entirely through CSS.
@@ -2933,7 +2578,6 @@ bool nsNativeThemeWin::ClassicThemeSupportsWidget(nsIFrame* aFrame,
     case StyleAppearance::Range:
     case StyleAppearance::RangeThumb:
     case StyleAppearance::Groupbox:
-<<<<<<< HEAD
     case StyleAppearance::ScrollbarbuttonUp:
     case StyleAppearance::ScrollbarbuttonDown:
     case StyleAppearance::ScrollbarbuttonLeft:
@@ -2943,8 +2587,6 @@ bool nsNativeThemeWin::ClassicThemeSupportsWidget(nsIFrame* aFrame,
     case StyleAppearance::ScrollbarVertical:
     case StyleAppearance::ScrollbarHorizontal:
     case StyleAppearance::Scrollcorner:
-=======
->>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
     case StyleAppearance::Menulist:
     case StyleAppearance::MenulistButton:
     case StyleAppearance::MozMenulistArrowButton:
@@ -2952,13 +2594,10 @@ bool nsNativeThemeWin::ClassicThemeSupportsWidget(nsIFrame* aFrame,
     case StyleAppearance::SpinnerDownbutton:
     case StyleAppearance::Listbox:
     case StyleAppearance::Treeview:
-<<<<<<< HEAD
     case StyleAppearance::Tooltip:
     case StyleAppearance::Statusbar:
     case StyleAppearance::Statusbarpanel:
     case StyleAppearance::Resizerpanel:
-=======
->>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
     case StyleAppearance::ProgressBar:
     case StyleAppearance::Progresschunk:
     case StyleAppearance::Tab:
@@ -3095,7 +2734,6 @@ LayoutDeviceIntSize nsNativeThemeWin::ClassicGetMinimumWidgetSize(
       result.width = ::GetSystemMetrics(SM_CXVSCROLL);
       result.height = 8;  // No good metrics available for this
       break;
-<<<<<<< HEAD
     case StyleAppearance::ScrollbarbuttonUp:
     case StyleAppearance::ScrollbarbuttonDown:
       result.width = ::GetSystemMetrics(SM_CXVSCROLL);
@@ -3112,8 +2750,6 @@ LayoutDeviceIntSize nsNativeThemeWin::ClassicGetMinimumWidgetSize(
       result.width = ::GetSystemMetrics(SM_CYHSCROLL);
       result.height = ::GetSystemMetrics(SM_CYHSCROLL);
       break;
-=======
->>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
     case StyleAppearance::RangeThumb: {
       if (IsRangeHorizontal(aFrame)) {
         result.width = 12;
@@ -3124,7 +2760,6 @@ LayoutDeviceIntSize nsNativeThemeWin::ClassicGetMinimumWidgetSize(
       }
       break;
     }
-<<<<<<< HEAD
     case StyleAppearance::ScrollbarthumbVertical:
       result.width = ::GetSystemMetrics(SM_CXVSCROLL);
       result.height = ::GetSystemMetrics(SM_CYVTHUMB);
@@ -3153,8 +2788,6 @@ LayoutDeviceIntSize nsNativeThemeWin::ClassicGetMinimumWidgetSize(
         result.height >>= 1;
       }
       break;
-=======
->>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
     case StyleAppearance::MozMenulistArrowButton:
       result.width = ::GetSystemMetrics(SM_CXVSCROLL);
       break;
@@ -3177,7 +2810,6 @@ LayoutDeviceIntSize nsNativeThemeWin::ClassicGetMinimumWidgetSize(
     case StyleAppearance::Tabpanels:
       // no minimum widget size
       break;
-<<<<<<< HEAD
     case StyleAppearance::Resizer: {
       NONCLIENTMETRICS nc;
       nc.cbSize = sizeof(nc);
@@ -3187,17 +2819,11 @@ LayoutDeviceIntSize nsNativeThemeWin::ClassicGetMinimumWidgetSize(
         result.width = result.height = 15;
       break;
     }
-=======
->>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
     case StyleAppearance::Menuseparator: {
       result.width = 0;
       result.height = 10;
       break;
     }
-<<<<<<< HEAD
-=======
-
->>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
     case StyleAppearance::MozWindowTitlebarMaximized:
     case StyleAppearance::MozWindowTitlebar:
       result.height =
@@ -3312,51 +2938,26 @@ nsresult nsNativeThemeWin::ClassicGetThemePartAndState(
     case StyleAppearance::Checkmenuitem:
     case StyleAppearance::Radiomenuitem: {
       ElementState elementState = GetContentState(aFrame, aAppearance);
-<<<<<<< HEAD
       auto* menu = dom::XULButtonElement::FromNodeOrNull(aFrame->GetContent());
       const bool isTopLevel = IsTopLevelMenu(aFrame);
       const bool isOpen = menu && menu->IsMenuPopupOpen();
-=======
-
-      auto* menu = dom::XULButtonElement::FromNodeOrNull(aFrame->GetContent());
-
-      const bool isTopLevel = IsTopLevelMenu(aFrame);
-      const bool isOpen = menu && menu->IsMenuPopupOpen();
-
->>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
       // We indicate top-level-ness using aPart. 0 is a normal menu item,
       // 1 is a top-level menu item. The state of the item is composed of
       // DFCS_* flags only.
       aPart = 0;
       aState = 0;
-<<<<<<< HEAD
       if (elementState.HasState(ElementState::DISABLED)) {
         aState |= DFCS_INACTIVE;
       }
-=======
-
-      if (elementState.HasState(ElementState::DISABLED)) {
-        aState |= DFCS_INACTIVE;
-      }
-
->>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
       if (isTopLevel) {
         aPart = 1;
         if (isOpen) {
           aState |= DFCS_PUSHED;
         }
       }
-<<<<<<< HEAD
       if (IsMenuActive(aFrame, aAppearance)) {
         aState |= DFCS_HOT;
       }
-=======
-
-      if (IsMenuActive(aFrame, aAppearance)) {
-        aState |= DFCS_HOT;
-      }
-
->>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
       return NS_OK;
     }
     case StyleAppearance::Menucheckbox:
@@ -3364,18 +2965,10 @@ nsresult nsNativeThemeWin::ClassicGetThemePartAndState(
     case StyleAppearance::Menuarrow: {
       aState = 0;
       ElementState elementState = GetContentState(aFrame, aAppearance);
-<<<<<<< HEAD
-=======
-
->>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
       if (elementState.HasState(ElementState::DISABLED)) {
         aState |= DFCS_INACTIVE;
       }
       if (IsMenuActive(aFrame, aAppearance)) aState |= DFCS_HOT;
-<<<<<<< HEAD
-=======
-
->>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
       if (aAppearance == StyleAppearance::Menucheckbox ||
           aAppearance == StyleAppearance::Menuradio) {
         if (IsCheckedButton(aFrame)) aState |= DFCS_CHECKED;
@@ -3448,7 +3041,6 @@ nsresult nsNativeThemeWin::ClassicGetThemePartAndState(
 
       return NS_OK;
     }
-<<<<<<< HEAD
     case StyleAppearance::ScrollbarbuttonUp:
     case StyleAppearance::ScrollbarbuttonDown:
     case StyleAppearance::ScrollbarbuttonLeft:
@@ -3479,8 +3071,6 @@ nsresult nsNativeThemeWin::ClassicGetThemePartAndState(
       }
       return NS_OK;
     }
-=======
->>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
     case StyleAppearance::SpinnerUpbutton:
     case StyleAppearance::SpinnerDownbutton: {
       ElementState contentState = GetContentState(aFrame, aAppearance);
@@ -3507,14 +3097,11 @@ nsresult nsNativeThemeWin::ClassicGetThemePartAndState(
 
       return NS_OK;
     }
-<<<<<<< HEAD
     case StyleAppearance::Resizer:
       aPart = DFC_SCROLL;
       aState =
           (IsFrameRTL(aFrame) ? DFCS_SCROLLSIZEGRIPRIGHT : DFCS_SCROLLSIZEGRIP);
       return NS_OK;
-=======
->>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
     case StyleAppearance::Menuseparator:
       aPart = 0;
       aState = 0;
@@ -3657,10 +3244,6 @@ static void DrawMenuImage(HDC hdc, const RECT& rc, int32_t aComponent,
     // they change currently, so we can't do so easily. Same for the bitmap.
     int checkW = ::GetSystemMetrics(SM_CXMENUCHECK);
     int checkH = ::GetSystemMetrics(SM_CYMENUCHECK);
-<<<<<<< HEAD
-=======
-
->>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
     HBITMAP hMonoBitmap = ::CreateBitmap(checkW, checkH, 1, 1, nullptr);
     if (hMonoBitmap) {
       HBITMAP hPrevBitmap = (HBITMAP)::SelectObject(hMemoryDC, hMonoBitmap);
@@ -3670,17 +3253,9 @@ static void DrawMenuImage(HDC hdc, const RECT& rc, int32_t aComponent,
         RECT imgRect = {0, 0, checkW, checkH};
         POINT imgPos = {rc.left + (rc.right - rc.left - checkW) / 2,
                         rc.top + (rc.bottom - rc.top - checkH) / 2};
-<<<<<<< HEAD
         // XXXzeniko Windows renders these 1px lower than you'd expect
         if (aComponent == DFCS_MENUCHECK || aComponent == DFCS_MENUBULLET)
           imgPos.y++;
-=======
-
-        // XXXzeniko Windows renders these 1px lower than you'd expect
-        if (aComponent == DFCS_MENUCHECK || aComponent == DFCS_MENUBULLET)
-          imgPos.y++;
-
->>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
         ::DrawFrameControl(hMemoryDC, &imgRect, DFC_MENU, aComponent);
         COLORREF oldTextCol = ::SetTextColor(hdc, 0x00000000);
         COLORREF oldBackCol = ::SetBkColor(hdc, 0x00FFFFFF);
@@ -3776,7 +3351,6 @@ RENDER_AGAIN:
     // Draw controls supported by DrawFrameControl
     case StyleAppearance::Checkbox:
     case StyleAppearance::Radio:
-<<<<<<< HEAD
     case StyleAppearance::ScrollbarbuttonUp:
     case StyleAppearance::ScrollbarbuttonDown:
     case StyleAppearance::ScrollbarbuttonLeft:
@@ -3785,11 +3359,6 @@ RENDER_AGAIN:
     case StyleAppearance::SpinnerDownbutton:
     case StyleAppearance::MozMenulistArrowButton:
     case StyleAppearance::Resizer: {
-=======
-    case StyleAppearance::SpinnerUpbutton:
-    case StyleAppearance::SpinnerDownbutton:
-    case StyleAppearance::MozMenulistArrowButton: {
->>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
       int32_t oldTA;
       // setup DC to make DrawFrameControl draw correctly
       oldTA = ::SetTextAlign(hdc, TA_TOP | TA_LEFT | TA_NOUPDATECP);
@@ -3823,7 +3392,6 @@ RENDER_AGAIN:
     case StyleAppearance::Treeview: {
       // Draw inset edge
       ::DrawEdge(hdc, &widgetRect, EDGE_SUNKEN, BF_RECT | BF_ADJUST);
-<<<<<<< HEAD
       // Fill in window color background
       ::FillRect(hdc, &widgetRect, (HBRUSH)(COLOR_WINDOW + 1));
       break;
@@ -3834,14 +3402,6 @@ RENDER_AGAIN:
       InflateRect(&widgetRect, -1, -1);
       ::FillRect(hdc, &widgetRect, ::GetSysColorBrush(COLOR_INFOBK));
       break;
-=======
-
-      // Fill in window color background
-      ::FillRect(hdc, &widgetRect, (HBRUSH)(COLOR_WINDOW + 1));
-
-      break;
-    }
->>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
     case StyleAppearance::Groupbox:
       ::DrawEdge(hdc, &widgetRect, EDGE_ETCHED, BF_RECT | BF_ADJUST);
       ::FillRect(hdc, &widgetRect, (HBRUSH)(COLOR_BTNFACE + 1));
@@ -3972,153 +3532,6 @@ RENDER_AGAIN:
                  BF_SOFT | BF_MIDDLE | BF_LEFT | BF_RIGHT | BF_BOTTOM);
 
       break;
-    case StyleAppearance::Menubar:
-      break;
-    case StyleAppearance::Menupopup:
-      NS_ASSERTION(nsUXThemeData::AreFlatMenusEnabled(),
-                   "Classic menus are styled entirely through CSS");
-      ::FillRect(hdc, &widgetRect, (HBRUSH)(COLOR_MENU + 1));
-      ::FrameRect(hdc, &widgetRect, ::GetSysColorBrush(COLOR_BTNSHADOW));
-      break;
-    case StyleAppearance::Menuitem:
-    case StyleAppearance::Checkmenuitem:
-    case StyleAppearance::Radiomenuitem:
-      // part == 0 for normal items
-      // part == 1 for top-level menu items
-      if (nsUXThemeData::AreFlatMenusEnabled()) {
-        // Not disabled and hot/pushed.
-        if ((state & (DFCS_HOT | DFCS_PUSHED)) != 0) {
-          ::FillRect(hdc, &widgetRect, (HBRUSH)(COLOR_MENUHILIGHT + 1));
-          ::FrameRect(hdc, &widgetRect, ::GetSysColorBrush(COLOR_HIGHLIGHT));
-        }
-      } else {
-        if (part == 1) {
-          if ((state & DFCS_INACTIVE) == 0) {
-            if ((state & DFCS_PUSHED) != 0) {
-              ::DrawEdge(hdc, &widgetRect, BDR_SUNKENOUTER, BF_RECT);
-            } else if ((state & DFCS_HOT) != 0) {
-              ::DrawEdge(hdc, &widgetRect, BDR_RAISEDINNER, BF_RECT);
-            }
-          }
-        } else {
-          if ((state & (DFCS_HOT | DFCS_PUSHED)) != 0) {
-            ::FillRect(hdc, &widgetRect, (HBRUSH)(COLOR_HIGHLIGHT + 1));
-          }
-        }
-      }
-      break;
-    case StyleAppearance::Menucheckbox:
-    case StyleAppearance::Menuradio:
-      if (!(state & DFCS_CHECKED)) break;  // nothin' to do
-      [[fallthrough]];
-    case StyleAppearance::Menuarrow: {
-      uint32_t color = COLOR_MENUTEXT;
-      if ((state & DFCS_INACTIVE))
-        color = COLOR_GRAYTEXT;
-      else if ((state & DFCS_HOT))
-        color = COLOR_HIGHLIGHTTEXT;
-
-      if (aAppearance == StyleAppearance::Menucheckbox)
-        DrawMenuImage(hdc, widgetRect, DFCS_MENUCHECK, color);
-      else if (aAppearance == StyleAppearance::Menuradio)
-        DrawMenuImage(hdc, widgetRect, DFCS_MENUBULLET, color);
-      else if (aAppearance == StyleAppearance::Menuarrow)
-        DrawMenuImage(hdc, widgetRect,
-                      (state & DFCS_RTL) ? DFCS_MENUARROWRIGHT : DFCS_MENUARROW,
-                      color);
-      break;
-    }
-    case StyleAppearance::Menuseparator: {
-      // separators are offset by a bit (see menu.css)
-      widgetRect.left++;
-      widgetRect.right--;
-
-      // This magic number is brought to you by the value in menu.css
-      widgetRect.top += 4;
-      // Our rectangles are 1 pixel high (see border size in menu.css)
-      widgetRect.bottom = widgetRect.top + 1;
-      ::FillRect(hdc, &widgetRect, (HBRUSH)(COLOR_3DSHADOW + 1));
-      widgetRect.top++;
-      widgetRect.bottom++;
-      ::FillRect(hdc, &widgetRect, (HBRUSH)(COLOR_3DHILIGHT + 1));
-      break;
-    }
-
-    case StyleAppearance::MozWindowTitlebar:
-    case StyleAppearance::MozWindowTitlebarMaximized: {
-      RECT rect = widgetRect;
-      int32_t offset = GetSystemMetrics(SM_CXFRAME);
-
-      // first fill the area to the color of the window background
-      ::FillRect(hdc, &rect, (HBRUSH)(COLOR_3DFACE + 1));
-
-      // inset the caption area so it doesn't overflow.
-      rect.top += offset;
-      // if enabled, draw a gradient titlebar background, otherwise
-      // fill with a solid color.
-      BOOL bFlag = TRUE;
-      SystemParametersInfo(SPI_GETGRADIENTCAPTIONS, 0, &bFlag, 0);
-      if (!bFlag) {
-        if (state == mozilla::widget::themeconst::FS_ACTIVE)
-          ::FillRect(hdc, &rect, (HBRUSH)(COLOR_ACTIVECAPTION + 1));
-        else
-          ::FillRect(hdc, &rect, (HBRUSH)(COLOR_INACTIVECAPTION + 1));
-      } else {
-        DWORD startColor, endColor;
-        if (state == mozilla::widget::themeconst::FS_ACTIVE) {
-          startColor = GetSysColor(COLOR_ACTIVECAPTION);
-          endColor = GetSysColor(COLOR_GRADIENTACTIVECAPTION);
-        } else {
-          startColor = GetSysColor(COLOR_INACTIVECAPTION);
-          endColor = GetSysColor(COLOR_GRADIENTINACTIVECAPTION);
-        }
-
-        TRIVERTEX vertex[2];
-        vertex[0].x = rect.left;
-        vertex[0].y = rect.top;
-        vertex[0].Red = GetRValue(startColor) << 8;
-        vertex[0].Green = GetGValue(startColor) << 8;
-        vertex[0].Blue = GetBValue(startColor) << 8;
-        vertex[0].Alpha = 0;
-
-        vertex[1].x = rect.right;
-        vertex[1].y = rect.bottom;
-        vertex[1].Red = GetRValue(endColor) << 8;
-        vertex[1].Green = GetGValue(endColor) << 8;
-        vertex[1].Blue = GetBValue(endColor) << 8;
-        vertex[1].Alpha = 0;
-
-        GRADIENT_RECT gRect;
-        gRect.UpperLeft = 0;
-        gRect.LowerRight = 1;
-        // available on win2k & up
-        GradientFill(hdc, vertex, 2, &gRect, 1, GRADIENT_FILL_RECT_H);
-      }
-
-      if (aAppearance == StyleAppearance::MozWindowTitlebar) {
-        // frame things up with a top raised border.
-        DrawEdge(hdc, &widgetRect, EDGE_RAISED, BF_TOP);
-      }
-      break;
-    }
-
-    case StyleAppearance::MozWindowButtonClose:
-    case StyleAppearance::MozWindowButtonMinimize:
-    case StyleAppearance::MozWindowButtonMaximize:
-    case StyleAppearance::MozWindowButtonRestore: {
-      if (aAppearance == StyleAppearance::MozWindowButtonMinimize) {
-        OffsetBackgroundRect(widgetRect, CAPTIONBUTTON_MINIMIZE);
-      } else if (aAppearance == StyleAppearance::MozWindowButtonMaximize ||
-                 aAppearance == StyleAppearance::MozWindowButtonRestore) {
-        OffsetBackgroundRect(widgetRect, CAPTIONBUTTON_RESTORE);
-      } else if (aAppearance == StyleAppearance::MozWindowButtonClose) {
-        OffsetBackgroundRect(widgetRect, CAPTIONBUTTON_CLOSE);
-      }
-      int32_t oldTA = SetTextAlign(hdc, TA_TOP | TA_LEFT | TA_NOUPDATECP);
-      DrawFrameControl(hdc, &widgetRect, part, state);
-      SetTextAlign(hdc, oldTA);
-      break;
-    }
 
     case StyleAppearance::Menubar:
       break;

@@ -152,9 +152,7 @@
 #placeContent {
   appearance: none;
   border: none;
-}
 
-<<<<<<< HEAD
   > treechildren::-moz-tree-cell,
   > treechildren::-moz-tree-column {
     border-inline-end: 1px solid color-mix(in srgb, FieldText 30%, transparent);
@@ -163,15 +161,6 @@
   > treechildren::-moz-tree-cell(separator) {
     border-color: transparent;
   }
-=======
-#placeContent > treechildren::-moz-tree-cell,
-#placeContent > treechildren::-moz-tree-column {
-  border-inline-end: 1px solid color-mix(in srgb, FieldText 30%, transparent);
-}
-
-#placeContent > treechildren::-moz-tree-cell(separator) {
-  border-color: transparent;
->>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
 }
 
 /**

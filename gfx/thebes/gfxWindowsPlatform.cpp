@@ -274,12 +274,7 @@ class D3DSharedTexturesReporter final : public nsIMemoryReporter {
 NS_IMPL_ISUPPORTS(D3DSharedTexturesReporter, nsIMemoryReporter)
 
 gfxWindowsPlatform::gfxWindowsPlatform()
-<<<<<<< HEAD
     : mRenderMode(RENDER_GDI), mDwmCompositionStatus(DwmCompositionStatus::Unknown) {
-=======
-    : mRenderMode(RENDER_GDI),
-      mDwmCompositionStatus(DwmCompositionStatus::Unknown) {
->>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
   // If win32k is locked down then we can't use COM STA and shouldn't need it.
   // Also, we won't be using any GPU memory in this process.
   if (!IsWin32kLockedDown()) {
@@ -422,19 +417,11 @@ void gfxWindowsPlatform::InitAcceleration() {
       gfxVars::SetDwmCompositionEnabled(true);
     }
   }
-<<<<<<< HEAD
-=======
-
->>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
   // gfxVars are not atomic, but multiple threads can query DWM status
   // Therefore, mirror value into an atomic
   mDwmCompositionStatus = gfxVars::DwmCompositionEnabled()
                               ? DwmCompositionStatus::Enabled
                               : DwmCompositionStatus::Disabled;
-<<<<<<< HEAD
-=======
-
->>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
   gfxVars::SetDwmCompositionEnabledListener([this] {
     this->mDwmCompositionStatus = gfxVars::DwmCompositionEnabled()
                                       ? DwmCompositionStatus::Enabled
@@ -1779,10 +1766,6 @@ void gfxWindowsPlatform::InitGPUProcessSupport() {
 
 bool gfxWindowsPlatform::DwmCompositionEnabled() {
   MOZ_RELEASE_ASSERT(mDwmCompositionStatus != DwmCompositionStatus::Unknown);
-<<<<<<< HEAD
-=======
-
->>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
   return mDwmCompositionStatus == DwmCompositionStatus::Enabled;
 }
 

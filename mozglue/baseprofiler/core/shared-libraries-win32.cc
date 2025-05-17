@@ -61,10 +61,7 @@ bool LowerCaseEqualsLiteral(char aModuleChar, char aDetouredChar) {
 }
 
 static bool IsModuleUnsafeToLoad(const std::string& aModuleName) {
-<<<<<<< HEAD
 
-=======
->>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
 #if defined(_M_AMD64) || defined(_M_IX86)
   // Hackaround for Bug 1607574.  Nvidia's shim driver nvd3d9wrap[x].dll detours
   // LoadLibraryExW and it causes AV when the following conditions are met.

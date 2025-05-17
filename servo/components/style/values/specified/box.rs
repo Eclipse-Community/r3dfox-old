@@ -1669,12 +1669,6 @@ pub enum Appearance {
     /// The dropdown portion of a toolbar button
     #[parse(condition = "ParserContext::chrome_rules_enabled")]
     ToolbarbuttonDropdown,
-<<<<<<< HEAD
-=======
-    /// The gripper for a toolbar.
-    #[parse(condition = "ParserContext::chrome_rules_enabled")]
-    Toolbargripper,
->>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
     /// The toolbox that contains the toolbars.
     #[parse(condition = "ParserContext::chrome_rules_enabled")]
     Toolbox,
@@ -1706,38 +1700,11 @@ pub enum Appearance {
     /// Sidebar appearance.
     #[parse(condition = "ParserContext::chrome_rules_enabled")]
     MozSidebar,
-<<<<<<< HEAD
     #[parse(condition = "ParserContext::chrome_rules_enabled")]
     MozWinBorderlessGlass,
     /// -moz-apperance style used in setting proper glass margins.
     #[parse(condition = "ParserContext::chrome_rules_enabled")]
     MozWinExcludeGlass,
-=======
-    /// A listbox or tree widget header
-    #[parse(condition = "ParserContext::chrome_rules_enabled")]
-    Treeheader,
-    /// An individual header cell
-    #[parse(condition = "ParserContext::chrome_rules_enabled")]
-    Treeheadercell,
-    /// The sort arrow for a header.
-    #[parse(condition = "ParserContext::chrome_rules_enabled")]
-    Treeheadersortarrow,
-    /// A tree item.
-    #[parse(condition = "ParserContext::chrome_rules_enabled")]
-    Treeitem,
-    /// A tree widget branch line
-    #[parse(condition = "ParserContext::chrome_rules_enabled")]
-    Treeline,
-    /// A tree widget twisty.
-    #[parse(condition = "ParserContext::chrome_rules_enabled")]
-    Treetwisty,
-    /// Open tree widget twisty.
-    #[parse(condition = "ParserContext::chrome_rules_enabled")]
-    Treetwistyopen,
-    /// A tree widget.
-    #[parse(condition = "ParserContext::chrome_rules_enabled")]
-    Treeview,
->>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
 
     /// Vista Rebars.
     #[parse(condition = "ParserContext::chrome_rules_enabled")]
@@ -1746,14 +1713,6 @@ pub enum Appearance {
     MozWinMediaToolbox,
     #[parse(condition = "ParserContext::chrome_rules_enabled")]
     MozWinBrowsertabbarToolbox,
-<<<<<<< HEAD
-=======
-    #[parse(condition = "ParserContext::chrome_rules_enabled")]
-    MozWinBorderlessGlass,
-    /// -moz-apperance style used in setting proper glass margins.
-    #[parse(condition = "ParserContext::chrome_rules_enabled")]
-    MozWinExcludeGlass,
->>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
 
     /// Mac help button.
     #[parse(condition = "ParserContext::chrome_rules_enabled")]
@@ -1968,15 +1927,12 @@ impl Parse for Overflow {
             "visible" => Self::Visible,
             "hidden" => Self::Hidden,
             "scroll" => Self::Scroll,
-            "auto" => Self::Auto,
+            "auto" | "overlay" => Self::Auto,
             #[cfg(feature = "gecko")]
             "clip" => Self::Clip,
             #[cfg(feature = "gecko")]
             "-moz-hidden-unscrollable" if static_prefs::pref!("layout.css.overflow-moz-hidden-unscrollable.enabled") => {
                 Overflow::Clip
-            },
-            "overlay" if static_prefs::pref!("layout.css.overflow-overlay.enabled") => {
-                Overflow::Auto
             },
         })
     }

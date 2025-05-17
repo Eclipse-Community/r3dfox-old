@@ -559,12 +559,6 @@ pub enum Platform {
     Macos,
     /// Matches any Windows version.
     Windows,
-    /// Matches only Windows 7.
-    WindowsWin7,
-    /// Matches only Windows 8.
-    WindowsWin8,
-    /// Matches windows 10 and actually matches windows 11 too, as of right now.
-    WindowsWin10,
 }
 
 fn eval_moz_platform(_: &Context, query_value: Option<Platform>) -> bool {
@@ -623,13 +617,10 @@ fn eval_scripting(context: &Context, query_value: Option<Scripting>) -> bool {
     }
 }
 
-<<<<<<< HEAD
 fn eval_moz_native_controls(_context: &Context) -> bool {
     true
 }
 
-=======
->>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
 fn eval_moz_windows_non_native_menus(context: &Context) -> bool {
     unsafe { bindings::Gecko_MediaFeatures_WindowsNonNativeMenus(context.device().document()) }
 }
@@ -1004,19 +995,12 @@ pub static MEDIA_FEATURES: [QueryFeatureDescription; 68] = [
     ),
     lnf_int_feature!(atom!("-moz-menubar-drag"), MenuBarDrag),
     lnf_int_feature!(atom!("-moz-windows-default-theme"), WindowsDefaultTheme),
-<<<<<<< HEAD
-=======
-    lnf_int_feature!(atom!("-moz-mac-graphite-theme"), MacGraphiteTheme),
->>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
     lnf_int_feature!(atom!("-moz-mac-big-sur-theme"), MacBigSurTheme),
     lnf_int_feature!(atom!("-moz-mac-rtl"), MacRTL),
     lnf_int_feature!(
         atom!("-moz-windows-accent-color-in-titlebar"),
         WindowsAccentColorInTitlebar
     ),
-    lnf_int_feature!(atom!("-moz-windows-compositor"), DWMCompositor),
-    lnf_int_feature!(atom!("-moz-windows-classic"), WindowsClassic),
-    lnf_int_feature!(atom!("-moz-windows-glass"), WindowsGlass),
     lnf_int_feature!(atom!("-moz-windows-mica"), WindowsMica),
     lnf_int_feature!(atom!("-moz-windows-compositor"), DWMCompositor),
     lnf_int_feature!(atom!("-moz-windows-classic"), WindowsClassic),

@@ -52,11 +52,6 @@
     MOZ_RELEASE_ASSERT(result == sandbox::SBOX_ALL_OK, #x " failed"); \
   } while (0)
 
-namespace TelemetryScalar {
-void Set(mozilla::Telemetry::ScalarID aId, const nsAString& aKey,
-         uint32_t aValue);
-}
-
 namespace mozilla {
 
 constexpr wchar_t kLpacFirefoxInstallFiles[] = L"lpacFirefoxInstallFiles";
@@ -657,11 +652,7 @@ static bool CanUseJob() {
   // for now and adding telemetry to see if we can restrict this to just remote.
   nsAutoString localRemote(::GetSystemMetrics(SM_REMOTESESSION) ? u"remote"
                                                                 : u"local");
-<<<<<<< HEAD
   //Telemetry::ScalarSet(Telemetry::ScalarID::SANDBOX_NO_JOB, localRemote, true);
-=======
-  TelemetryScalar::Set(Telemetry::ScalarID::SANDBOX_NO_JOB, localRemote, true);
->>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
 
   // Allow running without the job object in this case. This slightly reduces
   // the ability of the sandbox to protect its children from spawning new
@@ -1270,7 +1261,7 @@ void SandboxBroker::SetSecurityLevelForGPUProcess(int32_t aSandboxLevel) {
       sandbox::MITIGATION_STRICT_HANDLE_CHECKS |
       sandbox::MITIGATION_DLL_SEARCH_ORDER;
 
-  SANDBOX_SUCCEED_OR_CRASH(SetJobLevel(mPolicy, jobLevel, uiExceptions));
+  SANDBOX_SUCCEED_OR_CRASH(mPolicy->SetJobLevel(jobLevel, uiExceptions));
   SANDBOX_SUCCEED_OR_CRASH(
       mPolicy->SetTokenLevel(initialTokenLevel, lockdownTokenLevel));
   SANDBOX_SUCCEED_OR_CRASH(mPolicy->SetIntegrityLevel(initialIntegrityLevel));

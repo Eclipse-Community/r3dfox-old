@@ -1712,23 +1712,15 @@ void nsTreeBodyFrame::PrefillPropertyArray(int32_t aRowIndex,
   mScratchArray.Clear();
 
   // focus
-<<<<<<< HEAD
   if (mFocused) {
     mScratchArray.AppendElement((nsStaticAtom*)nsGkAtoms::focus);
   } else {
     mScratchArray.AppendElement((nsStaticAtom*)nsGkAtoms::blur);
   }
-=======
-  if (mFocused)
-    mScratchArray.AppendElement((nsStaticAtom*)nsGkAtoms::focus);
-  else
-    mScratchArray.AppendElement((nsStaticAtom*)nsGkAtoms::blur);
->>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
 
   // sort
   bool sorted = false;
   mView->IsSorted(&sorted);
-<<<<<<< HEAD
   if (sorted) {
     mScratchArray.AppendElement((nsStaticAtom*)nsGkAtoms::sorted);
   }
@@ -1742,43 +1734,22 @@ void nsTreeBodyFrame::PrefillPropertyArray(int32_t aRowIndex,
     if (aRowIndex == mMouseOverRow) {
       mScratchArray.AppendElement((nsStaticAtom*)nsGkAtoms::hover);
     }
-=======
-  if (sorted) mScratchArray.AppendElement((nsStaticAtom*)nsGkAtoms::sorted);
-
-  // drag session
-  if (mSlots && mSlots->mIsDragging)
-    mScratchArray.AppendElement((nsStaticAtom*)nsGkAtoms::dragSession);
-
-  if (aRowIndex != -1) {
-    if (aRowIndex == mMouseOverRow)
-      mScratchArray.AppendElement((nsStaticAtom*)nsGkAtoms::hover);
->>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
 
     nsCOMPtr<nsITreeSelection> selection = GetSelection();
     if (selection) {
       // selected
       bool isSelected;
       selection->IsSelected(aRowIndex, &isSelected);
-<<<<<<< HEAD
       if (isSelected) {
         mScratchArray.AppendElement((nsStaticAtom*)nsGkAtoms::selected);
       }
-=======
-      if (isSelected)
-        mScratchArray.AppendElement((nsStaticAtom*)nsGkAtoms::selected);
->>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
 
       // current
       int32_t currentIndex;
       selection->GetCurrentIndex(&currentIndex);
-<<<<<<< HEAD
       if (aRowIndex == currentIndex) {
         mScratchArray.AppendElement((nsStaticAtom*)nsGkAtoms::current);
       }
-=======
-      if (aRowIndex == currentIndex)
-        mScratchArray.AppendElement((nsStaticAtom*)nsGkAtoms::current);
->>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
     }
 
     // container or leaf
@@ -1790,25 +1761,17 @@ void nsTreeBodyFrame::PrefillPropertyArray(int32_t aRowIndex,
       // open or closed
       bool isOpen = false;
       mView->IsContainerOpen(aRowIndex, &isOpen);
-<<<<<<< HEAD
       if (isOpen) {
         mScratchArray.AppendElement((nsStaticAtom*)nsGkAtoms::open);
       } else {
         mScratchArray.AppendElement((nsStaticAtom*)nsGkAtoms::closed);
       }
-=======
-      if (isOpen)
-        mScratchArray.AppendElement((nsStaticAtom*)nsGkAtoms::open);
-      else
-        mScratchArray.AppendElement((nsStaticAtom*)nsGkAtoms::closed);
->>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
     } else {
       mScratchArray.AppendElement((nsStaticAtom*)nsGkAtoms::leaf);
     }
 
     // drop orientation
     if (mSlots && mSlots->mDropAllowed && mSlots->mDropRow == aRowIndex) {
-<<<<<<< HEAD
       if (mSlots->mDropOrient == nsITreeView::DROP_BEFORE) {
         mScratchArray.AppendElement((nsStaticAtom*)nsGkAtoms::dropBefore);
       } else if (mSlots->mDropOrient == nsITreeView::DROP_ON) {
@@ -1824,21 +1787,6 @@ void nsTreeBodyFrame::PrefillPropertyArray(int32_t aRowIndex,
     } else {
       mScratchArray.AppendElement((nsStaticAtom*)nsGkAtoms::even);
     }
-=======
-      if (mSlots->mDropOrient == nsITreeView::DROP_BEFORE)
-        mScratchArray.AppendElement((nsStaticAtom*)nsGkAtoms::dropBefore);
-      else if (mSlots->mDropOrient == nsITreeView::DROP_ON)
-        mScratchArray.AppendElement((nsStaticAtom*)nsGkAtoms::dropOn);
-      else if (mSlots->mDropOrient == nsITreeView::DROP_AFTER)
-        mScratchArray.AppendElement((nsStaticAtom*)nsGkAtoms::dropAfter);
-    }
-
-    // odd or even
-    if (aRowIndex % 2)
-      mScratchArray.AppendElement((nsStaticAtom*)nsGkAtoms::odd);
-    else
-      mScratchArray.AppendElement((nsStaticAtom*)nsGkAtoms::even);
->>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
 
     XULTreeElement* tree = GetBaseElement();
     if (tree && tree->HasAttr(nsGkAtoms::editing)) {
@@ -1846,27 +1794,17 @@ void nsTreeBodyFrame::PrefillPropertyArray(int32_t aRowIndex,
     }
 
     // multiple columns
-<<<<<<< HEAD
     if (mColumns->GetColumnAt(1)) {
       mScratchArray.AppendElement((nsStaticAtom*)nsGkAtoms::multicol);
     }
-=======
-    if (mColumns->GetColumnAt(1))
-      mScratchArray.AppendElement((nsStaticAtom*)nsGkAtoms::multicol);
->>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
   }
 
   if (aCol) {
     mScratchArray.AppendElement(aCol->GetAtom());
 
-<<<<<<< HEAD
     if (aCol->IsPrimary()) {
       mScratchArray.AppendElement((nsStaticAtom*)nsGkAtoms::primary);
     }
-=======
-    if (aCol->IsPrimary())
-      mScratchArray.AppendElement((nsStaticAtom*)nsGkAtoms::primary);
->>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
 
     if (aCol->GetType() == TreeColumn_Binding::TYPE_CHECKBOX) {
       mScratchArray.AppendElement((nsStaticAtom*)nsGkAtoms::checkbox);
@@ -1874,20 +1812,14 @@ void nsTreeBodyFrame::PrefillPropertyArray(int32_t aRowIndex,
       if (aRowIndex != -1) {
         nsAutoString value;
         mView->GetCellValue(aRowIndex, aCol, value);
-<<<<<<< HEAD
         if (value.EqualsLiteral("true")) {
           mScratchArray.AppendElement((nsStaticAtom*)nsGkAtoms::checked);
         }
-=======
-        if (value.EqualsLiteral("true"))
-          mScratchArray.AppendElement((nsStaticAtom*)nsGkAtoms::checked);
->>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
       }
     }
 
     // Read special properties from attributes on the column content node
     if (aCol->mContent->AttrValueIs(kNameSpaceID_None, nsGkAtoms::insertbefore,
-<<<<<<< HEAD
                                     nsGkAtoms::_true, eCaseMatters)) {
       mScratchArray.AppendElement((nsStaticAtom*)nsGkAtoms::insertbefore);
     }
@@ -1895,13 +1827,6 @@ void nsTreeBodyFrame::PrefillPropertyArray(int32_t aRowIndex,
                                     nsGkAtoms::_true, eCaseMatters)) {
       mScratchArray.AppendElement((nsStaticAtom*)nsGkAtoms::insertafter);
     }
-=======
-                                    nsGkAtoms::_true, eCaseMatters))
-      mScratchArray.AppendElement((nsStaticAtom*)nsGkAtoms::insertbefore);
-    if (aCol->mContent->AttrValueIs(kNameSpaceID_None, nsGkAtoms::insertafter,
-                                    nsGkAtoms::_true, eCaseMatters))
-      mScratchArray.AppendElement((nsStaticAtom*)nsGkAtoms::insertafter);
->>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
   }
 }
 
@@ -1919,23 +1844,14 @@ nsITheme* nsTreeBodyFrame::GetTwistyRect(int32_t aRowIndex,
   // a -moz-appearance involved, adjust the rect by the minimum widget size
   // provided by the theme implementation.
   aImageRect = GetImageSize(aRowIndex, aColumn, true, aTwistyContext);
-  if (aImageRect.height > aTwistyRect.height)
+  if (aImageRect.height > aTwistyRect.height) {
     aImageRect.height = aTwistyRect.height;
-  if (aImageRect.width > aTwistyRect.width)
+  }
+  if (aImageRect.width > aTwistyRect.width) {
     aImageRect.width = aTwistyRect.width;
-  else
+  } else {
     aTwistyRect.width = aImageRect.width;
-
-  bool useTheme = false;
-  nsITheme* theme = nullptr;
-  StyleAppearance appearance =
-      aTwistyContext->StyleDisplay()->EffectiveAppearance();
-  if (appearance != StyleAppearance::None) {
-    theme = aPresContext->Theme();
-    if (theme->ThemeSupportsWidget(aPresContext, nullptr, appearance))
-      useTheme = true;
   }
-<<<<<<< HEAD
   
   bool useTheme = false;
   nsITheme* theme = nullptr;
@@ -1947,9 +1863,6 @@ nsITheme* nsTreeBodyFrame::GetTwistyRect(int32_t aRowIndex,
       useTheme = true;
   }
   
-=======
-
->>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
   if (useTheme) {
     LayoutDeviceIntSize minTwistySizePx =
         theme->GetMinimumWidgetSize(aPresContext, this, appearance);
@@ -1960,11 +1873,7 @@ nsITheme* nsTreeBodyFrame::GetTwistyRect(int32_t aRowIndex,
         aPresContext->DevPixelsToAppUnits(minTwistySizePx.width);
     minTwistySize.height =
         aPresContext->DevPixelsToAppUnits(minTwistySizePx.height);
-<<<<<<< HEAD
         
-=======
-
->>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
     if (aTwistyRect.width < minTwistySize.width) {
       aTwistyRect.width = minTwistySize.width;
     }
@@ -2763,10 +2672,6 @@ ImgDrawResult nsTreeBodyFrame::PaintRow(int32_t aRowIndex,
   if (appearance != StyleAppearance::None) {
     theme = aPresContext->Theme();
   }
-<<<<<<< HEAD
-=======
-
->>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
   if (theme && theme->ThemeSupportsWidget(aPresContext, nullptr, appearance)) {
     nsRect dirty;
     dirty.IntersectRect(rowRect, aDirtyRect);
@@ -3173,61 +3078,10 @@ ImgDrawResult nsTreeBodyFrame::PaintTwisty(
   nsRect copyRect(twistyRect);
   copyRect.Inflate(twistyMargin);
   aRemainingWidth -= copyRect.width;
-  if (!isRTL) aCurrX += copyRect.width;
-
-  ImgDrawResult result = ImgDrawResult::SUCCESS;
-
-  if (shouldPaint) {
-    // Paint our borders and background for our image rect.
-    result &= PaintBackgroundLayer(twistyContext, aPresContext,
-                                   aRenderingContext, twistyRect, aDirtyRect);
-
-    if (theme) {
-      if (isRTL) twistyRect.x = rightEdge - twistyRect.width;
-      // yeah, I know it says we're drawing a background, but a twisty is really
-      // a fg object since it doesn't have anything that gecko would want to
-      // draw over it. Besides, we have to prevent imagelib from drawing it.
-      nsRect dirty;
-      dirty.IntersectRect(twistyRect, aDirtyRect);
-      theme->DrawWidgetBackground(
-          &aRenderingContext, this,
-          twistyContext->StyleDisplay()->EffectiveAppearance(), twistyRect,
-          dirty);
-    } else {
-      // Time to paint the twisty.
-      // Adjust the rect for its border and padding.
-      nsMargin bp(0, 0, 0, 0);
-      GetBorderPadding(twistyContext, bp);
-      twistyRect.Deflate(bp);
-      if (isRTL) twistyRect.x = rightEdge - twistyRect.width;
-      imageSize.Deflate(bp);
-
-      // Get the image for drawing.
-      nsCOMPtr<imgIContainer> image =
-          GetImage(aRowIndex, aColumn, true, twistyContext);
-      if (image) {
-        nsPoint anchorPoint = twistyRect.TopLeft();
-
-        // Center the image. XXX Obey vertical-align style prop?
-        if (imageSize.height < twistyRect.height) {
-          anchorPoint.y += (twistyRect.height - imageSize.height) / 2;
-        }
-
-        // Apply context paint if applicable
-        SVGImageContext svgContext;
-        SVGImageContext::MaybeStoreContextPaint(svgContext, *aPresContext,
-                                                *twistyContext, image);
-
-        // Paint the image.
-        result &= nsLayoutUtils::DrawSingleUnscaledImage(
-            aRenderingContext, aPresContext, image, SamplingFilter::POINT,
-            anchorPoint, &aDirtyRect, svgContext, imgIContainer::FLAG_NONE,
-            &imageSize);
-      }
-    }
+  if (!isRTL) {
+    aCurrX += copyRect.width;
   }
 
-<<<<<<< HEAD
   ImgDrawResult result = ImgDrawResult::SUCCESS;
 
   if (shouldPaint) {
@@ -3289,8 +3143,6 @@ ImgDrawResult nsTreeBodyFrame::PaintTwisty(
     }
   }
 
-=======
->>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
   return result;
 }
 

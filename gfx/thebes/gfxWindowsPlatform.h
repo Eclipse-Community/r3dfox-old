@@ -246,11 +246,7 @@ class gfxWindowsPlatform final : public gfxPlatform {
   bool mInitializedDevices = false;
 
   mozilla::Atomic<DwmCompositionStatus, mozilla::ReleaseAcquire>
-<<<<<<< HEAD
     mDwmCompositionStatus;
-=======
-      mDwmCompositionStatus;
->>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
 
   // Cached contents of the output color profile file
   nsTArray<uint8_t> mCachedOutputColorProfile;

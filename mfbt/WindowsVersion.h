@@ -166,44 +166,6 @@ MOZ_ALWAYS_INLINE bool IsWin11OrLater() {
   return IsWindows10BuildOrLater(22000);
 }
 
-MOZ_ALWAYS_INLINE bool IsNotWin7PreRTM() {
-  return IsWin7SP1OrLater() || IsWindowsBuildOrLater(7600);
-}
-
-inline bool IsWin7AndPre2000Compatible() {
-  /*
-   * See Bug 1279171.
-   * We'd like to avoid using WMF on specific OS version when compatibility
-   * mode is in effect. The purpose of this function is to check if FF runs on
-   * Win7 OS with application compatibility mode being set to 95/98/ME.
-   * Those compatibility mode options (95/98/ME) can only display and
-   * be selected for 32-bit application.
-   * If the compatibility mode is in effect, the GetVersionEx function will
-   * report the OS as it identifies itself, which may not be the OS that is
-   * installed.
-   * Note : 1) We only target for Win7 build number greater than 7600.
-   *        2) GetVersionEx may be altered or unavailable for release after
-   *           Win8.1. Set pragma to avoid build warning as error.
-   */
-  bool isWin7 = IsNotWin7PreRTM() && !IsWin8OrLater();
-  if (!isWin7) {
-    return false;
-  }
-
-  OSVERSIONINFOEXW info;
-  ZeroMemory(&info, sizeof(OSVERSIONINFOEXW));
-
-  info.dwOSVersionInfoSize = sizeof(OSVERSIONINFOEXW);
-#pragma warning(push)
-#pragma warning(disable : 4996)
-  bool success = GetVersionExW((LPOSVERSIONINFOW)&info);
-#pragma warning(pop)
-  if (!success) {
-    return false;
-  }
-  return info.dwMajorVersion < 5;
-}
-
 MOZ_ALWAYS_INLINE bool IsWin1122H2OrLater() {
   return IsWindows10BuildOrLater(22621);
 }

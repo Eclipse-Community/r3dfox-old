@@ -1448,10 +1448,6 @@ class nsDisplayListBuilder {
   void AddWindowExcludeGlassRegion(nsIFrame* aFrame, const nsRect& aBounds) {
     mWindowExcludeGlassRegion.Add(aFrame, aBounds);
   }
-<<<<<<< HEAD
-=======
-
->>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
   /**
    * Returns the window exclude glass region.
    */

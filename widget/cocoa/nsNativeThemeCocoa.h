@@ -47,8 +47,6 @@ class nsNativeThemeCocoa : public mozilla::widget::ThemeCocoa {
     eSquareBezelPushButton,
     eArrowButton,
     eHelpButton,
-    eTreeTwistyPointingRight,
-    eTreeTwistyPointingDown,
     eDisclosureButtonClosed,
     eDisclosureButtonOpen
   };
@@ -134,12 +132,6 @@ class nsNativeThemeCocoa : public mozilla::widget::ThemeCocoa {
     bool rtl = false;
   };
 
-  struct TreeHeaderCellParams {
-    ControlParams controlParams;
-    TreeSortDirection sortDirection = eTreeSortDirection_Natural;
-    bool lastTreeHeaderCell = false;
-  };
-
   struct ScaleParams {
     int32_t value = 0;
     int32_t min = 0;
@@ -168,7 +160,6 @@ class nsNativeThemeCocoa : public mozilla::widget::ThemeCocoa {
     eSearchField,         // TextFieldParams
     eProgressBar,         // ProgressParams
     eMeter,               // MeterParams
-    eTreeHeaderCell,      // TreeHeaderCellParams
     eScale,               // ScaleParams
     eMultilineTextField,  // bool
     eListBox,
@@ -219,9 +210,6 @@ class nsNativeThemeCocoa : public mozilla::widget::ThemeCocoa {
     static WidgetInfo Meter(const MeterParams& aParams) {
       return WidgetInfo(Widget::eMeter, aParams);
     }
-    static WidgetInfo TreeHeaderCell(const TreeHeaderCellParams& aParams) {
-      return WidgetInfo(Widget::eTreeHeaderCell, aParams);
-    }
     static WidgetInfo Scale(const ScaleParams& aParams) {
       return WidgetInfo(Widget::eScale, aParams);
     }
@@ -249,16 +237,9 @@ class nsNativeThemeCocoa : public mozilla::widget::ThemeCocoa {
     template <typename T>
     WidgetInfo(enum Widget aWidget, const T& aParams) : mVariant(aParams), mWidget(aWidget) {}
 
-<<<<<<< HEAD
     mozilla::Variant<mozilla::gfx::sRGBColor, MenuIconParams, MenuItemParams, CheckboxOrRadioParams,
                      ButtonParams, DropdownParams, SpinButtonParams, SegmentParams, TextFieldParams,
                      ProgressParams, MeterParams, TreeHeaderCellParams, ScaleParams, bool>
-=======
-    mozilla::Variant<mozilla::gfx::sRGBColor, CheckboxOrRadioParams,
-                     ButtonParams, DropdownParams, SpinButtonParams,
-                     SegmentParams, TextFieldParams, ProgressParams,
-                     MeterParams, TreeHeaderCellParams, ScaleParams, bool>
->>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
         mVariant;
 
     enum Widget mWidget;
@@ -321,19 +302,11 @@ class nsNativeThemeCocoa : public mozilla::widget::ThemeCocoa {
   TextFieldParams ComputeTextFieldParams(nsIFrame* aFrame, mozilla::dom::ElementState aEventState);
   ProgressParams ComputeProgressParams(nsIFrame* aFrame, mozilla::dom::ElementState aEventState,
                                        bool aIsHorizontal);
-<<<<<<< HEAD
   MeterParams ComputeMeterParams(nsIFrame* aFrame);
   TreeHeaderCellParams ComputeTreeHeaderCellParams(nsIFrame* aFrame,
                                                    mozilla::dom::ElementState aEventState);
   mozilla::Maybe<ScaleParams> ComputeHTMLScaleParams(nsIFrame* aFrame,
                                                      mozilla::dom::ElementState aEventState);
-=======
-  MeterParams ComputeMeterParams(nsIFrame*);
-  TreeHeaderCellParams ComputeTreeHeaderCellParams(nsIFrame*,
-                                                   mozilla::dom::ElementState);
-  mozilla::Maybe<ScaleParams> ComputeHTMLScaleParams(
-      nsIFrame*, mozilla::dom::ElementState);
->>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
 
   // HITheme drawing routines
   void DrawMeter(CGContextRef context, const HIRect& inBoxRect, const MeterParams& aParams);
@@ -355,7 +328,6 @@ class nsNativeThemeCocoa : public mozilla::widget::ThemeCocoa {
   void DrawHelpButton(CGContextRef cgContext, const HIRect& inBoxRect,
                       ControlParams aControlParams);
   void DrawDisclosureButton(CGContextRef cgContext, const HIRect& inBoxRect,
-<<<<<<< HEAD
                             ControlParams aControlParams, NSControlStateValue aState);
   NSString* GetMenuIconName(const MenuIconParams& aParams);
   NSSize GetMenuIconSize(MenuIcon aIcon);
@@ -369,22 +341,6 @@ class nsNativeThemeCocoa : public mozilla::widget::ThemeCocoa {
                           const TreeHeaderCellParams& aParams);
   void DrawDropdown(CGContextRef context, const HIRect& inBoxRect, const DropdownParams& aParams);
   HIThemeButtonDrawInfo SpinButtonDrawInfo(ThemeButtonKind aKind, const SpinButtonParams& aParams);
-=======
-                            ControlParams aControlParams,
-                            NSControlStateValue aState);
-  void DrawHIThemeButton(CGContextRef cgContext, const HIRect& aRect,
-                         ThemeButtonKind aKind, ThemeButtonValue aValue,
-                         ThemeDrawState aState, ThemeButtonAdornment aAdornment,
-                         const ControlParams& aParams);
-  void DrawButton(CGContextRef context, const HIRect& inBoxRect,
-                  const ButtonParams& aParams);
-  void DrawTreeHeaderCell(CGContextRef context, const HIRect& inBoxRect,
-                          const TreeHeaderCellParams& aParams);
-  void DrawDropdown(CGContextRef context, const HIRect& inBoxRect,
-                    const DropdownParams& aParams);
-  HIThemeButtonDrawInfo SpinButtonDrawInfo(ThemeButtonKind aKind,
-                                           const SpinButtonParams& aParams);
->>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
   void DrawSpinButtons(CGContextRef context, const HIRect& inBoxRect,
                        const SpinButtonParams& aParams);
   void DrawSpinButton(CGContextRef context, const HIRect& inBoxRect, SpinButton aDrawnButton,
@@ -411,7 +367,6 @@ class nsNativeThemeCocoa : public mozilla::widget::ThemeCocoa {
   NSComboBoxCell* mComboBoxCell;
   NSProgressBarCell* mProgressBarCell;
   NSLevelIndicatorCell* mMeterBarCell;
-  NSTableHeaderCell* mTreeHeaderCell;
   MOZCellDrawWindow* mCellDrawWindow = nil;
   MOZCellDrawView* mCellDrawView;
 };

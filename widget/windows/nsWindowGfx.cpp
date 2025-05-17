@@ -137,7 +137,7 @@ void nsWindow::ForcePresent() {
   }
 }
 
-bool nsWindow::OnPaint(HDC aDC, uint32_t aNestingLevel) {
+bool nsWindow::OnPaint(uint32_t aNestingLevel) {
   gfx::DeviceResetReason resetReason = gfx::DeviceResetReason::OK;
   if (gfxWindowsPlatform::GetPlatform()->DidRenderingDeviceReset(
           &resetReason)) {
@@ -219,7 +219,6 @@ bool nsWindow::OnPaint(HDC aDC, uint32_t aNestingLevel) {
   }
   mLastPaintBounds = mBounds;
 
-<<<<<<< HEAD
   // For layered translucent windows all drawing should go to memory DC and no
   // WM_PAINT messages are normally generated. To support asynchronous painting
   // we force generation of WM_PAINT messages by invalidating window areas with
@@ -230,14 +229,6 @@ bool nsWindow::OnPaint(HDC aDC, uint32_t aNestingLevel) {
 
   HDC hDC = nullptr;
   if (usingMemoryDC) {
-=======
-  if (!aDC && IsPopup() && renderer->GetBackendType() == LayersBackend::LAYERS_NONE &&
-      TransparencyMode::Transparent == mTransparencyMode) {
-    // For layered translucent windows all drawing should go to memory DC and no
-    // WM_PAINT messages are normally generated. To support asynchronous
-    // painting we force generation of WM_PAINT messages by invalidating window
-    // areas with RedrawWindow, InvalidateRect or InvalidateRgn function calls.
->>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
     // BeginPaint/EndPaint must be called to make Windows think that invalid
     // area is painted. Otherwise it will continue sending the same message
     // endlessly.
@@ -246,7 +237,6 @@ bool nsWindow::OnPaint(HDC aDC, uint32_t aNestingLevel) {
 
     // We're guaranteed to have a widget proxy since we called
     // GetLayerManager().
-<<<<<<< HEAD
     hDC = mBasicLayersSurface->GetTransparentDC();
   } else {
     hDC = ::BeginPaint(mWnd, &ps);
@@ -254,15 +244,6 @@ bool nsWindow::OnPaint(HDC aDC, uint32_t aNestingLevel) {
 
   const bool forceRepaint = mTransparencyMode == TransparencyMode::Transparent;
   const LayoutDeviceIntRegion region = GetRegionToPaint(forceRepaint, ps, hDC);
-=======
-    aDC = mBasicLayersSurface->GetTransparentDC();
-  }
-
-  HDC hDC = aDC ? aDC : ::BeginPaint(mWnd, &ps);
-
-  bool forceRepaint = aDC || TransparencyMode::Transparent == mTransparencyMode;
-  LayoutDeviceIntRegion region = GetRegionToPaint(forceRepaint, ps, hDC);
->>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
 
   RefPtr<nsWindow> strongThis(this);
 
@@ -273,7 +254,7 @@ bool nsWindow::OnPaint(HDC aDC, uint32_t aNestingLevel) {
 
   bool didPaint = false;
   auto endPaint = MakeScopeExit([&] {
-  if (!aDC) {
+    if (!usingMemoryDC) {
       ::EndPaint(mWnd, &ps);
     }
     if (didPaint) {
@@ -282,7 +263,7 @@ bool nsWindow::OnPaint(HDC aDC, uint32_t aNestingLevel) {
         listener->DidPaintWindow();
       }
       if (aNestingLevel == 0 && ::GetUpdateRect(mWnd, nullptr, false)) {
-    OnPaint(aDC, 1);
+        OnPaint(1);
       }
     }
   });
@@ -309,11 +290,7 @@ bool nsWindow::OnPaint(HDC aDC, uint32_t aNestingLevel) {
       RefPtr<gfxASurface> targetSurface;
 
       // don't support transparency for non-GDI rendering, for now
-<<<<<<< HEAD
       if (TransparencyMode::Transparent == mTransparencyMode) {
-=======
-      if (IsPopup() && TransparencyMode::Transparent == mTransparencyMode) {
->>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
         // This mutex needs to be held when EnsureTransparentSurface is
         // called.
         MutexAutoLock lock(mBasicLayersSurface->GetTransparentSurfaceLock());
@@ -343,24 +320,16 @@ bool nsWindow::OnPaint(HDC aDC, uint32_t aNestingLevel) {
       // don't need to double buffer with anything but GDI
       BufferMode doubleBuffering = mozilla::layers::BufferMode::BUFFER_NONE;
       switch (mTransparencyMode) {
-          case TransparencyMode::BorderlessGlass:
-          default:
-            // If we're not doing translucency, then double buffer
-            doubleBuffering = mozilla::layers::BufferMode::BUFFERED;
-            break;
         case TransparencyMode::Transparent:
           // If we're rendering with translucency, we're going to be
           // rendering the whole window; make sure we clear it first
           dt->ClearRect(Rect(dt->GetRect()));
           break;
-<<<<<<< HEAD
         case TransparencyMode::BorderlessGlass:
         default:
           // If we're not doing translucency, then double buffer
           doubleBuffering = mozilla::layers::BufferMode::BUFFERED;
           break;
-=======
->>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
       }
 
       gfxContext thebesContext(dt);
@@ -373,11 +342,7 @@ bool nsWindow::OnPaint(HDC aDC, uint32_t aNestingLevel) {
         }
       }
 
-<<<<<<< HEAD
       if (TransparencyMode::Transparent == mTransparencyMode) {
-=======
-      if (IsPopup() && TransparencyMode::Transparent == mTransparencyMode) {
->>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
         // Data from offscreen drawing surface was copied to memory bitmap of
         // transparent bitmap. Now it can be read from memory bitmap to apply
         // alpha channel and after that displayed on the screen.
@@ -388,13 +353,8 @@ bool nsWindow::OnPaint(HDC aDC, uint32_t aNestingLevel) {
       if (nsIWidgetListener* listener = GetPaintListener()) {
         result = listener->PaintWindow(this, region);
       }
-<<<<<<< HEAD
       if (!gfxEnv::MOZ_DISABLE_FORCE_PRESENT() &&
           gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled()) {
-=======
-        if (!gfxEnv::MOZ_DISABLE_FORCE_PRESENT() &&
-            gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled()) {
->>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
         nsCOMPtr<nsIRunnable> event = NewRunnableMethod(
             "nsWindow::ForcePresent", this, &nsWindow::ForcePresent);
         NS_DispatchToMainThread(event);

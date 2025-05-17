@@ -728,7 +728,6 @@ void Theme::PaintMenuArrow(StyleAppearance aAppearance, nsIFrame* aFrame,
   const bool isMenuList =
       aAppearance == StyleAppearance::MozMenulistArrowButton;
   const float kPolygonSize = kMinimumDropdownArrowButtonWidth;
-
   const auto direction = [&] {
     const auto wm = aFrame->GetWritingMode();
     if (!isMenuList) {
@@ -1202,18 +1201,6 @@ bool Theme::DoDrawWidgetBackground(PaintBackendData& aPaintData,
           dpiRatio);
       break;
     }
-    case StyleAppearance::Menuitem: {
-      ThemeDrawing::FillRect(aPaintData, devPxRect, [&] {
-        if (CheckBooleanAttr(aFrame, nsGkAtoms::menuactive)) {
-          if (elementState.HasState(ElementState::DISABLED)) {
-            return colors.System(StyleSystemColor::MozMenuhoverdisabled);
-          }
-          return colors.System(StyleSystemColor::MozMenuhover);
-        }
-        return sTransparent;
-      }());
-      break;
-    }
     case StyleAppearance::SpinnerUpbutton:
     case StyleAppearance::SpinnerDownbutton:
       if constexpr (std::is_same_v<PaintBackendData, WebRenderBackendData>) {
@@ -1296,6 +1283,7 @@ bool Theme::DoDrawWidgetBackground(PaintBackendData& aPaintData,
       break;
     }
     case StyleAppearance::Button:
+    case StyleAppearance::Toolbarbutton:
       PaintButton(aPaintData, devPxRect, aAppearance, elementState, colors,
                   dpiRatio);
       break;
@@ -1437,6 +1425,7 @@ LayoutDeviceIntMargin Theme::GetWidgetBorder(nsDeviceContext* aContext,
     case StyleAppearance::Menulist:
     case StyleAppearance::MenulistButton:
     case StyleAppearance::Button:
+    case StyleAppearance::Toolbarbutton:
       // Return the border size from the UA sheet, even though what we paint
       // doesn't actually match that. We know this is the UA sheet border
       // because we disable native theming when different border widths are
@@ -1497,6 +1486,7 @@ bool Theme::GetWidgetOverflow(nsDeviceContext* aContext, nsIFrame* aFrame,
     case StyleAppearance::MenulistButton:
     case StyleAppearance::Menulist:
     case StyleAppearance::Button:
+    case StyleAppearance::Toolbarbutton:
       outlineOffset = -kButtonBorderWidth;
       break;
     default:
@@ -1643,6 +1633,7 @@ bool Theme::ThemeSupportsWidget(nsPresContext* aPresContext, nsIFrame* aFrame,
     case StyleAppearance::ScrollbarVertical:
     case StyleAppearance::Scrollcorner:
     case StyleAppearance::Button:
+    case StyleAppearance::Toolbarbutton:
     case StyleAppearance::Listbox:
     case StyleAppearance::Menulist:
     case StyleAppearance::MenulistButton:
@@ -1652,7 +1643,6 @@ bool Theme::ThemeSupportsWidget(nsPresContext* aPresContext, nsIFrame* aFrame,
     case StyleAppearance::Menuarrow:
     case StyleAppearance::SpinnerUpbutton:
     case StyleAppearance::SpinnerDownbutton:
-    case StyleAppearance::Menuitem:
     case StyleAppearance::Tooltip:
       return !IsWidgetStyled(aPresContext, aFrame, aAppearance);
     default:

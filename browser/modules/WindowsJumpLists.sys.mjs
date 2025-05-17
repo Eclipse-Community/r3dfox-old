@@ -285,6 +285,8 @@ var Builder = class {
           customDescriptions
         );
       }
+    } catch (e) {
+      console.error("buildList failed: ", e);
     } finally {
       this._isBuilding = false;
     }
@@ -507,7 +509,6 @@ var Builder = class {
     } else {
       this._builder.deleteActiveList();
     }
-<<<<<<< HEAD
   }
 
   /**
@@ -571,8 +572,6 @@ var Builder = class {
         aCallback.call(aScope, null);
       },
     });
-=======
->>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
   }
 
   /**

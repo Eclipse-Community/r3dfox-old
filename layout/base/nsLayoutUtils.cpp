@@ -3297,7 +3297,6 @@ void nsLayoutUtils::PaintFrame(gfxContext* aRenderingContext, nsIFrame* aFrame,
                        builder->GetWindowOpaqueRegion());
       widget->UpdateOpaqueRegion(LayoutDeviceIntRegion::FromUnknownRegion(
           opaqueRegion.ToNearestPixels(presContext->AppUnitsPerDevPixel())));
-
       widget->UpdateWindowDraggingRegion(builder->GetWindowDraggingRegion());
     }
   }
@@ -6711,13 +6710,6 @@ widget::TransparencyMode nsLayoutUtils::GetFrameTransparency(
 
   if (HasNonZeroCorner(aCSSRootFrame->StyleBorder()->mBorderRadius)) {
     return TransparencyMode::Transparent;
-  }
-
-  StyleAppearance appearance =
-      aCSSRootFrame->StyleDisplay()->EffectiveAppearance();
-
-  if (appearance == StyleAppearance::MozWinBorderlessGlass) {
-    return TransparencyMode::BorderlessGlass;
   }
 
   nsITheme::Transparency transparency;

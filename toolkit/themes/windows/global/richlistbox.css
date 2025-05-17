@@ -115,11 +115,7 @@ richlistbox.theme-listbox > richlistitem > label {
     outline: none;
   }
 
-<<<<<<< HEAD
   @media (-moz-platform: windows) {
-=======
-  @media (-moz-platform: windows-win7) {
->>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
     richlistbox.theme-listbox > richlistitem {
       --listitem-selectedBottomBorder: var(--listitem-selectedColor);
       --listitem-selectedBackground: rgba(190,190,190,.15);
@@ -130,20 +126,12 @@ richlistbox.theme-listbox > richlistitem > label {
       --listitem-selectedFocusBackground: rgba(131,183,249,.02);
       --listitem-selectedFocusImage: linear-gradient(rgba(131,183,249,.16), rgba(131,183,249,.375));
       --listitem-selectedFocusCurrentBackground: rgba(131,183,249,.15);
-<<<<<<< HEAD
-=======
-
->>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
       border-radius: 3px;
       box-shadow: inset 0 0 0 1px rgba(255,255,255,.4), inset 0 -1px 0 1px rgba(255,255,255,.2);
     }
   }
 
-<<<<<<< HEAD
   @media (-moz-platform: windows-modern) {
-=======
-  @media (-moz-platform: windows-win8) {
->>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
     richlistbox.theme-listbox > richlistitem {
       --listitem-selectedBottomBorder: var(--listitem-selectedColor);
       --listitem-selectedBackground: rgba(190,190,190,.15);

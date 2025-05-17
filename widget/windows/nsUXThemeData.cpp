@@ -90,11 +90,8 @@ const wchar_t* nsUXThemeData::GetClassName(nsUXThemeClass cls) {
       return L"Button";
     case eUXEdit:
       return L"Edit";
-<<<<<<< HEAD
     case eUXTooltip:
       return L"Tooltip";
-=======
->>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
     case eUXRebar:
       return L"Rebar";
     case eUXMediaRebar:
@@ -103,11 +100,8 @@ const wchar_t* nsUXThemeData::GetClassName(nsUXThemeClass cls) {
       return L"Communications::Rebar";
     case eUXBrowserTabBarRebar:
       return L"BrowserTabBar::Rebar";
-<<<<<<< HEAD
     case eUXScrollbar:
       return L"Scrollbar";
-=======
->>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
     case eUXToolbar:
       return L"Toolbar";
     case eUXMediaToolbar:
@@ -122,11 +116,8 @@ const wchar_t* nsUXThemeData::GetClassName(nsUXThemeClass cls) {
       return L"Trackbar";
     case eUXSpin:
       return L"Spin";
-<<<<<<< HEAD
     case eUXStatus:
       return L"Status";
-=======
->>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
     case eUXCombobox:
       return L"Combobox";
     case eUXHeader:
@@ -197,7 +188,6 @@ void nsUXThemeData::EnsureCommandButtonBoxMetrics() {
 void nsUXThemeData::UpdateTitlebarInfo(HWND aWnd) {
   if (!aWnd) return;
 
-<<<<<<< HEAD
   bool dwmCompositionEnabled =
       StaticPrefs::widget_native_controls_force_dwm_report_off()
           ? false
@@ -210,11 +200,6 @@ void nsUXThemeData::UpdateTitlebarInfo(HWND aWnd) {
     int overrideCaptionButtonsHeight = StaticPrefs::
         widget_native_controls_override_aero_caption_buttons_mask_height();
 
-=======
-  if (!sTitlebarInfoPopulatedAero &&
-      gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled()) {
-    RECT captionButtons;
->>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
     if (SUCCEEDED(DwmGetWindowAttribute(aWnd, DWMWA_CAPTION_BUTTON_BOUNDS,
                                         &captionButtons,
                                         sizeof(captionButtons)))) {
@@ -222,7 +207,6 @@ void nsUXThemeData::UpdateTitlebarInfo(HWND aWnd) {
           captionButtons.right - captionButtons.left - 3;
       sCommandButtonBoxMetrics.cy =
           (captionButtons.bottom - captionButtons.top) - 1;
-<<<<<<< HEAD
 
       if (overrideCaptionButtonsWidth > 0) {
         sCommandButtonBoxMetrics.cx = overrideCaptionButtonsWidth;
@@ -235,22 +219,12 @@ void nsUXThemeData::UpdateTitlebarInfo(HWND aWnd) {
       //MOZ_ASSERT(
       //    sCommandButtonBoxMetrics.cx > 0 && sCommandButtonBoxMetrics.cy > 0,
       //    "We must not cache bad command button box dimensions");
-=======
-      sCommandButtonBoxMetricsInitialized = true;
-      MOZ_ASSERT(
-          sCommandButtonBoxMetrics.cx > 0 && sCommandButtonBoxMetrics.cy > 0,
-          "We must not cache bad command button box dimensions");
->>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
       sTitlebarInfoPopulatedAero = true;
     }
   }
 
   // NB: sTitlebarInfoPopulatedThemed is always true pre-vista.
-<<<<<<< HEAD
   if (sTitlebarInfoPopulatedThemed) return;
-=======
-  if (sTitlebarInfoPopulatedThemed || IsWin8OrLater()) return;
->>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
 
   // Query a temporary, visible window with command buttons to get
   // the right metrics.
@@ -280,13 +254,7 @@ void nsUXThemeData::UpdateTitlebarInfo(HWND aWnd) {
   // We try to avoid activating this window, but on Aero basic (aero without
   // compositor) and aero lite (special theme for win server 2012/2013) we may
   // get the wrong information if the window isn't activated, so we have to:
-<<<<<<< HEAD
   if (!dwmCompositionEnabled) {
-=======
-  if (sThemeId == WindowsTheme::AeroLite ||
-      (sThemeId == WindowsTheme::Aero &&
-       !gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled())) {
->>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
     showType = SW_SHOW;
   }
   ShowWindow(hWnd, showType);
@@ -394,11 +362,7 @@ void nsUXThemeData::UpdateNativeThemeInfo() {
   // themes "don't count" as default themes, so we specifically check for high
   // contrast mode in that situation.
   sIsDefaultWindowsTheme = [&] {
-<<<<<<< HEAD
     if (sIsHighContrastOn) {
-=======
-    if (sIsHighContrastOn && IsWin8OrLater()) {
->>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
       return false;
     }
     return sThemeId == WindowsTheme::Aero ||

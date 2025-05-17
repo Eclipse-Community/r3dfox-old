@@ -290,15 +290,9 @@ class nsTreeBodyFrame final : public mozilla::SimpleXULLeafFrame,
 
   // Retrieve the area for the twisty for a cell.
   nsITheme* GetTwistyRect(int32_t aRowIndex, nsTreeColumn* aColumn,
-<<<<<<< HEAD
                      nsRect& aImageRect, nsRect& aTwistyRect,
                      nsPresContext* aPresContext,
                      ComputedStyle* aTwistyContext);
-=======
-                          nsRect& aImageRect, nsRect& aTwistyRect,
-                          nsPresContext* aPresContext,
-                          ComputedStyle* aTwistyContext);
->>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
 
   // Fetch an image from the image cache, or request it.
   already_AddRefed<imgIContainer> GetImage(int32_t aRowIndex,

@@ -31,13 +31,6 @@ checkbox {
   margin: 1px 0;
 }
 
-  @media (-moz-windows-classic) {
-    checkbox[native][disabled="true"] {
-      color: ThreeDShadow;
-      text-shadow: 1px 1px ThreeDHighlight;
-    }
-  }
-
 /* ::::: checkmark image ::::: */
 
 .checkbox-check {
@@ -56,53 +49,11 @@ checkbox {
   }
 }
 
-<<<<<<< HEAD
 /* ..... Platform overrides ..... */
-=======
-.checkbox-label[native] {
-  margin: 0;
-}
-
-.checkbox-check[native] {
-  align-items: center;
-
-  @media (-moz-platform: windows) {
-    margin-inline-end: 5px;
-  }
-
-  @media (-moz-platform: linux) {
-    margin: 2px;
-    margin-inline-end: 4px;
-  }
-
-  @media (-moz-platform: macos) {
-    width: 1.3em;
-    height: 1.3em;
-    margin-block: 1px 0;
-    margin-inline: 1px 3px;
-    /* vertical-align tells native theming where to snap to. However, this doesn't
-     * always work reliably because of bug 503833. */
-    vertical-align: top;
-  }
-}
->>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
-
-@media (-moz-platform: windows) or (-moz-platform: linux) {
-  checkbox[native]:focus-visible > .checkbox-label-box {
-    /* On Linux, native theming should take care of this but it appears to be
-     * broken with some Gtk themes. Bug 1312169. */
-    outline: var(--focus-outline);
-  }
-}
 
 @media (-moz-platform: windows) {
   checkbox:where([native]) {
-<<<<<<< HEAD
     align-items: center;
-=======
-    appearance: auto;
-    -moz-default-appearance: checkbox-container;
->>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
     margin: 2px 4px;
     padding-top: 1px;
     padding-bottom: 1px;
@@ -175,17 +126,12 @@ checkbox {
   checkbox:where([native]) {
     appearance: auto;
     -moz-default-appearance: checkbox-container;
-<<<<<<< HEAD
     align-items: center;
-=======
->>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
     margin: 2px 4px;
-  }
 
-  .checkbox-label-box[native] {
-    /* FIXME: Is this needed given the focus rules above? */
-    appearance: auto;
-    -moz-default-appearance: checkbox-label;
+    &:focus-visible > .checkbox-label-box {
+      outline: var(--focus-outline);
+    }
   }
 
   .checkbox-label-box[native] {

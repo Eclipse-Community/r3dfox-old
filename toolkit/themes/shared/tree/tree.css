@@ -17,6 +17,10 @@ tree {
   color: FieldText;
   appearance: auto;
   -moz-default-appearance: listbox;
+  @media (-moz-platform: linux) {
+    appearance: none;
+    border: 1px solid ThreeDShadow;
+  }
 }
 
 /* ::::: tree rows ::::: */
@@ -121,19 +125,13 @@ treecol,
 .tree-columnpicker-button {
   appearance: auto;
   -moz-default-appearance: treeheadercell;
-<<<<<<< HEAD:toolkit/themes/shared/tree/tree.css
   background-color: -moz-ColHeader;
   color: -moz-ColHeaderText;
-=======
->>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao"):toolkit/themes/shared/tree.css
   align-items: center;
   justify-content: center;
-  color: -moz-ColHeaderText;
   padding: 0 4px;
   margin: 0;
-}
 
-<<<<<<< HEAD:toolkit/themes/shared/tree/tree.css
   border-inline-start: 1px solid ThreeDLightShadow;
 
   @media (-moz-platform: linux) or (prefers-color-scheme: dark) {
@@ -149,15 +147,14 @@ treecol,
     background-color: -moz-ColHeaderActive;
     color: -moz-ColHeaderActiveText;
   }
-=======
-treecol:where(:hover),
-.tree-columnpicker-button:where(:hover) {
-  color: -moz-ColHeaderHoverText;
->>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao"):toolkit/themes/shared/tree.css
 }
 
 .treecol-text {
   margin: 0 !important;
+}
+
+treecol:where([ordinal="1"]) {
+  border-inline-start: none;
 }
 
 treecol[hideheader="true"] {
@@ -255,66 +252,20 @@ html|input.tree-input {
   z-index: 2147483647;
 }
 
-@media (-moz-platform: windows) {
-  /* ::::: sort direction indicator :::::  */
+/* ::::: sort direction indicator :::::  */
+.treecol-sortdirection {
+  list-style-image: url("chrome://global/skin/tree/sort-asc.svg");
+  -moz-context-properties: fill;
+  fill: currentColor;
+  visibility: hidden;
 
-  .treecol-sortdirection {
-    list-style-image: none;
-    -moz-context-properties: fill;
-    fill: currentColor;
+  treecol[sortDirection="ascending"]:not([hideheader="true"]) > & {
+    visibility: inherit;
   }
 
-  treecol[sortDirection="ascending"]:not([hideheader="true"]) > .treecol-sortdirection {
-    list-style-image: url("chrome://global/skin/tree/sort-asc.svg");
-  }
-
-  treecol[sortDirection="descending"]:not([hideheader="true"]) > .treecol-sortdirection {
+  treecol[sortDirection="descending"]:not([hideheader="true"]) > & {
+    visibility: inherit;
     list-style-image: url("chrome://global/skin/tree/sort-dsc.svg");
-  }
-
-  @media (prefers-color-scheme: dark) {
-    treecol,
-    .tree-columnpicker-button {
-      appearance: none;
-      background-color: ButtonFace;
-      color: ButtonText;
-      border-inline-start: 1px solid ThreeDLightShadow;
-      box-shadow: inset 0 -1px ThreeDLightShadow;
-    }
-    treecol:where([ordinal="1"]) {
-      border-inline-start: none;
-    }
-    treecol:where(:hover),
-    .tree-columnpicker-button:where(:hover) {
-      background-color: -moz-ButtonHoverFace;
-      color: -moz-ButtonHoverText;
-    }
-    treecol:where(:hover:active),
-    .tree-columnpicker-button:where(:hover:active) {
-      background-color: -moz-ButtonActiveFace;
-      color: -moz-ButtonActiveText;
-    }
-  }
-
-  @media (-moz-windows-classic) {
-    treecol,
-    .tree-columnpicker-button {
-      border: 1px solid;
-      border-top-color: ThreeDHighlight;
-      border-inline-end-color: ThreeDShadow;
-      border-bottom-color: ThreeDShadow;
-      border-inline-start-color: ThreeDHighlight;
-      box-shadow: none;
-      background-color: -moz-Dialog;
-    }
-
-    treecol:where(:hover:active),
-    .tree-columnpicker-button:where(:hover:active) {
-      border-top-color: ThreeDShadow;
-      border-inline-end-color: ThreeDHighlight;
-      border-bottom-color: ThreeDHighlight;
-      border-inline-start-color: ThreeDShadow;
-    }
   }
 }
 
@@ -346,12 +297,5 @@ html|input.tree-input {
        are selected. */
   treechildren::-moz-tree-row(selected, current, focus) {
     outline: none;
-  }
-}
-
-@media (-moz-platform: linux) {
-  .treecol-sortdirection {
-    appearance: auto;
-    -moz-default-appearance: treeheadersortarrow;
   }
 }

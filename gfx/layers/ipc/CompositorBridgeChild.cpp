@@ -365,15 +365,11 @@ bool CompositorBridgeChild::SendFlushRenderingAsync(
   if (!mCanSend) {
     return false;
   }
-<<<<<<< HEAD
   if (!IsWin8OrLater() && !gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled()) {
   return PCompositorBridgeChild::SendFlushRendering(aReasons);
   } else {
   return PCompositorBridgeChild::SendFlushRenderingAsync(aReasons);
   }
-=======
-  return PCompositorBridgeChild::SendFlushRendering(aReasons);
->>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
 }
 
 void CompositorBridgeChild::SetForceSyncFlushRendering(

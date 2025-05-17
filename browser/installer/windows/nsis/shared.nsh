@@ -1480,7 +1480,6 @@ ${RemoveDefaultBrowserAgentShortcut}
                 ${If} "$AppUserModelID" != ""
                   ApplicationID::Set "$SMPROGRAMS\$1" "$AppUserModelID" "true"
                 ${EndIf}
-<<<<<<< HEAD
               ${EndIf}
             ${EndUnless}
           ${EndUnless}
@@ -1530,62 +1529,6 @@ ${RemoveDefaultBrowserAgentShortcut}
               ${If} ${IsPinningSupportedByWindowsVersionWithoutSystemPopup}
                 PinToTaskbar::Pin "$SMPROGRAMS\$1"
               ${EndIf}
-            ${EndIf}
-
-            ; Delete the shortcut if it was created
-            ${If} "$8" == "true"
-              Delete "$SMPROGRAMS\$1"
-=======
-              ${EndIf}
-            ${EndUnless}
-          ${EndUnless}
-
-          ${If} ${FileExists} "$SMPROGRAMS\$1"
-            ; Count of Start Menu pinned shortcuts before unpinning.
-            ${PinnedToStartMenuLnkCount} $R9
-
-            ; Having multiple shortcuts pointing to different installations with
-            ; the same AppUserModelID (e.g. side by side installations of the
-            ; same version) will make the TaskBar shortcut's lists into an bad
-            ; state where the lists are not shown. To prevent this first
-            ; uninstall the pinned item.
-            ApplicationID::UninstallPinnedItem "$SMPROGRAMS\$1"
-
-            ; Count of Start Menu pinned shortcuts after unpinning.
-            ${PinnedToStartMenuLnkCount} $R8
-
-            ; If there is a change in the number of Start Menu pinned shortcuts
-            ; assume that unpinning unpinned a side by side installation from
-            ; the Start Menu and pin this installation to the Start Menu.
-            ${Unless} $R8 == $R9
-              ; Pin the shortcut to the Start Menu. 5381 is the shell32.dll
-              ; resource id for the "Pin to Start Menu" string.
-              InvokeShellVerb::DoIt "$SMPROGRAMS" "$1" "5381"
-            ${EndUnless}
-
-            ${If} ${AtMostWin2012R2}
-              ; Pin the shortcut to the TaskBar. 5386 is the shell32.dll
-              ; resource id for the "Pin to Taskbar" string.
-              InvokeShellVerb::DoIt "$SMPROGRAMS" "$1" "5386"
-            ${ElseIf} ${AtMostWaaS} 1809
-              ; In Windows 10 the "Pin to Taskbar" resource was removed, so we
-              ; can't access the verb that way anymore. We have a create a
-              ; command key using the GUID that's assigned to this action and
-              ; then invoke that as a verb. This works up until build 1809
-              ReadRegStr $R9 HKLM \
-                "Software\Microsoft\Windows\CurrentVersion\Explorer\CommandStore\shell\Windows.taskbarpin" \
-                "ExplorerCommandHandler"
-              WriteRegStr HKCU "Software\Classes\*\shell\${AppRegName}-$AppUserModelID" "ExplorerCommandHandler" $R9
-              InvokeShellVerb::DoIt "$SMPROGRAMS" "$1" "${AppRegName}-$AppUserModelID"
-              DeleteRegKey HKCU "Software\Classes\*\shell\${AppRegName}-$AppUserModelID"
-            ${Else}
-            ; In Windows 10 1903 and up, and Windows 11 prior to 22H2, the above no
-            ; longer works. We have yet another method for these versions
-            ; which is detailed in the PinToTaskbar plugin code.
-            ${If} ${IsPinningSupportedByWindowsVersionWithoutSystemPopup}
-              PinToTaskbar::Pin "$SMPROGRAMS\$1"
->>>>>>> dcc3752a814e (Revert "Bug 1944998 - Explicitly opt in per window to mica backdrop. r=desktop-theme-reviewers,dao")
-            ${EndIf}
             ${EndIf}
 
             ; Delete the shortcut if it was created

@@ -3184,7 +3184,7 @@ nsIFrame* nsCSSFrameConstructor::ConstructFieldSetFrame(
 
   const nsStyleDisplay* fieldsetContentDisplay =
       fieldsetContentStyle->StyleDisplay();
-  const bool isScrollable = fieldsetContentDisplay->IsScrollableOverflow();
+  bool isScrollable = fieldsetContentDisplay->IsScrollableOverflow();
   nsContainerFrame* scrollFrame = nullptr;
   if (isScrollable) {
     fieldsetContentStyle = BeginBuildingScrollContainerFrame(
@@ -3537,9 +3537,9 @@ nsCSSFrameConstructor::FindHTMLData(const Element& aElement,
                "Unexpected parent for fieldset content anon box");
 
   if (aElement.IsInNativeAnonymousSubtree()) {
-   if (aElement.NodeInfo()->NameAtom() == nsGkAtoms::label &&
+    if (aElement.NodeInfo()->NameAtom() == nsGkAtoms::label &&
       aParentFrame->IsFileControlFrame()) {
-    static constexpr FrameConstructionData sFileLabelData(
+      static constexpr FrameConstructionData sFileLabelData(
         NS_NewFileControlLabelFrame);
     return &sFileLabelData;
     }

@@ -59,10 +59,10 @@
 #include <knownfolders.h>
 #include <mbstring.h>
 #include <objbase.h>
-#include <shlobj.h>
 #include <propkey.h>
 #include <propvarutil.h>
 #include <shellapi.h>
+#include <shlobj.h>
 #include <strsafe.h>
 #include <windows.h>
 #include <windows.foundation.h>

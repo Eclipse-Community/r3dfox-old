@@ -166,6 +166,10 @@ MOZ_ALWAYS_INLINE bool IsWin11OrLater() {
   return IsWindows10BuildOrLater(22000);
 }
 
+MOZ_ALWAYS_INLINE bool IsWin1122H2OrLater() {
+  return IsWindows10BuildOrLater(22621);
+}
+
 MOZ_ALWAYS_INLINE bool IsNotWin7PreRTM() {
   return IsWin7SP1OrLater() || IsWindowsBuildOrLater(7600);
 }
@@ -202,10 +206,6 @@ inline bool IsWin7AndPre2000Compatible() {
     return false;
   }
   return info.dwMajorVersion < 5;
-}
-
-MOZ_ALWAYS_INLINE bool IsWin1122H2OrLater() {
-  return IsWindows10BuildOrLater(22621);
 }
 
 }  // namespace mozilla

@@ -2266,6 +2266,53 @@ nscoord nsBlockFrame::ComputeFinalSize(const ReflowInput& aReflowInput,
     // calculated from aspect-ratio. i.e. Don't carry out block margin-end if it
     // is replaced by the block size from aspect-ratio and inline size.
     aMetrics.mCarriedOutBEndMargin.Zero();
+  } else if (Maybe<nscoord> containBSize = ContainIntrinsicBSize()) {
+    // If we're size-containing in block axis and we don't have a specified
+    // block size, then our final size should actually be computed from only
+    // our border, padding and contain-intrinsic-block-size, ignoring the
+    // actual contents. Hence this case is a simplified version of the case
+    // below.
+    nscoord contentBSize = *containBSize;
+    nscoord autoBSize =
+        aReflowInput.ApplyMinMaxBSize(contentBSize, aState.mConsumedBSize);
+    aMetrics.mCarriedOutBEndMargin.Zero();
+    autoBSize += borderPadding.BStartEnd(wm);
+    finalSize.BSize(wm) = autoBSize;
+  } else if (aState.mReflowStatus.IsInlineBreakBefore()) {
+    // Our parent is expected to push this frame to the next page/column so
+    // what size we set here doesn't really matter.
+    finalSize.BSize(wm) = aReflowInput.AvailableBSize();
+  } else if (aState.mReflowStatus.IsComplete()) {
+    const nscoord lineClampedContentBlockEndEdge =
+        ApplyLineClamp(blockEndEdgeOfChildren);
+
+    const nscoord bpBStart = borderPadding.BStart(wm);
+    const nscoord contentBSize = blockEndEdgeOfChildren - bpBStart;
+    const nscoord lineClampedContentBSize =
+        lineClampedContentBlockEndEdge - bpBStart;
+
+    const nscoord autoBSize = aReflowInput.ApplyMinMaxBSize(
+        lineClampedContentBSize, aState.mConsumedBSize);
+    if (autoBSize != contentBSize) {
+      // Our min-block-size, max-block-size, or -webkit-line-clamp value made
+      // our bsize change.  Don't carry out our kids' block-end margins.
+      aMetrics.mCarriedOutBEndMargin.Zero();
+    }
+    nscoord bSize = autoBSize + borderPadding.BStartEnd(wm);
+    if (MOZ_UNLIKELY(autoBSize > contentBSize &&
+                     bSize > aReflowInput.AvailableBSize() &&
+                     aReflowInput.AvailableBSize() != NS_UNCONSTRAINEDSIZE)) {
+      // Applying `min-size` made us overflow our available size.
+      // Clamp it and report that we're Incomplete, or BreakBefore if we have
+      // 'break-inside: avoid' that is applicable.
+      bSize = aReflowInput.AvailableBSize();
+      if (ShouldAvoidBreakInside(aReflowInput)) {
+        aState.mReflowStatus.SetInlineLineBreakBeforeAndReset();
+      } else {
+        aState.mReflowStatus.SetIncomplete();
+      }
+    }
+    finalSize.BSize(wm) = bSize;
   } else {
     Maybe<nscoord> containBSize = ContainIntrinsicBSize(
         IsComboboxControlFrame() ? NS_UNCONSTRAINEDSIZE : 0);

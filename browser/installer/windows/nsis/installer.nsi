@@ -1894,7 +1894,6 @@ Function .onInit
 !ifdef HAVE_64BIT_BUILD
   ${If} "${ARCH}" == "AArch64"
     ${IfNot} ${IsNativeARM64}
-    ${OrIfNot} ${AtLeastWin10}
       MessageBox MB_OKCANCEL|MB_ICONSTOP "$(WARN_MIN_SUPPORTED_OSVER_MSG)" IDCANCEL +2
       ExecShell "open" "${URLSystemRequirements}"
       Quit

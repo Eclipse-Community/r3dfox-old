@@ -472,9 +472,7 @@ var gBrowserInit = {
     }
 
     FullScreen.init();
-    if (AppConstants.isPlatformAndVersionAtLeast("win", "10")) {
     MenuTouchModeObserver.init();
-    }
 
     if (AppConstants.MOZ_DATA_REPORTING) {
       gDataNotificationInfoBar.init();
@@ -1110,9 +1108,7 @@ var gBrowserInit = {
       );
       Services.obs.removeObserver(gKeywordURIFixup, "keyword-uri-fixup");
 
-    if (AppConstants.isPlatformAndVersionAtLeast("win", "10")) {
       MenuTouchModeObserver.uninit();
-    }
       BrowserOffline.uninit();
       CanvasPermissionPromptHelper.uninit();
       WebAuthnPromptHelper.uninit();

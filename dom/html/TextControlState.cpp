@@ -18,6 +18,7 @@
 #include "nsFocusManager.h"
 #include "nsITextControlFrame.h"
 #include "nsContentCreatorFunctions.h"
+#include "nsFocusManager.h"
 #include "nsTextControlFrame.h"
 #include "nsIControllers.h"
 #include "nsIControllerContext.h"

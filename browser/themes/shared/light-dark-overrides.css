@@ -15,7 +15,7 @@
      broken. So instead just show the normal titlebar in that case, and override
      the window color as transparent when the compositor is available. */
   @media not (-moz-windows-compositor) {
-    :root[tabsintitlebar][lwtheme]:not([inDOMFullscreen]) .browser-titlebar {
+    :root[tabsintitlebar]:not([inDOMFullscreen]) #titlebar:-moz-lwtheme {
       visibility: visible;
     }
 

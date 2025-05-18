@@ -108,7 +108,7 @@
   }
 
   /* Add a window top border for webextension themes */
-  :root[tabsintitlebar][sizemode="normal"] #navigator-toolbox[lwtheme] {
+  :root[lwtheme][tabsintitlebar][sizemode="normal"] #navigator-toolbox {
     background-image: linear-gradient(to bottom,
           ThreeDLightShadow 0, ThreeDLightShadow 1px,
           ThreeDHighlight 1px, ThreeDHighlight 2px,

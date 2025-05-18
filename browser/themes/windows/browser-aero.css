@@ -147,22 +147,20 @@
         list-style-image: url(chrome://browser/skin/window-controls/close.svg);
       }
 
-      :root[lwtheme-image] {
-        .titlebar-button {
-          -moz-context-properties: unset;
-        }
-        .titlebar-min {
-          list-style-image: url(chrome://browser/skin/window-controls/minimize-themes.svg);
-        }
-        .titlebar-max {
-          list-style-image: url(chrome://browser/skin/window-controls/maximize-themes.svg);
-        }
-        .titlebar-restore {
-          list-style-image: url(chrome://browser/skin/window-controls/restore-themes.svg);
-        }
-        .titlebar-close {
-          list-style-image: url(chrome://browser/skin/window-controls/close-themes.svg);
-        }
+      :root[lwtheme-image] .titlebar-button {
+        -moz-context-properties: unset;
+      }
+      :root[lwtheme-image] .titlebar-min {
+        list-style-image: url(chrome://browser/skin/window-controls/minimize-themes.svg);
+      }
+      :root[lwtheme-image] .titlebar-max {
+        list-style-image: url(chrome://browser/skin/window-controls/maximize-themes.svg);
+      }
+      :root[lwtheme-image] .titlebar-restore {
+        list-style-image: url(chrome://browser/skin/window-controls/restore-themes.svg);
+      }
+      :root[lwtheme-image] .titlebar-close {
+        list-style-image: url(chrome://browser/skin/window-controls/close-themes.svg);
       }
 
       /* the 12px image renders a 10px icon, and the 10px upscaled gets rounded to 12.5, which
@@ -317,7 +315,7 @@
     }
   }
 
-  :root[darkwindowframe="true"]:not(:-moz-window-inactive, [lwtheme]) {
+  :root[darkwindowframe="true"]:not([lwtheme], :-moz-window-inactive) {
     color: white;
   }
 
@@ -327,11 +325,11 @@
 }
 
 @media (-moz-windows-glass) {
-  &:not([lwtheme]) #toolbar-menubar {
+  #toolbar-menubar:not([lwtheme]) {
     text-shadow: 0 0 .5em white, 0 0 .5em white, 0 1px 0 rgba(255,255,255,.4);
   }
 
-  &:not([lwtheme]) #main-menubar:not(:-moz-window-inactive) {
+  #main-menubar:not([lwtheme], :-moz-window-inactive) {
     background-color: rgba(255,255,255,.5);
     color: black;
     border-radius: 4px;
@@ -375,7 +373,7 @@
     }
   }
 
-  &:not([lwtheme]) #print-preview-toolbar {
+  #print-preview-toolbar:not([lwtheme]) {
     appearance: auto;
     -moz-default-appearance: -moz-win-browsertabbar-toolbox;
   }

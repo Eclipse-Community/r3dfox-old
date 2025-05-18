@@ -299,6 +299,10 @@ select > button {
   line-height: -moz-block-height;
 }
 
+::-moz-display-comboboxcontrol-frame:read-write {
+  user-select: text;
+}
+
 option[label]::before {
   content: attr(label);
 }
@@ -526,6 +530,7 @@ input:is([type=reset], [type=button], [type=submit]) {
   font: -moz-button;
   white-space: pre;
   text-align: center;
+  overflow-clip-box: padding-box;
 }
 
 input[type=color] {

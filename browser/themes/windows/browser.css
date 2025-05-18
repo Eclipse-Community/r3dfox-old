@@ -136,12 +136,12 @@
 }
 /* Titlebar */
 
-:root[tabsintitlebar][sizemode="normal"] .browser-titlebar {
+:root[tabsintitlebar][sizemode="normal"] #titlebar {
   appearance: auto;
   -moz-default-appearance: -moz-window-titlebar;
 }
 
-:root[tabsintitlebar][sizemode="maximized"] .browser-titlebar {
+:root[tabsintitlebar][sizemode="maximized"] #titlebar {
   appearance: auto;
   -moz-default-appearance: -moz-window-titlebar-maximized;
 }

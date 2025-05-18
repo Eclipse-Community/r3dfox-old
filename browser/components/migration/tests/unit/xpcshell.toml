@@ -75,6 +75,9 @@ run-if = ["os == 'win' && bits == 64"] # bug 1392396
 run-if = ["os == 'win'"]
 skip-if = ["os == 'win' && msix"] # https://bugzilla.mozilla.org/show_bug.cgi?id=1807928
 
+["test_IE7_passwords.js"]
+run-if = ["os == 'win'"]
+
 ["test_MigrationUtils_timedRetry.js"]
 skip-if = ["os == 'mac' && !debug"] #Bug 1558330
 

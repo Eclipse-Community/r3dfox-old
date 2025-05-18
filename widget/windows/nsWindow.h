@@ -139,11 +139,6 @@ class nsWindow final : public nsBaseWidget {
    */
   nsWindow* GetParentWindowBase(bool aIncludeOwner);
 
-  bool IsTopLevelWidget() const {
-    return mWindowType == WindowType::TopLevel ||
-           mWindowType == WindowType::Dialog;
-  }
-
   // nsIWidget interface
   using nsBaseWidget::Create;  // for Create signature not overridden here
   [[nodiscard]] nsresult Create(nsIWidget* aParent,
@@ -173,7 +168,6 @@ class nsWindow final : public nsBaseWidget {
   void Resize(double aWidth, double aHeight, bool aRepaint) override;
   void Resize(double aX, double aY, double aWidth, double aHeight,
               bool aRepaint) override;
-  mozilla::Maybe<bool> IsResizingNativeWidget() override;
   void SetSizeMode(nsSizeMode aMode) override;
   nsSizeMode SizeMode() override;
   void GetWorkspaceID(nsAString& workspaceID) override;
@@ -187,6 +181,7 @@ class nsWindow final : public nsBaseWidget {
   [[nodiscard]] nsresult GetRestoredBounds(LayoutDeviceIntRect& aRect) override;
   LayoutDeviceIntRect GetClientBounds() override;
   LayoutDeviceIntPoint GetClientOffset() override;
+  void SetBackgroundColor(const nscolor& aColor) override;
   void SetCursor(const Cursor&) override;
   bool PrepareForFullscreenTransition(nsISupports** aData) override;
   void PerformFullscreenTransition(FullscreenTransitionStage aStage,
@@ -289,6 +284,9 @@ class nsWindow final : public nsBaseWidget {
   WindowHook& GetWindowHook() { return mWindowHook; }
   nsWindow* GetParentWindow(bool aIncludeOwner);
 
+  /**
+   * Misc.
+   */
   bool WidgetTypeSupportsAcceleration() override;
 
   void ForcePresent();
@@ -516,7 +514,6 @@ class nsWindow final : public nsBaseWidget {
   void ResetLayout();
   void InvalidateNonClientRegion();
   HRGN ExcludeNonClientFromPaintRegion(HRGN aRegion);
-  static const wchar_t* GetMainWindowClass();
   bool HasGlass() const {
     return mTransparencyMode == TransparencyMode::BorderlessGlass;
   }
@@ -572,7 +569,7 @@ class nsWindow final : public nsBaseWidget {
   bool OnGesture(WPARAM wParam, LPARAM lParam);
   bool OnTouch(WPARAM wParam, LPARAM lParam);
   bool OnHotKey(WPARAM wParam, LPARAM lParam);
-  bool OnPaint(HDC aDC, uint32_t aNestingLevel);
+  bool OnPaint(uint32_t aNestingLevel);
   void OnWindowPosChanging(WINDOWPOS* info);
   void OnWindowPosChanged(WINDOWPOS* wp);
   void OnSysColorChanged();
@@ -588,12 +585,7 @@ class nsWindow final : public nsBaseWidget {
   DWORD WindowStyle();
   DWORD WindowExStyle();
 
-  static const wchar_t* ChooseWindowClass(WindowType);
-  // This method registers the given window class, and returns the class name.
-  static const wchar_t* RegisterWindowClass(const wchar_t* aClassName,
-                                            UINT aExtraStyle, LPWSTR aIconID);
-
-  /**
+    /**
    * XP and Vista theming support for windows with rounded edges
    */
   void ClearThemeRegion();
@@ -607,7 +599,6 @@ class nsWindow final : public nsBaseWidget {
   static bool GetPopupsToRollup(
       nsIRollupListener* aRollupListener, uint32_t* aPopupsToRollup,
       mozilla::Maybe<POINT> aEventPoint = mozilla::Nothing());
-  static bool NeedsToHandleNCActivateDelayed(HWND aWnd);
   static bool DealWithPopups(HWND inWnd, UINT inMsg, WPARAM inWParam,
                              LPARAM inLParam, LRESULT* outResult);
 
@@ -737,6 +728,7 @@ class nsWindow final : public nsBaseWidget {
   HWND mWnd = nullptr;
   HWND mTransitionWnd = nullptr;
   mozilla::Maybe<WNDPROC> mPrevWndProc;
+  HBRUSH mBrush;
   IMEContext mDefaultIMC;
   HDEVNOTIFY mDeviceNotifyHandle = nullptr;
   bool mInDtor = false;
@@ -777,35 +769,17 @@ class nsWindow final : public nsBaseWidget {
   PlatformCompositorWidgetDelegate* mCompositorWidgetDelegate = nullptr;
 
   LayoutDeviceIntMargin NonClientSizeMargin() const {
-    return NonClientSizeMargin(mCustomNonClientMetrics.mOffset);
+    return NonClientSizeMargin(mNonClientOffset);
   }
   LayoutDeviceIntMargin NonClientSizeMargin(
       const LayoutDeviceIntMargin& aNonClientOffset) const;
   LayoutDeviceIntMargin NormalWindowNonClientOffset() const;
 
-  struct CustomNonClientMetrics {
-    // Width of the left and right portions of the resize region
-    mozilla::LayoutDeviceIntCoord mHorResizeMargin;
-    // Height of the top and bottom portions of the resize region
-    mozilla::LayoutDeviceIntCoord mVertResizeMargin;
-    // Height of the caption plus border
-    mozilla::LayoutDeviceIntCoord mCaptionHeight;
-    // Pre-calculated outward offset applied to the default frame
-    LayoutDeviceIntMargin mOffset;
-
-    LayoutDeviceIntMargin ResizeMargins() const {
-      return {mVertResizeMargin, mHorResizeMargin, mVertResizeMargin,
-              mHorResizeMargin};
-    }
-
-    LayoutDeviceIntMargin DefaultMargins() const {
-      auto margins = ResizeMargins();
-      margins.top += mCaptionHeight;
-      return margins;
-    }
-  } mCustomNonClientMetrics;
+  // Non-client margin settings
+  // Pre-calculated outward offset applied to default frames
+  LayoutDeviceIntMargin mNonClientOffset;
   // Margins set by the owner
-  LayoutDeviceIntMargin mNonClientMargins;
+  LayoutDeviceIntMargin mNonClientMargins{-1, -1, -1, -1};
   // Margins we'd like to set once chrome is reshown:
   LayoutDeviceIntMargin mFutureMarginsOnceChromeShows;
   // Indicates we need to apply margins once toggling chrome into showing:
@@ -815,6 +789,12 @@ class nsWindow final : public nsBaseWidget {
   bool mCustomNonClient = false;
   // Indicates custom resize margins are in effect
   bool mUseResizeMarginOverrides = false;
+  // Width of the left and right portions of the resize region
+  mozilla::LayoutDeviceIntCoord mHorResizeMargin;
+  // Height of the top and bottom portions of the resize region
+  mozilla::LayoutDeviceIntCoord mVertResizeMargin;
+  // Height of the caption plus border
+  mozilla::LayoutDeviceIntCoord mCaptionHeight;
 
   // not yet set, will be calculated on first use
   double mDefaultScale = -1.0;
@@ -857,6 +837,9 @@ class nsWindow final : public nsBaseWidget {
 
   // Whether we were created as a child window (aka ChildWindow) or not.
   bool mIsChildWindow : 1;
+
+  // Whether we're a PIP window.
+  bool mPIPWindow : 1;
 
   int32_t mCachedHitTestResult = 0;
 

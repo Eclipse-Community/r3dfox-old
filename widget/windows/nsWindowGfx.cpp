@@ -137,7 +137,7 @@ void nsWindow::ForcePresent() {
   }
 }
 
-bool nsWindow::OnPaint(HDC aDC, uint32_t aNestingLevel) {
+bool nsWindow::OnPaint(uint32_t aNestingLevel) {
   gfx::DeviceResetReason resetReason = gfx::DeviceResetReason::OK;
   if (gfxWindowsPlatform::GetPlatform()->DidRenderingDeviceReset(
           &resetReason)) {
@@ -219,12 +219,16 @@ bool nsWindow::OnPaint(HDC aDC, uint32_t aNestingLevel) {
   }
   mLastPaintBounds = mBounds;
 
-  if (!aDC && IsPopup() && renderer->GetBackendType() == LayersBackend::LAYERS_NONE &&
-      TransparencyMode::Transparent == mTransparencyMode) {
-    // For layered translucent windows all drawing should go to memory DC and no
-    // WM_PAINT messages are normally generated. To support asynchronous
-    // painting we force generation of WM_PAINT messages by invalidating window
-    // areas with RedrawWindow, InvalidateRect or InvalidateRgn function calls.
+  // For layered translucent windows all drawing should go to memory DC and no
+  // WM_PAINT messages are normally generated. To support asynchronous painting
+  // we force generation of WM_PAINT messages by invalidating window areas with
+  // RedrawWindow, InvalidateRect or InvalidateRgn function calls.
+  const bool usingMemoryDC =
+      renderer->GetBackendType() == LayersBackend::LAYERS_NONE &&
+      mTransparencyMode == TransparencyMode::Transparent;
+
+  HDC hDC = nullptr;
+  if (usingMemoryDC) {
     // BeginPaint/EndPaint must be called to make Windows think that invalid
     // area is painted. Otherwise it will continue sending the same message
     // endlessly.
@@ -233,13 +237,13 @@ bool nsWindow::OnPaint(HDC aDC, uint32_t aNestingLevel) {
 
     // We're guaranteed to have a widget proxy since we called
     // GetLayerManager().
-    aDC = mBasicLayersSurface->GetTransparentDC();
+    hDC = mBasicLayersSurface->GetTransparentDC();
+  } else {
+    hDC = ::BeginPaint(mWnd, &ps);
   }
 
-  HDC hDC = aDC ? aDC : ::BeginPaint(mWnd, &ps);
-
-  bool forceRepaint = aDC || TransparencyMode::Transparent == mTransparencyMode;
-  LayoutDeviceIntRegion region = GetRegionToPaint(forceRepaint, ps, hDC);
+  const bool forceRepaint = mTransparencyMode == TransparencyMode::Transparent;
+  const LayoutDeviceIntRegion region = GetRegionToPaint(forceRepaint, ps, hDC);
 
   RefPtr<nsWindow> strongThis(this);
 
@@ -250,7 +254,7 @@ bool nsWindow::OnPaint(HDC aDC, uint32_t aNestingLevel) {
 
   bool didPaint = false;
   auto endPaint = MakeScopeExit([&] {
-  if (!aDC) {
+    if (!usingMemoryDC) {
       ::EndPaint(mWnd, &ps);
     }
     if (didPaint) {
@@ -259,7 +263,7 @@ bool nsWindow::OnPaint(HDC aDC, uint32_t aNestingLevel) {
         listener->DidPaintWindow();
       }
       if (aNestingLevel == 0 && ::GetUpdateRect(mWnd, nullptr, false)) {
-    OnPaint(aDC, 1);
+        OnPaint(1);
       }
     }
   });
@@ -286,7 +290,7 @@ bool nsWindow::OnPaint(HDC aDC, uint32_t aNestingLevel) {
       RefPtr<gfxASurface> targetSurface;
 
       // don't support transparency for non-GDI rendering, for now
-      if (IsPopup() && TransparencyMode::Transparent == mTransparencyMode) {
+      if (TransparencyMode::Transparent == mTransparencyMode) {
         // This mutex needs to be held when EnsureTransparentSurface is
         // called.
         MutexAutoLock lock(mBasicLayersSurface->GetTransparentSurfaceLock());
@@ -338,7 +342,7 @@ bool nsWindow::OnPaint(HDC aDC, uint32_t aNestingLevel) {
         }
       }
 
-      if (IsPopup() && TransparencyMode::Transparent == mTransparencyMode) {
+      if (TransparencyMode::Transparent == mTransparencyMode) {
         // Data from offscreen drawing surface was copied to memory bitmap of
         // transparent bitmap. Now it can be read from memory bitmap to apply
         // alpha channel and after that displayed on the screen.

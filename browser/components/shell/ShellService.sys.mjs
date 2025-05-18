@@ -395,7 +395,6 @@ let ShellServiceInternal = {
   },
 
   async setAsDefault() {
-    let claimAllTypes = true;
     let setAsDefaultError = false;
     if (AppConstants.platform == "win") {
       try {

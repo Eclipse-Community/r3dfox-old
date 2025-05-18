@@ -2033,8 +2033,7 @@ bool nsNativeThemeWin::GetWidgetPadding(nsDeviceContext* aContext,
     // adding padding to the top of the window that is the size of the caption
     // area and then "removing" it when calculating the client area for
     // WM_NCCALCSIZE.  See bug 618353,
-    if (!IsWin10OrLater() &&
-        aAppearance == StyleAppearance::MozWindowTitlebarMaximized) {
+    if (aAppearance == StyleAppearance::MozWindowTitlebarMaximized) {
       nsCOMPtr<nsIWidget> rootWidget;
       if (WinUtils::HasSystemMetricsForDpi()) {
         rootWidget = aFrame->PresContext()->GetRootWidget();

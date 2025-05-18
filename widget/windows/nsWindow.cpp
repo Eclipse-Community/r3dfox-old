@@ -652,10 +652,6 @@ class InitializeVirtualDesktopManagerTask : public Task {
 #endif
 
   virtual TaskResult Run() override {
-    if (!IsWin10OrLater()) {
-      return TaskResult::Complete;
-    }
-
     RefPtr<IVirtualDesktopManager> desktopManager;
     HRESULT hr = ::CoCreateInstance(
         CLSID_VirtualDesktopManager, NULL, CLSCTX_INPROC_SERVER,
@@ -5106,7 +5102,6 @@ bool nsWindow::ProcessMessageInternal(UINT msg, WPARAM& wParam, LPARAM& lParam,
   if (mCustomNonClient && dwmCompositionEnabled  &&
       /* We don't do this for win10 glass with a custom titlebar,
        * in order to avoid the caption buttons breaking. */
-      !(IsWin10OrLater() && HasGlass()) &&
       DwmDefWindowProc(mWnd, msg, wParam, lParam, &dwmHitResult)) {
     *aRetValue = dwmHitResult;
     return true;

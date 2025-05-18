@@ -10,7 +10,6 @@
 #include "mozilla/NativeNt.h"
 #include "mozilla/StackWalk_windows.h"
 #include "mozilla/WindowsDiagnostics.h"
-#include "mozilla/WindowsVersion.h"
 
 namespace mozilla {
 
@@ -76,11 +75,8 @@ void WindowsStackWalkInitialization() {
   // case the stack walk suppressions are already added there directly.
   NtDllIntercept.Init("ntdll.dll");
   stub_LdrUnloadDll.Set(NtDllIntercept, "LdrUnloadDll", &patched_LdrUnloadDll);
-  if (IsWin8OrLater()) {  // LdrResolveDelayLoadedAPI was introduced in Win8
-    stub_LdrResolveDelayLoadedAPI.Set(NtDllIntercept,
-                                      "LdrResolveDelayLoadedAPI",
-                                      &patched_LdrResolveDelayLoadedAPI);
-  }
+  stub_LdrResolveDelayLoadedAPI.Set(NtDllIntercept, "LdrResolveDelayLoadedAPI",
+                                    &patched_LdrResolveDelayLoadedAPI);
 }
 
 [[clang::optnone]] void UnoptimizedLookup() {

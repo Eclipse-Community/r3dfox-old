@@ -28,6 +28,7 @@
 
 #include "nsDebug.h"
 #include "mozilla/ArrayUtils.h"
+#include "mozilla/DynamicallyLinkedFunctionPtr.h"
 #include "mozilla/UniquePtr.h"
 #include "nsWindowsHelpers.h"
 
@@ -442,22 +443,20 @@ nsresult GetMsixProgId(const wchar_t* assoc, UniquePtr<wchar_t[]>& aProgId) {
   // HKEY_CLASSES_ROOT\Local Settings\Software\Microsoft\Windows\CurrentVersion\AppModel\Repository\Packages\[Package Full Name]\App\Capabilities\[FileAssociations | URLAssociations]\[File | URL]
   // clang-format on
 
-  static LONG (*plat_fn)(UINT32*, PWSTR);
-  if (!plat_fn) {
-    if (auto* module = ::GetModuleHandleW(L"Kernel32.dll"); module) {
-      plat_fn = reinterpret_cast<decltype(plat_fn)>(
-          ::GetProcAddress(module, "GetCurrentPackageFullName"));
-    }
-  }
-  if (!plat_fn) {
+  // `GetCurrentPackageFullName` added in Windows 8.
+  DynamicallyLinkedFunctionPtr<decltype(&GetCurrentPackageFullName)>
+      pGetCurrentPackageFullName(L"kernel32.dll",
+                                        "GetCurrentPackageFullName");
+  if (!pGetCurrentPackageFullName) {
     return NS_OK;
   }
+  
   UINT32 pfnLen = 0;
-  LONG rv = ((*plat_fn)(&pfnLen, nullptr));
+  LONG rv = pGetCurrentPackageFullName(&pfnLen, nullptr);
   NS_ENSURE_TRUE(rv != APPMODEL_ERROR_NO_PACKAGE, NS_ERROR_FAILURE);
 
   auto pfn = mozilla::MakeUnique<wchar_t[]>(pfnLen);
-  rv = ((*plat_fn)(&pfnLen, pfn.get()));
+  rv = pGetCurrentPackageFullName(&pfnLen, pfn.get());
   NS_ENSURE_TRUE(rv == ERROR_SUCCESS, NS_ERROR_FAILURE);
 
   const wchar_t* assocSuffix;

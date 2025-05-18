@@ -41,7 +41,6 @@
 #include "nsIXULAppInfo.h"
 #include "nsLocalFile.h"
 #include "nsNativeAppSupportWin.h"
-#include "nsWindowsHelpers.h"
 #include "nsNetUtil.h"
 #include "nsProxyRelease.h"
 #include "nsServiceManagerUtils.h"
@@ -1837,6 +1836,7 @@ static nsresult PinShortcutToTaskbarImpl(bool aCheckOnly,
     return NS_ERROR_FILE_NOT_FOUND;
   }
 
+  if (IsWin11OrLater()) {
   auto pinWithWin11TaskbarAPIResults =
       PinCurrentAppToTaskbarWin11(aCheckOnly, aAppUserModelId);
   switch (pinWithWin11TaskbarAPIResults.result) {
@@ -1858,6 +1858,7 @@ static nsresult PinShortcutToTaskbarImpl(bool aCheckOnly,
       // an error occurs or for when pinning is not allowed
       // with the Win 11 APIs.
       break;
+  }
   }
 
   return PinCurrentAppToTaskbarWin10(aCheckOnly, aAppUserModelId,
@@ -1885,7 +1886,7 @@ nsWindowsShellService::PinShortcutToTaskbar(const nsAString& aAppUserModelId,
   }
 
   // First available on 1809
-  if (IsWin10OrLater() && !IsWin10Sep2018UpdateOrLater()) {
+  if (!IsWin10Sep2018UpdateOrLater()) {
     return NS_ERROR_NOT_AVAILABLE;
   }
 
@@ -2258,8 +2259,7 @@ static nsresult PinCurrentAppToTaskbarImpl(
     }
   }
   if (IsWin10OrLater()) {
-    return PinShortcutToTaskbarImpl(aCheckOnly, aAppUserModelId,
-                                       shortcutPath);
+    return PinShortcutToTaskbarImpl(aCheckOnly, aAppUserModelId, shortcutPath);
   } else {
     return PinCurrentAppToTaskbarWin7(aCheckOnly, shortcutPath);
   }
@@ -2274,7 +2274,7 @@ static nsresult PinCurrentAppToTaskbarAsyncImpl(bool aCheckOnly,
   }
 
   // First available on 1809
-  if (!IsWin10Sep2018UpdateOrLater()) {
+  if (IsWin10OrLater() && !IsWin10Sep2018UpdateOrLater()) {
     return NS_ERROR_NOT_AVAILABLE;
   }
 

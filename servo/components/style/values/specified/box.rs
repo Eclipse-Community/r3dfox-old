@@ -1668,10 +1668,6 @@ pub enum Appearance {
     /// A tooltip.
     #[parse(condition = "ParserContext::chrome_rules_enabled")]
     Tooltip,
-
-    /// Sidebar appearance.
-    #[parse(condition = "ParserContext::chrome_rules_enabled")]
-    MozSidebar,
     /// A listbox or tree widget header
     #[parse(condition = "ParserContext::chrome_rules_enabled")]
     Treeheader,
@@ -1697,6 +1693,15 @@ pub enum Appearance {
     #[parse(condition = "ParserContext::chrome_rules_enabled")]
     Treeview,
 
+    /// Sidebar appearance.
+    #[parse(condition = "ParserContext::chrome_rules_enabled")]
+    MozSidebar,
+    #[parse(condition = "ParserContext::chrome_rules_enabled")]
+    MozWinBorderlessGlass,
+    /// -moz-apperance style used in setting proper glass margins.
+    #[parse(condition = "ParserContext::chrome_rules_enabled")]
+    MozWinExcludeGlass,
+
     /// Vista Rebars.
     #[parse(condition = "ParserContext::chrome_rules_enabled")]
     MozWinCommunicationsToolbox,
@@ -1704,11 +1709,6 @@ pub enum Appearance {
     MozWinMediaToolbox,
     #[parse(condition = "ParserContext::chrome_rules_enabled")]
     MozWinBrowsertabbarToolbox,
-    #[parse(condition = "ParserContext::chrome_rules_enabled")]
-    MozWinBorderlessGlass,
-    /// -moz-apperance style used in setting proper glass margins.
-    #[parse(condition = "ParserContext::chrome_rules_enabled")]
-    MozWinExcludeGlass,
 
     /// Mac help button.
     #[parse(condition = "ParserContext::chrome_rules_enabled")]

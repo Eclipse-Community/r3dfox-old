@@ -236,8 +236,7 @@ menuseparator + #sidebar-extensions-separator {
 #sidebar-main,
 sidebar-main,
 #sidebar-box,
-#sidebar-splitter,
-#tabbrowser-tabbox {
+#sidebar-splitter {
   transform-origin: 0 0;
   will-change: translate;
 }

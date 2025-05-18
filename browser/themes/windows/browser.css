@@ -66,14 +66,14 @@
 }
 
 /* Add 4px extra margin on top of the tabs toolbar on Windows 7. */
-@media (-moz-platform: windows-win7) {
+@media (-moz-platform: windows) {
   :root[sizemode="normal"][chromehidden~="menubar"] #TabsToolbar > .toolbar-items,
   :root[sizemode="normal"] #toolbar-menubar[autohide="true"][inactive] ~ :is(#TabsToolbar, #nav-bar) > .toolbar-items {
     padding-top: 4px;
   }
 }
 /* Add a fog for background tabs to be visible on Windows 7 glass window background */
-@media (-moz-platform: windows-win7) {
+@media (-moz-platform: windows) {
   @media (-moz-windows-default-theme) {
     &:not([lwtheme]) #TabsToolbar {
     isolation: isolate;
@@ -179,8 +179,7 @@
   align-items: stretch;
 }
 
-@media (-moz-platform: windows-win7),
-       (-moz-platform: windows-win8) {
+@media (-moz-platform: windows) {
   /* Preserve window control buttons position at the top of the button box. */
   .titlebar-buttonbox-container {
     align-items: flex-start;

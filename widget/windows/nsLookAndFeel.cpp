@@ -397,9 +397,6 @@ nsresult nsLookAndFeel::NativeGetColor(ColorID aID, ColorScheme aScheme,
     case ColorID::MozColheaderhovertext:
       idx = COLOR_WINDOWTEXT;
       break;
-    case ColorID::MozButtondefault:
-      idx = COLOR_3DDKSHADOW;
-      break;
     case ColorID::MozNativehyperlinktext:
       idx = COLOR_HOTLIGHT;
       break;
@@ -894,12 +891,6 @@ auto nsLookAndFeel::ComputeTitlebarColors() -> TitlebarColors {
 
   result.mAccentInactive = dwmKey.GetValueAsDword(u"AccentColorInactive"_ns);
   result.mAccentInactiveText = GetAccentColorText(result.mAccentInactive);
-
-  if (WinUtils::MicaEnabled()) {
-    // Use transparent titlebar backgrounds when using mica.
-    result.mActiveDark.mBg = result.mActiveLight.mBg =
-        result.mInactiveDark.mBg = result.mInactiveLight.mBg = NS_TRANSPARENT;
-  }
 
   // The ColorPrevalence value is set to 1 when the "Show color on title bar"
   // setting in the Color section of Window's Personalization settings is

@@ -143,12 +143,6 @@ class LookAndFeel {
     WindowsGlass,
 
     /*
-     * A Boolean value to determine whether the Mac graphite theme is
-     * being used.
-     */
-    MacGraphiteTheme,
-
-    /*
      * A Boolean value to determine whether the macOS Big Sur-specific
      * theming should be used.
      */

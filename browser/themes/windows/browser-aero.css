@@ -303,8 +303,8 @@
 
     /* The borders on the glass frame are ours, and inside #browser, and on
      * win7 we want to make sure they are "glassy", so we can't use #browser
-     * as the exclude-glass container. We use #appcontent instead. */
-    #appcontent {
+     * as the exclude-glass container. We use #tabbrowser-tabbox instead. */
+    #tabbrowser-tabbox {
       appearance: auto;
       -moz-default-appearance: -moz-win-exclude-glass;
     }
@@ -323,7 +323,7 @@
     color: white;
   }
 
-  &:not([lwtheme]) #appcontent {
+  #tabbrowser-tabbox:not([lwtheme]) {
     background-color: -moz-dialog;
   }
 }

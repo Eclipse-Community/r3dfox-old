@@ -11,7 +11,7 @@
 @media (-moz-platform: windows) {
   @media not (-moz-windows-classic) {
     :root[sizemode="normal"] #toolbar-menubar:not([autohide="true"]) > #menubar-items,
-    :root[sizemode="normal"] #toolbar-menubar[autohide="true"][inactive] ~ :is(#TabsToolbar, #nav-bar) > .toolbar-items {
+    :root[sizemode="normal"] #toolbar-menubar[autohide="true"][inactive] + #TabsToolbar > .toolbar-items {
       margin-top: 1px;
     }
     /**
@@ -45,32 +45,23 @@
   @media (-moz-platform: windows-modern) {
       @media (-moz-windows-default-theme) {
         @media (-moz-windows-accent-color-in-titlebar) {
-          :root[tabsintitlebar] {
-            /* stylelint-disable-next-line media-query-no-invalid */
-            @media (-moz-bool-pref: "browser.theme.windows.accent-color-in-tabs.enabled") {
-              --toolbox-non-lwt-bgcolor: ActiveCaption;
-              --toolbox-non-lwt-textcolor: CaptionText;
-              --toolbox-non-lwt-bgcolor-inactive: InactiveCaption;
-              --toolbox-non-lwt-textcolor-inactive: InactiveCaptionText;
-        
-              &:not([lwtheme]) #TabsToolbar {
-                /* These colors match the Linux/HCM default button colors. We need to
-                 * override these on the tabs toolbar because the accent color is
-                 * arbitrary, so the hardcoded colors from browser-custom-colors might
-                 * not provide sufficient contrast. */
-                --toolbarbutton-icon-fill: currentColor;
-                --toolbarbutton-hover-background: color-mix(in srgb, currentColor 17%, transparent);
-                --toolbarbutton-active-background: color-mix(in srgb, currentColor 30%, transparent);
-              }
-            }
-        
-            &[sizemode="normal"] #navigator-toolbox {
-              border-top: .5px solid ActiveBorder;
-              &:-moz-window-inactive {
-                border-top-color: InactiveBorder;
-              }
-            }
+          :root[sizemode=normal][tabsintitlebar] #navigator-toolbox {
+            border-top: .5px solid ActiveBorder;
           }
+        }
+
+        :root[sizemode=normal][tabsintitlebar] #navigator-toolbox:-moz-window-inactive {
+          border-top-color: InactiveBorder;
+        }
+
+        :root[tabsintitlebar] .tab-label:-moz-window-inactive {
+          /* Calculated to match the opacity change of Windows Explorer
+             titlebar text change for inactive windows. */
+          opacity: .6;
+        }
+
+        :root[tabsintitlebar] .tab-secondary-label:-moz-window-inactive {
+          opacity: .6;
         }
       }
 
@@ -93,36 +84,16 @@
       }
 
       .titlebar-button {
-        appearance: none !important;
         border: none;
         margin: 0 !important;
         padding: 8px 17px;
         -moz-context-properties: stroke;
         stroke: currentColor;
-      
-        /* Win10's tablet mode is non-windowed -- windows can't be moved or resized
-           freely. In theory "minimize" might still make sense, but for simplicity we
-           just hide everything but "close".
-      
-           (This is not called for in Win11's tablet mode, which _is_ windowed.)
-        */
-        :root[win10-tablet-mode] &:not(.titlebar-close) {
-          display: none;
-        }
-      
-        &:focus-visible {
-          outline: var(--focus-outline);
-          outline-offset: var(--focus-outline-inset);
-        }
-      
-        > .toolbarbutton-icon {
-          width: 12px;
-          height: 12px;
-      
-          &:-moz-locale-dir(rtl) {
-            transform: scaleX(-1);
-          }
-        }
+      }
+
+      .titlebar-button > .toolbarbutton-icon {
+        width: 12px;
+        height: 12px;
       }
 
       .titlebar-min {
@@ -206,19 +177,16 @@
       }
 
       @media (-moz-windows-default-theme) {
-        #main-menubar > menu {
-          appearance: none;
+        #main-menubar > menu[_moz-menuactive="true"] {
           color: inherit;
-        
-          &[_moz-menuactive] {
-            background-color: light-dark(hsla(0,0%,0%,.12), hsla(0,0%,100%,.22));
-            color: inherit;
-        
-            @media (prefers-contrast) {
-              background-color: -moz-menuhover;
-              color: -moz-menuhovertext;
-            }
-          }
+        }
+
+        #main-menubar > menu[_moz-menuactive="true"],
+        .titlebar-button:hover {
+          background-color: hsla(0,0%,0%,.12);
+        }
+        .titlebar-button:hover:active {
+          background-color: hsla(0,0%,0%,.22);
         }
 
         #toolbar-menubar[brighttext] > #menubar-items > #main-menubar > menu[_moz-menuactive="true"],
@@ -227,14 +195,6 @@
         }
         toolbar[brighttext] .titlebar-button:not(.titlebar-close):hover:active {
           background-color: hsla(0,0%,100%,.32);
-        }
-
-        .titlebar-button:hover {
-          background-color: light-dark(hsla(0,0%,0%,.12), hsla(0,0%,100%,.22));
-        
-          &:active {
-            background-color: light-dark(hsla(0,0%,0%,.22), hsla(0,0%,100%,.32));
-          }
         }
 
         .titlebar-close:hover {
@@ -307,8 +267,16 @@
     /* Artificially draw window borders that are covered by lwtheme, see bug 591930.
      * Borders for win7 are below, win10 only needs something like this when
      * drawing in the titlebar (-moz-windows-accent-color-in-titlebar). */
-    #main-window[sizemode="normal"] #navigator-toolbox[lwtheme] {
-      border-top: 1px solid var(--glass-shadow-color);
+    #main-window[sizemode="normal"] #navigator-toolbox {
+      &[lwtheme] {
+        border-top: 1px solid var(--glass-shadow-color);
+      }
+    }
+
+    /* Allows seeing inactive stuffs on 8 */
+    #TabsToolbar {
+      color: black !important;
+      --toolbarbutton-icon-fill: currentColor !important;
     }
   }
 
@@ -319,7 +287,7 @@
   #tabbrowser-tabbox:not([lwtheme]) {
     background-color: -moz-dialog;
   }
-}
+
 
 @media (-moz-windows-glass) {
   #toolbar-menubar:not([lwtheme]) {
@@ -335,14 +303,18 @@
   /* Artificially draw window borders that are covered by lwtheme, see bug 591930.
    * We use a different border for win8, and this win10+ only needs this if
    * drawing in the titlebar (-moz-windows-accent-color-in-titlebar). */
-  #main-window[sizemode="normal"] #navigator-toolbox[lwtheme] {
-    border-top: 1px solid var(--glass-active-border-color);
-    padding-top: 1px;
-    box-shadow: 0 1px 0 rgba(255,255,255,.6) inset;
+  #main-window[sizemode="normal"] #navigator-toolbox {
+    &[lwtheme] {
+      border-top: 1px solid var(--glass-active-border-color);
+      padding-top: 1px;
+      box-shadow: 0 1px 0 rgba(255,255,255,.6) inset;
+    }
   }
 
-  #main-window[sizemode="normal"] #navigator-toolbox[lwtheme] :-moz-window-inactive {
-    border-top-color: var(--glass-inactive-border-color);
+  #main-window[sizemode="normal"] #navigator-toolbox:-moz-window-inactive {
+    &[lwtheme] {
+      border-top-color: var(--glass-inactive-border-color);
+    }
   }
 }
 
@@ -357,16 +329,20 @@
     }
 
     /* Render a window top border for lwthemes: */
-    #main-window[tabsintitlebar][sizemode="normal"] #navigator-toolbox[lwtheme] {
-      background-image: linear-gradient(to bottom,
-            var(--glass-active-border-color) 0, var(--glass-active-border-color) 1px,
-            rgba(255,255,255,.6) 1px, rgba(255,255,255,.6) 2px, transparent 2px);
+    #main-window[tabsintitlebar][sizemode="normal"] #navigator-toolbox {
+      &[lwtheme] {
+        background-image: linear-gradient(to bottom,
+              var(--glass-active-border-color) 0, var(--glass-active-border-color) 1px,
+              rgba(255,255,255,.6) 1px, rgba(255,255,255,.6) 2px, transparent 2px);
+      }
     }
 
-    #main-window[tabsintitlebar][sizemode="normal"] #navigator-toolbox[lwtheme]:-moz-window-inactive {
-      background-image: linear-gradient(to bottom,
-            var(--glass-inactive-border-color) 0, var(--glass-inactive-border-color) 1px,
-            rgba(255,255,255,.6) 1px, rgba(255,255,255,.6) 2px, transparent 2px);
+    #main-window[tabsintitlebar][sizemode="normal"] #navigator-toolbox:-moz-window-inactive {
+      &[lwtheme] {
+        background-image: linear-gradient(to bottom,
+              var(--glass-inactive-border-color) 0, var(--glass-inactive-border-color) 1px,
+              rgba(255,255,255,.6) 1px, rgba(255,255,255,.6) 2px, transparent 2px);
+      }
     }
   }
 

@@ -35,17 +35,7 @@
   @media (-moz-platform: windows) {
     @media (-moz-windows-default-theme) {
       #TabsToolbar {
-    isolation: isolate;
-    position: relative;
-       &::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  height: 100%;
-  width: 100%;
-        background-image: radial-gradient(ellipse at bottom, rgba(255,255,255,0.8), rgba(255,255,255,0.5) 80%, transparent);
-  z-index: -1;
-       }
+        background-image: radial-gradient(ellipse at bottom, rgba(255,255,255,0.8), rgba(255,255,255,0.5) 40%, transparent);
         color: black;
         --toolbarbutton-icon-fill: currentColor;
       }
@@ -81,6 +71,12 @@
     @media (-moz-windows-compositor) {
       :root {
         background: transparent !important;
+      }
+
+      /* Allows seeing the caption bar on Windows pre-10 */
+      #navigator-toolbox,
+      #navigator-toolbox-background {
+        background-color: transparent !important;
       }
 
       /* Remove lwtheme borders from toolbars in non-maximized windows. */

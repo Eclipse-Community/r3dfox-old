@@ -159,9 +159,3 @@
     --sidebar-border-color: light-dark(rgb(240, 240, 244), rgb(82, 82, 94));
   }
 }
-
-@media (-moz-windows-default-theme) {
-  :root {
-    --toolbar-bgcolor: -moz-dialog;
-  }
-}

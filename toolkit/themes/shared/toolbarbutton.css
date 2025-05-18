@@ -15,23 +15,6 @@ toolbarbutton {
     padding-inline: 2px;
   }
 
-@media (-moz-windows-classic) {
-  @media not (prefers-contrast) {
-    toolbarbutton:where([disabled="true"]) {
-      text-shadow: 1px 1px ThreeDHighlight;
-    }
-  }
-  toolbarbutton:where([disabled="true"]) {
-    color: ThreeDShadow;
-  }
-}
-
-  @media (-moz-windows-default-theme) {
-    :root[lwtheme-image] & {
-      text-shadow: none;
-    }
-  }
-
   @media (-moz-platform: windows) {
     &:focus-visible {
       outline: var(--default-focusring);
@@ -48,12 +31,10 @@ toolbarbutton {
     }
   }
 
- @media not (-moz-windows-default-theme) {
   &:where([disabled="true"]) {
     color: GrayText;
     text-shadow: none;
   }
- }
 }
 
 .toolbarbutton-text {

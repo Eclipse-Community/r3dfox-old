@@ -64,6 +64,9 @@ skip-if = [
   "os == 'win' && os_version == '11.26100' && processor == 'x86_64' && msix", # Bug 1807928
 ]
 
+["test_IE7_passwords.js"]
+run-if = ["os == 'win'"]
+
 ["test_MigrationUtils_timedRetry.js"]
 
 ["test_PasswordFileMigrator.js"]

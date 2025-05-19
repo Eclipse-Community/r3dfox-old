@@ -343,8 +343,8 @@ void Geolocation::ReallowWithSystemPermissionOrCancel(
   denyPermissionOnError.release();
 
   RefPtr<SystemGeolocationPermissionRequest> permissionRequest =
-      geolocation::PresentSystemSettings(aBrowsingContext,
-                                         std::move(aResolver));
+      geolocation::RequestLocationPermissionFromUser(aBrowsingContext,
+                                                     std::move(aResolver));
   NS_ENSURE_TRUE_VOID(permissionRequest);
 
   auto cancelRequestOnError = MakeScopeExit([&]() {
@@ -397,12 +397,13 @@ nsGeolocationRequest::Allow(JS::Handle<JS::Value> aChoices) {
     return NS_OK;
   }
 
-  if (mBehavior == SystemGeolocationPermissionBehavior::GeckoWillPromptUser) {
-    // Asynchronously present the system dialog and wait for the permission to
-    // change or the request to be canceled.  If the permission is (maybe)
-    // granted then it will call Allow again.  It actually will also re-call
-    // Allow if the permission is denied, in order to get the "denied
-    // permission" behavior.
+  if (mBehavior != SystemGeolocationPermissionBehavior::NoPrompt) {
+    // Asynchronously present the system dialog or open system preferences
+    // (RequestGeolocationPermissionFromUser will know which to do), and wait
+    // for the permission to change or the request to be canceled.  If the
+    // permission is (maybe) granted then it will call Allow again.  It actually
+    // will also re-call Allow if the permission is denied, in order to get the
+    // "denied permission" behavior.
     mBehavior = SystemGeolocationPermissionBehavior::NoPrompt;
     RefPtr<BrowsingContext> browsingContext = mWindow->GetBrowsingContext();
     if (ContentChild* cc = ContentChild::GetSingleton()) {
@@ -1442,7 +1443,14 @@ void Geolocation::NotifyAllowedRequest(nsGeolocationRequest* aRequest) {
 
 /* static */ geolocation::SystemGeolocationPermissionBehavior
 Geolocation::GetLocationOSPermission() {
-  return geolocation::GetGeolocationPermissionBehavior();
+  auto permission = geolocation::GetGeolocationPermissionBehavior();
+
+  if (!StaticPrefs::geo_prompt_open_system_prefs() &&
+      permission == geolocation::SystemGeolocationPermissionBehavior::
+                        GeckoWillPromptUser) {
+    return geolocation::SystemGeolocationPermissionBehavior::NoPrompt;
+  }
+  return permission;
 }
 
 void Geolocation::RequestIfPermitted(nsGeolocationRequest* request) {

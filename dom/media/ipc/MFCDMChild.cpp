@@ -92,14 +92,13 @@ void MFCDMChild::EnsureRemote() {
     return;
   }
 
-  mRemotePromise = mRemotePromiseHolder.Ensure(__func__);
-
   if (!IsWin10OrLater()) {
     LOG("only support MF CDM on Windows 10+");
     mState = NS_ERROR_NOT_AVAILABLE;
-    mRemotePromise = RemotePromise::CreateAndReject(mState, __func__);
-    return;
+    return RemotePromise::CreateAndReject(mState, __func__);
   }
+
+  mRemotePromise = mRemotePromiseHolder.Ensure(__func__);
 
   RefPtr<MFCDMChild> self = this;
   RemoteDecoderManagerChild::LaunchUtilityProcessIfNeeded(

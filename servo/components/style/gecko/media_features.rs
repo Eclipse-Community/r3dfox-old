@@ -561,7 +561,7 @@ pub enum Platform {
     Windows,
     /// Matches only Windows XP.
     WindowsWinXP,
-    /// Matches only Windows 7 (and Vista).
+    /// Matches only Windows 7.
     WindowsWin7,
     /// Matches only Windows 8.
     WindowsWin8,
@@ -999,10 +999,10 @@ pub static MEDIA_FEATURES: [QueryFeatureDescription; 68] = [
         atom!("-moz-windows-accent-color-in-titlebar"),
         WindowsAccentColorInTitlebar
     ),
+    lnf_int_feature!(atom!("-moz-windows-mica"), WindowsMica),
     lnf_int_feature!(atom!("-moz-windows-compositor"), DWMCompositor),
     lnf_int_feature!(atom!("-moz-windows-classic"), WindowsClassic),
     lnf_int_feature!(atom!("-moz-windows-glass"), WindowsGlass),
-    lnf_int_feature!(atom!("-moz-windows-mica"), WindowsMica),
     lnf_int_feature!(atom!("-moz-swipe-animation-enabled"), SwipeAnimationEnabled),
     lnf_int_feature!(atom!("-moz-gtk-csd-available"), GTKCSDAvailable),
     lnf_int_feature!(atom!("-moz-gtk-csd-transparency-available"), GTKCSDTransparencyAvailable),

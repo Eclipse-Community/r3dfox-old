@@ -15,14 +15,7 @@ namespace mozilla::hal_impl {
 
 static mozilla::Maybe<hal::HeterogeneousCpuInfo> CreateHeterogeneousCpuInfo() {
   ULONG returnedLength;
-  auto pGetSystemCpuSetInformation =
-      reinterpret_cast<decltype(&GetSystemCpuSetInformation)>(
-          GetProcAddress(GetModuleHandleW(L"kernel32.dll"),
-                           "GetSystemCpuSetInformation"));
-  if (!pGetSystemCpuSetInformation) {
-    return Nothing();
-  }
-  pGetSystemCpuSetInformation(NULL, 0, &returnedLength, NULL, 0);
+  GetSystemCpuSetInformation(NULL, 0, &returnedLength, NULL, 0);
 
   if (!returnedLength) {
     return Nothing();
@@ -32,7 +25,7 @@ static mozilla::Maybe<hal::HeterogeneousCpuInfo> CreateHeterogeneousCpuInfo() {
 
   cpuSets.SetLength(returnedLength);
 
-  if (!pGetSystemCpuSetInformation(
+  if (!GetSystemCpuSetInformation(
           reinterpret_cast<SYSTEM_CPU_SET_INFORMATION*>(cpuSets.Elements()),
           returnedLength, &returnedLength, NULL, 0)) {
     return Nothing();

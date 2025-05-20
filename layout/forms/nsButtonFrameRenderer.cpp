@@ -214,7 +214,7 @@ void nsButtonFrameRenderer::SetComputedStyle(int32_t aIndex,
 
 namespace mozilla {
 
-class nsDisplayButtonBoxShadowOuter : public nsPaintedDisplayItem {
+class nsDisplayButtonBoxShadowOuter final : public nsPaintedDisplayItem {
  public:
   nsDisplayButtonBoxShadowOuter(nsDisplayListBuilder* aBuilder,
                                 nsIFrame* aFrame)

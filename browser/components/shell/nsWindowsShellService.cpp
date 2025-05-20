@@ -41,7 +41,6 @@
 #include "nsIXULAppInfo.h"
 #include "nsLocalFile.h"
 #include "nsNativeAppSupportWin.h"
-#include "nsWindowsHelpers.h"
 #include "nsNetUtil.h"
 #include "nsProxyRelease.h"
 #include "nsServiceManagerUtils.h"
@@ -59,10 +58,10 @@
 #include <knownfolders.h>
 #include <mbstring.h>
 #include <objbase.h>
-#include <shlobj.h>
 #include <propkey.h>
 #include <propvarutil.h>
 #include <shellapi.h>
+#include <shlobj.h>
 #include <strsafe.h>
 #include <windows.h>
 #include <windows.foundation.h>
@@ -1917,7 +1916,7 @@ nsWindowsShellService::PinShortcutToTaskbar(const nsAString& aAppUserModelId,
   }
 
   // First available on 1809
-  if (IsWin10OrLater() && !IsWin10Sep2018UpdateOrLater()) {
+  if (!IsWin10Sep2018UpdateOrLater()) {
     return NS_ERROR_NOT_AVAILABLE;
   }
 
@@ -2290,8 +2289,7 @@ static nsresult PinCurrentAppToTaskbarImpl(
     }
   }
   if (IsWin10OrLater()) {
-    return PinShortcutToTaskbarImpl(aCheckOnly, aAppUserModelId,
-                                       shortcutPath);
+    return PinShortcutToTaskbarImpl(aCheckOnly, aAppUserModelId, shortcutPath);
   } else {
     return PinCurrentAppToTaskbarWin7(aCheckOnly, shortcutPath);
   }
@@ -2306,7 +2304,7 @@ static nsresult PinCurrentAppToTaskbarAsyncImpl(bool aCheckOnly,
   }
 
   // First available on 1809
-  if (!IsWin10Sep2018UpdateOrLater()) {
+  if (IsWin10OrLater() && !IsWin10Sep2018UpdateOrLater()) {
     return NS_ERROR_NOT_AVAILABLE;
   }
 

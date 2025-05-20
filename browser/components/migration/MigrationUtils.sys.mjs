@@ -33,6 +33,7 @@ var gFileMigrators = null;
 var gProfileStartup = null;
 var gL10n = null;
 var gPreviousDefaultBrowserKey = "";
+var gHasOpenedLegacyWizard = false;
 
 let gForceExitSpinResolve = false;
 let gKeepUndoData = false;

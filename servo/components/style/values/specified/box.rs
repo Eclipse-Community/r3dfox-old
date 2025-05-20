@@ -1668,10 +1668,6 @@ pub enum Appearance {
     /// A tooltip.
     #[parse(condition = "ParserContext::chrome_rules_enabled")]
     Tooltip,
-
-    /// Sidebar appearance.
-    #[parse(condition = "ParserContext::chrome_rules_enabled")]
-    MozSidebar,
     /// A listbox or tree widget header
     #[parse(condition = "ParserContext::chrome_rules_enabled")]
     Treeheader,
@@ -1696,6 +1692,10 @@ pub enum Appearance {
     /// A tree widget.
     #[parse(condition = "ParserContext::chrome_rules_enabled")]
     Treeview,
+
+    /// Sidebar appearance.
+    #[parse(condition = "ParserContext::chrome_rules_enabled")]
+    MozSidebar,
 
     /// Vista Rebars.
     #[parse(condition = "ParserContext::chrome_rules_enabled")]

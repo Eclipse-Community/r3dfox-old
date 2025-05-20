@@ -2062,26 +2062,26 @@ bool nsNativeThemeWin::GetWidgetPadding(nsDeviceContext* aContext,
    * added, see bug 430212)
    */
   if (IsVistaOrLater()) {
-    if (aAppearance == StyleAppearance::NumberInput ||
-        aAppearance == StyleAppearance::PasswordInput ||
-        aAppearance == StyleAppearance::Textfield ||
-        aAppearance == StyleAppearance::Textarea) {
-      aResult->top = aResult->bottom = 2;
-      aResult->left = aResult->right = 2;
-      ScaleForFrameDPI(aResult, aFrame);
-      return ok;
-    } else if (IsHTMLContent(aFrame) &&
-               (aAppearance == StyleAppearance::Menulist ||
-                aAppearance == StyleAppearance::MenulistButton)) {
-      /* For content menulist controls, we need an extra pixel so that we have
-       * room to draw our focus rectangle stuff. Otherwise, the focus rect might
-       * overlap the control's border.
-       */
-      aResult->top = aResult->bottom = 1;
-      aResult->left = aResult->right = 1;
-      ScaleForFrameDPI(aResult, aFrame);
-      return ok;
-    }
+  if (aAppearance == StyleAppearance::NumberInput ||
+      aAppearance == StyleAppearance::PasswordInput ||
+      aAppearance == StyleAppearance::Textfield ||
+      aAppearance == StyleAppearance::Textarea) {
+    aResult->top = aResult->bottom = 2;
+    aResult->left = aResult->right = 2;
+    ScaleForFrameDPI(aResult, aFrame);
+    return ok;
+  } else if (IsHTMLContent(aFrame) &&
+             (aAppearance == StyleAppearance::Menulist ||
+              aAppearance == StyleAppearance::MenulistButton)) {
+    /* For content menulist controls, we need an extra pixel so that we have
+     * room to draw our focus rectangle stuff. Otherwise, the focus rect might
+     * overlap the control's border.
+     */
+    aResult->top = aResult->bottom = 1;
+    aResult->left = aResult->right = 1;
+    ScaleForFrameDPI(aResult, aFrame);
+    return ok;
+  }
   }
 
   int32_t right, left, top, bottom;

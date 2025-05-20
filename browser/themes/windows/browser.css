@@ -19,56 +19,31 @@
   justify-content: normal; /* align the menubar to the top also in customize mode */
 }
 
-@media (-moz-windows-accent-color-in-titlebar) or (-moz-windows-mica) {
-  :root[tabsintitlebar] {
-    @media (-moz-windows-mica) {
-      &:not([lwtheme]) {
-        background-color: transparent;
 
-        /* Accent color in titlebar overrides Mica. */
-        @media not (-moz-windows-accent-color-in-titlebar) {
-          /* Hide the Firefox buttons since Windows draws their own.
-           * FIXME(emilio): Find a way of hiding the native buttons, or make them
-           * taller, this is very hacky. */
-          .titlebar-buttonbox {
-            opacity: 0;
-          }
-        }
-      }
-    }
 
-    /* stylelint-disable-next-line media-query-no-invalid */
-    @media (-moz-windows-mica) or (-moz-bool-pref: "browser.theme.windows.accent-color-in-tabs.enabled") {
-      &:not([lwtheme]) #TabsToolbar {
-        /* These colors match the Linux/HCM default button colors. We need to
-         * override these on the tabs toolbar because the accent color is
-         * arbitrary, so the hardcoded colors from browser-custom-colors might
-         * not provide sufficient contrast. */
-        --toolbarbutton-icon-fill: currentColor;
-        --toolbarbutton-hover-background: color-mix(in srgb, currentColor 17%, transparent);
-        --toolbarbutton-active-background: color-mix(in srgb, currentColor 30%, transparent);
-      }
-    }
-
-    &[sizemode="normal"] #navigator-toolbox {
-      border-top: .5px solid ActiveBorder;
-      &:-moz-window-inactive {
-        border-top-color: InactiveBorder;
-      }
     }
   }
 }
 
 @media not (-moz-platform: windows-win7) {
   @media not (-moz-platform: windows-win8) {
-    /* On Windows 10, when temporarily showing the menu bar, make it at least as
-     * tall as the tab bar such that the window controls don't appear to move up. */
-    :root[tabsintitlebar] #toolbar-menubar[autohide="true"] {
-      height: calc(var(--tab-min-height) - var(--tabs-navbar-shadow-size));
+/* Use a different color only on Windows 8 and higher in inactive windows.
+ * On Win 7, the menubar fog disappears for inactive windows, and renders gray
+ * illegible.
+ */
+@media (-moz-windows-default-theme) {
+  @media not (-moz-windows-modern) {
+    #toolbar-menubar:not([lwtheme]):-moz-window-inactive {
+      color: ThreeDShadow;
     }
-    :root[tabsintitlebar][sizemode="normal"] #toolbar-menubar[autohide="true"] {
-      height: calc(var(--tab-min-height) - var(--tabs-navbar-shadow-size));
-    }
+  }
+}
+
+@media (-moz-windows-modern) {
+  /* On Windows 10, when temporarily showing the menu bar, make it at least as
+  * tall as the tab bar such that the window controls don't appear to move up. */
+  :root[tabsintitlebar] #toolbar-menubar[autohide="true"] {
+    height: var(--tab-min-height);
   }
 }
 
@@ -115,7 +90,7 @@
   }
 
   /* Add a window top border for webextension themes */
-  :root[tabsintitlebar][sizemode="normal"] #navigator-toolbox[lwtheme] {
+  :root[lwtheme][tabsintitlebar][sizemode="normal"] #navigator-toolbox {
     background-image: linear-gradient(to bottom,
           ThreeDLightShadow 0, ThreeDLightShadow 1px,
           ThreeDHighlight 1px, ThreeDHighlight 2px,
@@ -125,7 +100,6 @@
   :root[tabsintitlebar] :is(#TabsToolbar, #toolbar-menubar) toolbarbutton:not([lwtheme]) {
     color: inherit;
   }
-}
 
 @media not (-moz-windows-compositor) {
   #nav-bar[tabs-hidden="true"] {

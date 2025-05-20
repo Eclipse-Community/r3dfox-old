@@ -8133,9 +8133,10 @@ var TabBarVisibility = {
     }
 
     if (nonPopupWithVerticalTabs) {
-      // CustomTitlebar decides if we can draw within the titlebar area.
+      // TabsInTitlebar decides if we can draw within the titlebar area.
       // In vertical tabs mode, the toolbar with the horizontal tabstrip gets hidden
-      // and the navbar becomes a titlebar.
+      // and the navbar becomes a titlebar. This makes TabsInTitlebar a bit of a misnomer.
+      // We'll fix this in Bug 1921034.
       hideTabstrip = true;
       TabsInTitlebar.allowedBy("tabs-visible", true);
     } else {

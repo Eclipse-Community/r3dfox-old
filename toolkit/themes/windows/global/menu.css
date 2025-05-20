@@ -189,6 +189,7 @@ menubar > menu[_moz-menuactive="true"]:not([disabled="true"]) {
     &:not([disabled="true"]) {
       color: inherit;
     }
+
     &[_moz-menuactive="true"]:not([disabled="true"]) {
       background-color: SelectedItem;
       color: SelectedItemText;
@@ -227,7 +228,6 @@ menulist > menupopup > menu {
     padding-inline-end: 1em;
   }
 }
-
 
 @media not (-moz-windows-non-native-menus) {
   menulist > menupopup > menuitem,

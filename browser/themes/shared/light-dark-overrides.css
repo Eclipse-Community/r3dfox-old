@@ -26,6 +26,7 @@
       :root {
         background-color: rgb(185,209,234) !important;
       }
+
       :root:-moz-window-inactive {
         background-color: rgb(215,228,242) !important;
       }
@@ -111,6 +112,7 @@
       background-image: none !important;
     }
   }
+
   @media (-moz-windows-glass) {
     #navigator-toolbox {
       box-shadow: none !important;

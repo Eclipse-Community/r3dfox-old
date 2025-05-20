@@ -217,8 +217,8 @@ nsresult AppWindow::Initialize(nsIAppWindow* aParent, nsIAppWindow* aOpener,
   NS_ENSURE_SUCCESS(rv, rv);
 
   LayoutDeviceIntRect r = mWindow->GetClientBounds();
-  // Match the default background color of content. Previously important on
-  // Windows, but no longer has any effect there.
+  // Match the default background color of content. Important on windows
+  // since we no longer use content child widgets.
   mWindow->SetBackgroundColor(NS_RGB(255, 255, 255));
 
   // All Chrome BCs exist within the same BrowsingContextGroup, so we don't need
@@ -744,7 +744,9 @@ NS_IMETHODIMP AppWindow::Center(nsIAppWindow* aRelative, bool aScreen,
     return NS_OK;
   }
 
-  if (!aScreen && !aRelative) return NS_ERROR_INVALID_ARG;
+  if (!aScreen && !aRelative) {
+    return NS_ERROR_INVALID_ARG;
+  }
 
   nsCOMPtr<nsIScreenManager> screenmgr =
       do_GetService("@mozilla.org/gfx/screenmanager;1", &result);

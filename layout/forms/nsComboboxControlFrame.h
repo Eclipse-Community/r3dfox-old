@@ -79,7 +79,6 @@ class nsComboboxControlFrame final : public nsBlockFrame,
   nscoord IntrinsicISize(const mozilla::IntrinsicSizeInput& aInput,
                          mozilla::IntrinsicISizeType aType) final;
 
-
   void Reflow(nsPresContext* aCX, ReflowOutput& aDesiredSize,
               const ReflowInput& aReflowInput, nsReflowStatus& aStatus) final;
 

@@ -83,12 +83,12 @@ class nsUXThemeData {
   static void EnsureCommandButtonBoxMetrics();
 
  public:
+  static const wchar_t kThemeLibraryName[];
   static bool sTitlebarInfoPopulatedAero;
   static bool sTitlebarInfoPopulatedThemed;
   static bool sIsDefaultWindowsTheme;
   static bool sIsHighContrastOn;
 
-  static const wchar_t kThemeLibraryName[];
   static void Invalidate();
   static HANDLE GetTheme(nsUXThemeClass cls);
   static HMODULE GetThemeDLL();

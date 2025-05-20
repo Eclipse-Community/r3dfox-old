@@ -18,6 +18,10 @@
 #include "mozilla/WindowsVersion.h"
 #include "mozilla/widget/WinRegistry.h"
 
+// -- native controls patch includes --
+#include "mozilla/StaticPrefs_widget.h"
+// -- end native controls patch includes --
+
 #define AVG2(a, b) (((a) + (b) + 1) >> 1)
 
 using namespace mozilla;
@@ -108,6 +112,8 @@ static const wchar_t* GetUXThemeClassName(UXThemeClass aClass) {
       return L"Button";
     case UXThemeClass::Edit:
       return L"Edit";
+    case UXThemeClass::Tooltip:
+      return L"Tooltip";
     case UXThemeClass::Rebar:
       return L"Rebar";
     case UXThemeClass::MediaRebar:
@@ -116,6 +122,8 @@ static const wchar_t* GetUXThemeClassName(UXThemeClass aClass) {
       return L"Communications::Rebar";
     case UXThemeClass::BrowserTabBarRebar:
       return L"BrowserTabBar::Rebar";
+    case UXThemeClass::Scrollbar:
+      return L"Scrollbar";
     case UXThemeClass::Toolbar:
       return L"Toolbar";
     case UXThemeClass::MediaToolbar:
@@ -130,6 +138,8 @@ static const wchar_t* GetUXThemeClassName(UXThemeClass aClass) {
       return L"Trackbar";
     case UXThemeClass::Spin:
       return L"Spin";
+    case UXThemeClass::Status:
+      return L"Status";
     case UXThemeClass::Combobox:
       return L"Combobox";
     case UXThemeClass::Header:
@@ -201,9 +211,18 @@ void nsLookAndFeel::EnsureCommandButtonBoxMetrics() {
 void nsLookAndFeel::UpdateTitlebarInfo(HWND aWnd) {
   if (!aWnd) return;
 
-  if (!sTitlebarInfoPopulatedAero &&
-      gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled()) {
+  bool dwmCompositionEnabled =
+      StaticPrefs::widget_native_controls_force_dwm_report_off()
+          ? false
+          : gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled();
+
+  if (!sTitlebarInfoPopulatedAero && dwmCompositionEnabled) {
     RECT captionButtons;
+    int overrideCaptionButtonsWidth = StaticPrefs::
+        widget_native_controls_override_aero_caption_buttons_mask_width();
+    int overrideCaptionButtonsHeight = StaticPrefs::
+        widget_native_controls_override_aero_caption_buttons_mask_height();
+
     if (SUCCEEDED(WinUtils::dwmGetWindowAttributePtr(aWnd, DWMWA_CAPTION_BUTTON_BOUNDS,
                                         &captionButtons,
                                         sizeof(captionButtons)))) {
@@ -211,10 +230,19 @@ void nsLookAndFeel::UpdateTitlebarInfo(HWND aWnd) {
           captionButtons.right - captionButtons.left - 3;
       sCommandButtonBoxMetrics.cy =
           (captionButtons.bottom - captionButtons.top) - 1;
+
+      if (overrideCaptionButtonsWidth > 0) {
+        sCommandButtonBoxMetrics.cx = overrideCaptionButtonsWidth;
+      }
+
+      if (overrideCaptionButtonsHeight > 0) {
+        sCommandButtonBoxMetrics.cy = overrideCaptionButtonsHeight;
+      }
+
       sCommandButtonBoxMetricsInitialized = true;
-      MOZ_ASSERT(
-          sCommandButtonBoxMetrics.cx > 0 && sCommandButtonBoxMetrics.cy > 0,
-          "We must not cache bad command button box dimensions");
+      //MOZ_ASSERT(
+      //    sCommandButtonBoxMetrics.cx > 0 && sCommandButtonBoxMetrics.cy > 0,
+      //    "We must not cache bad command button box dimensions");
       sTitlebarInfoPopulatedAero = true;
     }
   }
@@ -252,7 +280,7 @@ void nsLookAndFeel::UpdateTitlebarInfo(HWND aWnd) {
   // get the wrong information if the window isn't activated, so we have to:
   if (sThemeId == WindowsTheme::AeroLite ||
       (sThemeId == WindowsTheme::Aero &&
-       !gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled())) {
+       !dwmCompositionEnabled) {
     showType = SW_SHOW;
   }
   ShowWindow(hWnd, showType);
@@ -787,16 +815,33 @@ nsresult nsLookAndFeel::NativeGetInt(IntID aID, int32_t& aResult) {
       aResult = sIsDefaultWindowsTheme;
       break;
     case IntID::DWMCompositor:
+      if (StaticPrefs::widget_native_controls_force_dwm_report_off()) {
+        aResult = 0;
+        break;
+      }
+
       aResult = gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled();
       break;
     case IntID::WindowsAccentColorInTitlebar:
       aResult = mTitlebarColors.mUseAccent;
       break;
-    case IntID::WindowsGlass:
+    case IntID::WindowsGlass: {
+      int reportingPref =
+          StaticPrefs::widget_native_controls_force_glass_reporting();
+      if (reportingPref != 0) {
+        aResult = (reportingPref == 1) ? 1 : 0;
+        break;
+      }
+      if (StaticPrefs::widget_native_controls_force_dwm_report_off()) {
+        aResult = 0;
+        break;
+      }
       // Aero Glass is only available prior to Windows 8 when DWM is used.
-      aResult = (gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled() &&
-                 !IsWin8OrLater());
+      // Actually not, you can restore it with glass tools
+      // It's just that people don't research anymore... smh
+      aResult = (gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled());
       break;
+    }
     case IntID::WindowsMica:
       aResult = WinUtils::MicaEnabled();
       break;

@@ -52,6 +52,7 @@ class KeyWatcher;
 enum class UXThemeClass : uint8_t {
   Button = 0,
   Edit,
+  Tooltip,
   Rebar,
   MediaRebar,
   CommunicationsRebar,
@@ -61,8 +62,10 @@ enum class UXThemeClass : uint8_t {
   CommunicationsToolbar,
   Progress,
   Tab,
+  Scrollbar,
   Trackbar,
   Spin,
+  Status,
   Combobox,
   Header,
   Listview,

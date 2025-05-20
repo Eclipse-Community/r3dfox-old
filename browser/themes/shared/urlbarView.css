@@ -15,9 +15,7 @@
 
   --urlbarView-secondary-text-color: color-mix(in srgb, currentColor 73%, transparent);
 
-@media not (-moz-windows-default-theme) {
   --urlbarView-action-color: LinkText;
-}
   --urlbarView-action-slide-in-distance: 200px;
 
   --urlbarView-small-font-size: 0.85em;

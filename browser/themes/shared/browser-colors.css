@@ -172,9 +172,3 @@
     --sidebar-border-color: var(--border-color-card);
   }
 }
-
-@media (-moz-windows-default-theme) {
-  :root {
-    --toolbar-bgcolor: -moz-dialog;
-  }
-}

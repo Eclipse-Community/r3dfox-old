@@ -32,36 +32,16 @@
     }
   }
 
-  /* Add a fog for background tabs to be visible on Windows 7 glass window background */
-  @media (-moz-platform: windows-win7) {
-    @media (-moz-windows-default-theme) {
-      #TabsToolbar {
-    isolation: isolate;
-    position: relative;
-       &::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  height: 100%;
-  width: 100%;
-        background-image: radial-gradient(ellipse at bottom, rgba(255,255,255,0.8), rgba(255,255,255,0.5) 80%, transparent);
-  z-index: -1;
-       }
-        color: black;
-        --toolbarbutton-icon-fill: currentColor;
+  @media (-moz-windows-classic) {
+    @media (-moz-bool-pref: "widget.windows-style.show-fog") {
+      :root[tabsintitlebar]:not([sizemode=fullscreen]) #TabsToolbar {
+        background-image: linear-gradient(transparent, ActiveCaption);
+        background-size: auto 200%;
       }
-    }
-  }
 
-  @media (-moz-platform: windows-win8) {
-    @media (-moz-windows-default-theme) {
-      #TabsToolbar {
-        color: black;
-        --toolbarbutton-icon-fill: currentColor;
+      :root[tabsintitlebar]:not([sizemode=fullscreen]) #TabsToolbar:-moz-window-inactive {
+        background-image: linear-gradient(transparent, InactiveCaption);
       }
-    }
-    #toolbar-menubar {
-      color: black;
     }
   }
 
@@ -78,12 +58,16 @@
     }
   }
 
-  @media (-moz-platform: windows-win7),
-         (-moz-platform: windows-win8) {
-    @media (-moz-windows-compositor) {
-      :root {
-        background: transparent !important;
+  /* Add a fog for background tabs to be visible on Windows 7 glass window background */
+  @media (-moz-windows-default-theme) {
+    #TabsToolbar {
+      @media (-moz-bool-pref: "widget.windows-style.show-fog") {
+        background-image: radial-gradient(ellipse at bottom, rgba(255,255,255,0.8), rgba(255,255,255,0.5) 40%, transparent);
       }
+      color: black;
+      --toolbarbutton-icon-fill: currentColor;
+    }
+  }
 
   @media (-moz-windows-compositor) {
     :root {
@@ -129,14 +113,12 @@
   }
   @media (-moz-windows-glass) {
     #navigator-toolbox {
-      border-top: none !important;
       box-shadow: none !important;
       padding-top: 0 !important;
     }
   }
-  @media (-moz-platform: windows-win8) {
-    #navigator-toolbox {
-      border-top: none !important;
-    }
+
+  #navigator-toolbox {
+    border-top: none !important;
   }
 }

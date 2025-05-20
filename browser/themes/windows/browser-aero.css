@@ -8,8 +8,7 @@
   --glass-shadow-color: hsla(240,5%,5%,0.3);
 }
 
-@media (-moz-platform: windows-win7),
-       (-moz-platform: windows-win8) {
+@media not (-moz-windows-modern) {
   @media not (-moz-windows-classic) {
     :root[sizemode="normal"] #toolbar-menubar:not([autohide="true"]) > #menubar-items,
     :root[sizemode="normal"] #toolbar-menubar[autohide="true"][inactive] + #TabsToolbar > .toolbar-items {
@@ -42,6 +41,7 @@
   }
 }
 
+/*this has a compositor indicator here and not win 7 so keep note*/
 @media (-moz-windows-modern) {
       @media (-moz-windows-default-theme) {
         @media (-moz-windows-accent-color-in-titlebar) {
@@ -94,6 +94,19 @@
       .titlebar-button > .toolbarbutton-icon {
         width: 12px;
         height: 12px;
+      }
+
+      .titlebar-button{
+        background-color: transparent !important;
+        -moz-context-properties: stroke !important;
+        stroke: currentColor !important;
+      }
+
+      .titlebar-button:hover {
+        background-color: hsla(0,0%,100%,.32) !important
+      }
+      .titlebar-close:hover {
+        background-color: hsl(355,86%,49%) !important
       }
 
       .titlebar-min {
@@ -237,8 +250,8 @@
       }
 }
 
-  @media (-moz-platform: windows-win7),
-         (-moz-platform: windows-win8) {
+@media (-moz-windows-glass) {
+  @media not (-moz-windows-modern) {
     :root {
       background-color: transparent;
       appearance: auto;

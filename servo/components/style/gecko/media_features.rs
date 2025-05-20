@@ -619,6 +619,10 @@ fn eval_scripting(context: &Context, query_value: Option<Scripting>) -> bool {
     }
 }
 
+fn eval_moz_native_controls(_context: &Context) -> bool {
+    true
+}
+
 fn eval_moz_windows_non_native_menus(context: &Context) -> bool {
     unsafe { bindings::Gecko_MediaFeatures_WindowsNonNativeMenus(context.device().document()) }
 }
@@ -955,6 +959,13 @@ pub static MEDIA_FEATURES: [QueryFeatureDescription; 69] = [
         atom!("-moz-overlay-scrollbars"),
         AllowsRanges::No,
         Evaluator::BoolInteger(eval_moz_overlay_scrollbars),
+        FeatureFlags::CHROME_AND_UA_ONLY,
+    ),
+    // Custom feature for native controls patch for userstyles to detect it:
+    feature!(
+        atom!("-moz-native-controls"),
+        AllowsRanges::No,
+        Evaluator::BoolInteger(eval_moz_native_controls),
         FeatureFlags::CHROME_AND_UA_ONLY,
     ),
     lnf_int_feature!(

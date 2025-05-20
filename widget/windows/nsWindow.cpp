@@ -1599,6 +1599,11 @@ nsWindow* nsWindow::GetParentWindowBase(bool aIncludeOwner) {
  **************************************************************/
 
 void nsWindow::Show(bool aState) {
+  bool dwmCompositionEnabled =
+      StaticPrefs::widget_native_controls_force_dwm_report_off()
+          ? false
+          : gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled();
+
   if (aState && mIsShowingPreXULSkeletonUI) {
     // The first time we decide to actually show the window is when we decide
     // that we've taken over the window from the skeleton UI, and we should
@@ -1628,8 +1633,7 @@ void nsWindow::Show(bool aState) {
         return false;
       }
       if (HasBogusPopupsDropShadowOnMultiMonitor() &&
-          WinUtils::GetMonitorCount() > 1 &&
-          !gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled()) {
+          WinUtils::GetMonitorCount() > 1 && !dwmCompositionEnabled) {
         // See bug 603793. When we try to draw D3D9/10 windows with a drop
         // shadow without the DWM on a secondary monitor, windows fails to
         // composite our windows correctly. We therefor switch off the drop
@@ -2692,7 +2696,10 @@ void nsWindow::UpdateMicaBackdrop(bool aForce) {
 }
 
 LayoutDeviceIntMargin nsWindow::NormalWindowNonClientOffset() const {
-  bool glass = gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled();
+  bool glass =
+      StaticPrefs::widget_native_controls_force_dwm_report_off()
+          ? false
+          : gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled();
 
   LayoutDeviceIntMargin nonClientOffset;
 
@@ -3202,6 +3209,11 @@ TransparencyMode nsWindow::GetTransparencyMode() {
 }
 
 void nsWindow::SetTransparencyMode(TransparencyMode aMode) {
+  bool dwmCompositionEnabled =
+      StaticPrefs::widget_native_controls_force_dwm_report_off()
+          ? false
+          : gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled();
+
   nsWindow* window = GetTopLevelWindow(true);
   MOZ_ASSERT(window);
 
@@ -3210,8 +3222,7 @@ void nsWindow::SetTransparencyMode(TransparencyMode aMode) {
   }
 
   if (WindowType::TopLevel == window->mWindowType &&
-      mTransparencyMode != aMode &&
-      !gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled()) {
+      mTransparencyMode != aMode && !dwmCompositionEnabled) {
     NS_WARNING("Cannot set transparency mode on top-level windows.");
     return;
   }
@@ -3264,6 +3275,11 @@ void nsWindow::UpdateWindowDraggingRegion(
 }
 
 void nsWindow::UpdateGlass() {
+  bool dwmCompositionEnabled =
+      StaticPrefs::widget_native_controls_force_dwm_report_off()
+          ? false
+          : gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled();
+
   MARGINS margins = mGlassMargins;
 
   // DWMNCRP_USEWINDOWSTYLE - The non-client rendering area is
@@ -3292,7 +3308,7 @@ void nsWindow::UpdateGlass() {
            margins.cyBottomHeight));
 
   // Extends the window frame behind the client area
-  if (gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled()) {
+  if (dwmCompositionEnabled) {
     WinUtils::dwmExtendFrameIntoClientAreaPtr(mWnd, &margins);
     WinUtils::dwmSetWindowAttributePtr(mWnd, DWMWA_NCRENDERING_POLICY, &policy,
                           sizeof policy);
@@ -3565,10 +3581,15 @@ NS_IMPL_ISUPPORTS0(FullscreenTransitionData)
 
 /* virtual */
 bool nsWindow::PrepareForFullscreenTransition(nsISupports** aData) {
+  bool dwmCompositionEnabled =
+      StaticPrefs::widget_native_controls_force_dwm_report_off()
+          ? false
+          : gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled();
+
   // We don't support fullscreen transition when composition is not
   // enabled, which could make the transition broken and annoying.
   // See bug 1184201.
-  if (!gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled()) {
+  if (!dwmCompositionEnabled) {
     return false;
   }
 
@@ -4258,14 +4279,18 @@ nsresult nsWindow::OnDefaultButtonLoaded(
 
 void nsWindow::UpdateThemeGeometries(
     const nsTArray<ThemeGeometry>& aThemeGeometries) {
+  bool dwmCompositionEnabled =
+      StaticPrefs::widget_native_controls_force_dwm_report_off()
+          ? false
+          : gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled();
+
   RefPtr<WebRenderLayerManager> layerManager =
       GetWindowRenderer() ? GetWindowRenderer()->AsWebRender() : nullptr;
   if (!layerManager) {
     return;
   }
 
-  if (!HasGlass() ||
-      !gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled()) {
+  if (!HasGlass() || !dwmCompositionEnabled) {
     return;
   }
 
@@ -5125,6 +5150,11 @@ bool nsWindow::ProcessMessage(UINT msg, WPARAM& wParam, LPARAM& lParam,
 // The main windows message processing method. Called by ProcessMessage.
 bool nsWindow::ProcessMessageInternal(UINT msg, WPARAM& wParam, LPARAM& lParam,
                                       LRESULT* aRetValue) {
+  bool dwmCompositionEnabled =
+      StaticPrefs::widget_native_controls_force_dwm_report_off()
+          ? false
+          : gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled();
+
   MSGResult msgResult(aRetValue);
   if (ExternalHandlerProcessMessage(msg, wParam, lParam, msgResult)) {
     return (msgResult.mConsumed || !mWnd);
@@ -5146,8 +5176,7 @@ bool nsWindow::ProcessMessageInternal(UINT msg, WPARAM& wParam, LPARAM& lParam,
 
   // Glass hit testing w/custom transparent margins
   LRESULT dwmHitResult;
-  if (mCustomNonClient &&
-      gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled() &&
+  if (mCustomNonClient && dwmCompositionEnabled &&
       /* We don't do this for win10 glass with a custom titlebar,
        * in order to avoid the caption buttons breaking. */
       !(IsWin10OrLater() && HasGlass()) &&
@@ -5400,9 +5429,8 @@ bool nsWindow::ProcessMessageInternal(UINT msg, WPARAM& wParam, LPARAM& lParam,
        * sending the message with an updated title
        */
 
-      if ((mSendingSetText &&
-           gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled()) ||
-          !mCustomNonClient || mNonClientMargins.top == -1)
+      if ((mSendingSetText && dwmCompositionEnabled) || !mCustomNonClient ||
+          mNonClientMargins.top == -1)
         break;
 
       {
@@ -5441,7 +5469,7 @@ bool nsWindow::ProcessMessageInternal(UINT msg, WPARAM& wParam, LPARAM& lParam,
 
       // There is a case that rendered result is not kept. Bug 1237617
       if (wParam == TRUE && !gfxEnv::MOZ_DISABLE_FORCE_PRESENT() &&
-          gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled()) {
+          dwmCompositionEnabled) {
         NS_DispatchToMainThread(NewRunnableMethod(
             "nsWindow::ForcePresent", this, &nsWindow::ForcePresent));
       }
@@ -5449,7 +5477,7 @@ bool nsWindow::ProcessMessageInternal(UINT msg, WPARAM& wParam, LPARAM& lParam,
       // let the dwm handle nc painting on glass
       // Never allow native painting if we are on fullscreen
       if (mFrameState->GetSizeMode() != nsSizeMode_Fullscreen &&
-          gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled())
+          dwmCompositionEnabled)
         break;
 
       if (wParam == TRUE) {
@@ -5485,7 +5513,7 @@ bool nsWindow::ProcessMessageInternal(UINT msg, WPARAM& wParam, LPARAM& lParam,
       if (!mCustomNonClient) break;
 
       // let the dwm handle nc painting on glass
-      if (gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled()) break;
+      if (dwmCompositionEnabled) break;
 
       HRGN paintRgn = ExcludeNonClientFromPaintRegion((HRGN)wParam);
       LRESULT res = CallWindowProcW(GetPrevWindowProc(), mWnd, msg,
@@ -6594,15 +6622,24 @@ int32_t nsWindow::ClientMarginHitTestPoint(int32_t aX, int32_t aY) {
 
   auto pt = mCachedHitTestPoint;
 
+  // If DWM composition is disabled, then under no circumstances do we want to
+  // run the following code. Doing so will only cause the caption buttons to
+  // flicker. It seems this was broken during a refactor sometime after
+  // Australis.
+  bool dwmCompositionEnabled =
+      StaticPrefs::widget_native_controls_force_dwm_report_off()
+          ? false
+          : gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled();
+
   if (mWindowBtnRect[WindowButtonType::Minimize].Contains(pt)) {
-    testResult = HTMINBUTTON;
+    testResult = dwmCompositionEnabled ? HTMINBUTTON : HTCLIENT;
   } else if (mWindowBtnRect[WindowButtonType::Maximize].Contains(pt)) {
 #ifdef ACCESSIBILITY
     a11y::Compatibility::SuppressA11yForSnapLayouts();
 #endif
-    testResult = HTMAXBUTTON;
+    testResult = dwmCompositionEnabled ? HTMAXBUTTON : HTCLIENT;
   } else if (mWindowBtnRect[WindowButtonType::Close].Contains(pt)) {
-    testResult = HTCLOSE;
+    testResult = dwmCompositionEnabled ? HTCLOSE : HTCLIENT;
   } else if (!inResizeRegion) {
     // If we're in the resize region, avoid overriding that with either a
     // drag or a client result; resize takes priority over either (but not
@@ -8956,7 +8993,12 @@ void nsWindow::GetCompositorWidgetInitData(
 }
 
 bool nsWindow::SynchronouslyRepaintOnResize() {
-  return !gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled();
+  bool dwmCompositionEnabled =
+      StaticPrefs::widget_native_controls_force_dwm_report_off()
+          ? false
+          : gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled();
+
+  return !dwmCompositionEnabled;
 }
 
 void nsWindow::MaybeDispatchInitialFocusEvent() {

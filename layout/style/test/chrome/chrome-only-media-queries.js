@@ -10,7 +10,6 @@ const CHROME_ONLY_TOGGLES = [
   "-moz-windows-classic",
   "-moz-windows-compositor",
   "-moz-windows-default-theme",
-  "-moz-mac-graphite-theme",
   "-moz-mac-big-sur-theme",
   "-moz-menubar-drag",
   "-moz-windows-accent-color-in-titlebar",

@@ -382,9 +382,6 @@ nsresult nsLookAndFeel::NativeGetColor(ColorID aID, ColorScheme aScheme,
     case ColorID::MozColheaderhovertext:
       idx = COLOR_WINDOWTEXT;
       break;
-    case ColorID::MozButtondefault:
-      idx = COLOR_3DDKSHADOW;
-      break;
     case ColorID::MozNativehyperlinktext:
       idx = COLOR_HOTLIGHT;
       break;
@@ -500,8 +497,6 @@ nsresult nsLookAndFeel::NativeGetInt(IntID aID, int32_t& aResult) {
       aResult = (gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled() &&
                  !IsWin8OrLater());
       break;
-    case IntID::WindowsMica:
-      aResult = WinUtils::MicaEnabled();
       break;
     case IntID::AlertNotificationOrigin:
       aResult = 0;
@@ -835,11 +830,6 @@ auto nsLookAndFeel::ComputeTitlebarColors() -> TitlebarColors {
                            GetColorForSysColorIndex(COLOR_INACTIVECAPTIONTEXT),
                            GetColorForSysColorIndex(COLOR_INACTIVEBORDER)};
 
-  // Foreground and background taken from Windows Mica material theme colors.
-  result.mActiveDark = {NS_RGB(0x2e, 0x2e, 0x2e), NS_RGB(0xff, 0xff, 0xff),
-                        NS_RGB(57, 57, 57)};
-  result.mInactiveDark = {NS_RGB(0x33, 0x33, 0x33), NS_RGB(0xff, 0xff, 0xff),
-                          NS_RGB(57, 57, 57)};
 
   // TODO(bug 1825241): Somehow get notified when this changes? Hopefully the
   // sys color notification is enough.
@@ -862,12 +852,6 @@ auto nsLookAndFeel::ComputeTitlebarColors() -> TitlebarColors {
 
   result.mAccentInactive = dwmKey.GetValueAsDword(u"AccentColorInactive"_ns);
   result.mAccentInactiveText = GetAccentColorText(result.mAccentInactive);
-
-  if (WinUtils::MicaEnabled()) {
-    // Use transparent titlebar backgrounds when using mica.
-    result.mActiveDark.mBg = result.mActiveLight.mBg =
-        result.mInactiveDark.mBg = result.mInactiveLight.mBg = NS_TRANSPARENT;
-  }
 
   // The ColorPrevalence value is set to 1 when the "Show color on title bar"
   // setting in the Color section of Window's Personalization settings is

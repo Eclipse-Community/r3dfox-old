@@ -864,7 +864,6 @@ mozilla::Maybe<nsUXThemeClass> nsNativeThemeWin::GetThemeClass(
     case StyleAppearance::MozMenulistArrowButton:
       return Some(eUXCombobox);
     case StyleAppearance::Treeheadercell:
-    case StyleAppearance::Treeheadersortarrow:
       return Some(eUXHeader);
     case StyleAppearance::Listbox:
     case StyleAppearance::Treeview:
@@ -1242,12 +1241,6 @@ nsresult nsNativeThemeWin::GetThemePartAndState(nsIFrame* aFrame,
       } else
         aState = StandardGetState(aFrame, aAppearance, true);
 
-      return NS_OK;
-    }
-    case StyleAppearance::Treeheadersortarrow: {
-      // XXX Probably will never work due to a bug in the Luna theme.
-      aPart = 4;
-      aState = 1;
       return NS_OK;
     }
     case StyleAppearance::Treeheadercell: {

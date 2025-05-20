@@ -1202,18 +1202,6 @@ bool Theme::DoDrawWidgetBackground(PaintBackendData& aPaintData,
           dpiRatio);
       break;
     }
-    case StyleAppearance::Menuitem: {
-      ThemeDrawing::FillRect(aPaintData, devPxRect, [&] {
-        if (CheckBooleanAttr(aFrame, nsGkAtoms::menuactive)) {
-          if (elementState.HasState(ElementState::DISABLED)) {
-            return colors.System(StyleSystemColor::MozMenuhoverdisabled);
-          }
-          return colors.System(StyleSystemColor::MozMenuhover);
-        }
-        return sTransparent;
-      }());
-      break;
-    }
     case StyleAppearance::SpinnerUpbutton:
     case StyleAppearance::SpinnerDownbutton:
       if constexpr (std::is_same_v<PaintBackendData, WebRenderBackendData>) {
@@ -1652,7 +1640,6 @@ bool Theme::ThemeSupportsWidget(nsPresContext* aPresContext, nsIFrame* aFrame,
     case StyleAppearance::Menuarrow:
     case StyleAppearance::SpinnerUpbutton:
     case StyleAppearance::SpinnerDownbutton:
-    case StyleAppearance::Menuitem:
     case StyleAppearance::Tooltip:
       return !IsWidgetStyled(aPresContext, aFrame, aAppearance);
     default:

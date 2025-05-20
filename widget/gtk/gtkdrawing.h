@@ -127,15 +127,11 @@ enum WidgetNodeType : int {
   MOZ_GTK_CHECKBUTTON_CONTAINER,
   /* Paints a GtkCheckButton. flags is a boolean, 1=checked, 0=not checked. */
   MOZ_GTK_CHECKBUTTON,
-  /* Paints the label of a GtkCheckButton (focus outline) */
-  MOZ_GTK_CHECKBUTTON_LABEL,
 
   /* Paints the container part of a GtkRadioButton. */
   MOZ_GTK_RADIOBUTTON_CONTAINER,
   /* Paints a GtkRadioButton. flags is a boolean, 1=checked, 0=not checked. */
   MOZ_GTK_RADIOBUTTON,
-  /* Paints the label of a GtkRadioButton (focus outline) */
-  MOZ_GTK_RADIOBUTTON_LABEL,
   /* Vertical GtkScrollbar counterparts */
   MOZ_GTK_SCROLLBAR_VERTICAL,
   MOZ_GTK_SCROLLBAR_CONTENTS_VERTICAL,
@@ -159,8 +155,6 @@ enum WidgetNodeType : int {
   MOZ_GTK_SPINBUTTON_UP,
   MOZ_GTK_SPINBUTTON_DOWN,
   MOZ_GTK_SPINBUTTON_ENTRY,
-  /* Paints the gripper of a GtkHandleBox. */
-  MOZ_GTK_GRIPPER,
   /* Paints a GtkEntry. */
   MOZ_GTK_ENTRY,
   /* Paints a GtkExpander. */
@@ -177,10 +171,6 @@ enum WidgetNodeType : int {
   /* Paints an entry in an editable option menu */
   MOZ_GTK_DROPDOWN_ENTRY,
 
-  /* Paints the background of a GtkHandleBox. */
-  MOZ_GTK_TOOLBAR,
-  /* Paints a toolbar separator */
-  MOZ_GTK_TOOLBAR_SEPARATOR,
   /* Paints a GtkToolTip */
   MOZ_GTK_TOOLTIP,
   /* Paints a GtkBox from GtkToolTip  */
@@ -222,8 +212,6 @@ enum WidgetNodeType : int {
   MOZ_GTK_TREEVIEW_VIEW,
   /* Paints treeheader cells */
   MOZ_GTK_TREE_HEADER_CELL,
-  /* Paints sort arrows in treeheader cells */
-  MOZ_GTK_TREE_HEADER_SORTARROW,
   /* Paints an expander for a GtkTreeView */
   MOZ_GTK_TREEVIEW_EXPANDER,
   /* Paints the background of menus, context menus. */

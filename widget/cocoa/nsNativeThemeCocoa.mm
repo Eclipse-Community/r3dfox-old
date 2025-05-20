@@ -1019,6 +1019,7 @@ static bool IsToolbarStyleContainer(nsIFrame* aFrame) {
   }
 
   switch (aFrame->StyleDisplay()->EffectiveAppearance()) {
+    case StyleAppearance::Toolbar:
     case StyleAppearance::Statusbar:
       return true;
     default:
@@ -2407,6 +2408,11 @@ Maybe<nsNativeThemeCocoa::WidgetInfo> nsNativeThemeCocoa::ComputeWidgetInfo(
   NS_OBJC_END_TRY_BLOCK_RETURN(Nothing());
 }
 
+static bool IsWidgetNonNative(StyleAppearance aAppearance) {
+  return nsNativeTheme::IsWidgetScrollbarPart(aAppearance) ||
+         aAppearance == StyleAppearance::FocusOutline;
+}
+
 NS_IMETHODIMP
 nsNativeThemeCocoa::DrawWidgetBackground(gfxContext* aContext, nsIFrame* aFrame,
                                          StyleAppearance aAppearance,
@@ -2415,9 +2421,9 @@ nsNativeThemeCocoa::DrawWidgetBackground(gfxContext* aContext, nsIFrame* aFrame,
                                          DrawOverflow aDrawOverflow) {
   NS_OBJC_BEGIN_TRY_BLOCK_RETURN;
 
-  if (IsWidgetAlwaysNonNative(aFrame, aAppearance)) {
-    return ThemeCocoa::DrawWidgetBackground(aContext, aFrame, aAppearance,
-                                            aRect, aDirtyRect, aDrawOverflow);
+  if (IsWidgetNonNative(aAppearance)) {
+    return ThemeCocoa::DrawWidgetBackground(aContext, aFrame, aAppearance, aRect, aDirtyRect,
+                                            aDrawOverflow);
   }
 
   Maybe<WidgetInfo> widgetInfo = ComputeWidgetInfo(aFrame, aAppearance, aRect);
@@ -2636,9 +2642,9 @@ bool nsNativeThemeCocoa::CreateWebRenderCommandsForWidget(
     const mozilla::layers::StackingContextHelper& aSc,
     mozilla::layers::RenderRootStateManager* aManager, nsIFrame* aFrame,
     StyleAppearance aAppearance, const nsRect& aRect) {
-  if (IsWidgetAlwaysNonNative(aFrame, aAppearance)) {
-    return ThemeCocoa::CreateWebRenderCommandsForWidget(
-        aBuilder, aResources, aSc, aManager, aFrame, aAppearance, aRect);
+  if (IsWidgetNonNative(aAppearance)) {
+    return ThemeCocoa::CreateWebRenderCommandsForWidget(aBuilder, aResources, aSc, aManager, aFrame,
+                                                        aAppearance, aRect);
   }
 
   // This list needs to stay consistent with the list in DrawWidgetBackground.
@@ -2662,6 +2668,7 @@ bool nsNativeThemeCocoa::CreateWebRenderCommandsForWidget(
     case StyleAppearance::SpinnerDownbutton:
     case StyleAppearance::Toolbarbutton:
     case StyleAppearance::Separator:
+    case StyleAppearance::Toolbar:
     case StyleAppearance::MozWindowTitlebar:
     case StyleAppearance::Statusbar:
     case StyleAppearance::Menulist:
@@ -2709,12 +2716,9 @@ static const LayoutDeviceIntMargin kAquaComboboxBorder(3, 20, 3, 4);
 static const LayoutDeviceIntMargin kAquaSearchfieldBorder(3, 5, 2, 19);
 static const LayoutDeviceIntMargin kAquaSearchfieldBorderBigSur(5, 5, 4, 26);
 
-LayoutDeviceIntMargin nsNativeThemeCocoa::GetWidgetBorder(
-    nsDeviceContext* aContext, nsIFrame* aFrame, StyleAppearance aAppearance) {
-  if (IsWidgetAlwaysNonNative(aFrame, aAppearance)) {
-    return Theme::GetWidgetBorder(aContext, aFrame, aAppearance);
-  }
-
+LayoutDeviceIntMargin nsNativeThemeCocoa::GetWidgetBorder(nsDeviceContext* aContext,
+                                                          nsIFrame* aFrame,
+                                                          StyleAppearance aAppearance) {
   LayoutDeviceIntMargin result;
 
   NS_OBJC_BEGIN_TRY_BLOCK_RETURN;
@@ -2805,10 +2809,6 @@ bool nsNativeThemeCocoa::GetWidgetPadding(nsDeviceContext* aContext,
                                           nsIFrame* aFrame,
                                           StyleAppearance aAppearance,
                                           LayoutDeviceIntMargin* aResult) {
-  if (IsWidgetAlwaysNonNative(aFrame, aAppearance)) {
-    return Theme::GetWidgetPadding(aContext, aFrame, aAppearance, aResult);
-  }
-
   // We don't want CSS padding being used for certain widgets.
   // See bug 381639 for an example of why.
   switch (aAppearance) {
@@ -2832,13 +2832,10 @@ bool nsNativeThemeCocoa::GetWidgetPadding(nsDeviceContext* aContext,
   return false;
 }
 
-bool nsNativeThemeCocoa::GetWidgetOverflow(nsDeviceContext* aContext,
-                                           nsIFrame* aFrame,
-                                           StyleAppearance aAppearance,
-                                           nsRect* aOverflowRect) {
-  if (IsWidgetAlwaysNonNative(aFrame, aAppearance)) {
-    return ThemeCocoa::GetWidgetOverflow(aContext, aFrame, aAppearance,
-                                         aOverflowRect);
+bool nsNativeThemeCocoa::GetWidgetOverflow(nsDeviceContext* aContext, nsIFrame* aFrame,
+                                           StyleAppearance aAppearance, nsRect* aOverflowRect) {
+  if (IsWidgetNonNative(aAppearance)) {
+    return ThemeCocoa::GetWidgetOverflow(aContext, aFrame, aAppearance, aOverflowRect);
   }
   nsIntMargin overflow;
   switch (aAppearance) {
@@ -2902,7 +2899,7 @@ LayoutDeviceIntSize nsNativeThemeCocoa::GetMinimumWidgetSize(
     StyleAppearance aAppearance) {
   NS_OBJC_BEGIN_TRY_BLOCK_RETURN;
 
-  if (IsWidgetAlwaysNonNative(aFrame, aAppearance)) {
+  if (IsWidgetNonNative(aAppearance)) {
     return ThemeCocoa::GetMinimumWidgetSize(aPresContext, aFrame, aAppearance);
   }
 
@@ -3046,6 +3043,9 @@ nsNativeThemeCocoa::WidgetStateChanged(nsIFrame* aFrame,
   // Some widget types just never change state.
   switch (aAppearance) {
     case StyleAppearance::MozWindowTitlebar:
+    case StyleAppearance::MozSidebar:
+    case StyleAppearance::Toolbox:
+    case StyleAppearance::Toolbar:
     case StyleAppearance::Statusbar:
     case StyleAppearance::Tooltip:
     case StyleAppearance::Tabpanels:
@@ -3095,7 +3095,7 @@ nsNativeThemeCocoa::ThemeChanged() {
 bool nsNativeThemeCocoa::ThemeSupportsWidget(nsPresContext* aPresContext,
                                              nsIFrame* aFrame,
                                              StyleAppearance aAppearance) {
-  if (IsWidgetAlwaysNonNative(aFrame, aAppearance)) {
+  if (IsWidgetNonNative(aAppearance)) {
     return ThemeCocoa::ThemeSupportsWidget(aPresContext, aFrame, aAppearance);
   }
   // if this is a dropdown button in a combobox the answer is always no
@@ -3128,6 +3128,7 @@ bool nsNativeThemeCocoa::ThemeSupportsWidget(nsPresContext* aPresContext,
     case StyleAppearance::MozMacWindow:
     case StyleAppearance::Button:
     case StyleAppearance::Toolbarbutton:
+    case StyleAppearance::Toolbar:
     case StyleAppearance::Spinner:
     case StyleAppearance::SpinnerUpbutton:
     case StyleAppearance::SpinnerDownbutton:
@@ -3137,6 +3138,7 @@ bool nsNativeThemeCocoa::ThemeSupportsWidget(nsPresContext* aPresContext,
     case StyleAppearance::Textfield:
     case StyleAppearance::Textarea:
     case StyleAppearance::Searchfield:
+    case StyleAppearance::Toolbox:
     case StyleAppearance::ProgressBar:
     case StyleAppearance::Progresschunk:
     case StyleAppearance::Meter:
@@ -3219,6 +3221,7 @@ bool nsNativeThemeCocoa::WidgetAppearanceDependsOnWindowFocus(
     case StyleAppearance::SpinnerUpbutton:
     case StyleAppearance::SpinnerDownbutton:
     case StyleAppearance::Separator:
+    case StyleAppearance::Toolbox:
     case StyleAppearance::NumberInput:
     case StyleAppearance::PasswordInput:
     case StyleAppearance::Textfield:
@@ -3253,6 +3256,7 @@ nsITheme::Transparency nsNativeThemeCocoa::GetWidgetTransparency(
   switch (aAppearance) {
     case StyleAppearance::Menupopup:
     case StyleAppearance::Tooltip:
+    case StyleAppearance::Toolbar:
       return eTransparent;
     case StyleAppearance::MozMacWindow:
       // We want these to be treated as opaque by Gecko. We ensure there's an

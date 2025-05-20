@@ -762,9 +762,6 @@ void DXGIYCbCrTextureData::GetSubDescriptor(
 }
 
 void DXGIYCbCrTextureData::Deallocate(LayersIPCChannel*) {
-  mD3D9Textures[0] = nullptr;
-  mD3D9Textures[1] = nullptr;
-  mD3D9Textures[2] = nullptr;
   mD3D11Textures[0] = nullptr;
   mD3D11Textures[1] = nullptr;
   mD3D11Textures[2] = nullptr;
@@ -834,7 +831,7 @@ static RefPtr<ID3D11Texture2D> OpenSharedD3D11Texture(
       (HANDLE)handle, __uuidof(ID3D11Texture2D),
       (void**)(ID3D11Texture2D**)getter_AddRefs(tex));
   if (FAILED(hr)) {
-    gfxCriticalNote << "Error code from OpenSharedResource1: " << gfx::hexa(hr);
+    gfxCriticalNote << "Error code from OpenSharedResource: " << gfx::hexa(hr);
     return nullptr;
   }
 

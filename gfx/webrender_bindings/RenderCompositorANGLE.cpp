@@ -203,8 +203,24 @@ HWND RenderCompositorANGLE::GetCompositorHwnd() {
   return hwnd;
 }
 
-bool RenderCompositorANGLE::CreateSwapChainForHWND() {
-  RefPtr<IDXGIFactory> dxgiFactory = DXGIFactory();
+bool RenderCompositorANGLE::CreateSwapChain(nsACString& aError) {
+  MOZ_ASSERT(!UseCompositor());
+
+  mFirstPresent = true;
+  HWND hwnd = mWidget->AsWindows()->GetHwnd();
+
+  RefPtr<IDXGIDevice> dxgiDevice;
+  mDevice->QueryInterface((IDXGIDevice**)getter_AddRefs(dxgiDevice));
+
+  RefPtr<IDXGIFactory> dxgiFactory;
+  {
+    RefPtr<IDXGIAdapter> adapter;
+    dxgiDevice->GetAdapter(getter_AddRefs(adapter));
+
+    adapter->GetParent(
+        IID_PPV_ARGS((IDXGIFactory**)getter_AddRefs(dxgiFactory)));
+  }
+
   RefPtr<IDXGIFactory2> dxgiFactory2;
   HRESULT hr = dxgiFactory->QueryInterface(
       (IDXGIFactory2**)getter_AddRefs(dxgiFactory2));
@@ -212,8 +228,14 @@ bool RenderCompositorANGLE::CreateSwapChainForHWND() {
     dxgiFactory2 = nullptr;
   }
 
-  HWND hwnd = mWidget->AsWindows()->GetHwnd();
-  if (dxgiFactory2) {
+  CreateSwapChainForDCompIfPossible(dxgiFactory2);
+  if (gfx::gfxVars::UseWebRenderDCompWin() && !mSwapChain) {
+    MOZ_ASSERT(GetCompositorHwnd());
+    aError.Assign("RcANGLE(create swapchain for dcomp failed)"_ns);
+    return false;
+  }
+
+  if (!mSwapChain && dxgiFactory2) {
     RefPtr<IDXGISwapChain1> swapChain1;
     bool useTripleBuffering = false;
 
@@ -224,6 +246,7 @@ bool RenderCompositorANGLE::CreateSwapChainForHWND() {
     desc.SampleDesc.Count = 1;
     desc.SampleDesc.Quality = 0;
     desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+
     bool useFlipSequential = gfx::gfxVars::UseWebRenderFlipSequentialWin();
     if (useFlipSequential && !mWidget->AsWindows()->GetCompositorHwnd()) {
       useFlipSequential = false;
@@ -254,80 +277,63 @@ bool RenderCompositorANGLE::CreateSwapChainForHWND() {
       mSwapChain = swapChain1;
       mSwapChain1 = swapChain1;
       mUseTripleBuffering = useTripleBuffering;
-      return true;
-    }
-    if (useFlipSequential) {
+    } else if (useFlipSequential) {
       gfxCriticalNoteOnce << "FLIP_SEQUENTIAL is not supported. Fallback";
     }
   }
 
-  if (mWidget->AsWindows()->GetCompositorHwnd()) {
-    // Destroy compositor window.
-    mWidget->AsWindows()->DestroyCompositorWindow();
-    hwnd = mWidget->AsWindows()->GetHwnd();
-  }
+  if (!mSwapChain) {
+    if (mWidget->AsWindows()->GetCompositorHwnd()) {
+      // Destroy compositor window.
+      mWidget->AsWindows()->DestroyCompositorWindow();
+      hwnd = mWidget->AsWindows()->GetHwnd();
+    }
 
-  DXGI_SWAP_CHAIN_DESC swapDesc{};
-  swapDesc.BufferDesc.Width = 0;
-  swapDesc.BufferDesc.Height = 0;
-  swapDesc.BufferDesc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
-  swapDesc.BufferDesc.RefreshRate.Numerator = 60;
-  swapDesc.BufferDesc.RefreshRate.Denominator = 1;
-  swapDesc.SampleDesc.Count = 1;
-  swapDesc.SampleDesc.Quality = 0;
-  swapDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-  swapDesc.BufferCount = 1;
-  swapDesc.OutputWindow = hwnd;
-  swapDesc.Windowed = TRUE;
-  swapDesc.Flags = 0;
-  swapDesc.SwapEffect = DXGI_SWAP_EFFECT_SEQUENTIAL;
+    DXGI_SWAP_CHAIN_DESC swapDesc{};
+    swapDesc.BufferDesc.Width = 0;
+    swapDesc.BufferDesc.Height = 0;
+    swapDesc.BufferDesc.Format = DXGI_FORMAT_B8G8R8A8_UNORM;
+    swapDesc.BufferDesc.RefreshRate.Numerator = 60;
+    swapDesc.BufferDesc.RefreshRate.Denominator = 1;
+    swapDesc.SampleDesc.Count = 1;
+    swapDesc.SampleDesc.Quality = 0;
+    swapDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+    swapDesc.BufferCount = 1;
+    swapDesc.OutputWindow = hwnd;
+    swapDesc.Windowed = TRUE;
+    swapDesc.Flags = 0;
+    swapDesc.SwapEffect = DXGI_SWAP_EFFECT_SEQUENTIAL;
 
-  hr = dxgiFactory->CreateSwapChain(DXGIDevice().get(), &swapDesc,
-                                    getter_AddRefs(mSwapChain));
-  if (FAILED(hr)) {
-    return false;
-  }
+    HRESULT hr = dxgiFactory->CreateSwapChain(dxgiDevice, &swapDesc,
+                                              getter_AddRefs(mSwapChain));
+    if (FAILED(hr)) {
+      aError.Assign(
+          nsPrintfCString("RcANGLE(swap chain create failed %lx)", hr));
+      return false;
+    }
 
-  RefPtr<IDXGISwapChain1> swapChain1;
-  hr =
-      mSwapChain->QueryInterface((IDXGISwapChain1**)getter_AddRefs(swapChain1));
-  if (SUCCEEDED(hr)) {
+    RefPtr<IDXGISwapChain1> swapChain1;
+    hr = mSwapChain->QueryInterface(
+        (IDXGISwapChain1**)getter_AddRefs(swapChain1));
+    if (SUCCEEDED(hr)) {
       mSwapChain1 = swapChain1;
-  } else {
-    mSwapChain1 = nullptr;
-  }
-  return true;
-}
-
-bool RenderCompositorANGLE::CreateSwapChain(nsACString& aError) {
-  MOZ_ASSERT(!UseCompositor());
-
-  mFirstPresent = true;
-  CreateSwapChainForDCompIfPossible();
-  if (gfx::gfxVars::UseWebRenderDCompWin() && !mSwapChain) {
-    MOZ_ASSERT(GetCompositorHwnd());
-    aError.Assign("RcANGLE(create swapchain for dcomp failed)"_ns);
-    return false;
-  }
-
-  if (!mSwapChain && !CreateSwapChainForHWND()) {
-    aError.Assign("RcANGLE(swap chain create failed)"_ns);
-    return false;
+    }
   }
 
   // We need this because we don't want DXGI to respond to Alt+Enter.
-  HWND hwnd = mWidget->AsWindows()->GetHwnd();
-  DXGIFactory()->MakeWindowAssociation(hwnd, DXGI_MWA_NO_WINDOW_CHANGES);
+  dxgiFactory->MakeWindowAssociation(hwnd, DXGI_MWA_NO_WINDOW_CHANGES);
 
   if (!ResizeBufferIfNeeded()) {
     aError.Assign("RcANGLE(resize buffer failed)"_ns);
     return false;
   }
+
   return true;
 }
 
-void RenderCompositorANGLE::CreateSwapChainForDCompIfPossible() {
-  if (!mDCLayerTree) {
+void RenderCompositorANGLE::CreateSwapChainForDCompIfPossible(
+    IDXGIFactory2* aDXGIFactory2) {
+  if (!aDXGIFactory2 || !mDCLayerTree) {
     return;
   }
 
@@ -344,7 +350,7 @@ void RenderCompositorANGLE::CreateSwapChainForDCompIfPossible() {
 
   // When compositor is enabled, CompositionSurface is used for rendering.
   // It does not support triple buffering.
-  const bool useTripleBuffering =
+  bool useTripleBuffering =
       gfx::gfxVars::UseWebRenderTripleBufferingWin() && !UseCompositor();
   // Non Glass window is common since Windows 10.
   bool useAlpha = false;
@@ -357,35 +363,28 @@ void RenderCompositorANGLE::CreateSwapChainForDCompIfPossible() {
     mUseAlpha = useAlpha;
     mDCLayerTree->SetDefaultSwapChain(swapChain1);
   } else {
-    // Clear DCLayerTree on falire
+    // Clear CLayerTree on falire
     mDCLayerTree = nullptr;
   }
 }
 
-RefPtr<IDXGIDevice> RenderCompositorANGLE::DXGIDevice() {
-  RefPtr<IDXGIDevice> dxgiDevice;
-  mDevice->QueryInterface((IDXGIDevice**)getter_AddRefs(dxgiDevice));
-  return dxgiDevice;
-}
-
-RefPtr<IDXGIFactory> RenderCompositorANGLE::DXGIFactory() {
-  RefPtr<IDXGIAdapter> adapter;
-  DXGIDevice()->GetAdapter(getter_AddRefs(adapter));
-
-  RefPtr<IDXGIFactory> dxgiFactory;
-  adapter->GetParent(IID_PPV_ARGS((IDXGIFactory**)getter_AddRefs(dxgiFactory)));
-  return dxgiFactory;
-}
-
 RefPtr<IDXGISwapChain1> RenderCompositorANGLE::CreateSwapChainForDComp(
     bool aUseTripleBuffering, bool aUseAlpha) {
+  HRESULT hr;
   RefPtr<IDXGIDevice> dxgiDevice;
   mDevice->QueryInterface((IDXGIDevice**)getter_AddRefs(dxgiDevice));
 
-  RefPtr<IDXGIFactory> dxgiFactory = DXGIFactory();
+  RefPtr<IDXGIFactory> dxgiFactory;
+  {
+    RefPtr<IDXGIAdapter> adapter;
+    dxgiDevice->GetAdapter(getter_AddRefs(adapter));
+
+    adapter->GetParent(
+        IID_PPV_ARGS((IDXGIFactory**)getter_AddRefs(dxgiFactory)));
+  }
 
   RefPtr<IDXGIFactory2> dxgiFactory2;
-  HRESULT hr = dxgiFactory->QueryInterface(
+  hr = dxgiFactory->QueryInterface(
       (IDXGIFactory2**)getter_AddRefs(dxgiFactory2));
   if (FAILED(hr)) {
     return nullptr;
@@ -878,11 +877,29 @@ void RenderCompositorANGLE::Bind(wr::NativeTileId aId,
 
 void RenderCompositorANGLE::Unbind() { mDCLayerTree->Unbind(); }
 
+void RenderCompositorANGLE::BindSwapChain(wr::NativeSurfaceId aId) {
+  mDCLayerTree->BindSwapChain(aId);
+}
+void RenderCompositorANGLE::PresentSwapChain(wr::NativeSurfaceId aId) {
+  mDCLayerTree->PresentSwapChain(aId);
+}
+
 void RenderCompositorANGLE::CreateSurface(wr::NativeSurfaceId aId,
                                           wr::DeviceIntPoint aVirtualOffset,
                                           wr::DeviceIntSize aTileSize,
                                           bool aIsOpaque) {
   mDCLayerTree->CreateSurface(aId, aVirtualOffset, aTileSize, aIsOpaque);
+}
+
+void RenderCompositorANGLE::CreateSwapChainSurface(wr::NativeSurfaceId aId,
+                                                   wr::DeviceIntSize aSize,
+                                                   bool aIsOpaque) {
+  mDCLayerTree->CreateSwapChainSurface(aId, aSize, aIsOpaque);
+}
+
+void RenderCompositorANGLE::ResizeSwapChainSurface(wr::NativeSurfaceId aId,
+                                                   wr::DeviceIntSize aSize) {
+  mDCLayerTree->ResizeSwapChainSurface(aId, aSize);
 }
 
 void RenderCompositorANGLE::CreateExternalSurface(wr::NativeSurfaceId aId,
@@ -945,8 +962,7 @@ void RenderCompositorANGLE::EnableNativeCompositor(bool aEnable) {
   DestroyEGLSurface();
   mBufferSize.reset();
 
-  if (mDCLayerTree) {
-    RefPtr<IDXGISwapChain1> swapChain1 =
+  RefPtr<IDXGISwapChain1> swapChain1 =
       CreateSwapChainForDComp(mUseTripleBuffering, useAlpha);
   if (swapChain1) {
     mSwapChain = swapChain1;
@@ -962,11 +978,6 @@ void RenderCompositorANGLE::EnableNativeCompositor(bool aEnable) {
     gfxCriticalNote << "Failed to re-create SwapChain";
     RenderThread::Get()->HandleWebRenderError(WebRenderError::NEW_SURFACE);
     return;
-   }
-  } else {
-    if (NS_WARN_IF(!CreateSwapChainForHWND())) {
-      return;
-    }
   }
   mDisablingNativeCompositor = true;
 }

@@ -87,14 +87,3 @@ menuitem:is([default="true"], .spell-suggestion),
 menucaption {
   font-weight: bold;
 }
-
-/* ..... menu arrow box ..... */
-
-.menu-right {
-  appearance: auto;
-  -moz-default-appearance: menuarrow;
-  margin-inline-end: -2px;
-  list-style-image: none;
-  width: 1.28em;
-  padding-top: 1px;
-}

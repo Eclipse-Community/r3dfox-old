@@ -2792,15 +2792,19 @@ bool nsWindow::UpdateNonClientMargins(bool aReflowWindow) {
         mNonClientOffset.bottom -= kHiddenTaskbarSize;
       }
 
-      // On Windows 10+, when we are drawing the non-client region, we need
+      // When we are drawing the non-client region, we need
       // to clear the portion of the NC region that is exposed by the
       // hidden taskbar.  As above, we clear the bottom of the NC region
       // when the taskbar is at the top of the screen.
-      if (IsWin10OrLater()) {
-        UINT clearEdge = (edge == ABE_TOP) ? ABE_BOTTOM : edge;
-        mClearNCEdge = Some(clearEdge);
-      }
+      UINT clearEdge = (edge == ABE_TOP) ? ABE_BOTTOM : edge;
+      mClearNCEdge = Some(clearEdge);
     }
+  } else if (mPIPWindow &&
+             !StaticPrefs::widget_windows_pip_decorations_enabled()) {
+    mNonClientOffset.top = mVertResizeMargin + mCaptionHeight;
+    mNonClientOffset.bottom = mVertResizeMargin;
+    mNonClientOffset.left = mHorResizeMargin;
+    mNonClientOffset.right = mHorResizeMargin;
   } else {
     mNonClientOffset = NormalWindowNonClientOffset();
   }

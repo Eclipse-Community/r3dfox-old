@@ -77,7 +77,7 @@
 
   --card-padding: 16px;
 
-  -moz-theme: non-native;
+  /*-moz-theme: non-native;*/
   color-scheme: light dark;
   @media not (forced-colors) {
     accent-color: var(--color-accent-primary);
@@ -500,7 +500,7 @@ xul|menulist > xul|menupopup {
 
   --panel-border-color: var(--in-content-box-border-color);
   --panel-border-radius: 2px;
-  --panel-background: var(--background-color-box);
+  --panel-background: var(--in-content-table-background);
   --panel-color: var(--in-content-text-color);
   --panel-padding: 0;
 }

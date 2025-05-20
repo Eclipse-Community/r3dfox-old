@@ -270,10 +270,10 @@ bool Gecko_MediaFeatures_MatchesPlatform(StylePlatform aPlatform) {
       if ((!doesOverride && IsWin8OrLater()) || overridePref == 8) {
         return aPlatform == StylePlatform::WindowsWin8;
       }
-      if ((!doesOverride && IsVistaOrLater()) || overridePref == 7) {
-        return aPlatform == StylePlatform::WindowsWin7;
+      if ((!doesOverride && !IsVistaOrLater()) || overridePref == 5) {
+        return aPlatform == StylePlatform::WindowsWinXP;
       }
-      return aPlatform == StylePlatform::WindowsWinXP;
+      return aPlatform == StylePlatform::WindowsWin7;
     }
 #elif defined(ANDROID)
     case StylePlatform::Android:

@@ -492,11 +492,7 @@ bool LookAndFeel::WindowsNonNativeMenusEnabled() {
     case 1:
       return true;
     default:
-#ifdef XP_WIN
-      return IsWin10OrLater();
-#else
       return false;
-#endif
   }
 }
 

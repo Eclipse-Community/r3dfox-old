@@ -651,6 +651,10 @@ fn eval_scripting(context: &Context, query_value: Option<Scripting>) -> bool {
     }
 }
 
+fn eval_moz_native_controls(_context: &Context) -> bool {
+    true
+}
+
 fn eval_moz_windows_non_native_menus(context: &Context) -> bool {
     unsafe { bindings::Gecko_MediaFeatures_WindowsNonNativeMenus(context.device().document()) }
 }
@@ -706,7 +710,7 @@ macro_rules! lnf_int_feature {
 /// to support new types in these entries and (2) ensuring that either
 /// nsPresContext::MediaFeatureValuesChanged is called when the value that
 /// would be returned by the evaluator function could change.
-pub static MEDIA_FEATURES: [QueryFeatureDescription; 65] = [
+pub static MEDIA_FEATURES: [QueryFeatureDescription; 66] = [
     feature!(
         atom!("width"),
         AllowsRanges::Yes,
@@ -986,6 +990,13 @@ pub static MEDIA_FEATURES: [QueryFeatureDescription; 65] = [
         atom!("-moz-overlay-scrollbars"),
         AllowsRanges::No,
         Evaluator::BoolInteger(eval_moz_overlay_scrollbars),
+        FeatureFlags::CHROME_AND_UA_ONLY,
+    ),
+    // Custom feature for native controls patch for userstyles to detect it:
+    feature!(
+        atom!("-moz-native-controls"),
+        AllowsRanges::No,
+        Evaluator::BoolInteger(eval_moz_native_controls),
         FeatureFlags::CHROME_AND_UA_ONLY,
     ),
     lnf_int_feature!(

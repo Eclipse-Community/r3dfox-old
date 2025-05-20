@@ -211,6 +211,9 @@ nsresult nsLookAndFeel::NativeGetColor(ColorID aID, ColorScheme aScheme,
     case ColorID::MozButtonhoverface:
     case ColorID::MozButtonactiveface:
     case ColorID::MozButtondisabledface:
+    case ColorID::MozColheader:
+    case ColorID::MozColheaderhover:
+    case ColorID::MozColheaderactive:
       idx = COLOR_BTNFACE;
       break;
     case ColorID::Buttonhighlight:
@@ -384,6 +387,7 @@ nsresult nsLookAndFeel::NativeGetColor(ColorID aID, ColorScheme aScheme,
     case ColorID::MozDialogtext:
     case ColorID::MozColheadertext:
     case ColorID::MozColheaderhovertext:
+    case ColorID::MozColheaderactivetext:
       idx = COLOR_WINDOWTEXT;
       break;
     case ColorID::MozButtondefault:
@@ -856,11 +860,26 @@ auto nsLookAndFeel::ComputeTitlebarColors() -> TitlebarColors {
                            GetColorForSysColorIndex(COLOR_INACTIVECAPTIONTEXT),
                            GetColorForSysColorIndex(COLOR_INACTIVEBORDER)};
 
-  // Foreground and background taken from Windows Mica material theme colors.
-  result.mActiveDark = {NS_RGB(0x2e, 0x2e, 0x2e), NS_RGB(0xff, 0xff, 0xff),
-                        NS_RGB(57, 57, 57)};
-  result.mInactiveDark = {NS_RGB(0x33, 0x33, 0x33), NS_RGB(0xff, 0xff, 0xff),
-                          NS_RGB(57, 57, 57)};
+  if (!nsUXThemeData::IsHighContrastOn()) {
+    // Use our non-native colors.
+    result.mActiveLight = {
+        GetStandinForNativeColor(ColorID::Activecaption, ColorScheme::Light),
+        GetStandinForNativeColor(ColorID::Captiontext, ColorScheme::Light),
+        GetStandinForNativeColor(ColorID::Activeborder, ColorScheme::Light)};
+    result.mInactiveLight = {
+        GetStandinForNativeColor(ColorID::Inactivecaption, ColorScheme::Light),
+        GetStandinForNativeColor(ColorID::Inactivecaptiontext,
+                                 ColorScheme::Light),
+        GetStandinForNativeColor(ColorID::Inactiveborder, ColorScheme::Light)};
+  }
+
+  // Our dark colors are always non-native.
+  result.mActiveDark = {*GenericDarkColor(ColorID::Activecaption),
+                        *GenericDarkColor(ColorID::Captiontext),
+                        *GenericDarkColor(ColorID::Activeborder)};
+  result.mInactiveDark = {*GenericDarkColor(ColorID::Inactivecaption),
+                          *GenericDarkColor(ColorID::Inactivecaptiontext),
+                          *GenericDarkColor(ColorID::Inactiveborder)};
 
   // TODO(bug 1825241): Somehow get notified when this changes? Hopefully the
   // sys color notification is enough.

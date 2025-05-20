@@ -2207,7 +2207,8 @@ bool nsNativeThemeWin::GetWidgetPadding(nsDeviceContext* aContext,
     // adding padding to the top of the window that is the size of the caption
     // area and then "removing" it when calculating the client area for
     // WM_NCCALCSIZE.  See bug 618353,
-    if (!IsWin10OrLater() &&
+
+    if (!StaticPrefs::widget_windows_style_modern() &&
         aAppearance == StyleAppearance::MozWindowTitlebarMaximized) {
       nsCOMPtr<nsIWidget> rootWidget;
       if (WinUtils::HasSystemMetricsForDpi()) {
@@ -2574,15 +2575,7 @@ LayoutDeviceIntSize nsNativeThemeWin::GetMinimumWidgetSize(
       result.height = GetSystemMetrics(SM_CYCAPTION);
       result.height += GetSystemMetrics(SM_CYFRAME);
       result.height += GetSystemMetrics(SM_CXPADDEDBORDER);
-      // On Win8.1, we don't want this scaling, because Windows doesn't scale
-      // the non-client area of the window, and we can end up with ugly overlap
-      // of the window frame controls into the tab bar or content area. But on
-      // Win10, we render the window controls ourselves, and the result looks
-      // better if we do apply this scaling (particularly with themes such as
-      // DevEdition; see bug 1267636).
-      if (IsWin10OrLater()) {
-        ScaleForFrameDPI(&result, aFrame);
-      }
+      ScaleForFrameDPI(&result, aFrame);
       return result;
     }
 

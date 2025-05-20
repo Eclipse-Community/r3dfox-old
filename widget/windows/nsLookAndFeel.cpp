@@ -15,7 +15,6 @@
 #include "WindowsUIUtils.h"
 #include "mozilla/FontPropertyTypes.h"
 #include "mozilla/Telemetry.h"
-#include "mozilla/WindowsVersion.h"
 #include "mozilla/widget/WinRegistry.h"
 
 // -- native controls patch includes --
@@ -42,10 +41,6 @@ static int32_t GetSystemParam(long flag, int32_t def) {
 }
 
 static bool SystemWantsDarkTheme() {
-  if (!IsWin10OrLater()) {
-    return false;
-  }
-
   if (nsUXThemeData::IsHighContrastOn()) {
     return LookAndFeel::IsDarkColor(
         LookAndFeel::Color(StyleSystemColor::Window, ColorScheme::Light,

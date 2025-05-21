@@ -10,7 +10,7 @@
   "name": "System theme — auto",
   "description": "Follow the operating system setting for buttons, menus, and windows.",
   "author": "Mozilla",
-  "version": "1.4",
+  "version": "1.4.1",
 
   "icons": { "32": "icon.svg" },
 

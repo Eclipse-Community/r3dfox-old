@@ -47,6 +47,10 @@
 #endif
 #include "VsyncSource.h"
 
+// -- native controls patch includes --
+#include "mozilla/StaticPrefs_widget.h"
+// -- end native controls patch includes --
+
 using mozilla::Unused;
 using mozilla::gfx::GPUProcessManager;
 
@@ -349,10 +353,19 @@ bool CompositorBridgeChild::SendAdoptChild(const LayersId& id) {
 
 bool CompositorBridgeChild::SendFlushRendering(
     const wr::RenderReasons& aReasons) {
+  bool dwmCompositionEnabled =
+      StaticPrefs::widget_native_controls_force_dwm_report_off()
+          ? false
+          : gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled();
+
   if (!mCanSend) {
     return false;
   }
+  if (!dwmCompositionEnabled) {
   return PCompositorBridgeChild::SendFlushRendering(aReasons);
+  } else {
+  return PCompositorBridgeChild::SendFlushRenderingAsync(aReasons);
+  }
 }
 
 bool CompositorBridgeChild::SendFlushRenderingAsync(

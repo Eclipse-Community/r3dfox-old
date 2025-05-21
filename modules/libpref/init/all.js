@@ -2306,6 +2306,9 @@ pref("font.size.monospace.x-math", 13);
   // making damage to the performance.
   pref("mousewheel.debug.make_window_under_cursor_foreground", false);
 
+  // Bodge tooltip offset for 32 bit builds
+  pref("ui.tooltipOffsetVertical", 21);
+
   // Enables or disabled the TrackPoint hack, -1 is autodetect, 0 is off,
   // and 1 is on.  Set this to 1 if TrackPoint scrolling is not working.
   pref("ui.trackpoint_hack.enabled", -1);

@@ -61,7 +61,6 @@ bool LowerCaseEqualsLiteral(char aModuleChar, char aDetouredChar) {
 }
 
 static bool IsModuleUnsafeToLoad(const std::string& aModuleName) {
-
 #if defined(_M_AMD64) || defined(_M_IX86)
   // Hackaround for Bug 1607574.  Nvidia's shim driver nvd3d9wrap[x].dll detours
   // LoadLibraryExW and it causes AV when the following conditions are met.

@@ -9,8 +9,8 @@ const lazy = {};
 
 ChromeUtils.defineESModuleGetters(lazy, {
   NimbusFeatures: "resource://nimbus/ExperimentAPI.sys.mjs",
-  ASRouter: "resource:///modules/asrouter/ASRouter.sys.mjs",
   WindowsRegistry: "resource://gre/modules/WindowsRegistry.sys.mjs",
+  ASRouter: "resource:///modules/asrouter/ASRouter.sys.mjs",
 });
 
 XPCOMUtils.defineLazyServiceGetter(

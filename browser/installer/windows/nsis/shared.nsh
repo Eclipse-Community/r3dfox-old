@@ -1524,12 +1524,12 @@ ${RemoveDefaultBrowserAgentShortcut}
               InvokeShellVerb::DoIt "$SMPROGRAMS" "$1" "${AppRegName}-$AppUserModelID"
               DeleteRegKey HKCU "Software\Classes\*\shell\${AppRegName}-$AppUserModelID"
             ${Else}
-              ; In Windows 10 1903 and up, and Windows 11 prior to 22H2, the above no
-              ; longer works. We have yet another method for these versions
-              ; which is detailed in the PinToTaskbar plugin code.
-              ${If} ${IsPinningSupportedByWindowsVersionWithoutSystemPopup}
-                PinToTaskbar::Pin "$SMPROGRAMS\$1"
-              ${EndIf}
+            ; In Windows 10 1903 and up, and Windows 11 prior to 22H2, the above no
+            ; longer works. We have yet another method for these versions
+            ; which is detailed in the PinToTaskbar plugin code.
+            ${If} ${IsPinningSupportedByWindowsVersionWithoutSystemPopup}
+              PinToTaskbar::Pin "$SMPROGRAMS\$1"
+            ${EndIf}
             ${EndIf}
 
             ; Delete the shortcut if it was created

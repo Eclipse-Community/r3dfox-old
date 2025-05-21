@@ -2828,7 +2828,6 @@ nsresult nsWindow::SetNonClientMargins(const LayoutDeviceIntMargin& margins) {
     mFutureMarginsToUse = true;
     return NS_OK;
   }
-
   mFutureMarginsToUse = false;
 
   // Request for a reset

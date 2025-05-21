@@ -25,8 +25,7 @@ namespace mozilla {
 namespace wr {
 
 RenderDXGITextureHost::RenderDXGITextureHost(
-    const HANDLE aHandle,
-    const Maybe<layers::GpuProcessTextureId>& aGpuProcessTextureId,
+    const HANDLE aHandle, const Maybe<layers::GpuProcessTextureId>& aGpuProcessTextureId,
     const uint32_t aArrayIndex, const gfx::SurfaceFormat aFormat,
     const gfx::ColorSpace2 aColorSpace, const gfx::ColorRange aColorRange,
     const gfx::IntSize aSize, bool aHasKeyedMutex,

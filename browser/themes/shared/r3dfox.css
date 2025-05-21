@@ -149,23 +149,21 @@
 
 @media (-moz-bool-pref: "r3dfox.aero.fog") {
   @media (-moz-windows-compositor), (-moz-windows-glass) {
-    @media not (-moz-windows-modern) {
-      #navigator-toolbox:not([lwtheme]) {
-        background-color: transparent !important;
+    #navigator-toolbox:not([lwtheme]) {
+      background-color: transparent !important;
+    }
+    #titlebar:not([lwtheme]) {
+      appearance: inherit !important;
+      @media (-moz-bool-pref: "r3dfox.less.aero.fog") {
+        background-image: radial-gradient(ellipse at bottom, rgba(255,255,255,0.8), rgba(255,255,255,0.5) 40%, transparent) !important;
       }
+      @media not (-moz-bool-pref: "r3dfox.less.aero.fog") {
+        background-image: radial-gradient(ellipse at bottom, rgba(255,255,255,0.8), rgba(255,255,255,0.5) 80%, transparent) !important;
+      }
+    }
+    :root[sizemode=maximized] {
       #titlebar:not([lwtheme]) {
-        appearance: inherit !important;
-        @media (-moz-bool-pref: "r3dfox.less.aero.fog") {
-          background-image: radial-gradient(ellipse at bottom, rgba(255,255,255,0.8), rgba(255,255,255,0.5) 40%, transparent) !important;
-        }
-        @media not (-moz-bool-pref: "r3dfox.less.aero.fog") {
-          background-image: radial-gradient(ellipse at bottom, rgba(255,255,255,0.8), rgba(255,255,255,0.5) 80%, transparent) !important;
-        }
-      }
-      :root[sizemode=maximized] {
-        #titlebar:not([lwtheme]) {
-          margin-top: 8px !important;
-        }
+        margin-top: 8px !important;
       }
     }
   }
@@ -245,22 +243,20 @@
 @media (-moz-bool-pref: "r3dfox.translucent.navbar") {
   @media (-moz-bool-pref: "r3dfox.aero.fog") {
     @media (-moz-windows-glass) {
-      @media not (-moz-windows-modern) {
+      #titlebar:not([lwtheme]) {
+        appearance: auto !important;
+      }
+      #navigator-toolbox {
+        @media (-moz-bool-pref: "r3dfox.less.aero.fog") {
+          background-image: radial-gradient(ellipse at bottom, rgba(255,255,255,0.8), rgba(255,255,255,0.5) 60%, transparent) !important;
+        }
+        @media not (-moz-bool-pref: "r3dfox.less.aero.fog") {
+          background-image: radial-gradient(ellipse at bottom, rgba(255,255,255,0.8), rgba(255,255,255,0.5) 85%, transparent) !important;
+        }
+      }
+      :root[sizemode=maximized] {
         #titlebar:not([lwtheme]) {
-          appearance: auto !important;
-        }
-        #navigator-toolbox {
-          @media (-moz-bool-pref: "r3dfox.less.aero.fog") {
-            background-image: radial-gradient(ellipse at bottom, rgba(255,255,255,0.8), rgba(255,255,255,0.5) 60%, transparent) !important;
-          }
-          @media not (-moz-bool-pref: "r3dfox.less.aero.fog") {
-            background-image: radial-gradient(ellipse at bottom, rgba(255,255,255,0.8), rgba(255,255,255,0.5) 85%, transparent) !important;
-          }
-        }
-        :root[sizemode=maximized] {
-          #titlebar:not([lwtheme]) {
-            margin-top: 0px !important;
-          }
+          margin-top: 0px !important;
         }
       }
     }

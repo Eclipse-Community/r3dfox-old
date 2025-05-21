@@ -543,7 +543,13 @@ nsresult nsLookAndFeel::NativeGetInt(IntID aID, int32_t& aResult) {
     case IntID::WindowsDefaultTheme:
       aResult = nsUXThemeData::IsDefaultWindowTheme();
       break;
-    case IntID::DWMCompositor:
+    case IntID::DWMCompositor: {
+      int winPref =
+          StaticPrefs::widget_native_controls_override_win_version();
+      if (winPref == 10) {
+        aResult = 1;
+        break;
+      }
       if (StaticPrefs::widget_native_controls_force_dwm_report_off()) {
         aResult = 0;
         break;
@@ -551,6 +557,7 @@ nsresult nsLookAndFeel::NativeGetInt(IntID aID, int32_t& aResult) {
 
       aResult = gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled();
       break;
+    }
     case IntID::WindowsAccentColorInTitlebar:
       aResult = mTitlebarColors.mUseAccent;
       break;
@@ -565,10 +572,15 @@ nsresult nsLookAndFeel::NativeGetInt(IntID aID, int32_t& aResult) {
         aResult = 0;
         break;
       }
+
+      int overrideWinVer =
+          StaticPrefs::widget_native_controls_override_win_version();
+      bool isWin8OrLater =
+          (overrideWinVer == 0 && IsWin8OrLater()) || overrideWinVer >= 8;
+
       // Aero Glass is only available prior to Windows 8 when DWM is used.
-      // Actually not, you can restore it with glass tools
-      // It's just that people don't research anymore... smh
-      aResult = (gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled());
+      aResult = (gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled() &&
+                 !isWin8OrLater);
       break;
     }
     case IntID::WindowsMica:

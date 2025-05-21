@@ -38,15 +38,16 @@
         isolation: isolate;
         position: relative;
         &::before {
-        content: "";
-        position: absolute;
-        top: 0;
-        height: 100%;
-        width: 100%;
-        @media (-moz-bool-pref: "widget.windows-style.show-fog") {
-          background-image: radial-gradient(ellipse at bottom, rgba(255,255,255,0.8), rgba(255,255,255,0.5) 40%, transparent);
+          content: "";
+          position: absolute;
+          top: 0;
+          height: 100%;
+          width: 100%;
+          @media (-moz-bool-pref: "widget.windows-style.show-fog") {
+            background-image: radial-gradient(ellipse at bottom, rgba(255,255,255,0.8), rgba(255,255,255,0.5) 40%, transparent);
+          }
+          z-index: -1;
         }
-        z-index: -1;
       }
     }
   }

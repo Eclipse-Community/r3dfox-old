@@ -238,7 +238,9 @@ void nsUXThemeData::UpdateTitlebarInfo(HWND aWnd) {
   }
 
   // NB: sTitlebarInfoPopulatedThemed is always true pre-vista.
-  if (sTitlebarInfoPopulatedThemed || IsWin8OrLater()) return;
+  if (sTitlebarInfoPopulatedThemed ||
+      (IsWin8OrLater() && dwmCompositionEnabled))
+    return;
 
   // Query a temporary, visible window with command buttons to get
   // the right metrics.

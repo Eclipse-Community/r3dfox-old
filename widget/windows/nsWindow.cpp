@@ -603,7 +603,7 @@ class TIPMessageHandler {
     return static_cast<LRESULT>(TRUE);
   }
 
-  static WindowsDllInterceptor sTipTsfInterceptor;
+  MOZ_RUNINIT static WindowsDllInterceptor sTipTsfInterceptor;
   static WindowsDllInterceptor::FuncHookType<WINEVENTPROC>
       sProcessCaretEventsStub;
   static WindowsDllInterceptor::FuncHookType<decltype(&SendMessageTimeoutW)>

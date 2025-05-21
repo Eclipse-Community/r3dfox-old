@@ -81,6 +81,7 @@ export MOZ_CRASHREPORTER=0
 export MOZ_DATA_REPORTING=0
 export MOZ_REQUIRE_SIGNING=
 export MOZ_TELEMETRY_REPORTING=
+export MOZ_PACKAGE_JSSHELL=1
 
 # Set -Copt-level=3
 export OPT_LEVEL="3"
@@ -105,6 +106,6 @@ export CFLAGS="-Qunused-arguments -O2 -msse2 /clang:-O3"
 export CPPFLAGS="-Qunused-arguments -O2 -msse2 /clang:-O3"
 export CXXFLAGS="-Qunused-arguments -O2 -msse2 /clang:-O3"
 export LDFLAGS="-Wl,-O3 -msse2"
-POLLY="-mllvm -polly -mllvm -polly-2nd-level-tiling -mllvm -polly-loopfusion-greedy -mllvm -polly-pattern-matching-based-opts -mllvm -polly-position=before-vectorizer -mllvm -polly-vectorizer=stripmine"
+export POLLY="-mllvm -polly -mllvm -polly-2nd-level-tiling -mllvm -polly-loopfusion-greedy -mllvm -polly-pattern-matching-based-opts -mllvm -polly-position=before-vectorizer -mllvm -polly-vectorizer=stripmine"
 export RUSTFLAGS="-C target-cpu=athlon64 -C target-feature=+sse2 -C codegen-units=1 -Z tune-cpu=athlon64"
 export VERBOSE=1

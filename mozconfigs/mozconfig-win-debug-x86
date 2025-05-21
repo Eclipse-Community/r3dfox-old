@@ -40,3 +40,4 @@ export CROSS_COMPILE=0
 export MOZ_INCLUDE_SOURCE_INFO=1
 export MOZ_REQUIRE_SIGNING=
 export MOZ_SOURCE_CHANGESET=iloveneedingtobodgechangesetfornoreason
+export MOZ_PACKAGE_JSSHELL=1

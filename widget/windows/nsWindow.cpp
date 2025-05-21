@@ -2746,6 +2746,11 @@ LayoutDeviceIntMargin nsWindow::NormalWindowNonClientOffset() const {
  * or removed entirely.
  */
 bool nsWindow::UpdateNonClientMargins(bool aReflowWindow) {
+  int overrideWinVer =
+      StaticPrefs::widget_native_controls_override_win_version();
+  bool isWin10OrLater =
+      (overrideWinVer == 0 && IsWin10OrLater()) || overrideWinVer >= 10;
+
   if (!mCustomNonClient) {
     return false;
   }
@@ -2831,7 +2836,7 @@ bool nsWindow::UpdateNonClientMargins(bool aReflowWindow) {
     // a new issue where widget edges would sometimes appear to bleed into other
     // displays (bug 1614218).
     int verticalResize = 0;
-    if (IsWin10OrLater()) {
+    if (isWin10OrLater) {
       verticalResize =
           WinUtils::GetSystemMetricsForDpi(SM_CYFRAME, dpi) +
           (hasCaption ? WinUtils::GetSystemMetricsForDpi(SM_CXPADDEDBORDER, dpi)
@@ -2856,7 +2861,7 @@ bool nsWindow::UpdateNonClientMargins(bool aReflowWindow) {
       // to clear the portion of the NC region that is exposed by the
       // hidden taskbar.  As above, we clear the bottom of the NC region
       // when the taskbar is at the top of the screen.
-      if (IsWin10OrLater()) {
+      if (isWin10OrLater) {
         UINT clearEdge = (edge == ABE_TOP) ? ABE_BOTTOM : edge;
         mClearNCEdge = Some(clearEdge);
       }
@@ -4262,6 +4267,9 @@ void nsWindow::UpdateThemeGeometries(
           ? false
           : gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled();
 
+  int winVerOverride =
+      StaticPrefs::widget_native_controls_override_win_version();
+
   RefPtr<WebRenderLayerManager> layerManager =
       GetWindowRenderer() ? GetWindowRenderer()->AsWebRender() : nullptr;
   if (!layerManager) {
@@ -4274,7 +4282,7 @@ void nsWindow::UpdateThemeGeometries(
 
   mWindowButtonsRect = Nothing();
 
-  if (!IsWin10OrLater()) {
+  if (!((winVerOverride == 0 && IsWin10OrLater()) || winVerOverride >= 10)) {
     for (size_t i = 0; i < aThemeGeometries.Length(); i++) {
       if (aThemeGeometries[i].mType ==
           nsNativeThemeWin::eThemeGeometryTypeWindowButtons) {
@@ -5133,6 +5141,11 @@ bool nsWindow::ProcessMessageInternal(UINT msg, WPARAM& wParam, LPARAM& lParam,
           ? false
           : gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled();
 
+  int winVerOverride =
+      StaticPrefs::widget_native_controls_override_win_version();
+  bool isWin10 =
+      (winVerOverride == 0 && IsWin10OrLater()) || winVerOverride >= 10;
+
   MSGResult msgResult(aRetValue);
   if (ExternalHandlerProcessMessage(msg, wParam, lParam, msgResult)) {
     return (msgResult.mConsumed || !mWnd);
@@ -5157,7 +5170,7 @@ bool nsWindow::ProcessMessageInternal(UINT msg, WPARAM& wParam, LPARAM& lParam,
   if (mCustomNonClient && dwmCompositionEnabled &&
       /* We don't do this for win10 glass with a custom titlebar,
        * in order to avoid the caption buttons breaking. */
-      !(IsWin10OrLater() && HasGlass()) &&
+      !(isWin10 && HasGlass()) &&
       DwmDefWindowProc(mWnd, msg, wParam, lParam, &dwmHitResult)) {
     *aRetValue = dwmHitResult;
     return true;

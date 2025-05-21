@@ -350,7 +350,7 @@ static SystemTimeConverter<DWORD>& TimeConverter() {
 // Global event hook for window cloaking. Never deregistered.
 //  - `Nothing` if not yet set.
 //  - `Some(nullptr)` if no attempt should be made to set it.
-static mozilla::Maybe<HWINEVENTHOOK> sWinCloakEventHook =
+MOZ_RUNINIT static mozilla::Maybe<HWINEVENTHOOK> sWinCloakEventHook =
     IsWin8OrLater() ? Nothing() : Some(HWINEVENTHOOK(nullptr));
 static mozilla::LazyLogModule sCloakingLog("DWMCloaking");
 
@@ -601,7 +601,7 @@ class TIPMessageHandler {
     return static_cast<LRESULT>(TRUE);
   }
 
-  static WindowsDllInterceptor sTipTsfInterceptor;
+  MOZ_RUNINIT static WindowsDllInterceptor sTipTsfInterceptor;
   static WindowsDllInterceptor::FuncHookType<WINEVENTPROC>
       sProcessCaretEventsStub;
   static WindowsDllInterceptor::FuncHookType<decltype(&SendMessageTimeoutW)>

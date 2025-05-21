@@ -931,7 +931,7 @@ nsresult nsWindow::Create(nsIWidget* aParent, const LayoutDeviceIntRect& aRect,
   // When window is PiP window on Windows7, WS_EX_COMPOSITED is set to suppress
   // flickering during resizing with hardware acceleration.
   bool isPIPWindow = aInitData && aInitData->mPIPWindow;
-  if (isPIPWindow && IsVistaOrLater() && !IsWin8OrLater() &&
+  if (isPIPWindow && !IsWin8OrLater() &&
       gfxConfig::IsEnabled(gfx::Feature::HW_COMPOSITING) &&
       WidgetTypeSupportsAcceleration()) {
     extendedStyle |= WS_EX_COMPOSITED;

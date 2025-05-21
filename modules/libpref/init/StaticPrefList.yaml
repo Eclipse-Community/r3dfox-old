@@ -18312,13 +18312,7 @@
 # Prefs starting with "widget."
 #---------------------------------------------------------------------------
 
-# Whether enable windows-modern mode for stylesheets
-- name: widget.windows-style.modern
-  type: bool
-  value: false
-  mirror: always
-
-- name: widget.ev-native-controls-patch.override-win-version
+- name: widget.native-controls.override-win-version
   type: int32_t
   value: 0
   mirror: always

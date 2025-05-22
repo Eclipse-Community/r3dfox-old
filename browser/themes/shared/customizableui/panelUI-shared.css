@@ -301,6 +301,7 @@ panelview {
 
 /* Tweaks for menupopups hanging off toolbar buttons to make them feel like panels */
 
+@media (-moz-windows-non-native-menus) {
 .toolbar-menupopup {
   &,
   menupopup {
@@ -402,6 +403,7 @@ panelview {
   width: 100%;
   border-top: 1px solid var(--panel-separator-color);
   border-bottom: none;
+}
 }
 
 #BMB_bookmarksPopup {
@@ -1216,7 +1218,6 @@ panelmultiview[mainViewId="PanelUI-fxa"] #PanelUI-remotetabs-syncnow {
   display: none;
 }
 
-.toolbar-menupopup :is(menu, menuitem),
 .subview-subheader,
 panelview .toolbarbutton-1,
 .subviewbutton,
@@ -1228,6 +1229,18 @@ panelview .toolbarbutton-1,
   border-radius: var(--arrowpanel-menuitem-border-radius);
   background-color: transparent;
   flex-shrink: 0;
+}
+
+@media (-moz-windows-non-native-menus) {
+  .toolbar-menupopup :is(menu, menuitem) {
+    appearance: none;
+    margin: var(--arrowpanel-menuitem-margin);
+    min-height: 24px;
+    padding: var(--arrowpanel-menuitem-padding);
+    border-radius: var(--arrowpanel-menuitem-border-radius);
+    background-color: transparent;
+    flex-shrink: 0;
+  }
 }
 
 .subview-subheader {

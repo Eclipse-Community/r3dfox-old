@@ -8,6 +8,7 @@
 #define nsComboboxControlFrame_h___
 
 #include "mozilla/Attributes.h"
+#include "nsIFormControlFrame.h"
 #include "nsIAnonymousContentCreator.h"
 #include "nsISelectControlFrame.h"
 #include "nsIRollupListener.h"
@@ -70,6 +71,11 @@ class nsComboboxControlFrame final : public nsHTMLButtonControlFrame,
     return MakeFrameName(u"ComboboxControl"_ns, aResult);
   }
 #endif
+
+  // nsIFormControlFrame
+  nsresult SetFormProperty(nsAtom* aName, const nsAString& aValue) final {
+    return NS_OK;
+  }
 
   /**
    * @note This method might destroy |this|.

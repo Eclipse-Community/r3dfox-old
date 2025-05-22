@@ -108,7 +108,6 @@ menuitem {
     text-shadow: none;
   }
 
-@media (-moz-windows-non-native-menus) {
   &:where([_moz-menuactive]:not([disabled="true"])) {
     color: -moz-menuhovertext;
     background-color: -moz-menuhover;
@@ -117,7 +116,6 @@ menuitem {
   &:where([_moz-menuactive="true"][disabled="true"]) {
     background-color: -moz-menuhoverdisabled;
   }
-}
 }
 
 @media (-moz-windows-classic) {

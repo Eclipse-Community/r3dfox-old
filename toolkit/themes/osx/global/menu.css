@@ -108,3 +108,12 @@ menupopup[needsgutter] {
     visibility: inherit;
   }
 }
+
+/* menuseparator */
+
+menuseparator {
+  appearance: auto;
+  -moz-default-appearance: menuseparator;
+  margin: 5px 0;
+  padding: 1px 0;
+}

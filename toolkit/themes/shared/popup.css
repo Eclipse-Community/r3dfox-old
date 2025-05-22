@@ -45,6 +45,12 @@ panel {
   @media (-moz-platform: linux) or (-moz-platform: windows) {
     /* To account for the box-shadow below */
     --panel-shadow-margin: 4px;
+
+    @media not (-moz-windows-non-native-menus) {
+      --panel-shadow: 0 0 var(--panel-shadow-margin) hsla(0,0%,0%,.2);
+      -moz-window-input-region-margin: var(--panel-shadow-margin);
+      margin: calc(-1 * var(--panel-shadow-margin));
+    }
   }
 
   /* On some linux WMs we need to draw square menus because alpha is not available */
@@ -97,9 +103,8 @@ panel {
 
 menupopup {
   /* Also apply the padding in the inline axis for menus */
+@media (-moz-windows-non-native-menus) or (-moz-platform: linux) {
   --panel-padding: var(--panel-padding-block);
-
-@media (-moz-windows-non-native-menus) {
   @media (-moz-platform: windows) {
     > menu,
     > menuitem {
@@ -224,6 +229,14 @@ panel:where([type="arrow"]) {
     &[animating] {
       pointer-events: none;
     }
+  }
+}
+
+@media (-moz-platform: windows) {
+  menulist > menupopup {
+    appearance: none;
+    background-color: transparent;
+    border: none;
   }
 }
 

@@ -7,3 +7,132 @@
   --urlbar-box-focus-bgcolor: var(--button-background-color);
   --urlbar-box-hover-bgcolor: var(--button-background-color-hover);
 }
+
+@media (-moz-platform: windows) {
+  /* The window background is white due to no accentcolor in the lightweight
+     theme. It can't be changed to transparent when there is no compositor
+     (Win 7 in classic / basic theme), or else dragging and focus become
+     broken. So instead just show the normal titlebar in that case, and override
+     the window color as transparent when the compositor is available. */
+  @media not (-moz-windows-compositor) {
+    :root[tabsintitlebar][lwtheme]:not([inDOMFullscreen]) .browser-titlebar {
+      visibility: visible;
+    }
+
+    /* Prevent accent color overriding the window background for
+     * light and dark theme on Aero Basic. This is copied from browser-aero.css. */
+    @media (-moz-windows-default-theme) {
+      :root {
+        background-color: rgb(185,209,234) !important;
+      }
+      :root:-moz-window-inactive {
+        background-color: rgb(215,228,242) !important;
+      }
+    }
+  }
+
+  /* Add a fog for background tabs to be visible on Windows 7 glass window background */
+  @media (-moz-platform: windows-win7) {
+    @media (-moz-windows-default-theme) {
+      #TabsToolbar {
+    isolation: isolate;
+    position: relative;
+       &::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  height: 100%;
+  width: 100%;
+        background-image: radial-gradient(ellipse at bottom, rgba(255,255,255,0.8), rgba(255,255,255,0.5) 80%, transparent);
+  z-index: -1;
+       }
+        color: black;
+        --toolbarbutton-icon-fill: currentColor;
+      }
+    }
+  }
+
+  @media (-moz-platform: windows-win8) {
+    @media (-moz-windows-default-theme) {
+      #TabsToolbar {
+        color: black;
+        --toolbarbutton-icon-fill: currentColor;
+      }
+    }
+    @media not -moz-pref("sidebar.verticalTabs") {
+    #toolbar-menubar {
+      color: black;
+    }
+    }
+  }
+
+  @media (-moz-windows-glass) {
+    @media not -moz-pref("sidebar.verticalTabs") {
+    /* Make the menubar text readable on aero glass (copied from browser-aero.css). */
+    #toolbar-menubar {
+      text-shadow: 0 0 .5em white, 0 0 .5em white, 0 1px 0 rgba(255,255,255,.4);
+    }
+
+    #main-menubar:not(:-moz-window-inactive) {
+      background-color: rgba(255,255,255,.5);
+      color: black;
+      border-radius: 4px;
+    }
+    }
+  }
+
+  @media (-moz-platform: windows-win7),
+         (-moz-platform: windows-win8) {
+    @media (-moz-windows-compositor) {
+      :root {
+        @media not -moz-pref("sidebar.verticalTabs") {
+        background: transparent !important;
+        }
+      }
+
+      /* Remove lwtheme borders from toolbars in non-maximized windows. */
+      #toolbar-menubar,
+      #TabsToolbar {
+        border-inline-style: none !important;
+      }
+    }
+
+    /* Use proper menu text styling in Win7 classic mode. On Windows 8, we use
+       these colors so tabs and menus are legible against the window accent color.
+       These colors are copied from browser.css. */
+    @media not (-moz-windows-compositor),
+           not (-moz-windows-default-theme),
+           (-moz-platform: windows-win8) {
+      :root[tabsintitlebar] {
+        color: CaptionText;
+      }
+
+      :root[tabsintitlebar]:-moz-window-inactive {
+        color: InactiveCaptionText;
+      }
+    }
+  }
+
+  /* Restored windows get an artificial border on windows, because the lwtheme background
+   * overlaps the regular window border. That isn't the case for us, so we avoid painting
+   * over the native border with our custom borders. These are !important to avoid
+   * specificity-wars with the selectors that add these borders. */
+  @media (-moz-windows-classic),
+         not (-moz-windows-compositor) and (-moz-windows-default-theme) {
+    #navigator-toolbox {
+      background-image: none !important;
+    }
+  }
+  @media (-moz-windows-glass) {
+    #navigator-toolbox {
+      border-top: none !important;
+      box-shadow: none !important;
+      padding-top: 0 !important;
+    }
+  }
+  @media (-moz-platform: windows-win8) {
+    #navigator-toolbox {
+      border-top: none !important;
+    }
+  }
+}

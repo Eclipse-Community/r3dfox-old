@@ -47,6 +47,14 @@
      * #sidebar browser. We still need the #sidebar-box background to match the
      * toolbar tho - this background is set on the #browser ancestor rather than here */
   }
+  @media (-moz-platform: windows-win7),
+         (-moz-platform: windows-win8) {
+   @media (-moz-windows-default-theme) {
+    @media -moz-pref("sidebar.verticalTabs") {
+      background-color: -moz-headerbar;
+    }
+   }
+  }
 }
 
 #sidebar-header {

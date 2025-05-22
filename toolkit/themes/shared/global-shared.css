@@ -141,6 +141,7 @@ html|textarea {
   font: inherit;
 }
 
+@media -moz-pref("widget.non-native-theme.enabled") {
 html|input:where(:not([type=radio i], [type=checkbox i], [type=range i])),
 html|textarea {
   appearance: none;
@@ -195,6 +196,7 @@ html|select:where(:not([size], [multiple])) {
   &:focus-visible {
     outline: var(--focus-outline);
     outline-offset: var(--focus-outline-offset);
+  }
   }
 }
 

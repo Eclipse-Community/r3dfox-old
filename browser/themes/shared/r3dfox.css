@@ -56,7 +56,7 @@
       --in-content-primary-button-background: light-dark(rgb(255, 71, 9), rgb(255, 118, 72)) !important;
       --in-content-primary-button-background-hover: light-dark(rgb(255, 86, 30), rgb(255, 102, 51)) !important;
       --in-content-primary-button-background-active: light-dark(rgb(255, 86, 30), rgb(255, 86, 30)) !important;
-      --color-accent-primary: light-dark(rgb(255, 71, 9), rgb(255, 100, 100)) !important;
+      --color-accent-primary: light-dark(rgb(255, 71, 9), rgb(255, 118, 72)) !important;
       --color-accent-primary-hover: light-dark(rgb(255, 102, 51), rgb(255, 118, 72)) !important;
       --color-accent-primary-active: light-dark(rgb(255, 102, 51), rgb(255, 102, 51)) !important;
       --link-color: light-dark(rgb(255, 71, 9), rgb(255, 118, 72)) !important;

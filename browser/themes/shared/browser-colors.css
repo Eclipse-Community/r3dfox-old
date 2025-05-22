@@ -8,12 +8,14 @@
   --toolbox-bgcolor-inactive: -moz-headerbarinactive;
   --toolbox-textcolor-inactive: -moz-headerbarinactivetext;
 
+@media not (-moz-windows-default-theme) {
   &:where([tabsintitlebar]) {
     --toolbox-bgcolor: ActiveCaption;
     --toolbox-textcolor: CaptionText;
     --toolbox-bgcolor-inactive: InactiveCaption;
     --toolbox-textcolor-inactive: InactiveCaptionText;
   }
+}
 
   --sidebar-background-color: -moz-sidebar;
   --sidebar-text-color: -moz-sidebartext;
@@ -52,10 +54,12 @@
     --tabs-navbar-separator-color: light-dark(rgba(0,0,0,.1), rgba(0,0,0,.3));
     --attention-dot-color: light-dark(#2ac3a2, #54ffbd);
 
+@media not (-moz-windows-default-theme) {
     --toolbox-bgcolor: var(--lwt-accent-color);
     --toolbox-bgcolor-inactive: var(--lwt-accent-color-inactive, var(--lwt-accent-color));
     --toolbox-textcolor: var(--lwt-text-color, currentColor);
     --toolbox-textcolor-inactive: var(--lwt-text-color, currentColor);
+}
 
     @media not (prefers-contrast) {
       --focus-outline-color: light-dark(#0061E0, #00DDFF);
@@ -118,7 +122,9 @@
     }
 
     --toolbar-color: light-dark(rgb(21, 20, 26), rgb(251, 251, 254));
+  @media (-moz-windows-default-theme) {
     --toolbar-bgcolor: light-dark(#f9f9fb, rgb(43, 42, 51));
+  }
 
     --toolbarbutton-icon-fill: light-dark(rgb(91, 91, 102), rgb(251, 251, 254));
     --toolbarbutton-icon-fill-attention: light-dark(rgb(0, 97, 224), rgb(0, 221, 255));
@@ -153,5 +159,11 @@
     --sidebar-background-color: light-dark(white, rgb(28, 27, 34));
     --sidebar-text-color: light-dark(rgb(21, 20, 26), rgb(249, 249, 250));
     --sidebar-border-color: light-dark(rgb(240, 240, 244), rgb(82, 82, 94));
+  }
+}
+
+@media (-moz-windows-default-theme) {
+  :root {
+    --toolbar-bgcolor: -moz-dialog;
   }
 }

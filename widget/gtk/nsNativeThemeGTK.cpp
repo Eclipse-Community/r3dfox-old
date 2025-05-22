@@ -202,6 +202,12 @@ bool nsNativeThemeGTK::GetGtkWidgetAndState(StyleAppearance aAppearance,
       // actually has element focus, so we check the focused attribute
       // to see whether to draw in the focused state.
       aState->focused = elementState.HasState(ElementState::FOCUSRING);
+      if (aAppearance == StyleAppearance::Radio ||
+          aAppearance == StyleAppearance::Checkbox) {
+        // In XUL, checkboxes and radios shouldn't have focus rings, their
+        // labels do
+        aState->focused = FALSE;
+      }
 
       // A button with drop down menu open or an activated toggle button
       // should always appear depressed.
@@ -238,6 +244,24 @@ bool nsNativeThemeGTK::GetGtkWidgetAndState(StyleAppearance aAppearance,
     case StyleAppearance::Dualbutton:
       if (aWidgetFlags) *aWidgetFlags = GTK_RELIEF_NONE;
       aGtkWidgetType = MOZ_GTK_TOOLBAR_BUTTON;
+      break;
+    case StyleAppearance::Checkbox:
+      aGtkWidgetType = MOZ_GTK_CHECKBUTTON;
+      break;
+    case StyleAppearance::Radio:
+      aGtkWidgetType = MOZ_GTK_RADIOBUTTON;
+      break;
+    case StyleAppearance::Spinner:
+      aGtkWidgetType = MOZ_GTK_SPINBUTTON;
+      break;
+    case StyleAppearance::SpinnerUpbutton:
+      aGtkWidgetType = MOZ_GTK_SPINBUTTON_UP;
+      break;
+    case StyleAppearance::SpinnerDownbutton:
+      aGtkWidgetType = MOZ_GTK_SPINBUTTON_DOWN;
+      break;
+    case StyleAppearance::SpinnerTextfield:
+      aGtkWidgetType = MOZ_GTK_SPINBUTTON_ENTRY;
       break;
     case StyleAppearance::Range: {
       if (IsRangeHorizontal(aFrame)) {
@@ -310,6 +334,14 @@ bool nsNativeThemeGTK::GetGtkWidgetAndState(StyleAppearance aAppearance,
                                  : MOZ_GTK_PROGRESS_CHUNK_INDETERMINATE
                            : MOZ_GTK_PROGRESS_CHUNK;
     } break;
+    case StyleAppearance::TabScrollArrowBack:
+    case StyleAppearance::TabScrollArrowForward:
+      if (aWidgetFlags)
+        *aWidgetFlags = aAppearance == StyleAppearance::TabScrollArrowBack
+                            ? GTK_ARROW_LEFT
+                            : GTK_ARROW_RIGHT;
+      aGtkWidgetType = MOZ_GTK_TAB_SCROLLARROW;
+      break;
     case StyleAppearance::Tabpanels:
       aGtkWidgetType = MOZ_GTK_TABPANELS;
       break;
@@ -877,12 +909,19 @@ bool nsNativeThemeGTK::GetWidgetPadding(nsDeviceContext* aContext,
     case StyleAppearance::MozWindowButtonMaximize:
     case StyleAppearance::MozWindowButtonRestore:
     case StyleAppearance::Dualbutton:
+    case StyleAppearance::TabScrollArrowBack:
+    case StyleAppearance::TabScrollArrowForward:
     case StyleAppearance::ToolbarbuttonDropdown:
     case StyleAppearance::ButtonArrowUp:
     case StyleAppearance::ButtonArrowDown:
     case StyleAppearance::ButtonArrowNext:
     case StyleAppearance::ButtonArrowPrevious:
     case StyleAppearance::RangeThumb:
+    // Radios and checkboxes return a fixed size in GetMinimumWidgetSize
+    // and have a meaningful baseline, so they can't have
+    // author-specified padding.
+    case StyleAppearance::Checkbox:
+    case StyleAppearance::Radio:
       aResult->SizeTo(0, 0, 0, 0);
       return true;
     default:
@@ -908,9 +947,8 @@ bool nsNativeThemeGTK::GetWidgetOverflow(nsDeviceContext* aContext,
   return true;
 }
 
-auto nsNativeThemeGTK::IsWidgetNonNative(nsIFrame* aFrame,
-                                         StyleAppearance aAppearance)
-    -> NonNative {
+auto nsNativeThemeGTK::IsWidgetNonNative(
+    nsIFrame* aFrame, StyleAppearance aAppearance) -> NonNative {
   if (IsWidgetAlwaysNonNative(aFrame, aAppearance)) {
     return NonNative::Always;
   }
@@ -948,9 +986,7 @@ auto nsNativeThemeGTK::IsWidgetNonNative(nsIFrame* aFrame,
 bool nsNativeThemeGTK::IsWidgetAlwaysNonNative(nsIFrame* aFrame,
                                                StyleAppearance aAppearance) {
   return Theme::IsWidgetAlwaysNonNative(aFrame, aAppearance) ||
-         aAppearance == StyleAppearance::MozMenulistArrowButton ||
-         aAppearance == StyleAppearance::Checkbox ||
-         aAppearance == StyleAppearance::Radio;
+         aAppearance == StyleAppearance::MozMenulistArrowButton;
 }
 
 LayoutDeviceIntSize nsNativeThemeGTK::GetMinimumWidgetSize(
@@ -977,6 +1013,18 @@ LayoutDeviceIntSize nsNativeThemeGTK::GetMinimumWidgetSize(
         moz_gtk_get_scalethumb_metrics(GTK_ORIENTATION_VERTICAL, &result.width,
                                        &result.width);
       }
+    } break;
+    case StyleAppearance::TabScrollArrowBack:
+    case StyleAppearance::TabScrollArrowForward: {
+      moz_gtk_get_tab_scroll_arrow_size(&result.width, &result.height);
+    } break;
+    case StyleAppearance::Checkbox:
+    case StyleAppearance::Radio: {
+      const ToggleGTKMetrics* metrics = GetToggleMetrics(
+          aAppearance == StyleAppearance::Radio ? MOZ_GTK_RADIOBUTTON
+                                                : MOZ_GTK_CHECKBUTTON);
+      result.width = metrics->minSizeWithBorder.width;
+      result.height = metrics->minSizeWithBorder.height;
     } break;
     case StyleAppearance::ToolbarbuttonDropdown:
     case StyleAppearance::ButtonArrowUp:
@@ -1060,6 +1108,17 @@ LayoutDeviceIntSize nsNativeThemeGTK::GetMinimumWidgetSize(
         result.height = height;
       }
     } break;
+    case StyleAppearance::Spinner:
+      // hard code these sizes
+      result.width = 14;
+      result.height = 26;
+      break;
+    case StyleAppearance::SpinnerUpbutton:
+    case StyleAppearance::SpinnerDownbutton:
+      // hard code these sizes
+      result.width = 14;
+      result.height = 13;
+      break;
     default:
       break;
   }
@@ -1110,6 +1169,8 @@ nsNativeThemeGTK::ThemeSupportsWidget(nsPresContext* aPresContext,
       [[fallthrough]];
 
     case StyleAppearance::Button:
+    case StyleAppearance::Radio:
+    case StyleAppearance::Checkbox:
     case StyleAppearance::Toolbarbutton:
     case StyleAppearance::Dualbutton:  // so we can override the border with 0
     case StyleAppearance::ToolbarbuttonDropdown:
@@ -1123,7 +1184,13 @@ nsNativeThemeGTK::ThemeSupportsWidget(nsPresContext* aPresContext,
     case StyleAppearance::Tab:
     // case StyleAppearance::Tabpanel:
     case StyleAppearance::Tabpanels:
+    case StyleAppearance::TabScrollArrowBack:
+    case StyleAppearance::TabScrollArrowForward:
     case StyleAppearance::Tooltip:
+    case StyleAppearance::Spinner:
+    case StyleAppearance::SpinnerUpbutton:
+    case StyleAppearance::SpinnerDownbutton:
+    case StyleAppearance::SpinnerTextfield:
     case StyleAppearance::NumberInput:
     case StyleAppearance::PasswordInput:
     case StyleAppearance::Textfield:
@@ -1149,7 +1216,11 @@ nsNativeThemeGTK::ThemeSupportsWidget(nsPresContext* aPresContext,
 NS_IMETHODIMP_(bool)
 nsNativeThemeGTK::WidgetIsContainer(StyleAppearance aAppearance) {
   // XXXdwh At some point flesh all of this out.
-  if (aAppearance == StyleAppearance::RangeThumb ||
+  if (aAppearance == StyleAppearance::Radio ||
+      aAppearance == StyleAppearance::RangeThumb ||
+      aAppearance == StyleAppearance::Checkbox ||
+      aAppearance == StyleAppearance::TabScrollArrowBack ||
+      aAppearance == StyleAppearance::TabScrollArrowForward ||
       aAppearance == StyleAppearance::ButtonArrowUp ||
       aAppearance == StyleAppearance::ButtonArrowDown ||
       aAppearance == StyleAppearance::ButtonArrowNext ||
@@ -1164,6 +1235,11 @@ bool nsNativeThemeGTK::ThemeDrawsFocusForWidget(nsIFrame* aFrame,
     return Theme::ThemeDrawsFocusForWidget(aFrame, aAppearance);
   }
   switch (aAppearance) {
+    case StyleAppearance::Checkbox:
+    case StyleAppearance::Radio:
+      // These are drawn only for non-XUL elements, but in XUL the label has
+      // the focus ring.
+      return true;
     case StyleAppearance::Button:
     case StyleAppearance::Menulist:
     case StyleAppearance::MenulistButton:

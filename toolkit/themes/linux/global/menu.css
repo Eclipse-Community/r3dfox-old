@@ -93,3 +93,14 @@ menuitem[type="radio"] .menu-iconic-icon {
   appearance: auto;
   -moz-default-appearance: radio;
 }
+
+menuseparator {
+  margin-block: 2px;
+  border-top: 1px solid color-mix(in srgb, currentColor 20%, transparent);
+}
+
+@media (prefers-contrast) {
+  menuseparator {
+    border-top-color: var(--panel-border-color);
+  }
+}

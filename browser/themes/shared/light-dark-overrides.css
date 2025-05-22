@@ -35,33 +35,47 @@
   @media (-moz-platform: windows-win7) {
     @media (-moz-windows-default-theme) {
       #TabsToolbar {
-    isolation: isolate;
-    position: relative;
-       &::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  height: 100%;
-  width: 100%;
-        background-image: radial-gradient(ellipse at bottom, rgba(255,255,255,0.8), rgba(255,255,255,0.5) 80%, transparent);
-  z-index: -1;
-       }
-        color: black;
-        --toolbarbutton-icon-fill: currentColor;
+        isolation: isolate;
+        position: relative;
+        &::before {
+          content: "";
+          position: absolute;
+          top: 0;
+          height: 100%;
+          width: 100%;
+          @media -moz-pref("r3dfox.aero.fog", 2) {
+            background-image: radial-gradient(ellipse at bottom, rgba(255,255,255,0.8), rgba(255,255,255,0.5) 40%, transparent);
+          }
+          z-index: -1;
+        }
       }
     }
   }
 
-  @media (-moz-platform: windows-win8) {
-    @media (-moz-windows-default-theme) {
+  @media (-moz-windows-classic) {
+    @media -moz-pref("r3dfox.aero.fog", 2) {
+      :root[tabsintitlebar]:not([sizemode=fullscreen]) #TabsToolbar {
+        background-image: linear-gradient(transparent, ActiveCaption);
+        background-size: auto 200%;
+      }
+      :root[tabsintitlebar]:not([sizemode=fullscreen]) #TabsToolbar:-moz-window-inactive {
+        background-image: linear-gradient(transparent, InactiveCaption);
+      }
+    }
+  }
+
+  @media (-moz-platform: windows-win8),
+         (-moz-windows-default-theme),
+         (-moz-windows-glass)  {
+      @media not (-moz-windows-classic) {
       #TabsToolbar {
         color: black;
         --toolbarbutton-icon-fill: currentColor;
       }
-    }
     @media not -moz-pref("sidebar.verticalTabs") {
     #toolbar-menubar {
       color: black;
+      }
     }
     }
   }

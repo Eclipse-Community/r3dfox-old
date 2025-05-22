@@ -168,14 +168,16 @@
 }
 /* Titlebar */
 
-:root[tabsintitlebar][sizemode="normal"] #titlebar {
-  appearance: auto;
-  -moz-default-appearance: -moz-window-titlebar;
-}
+@media not (-moz-platform: windows-win10) {
+  :root[tabsintitlebar][sizemode="normal"] #titlebar {
+    appearance: auto;
+    -moz-default-appearance: -moz-window-titlebar;
+  }
 
-:root[tabsintitlebar][sizemode="maximized"] #titlebar {
-  appearance: auto;
-  -moz-default-appearance: -moz-window-titlebar-maximized;
+  :root[tabsintitlebar][sizemode="maximized"] #titlebar {
+    appearance: auto;
+    -moz-default-appearance: -moz-window-titlebar-maximized;
+  }
 }
 
 @media not (-moz-windows-compositor) {
@@ -231,7 +233,7 @@
 /* add extra margin for unmaximized windows
    on Win XP Luna themes to look consistent */
 @media not (-moz-windows-classic) {
-  @media (-moz-platform: windows-xp) {
+  @media (-moz-platform: windows-winxp) {
     :root[tabsintitlebar]:not([sizemode="maximized"]) .titlebar-buttonbox-container {
       margin-top: 4px;
     }

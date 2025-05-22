@@ -619,7 +619,7 @@
 
   #alltabs-button::after {
   padding: 4px 4px 4px 0px !important;
-  @media (-moz-platform: windows-xp), (-moz-windows-classic) {
+  @media (-moz-platform: windows-winxp), (-moz-windows-classic) {
     padding: 6px 5px 5px 0px !important;
   }
   border-radius: 0px 4px 4px 0px !important;

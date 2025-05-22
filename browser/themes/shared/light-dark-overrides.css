@@ -64,15 +64,17 @@
     }
   }
 
-  @media (-moz-platform: windows-win8) {
-    @media (-moz-windows-default-theme) {
+  @media (-moz-platform: windows-win8),
+         (-moz-windows-default-theme),
+         (-moz-windows-glass)  {
+      @media not (-moz-windows-classic) {
       #TabsToolbar {
         color: black;
         --toolbarbutton-icon-fill: currentColor;
       }
-    }
-    #toolbar-menubar {
-      color: black;
+      #toolbar-menubar {
+        color: black;
+      }
     }
   }
 

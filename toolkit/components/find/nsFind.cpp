@@ -11,6 +11,7 @@
 #include "nsIContent.h"
 #include "nsINode.h"
 #include "nsIFrame.h"
+#include "nsITextControlFrame.h"
 #include "nsIFormControl.h"
 #include "nsTextFragment.h"
 #include "nsString.h"

@@ -390,13 +390,13 @@ tooltip {
 }
 
 @media (-moz-platform: windows) {
-  @media not (-moz-bool-pref: "widget.non-native-theme.enabled") {
+  @media not -moz-pref("widget.non-native-theme.enabled") {
     tooltip {
       color-scheme: light;
     }
   }
 
-  @media (-moz-bool-pref: "widget.non-native-theme.enabled") {
+  @media -moz-pref("widget.non-native-theme.enabled") {
     tooltip {
       appearance: none;
       border: 1px solid;

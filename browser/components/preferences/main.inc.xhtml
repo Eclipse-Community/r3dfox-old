@@ -59,6 +59,21 @@
   <description id="r3dfoxFakeScrollDescription" class="tip-caption" data-l10n-id="r3dfox-fake-scroll-type-desc"/>
 
   <hbox align="center">
+    <label id="r3dfoxWinTheme" data-l10n-id="r3dfox-win-theme-type" control="r3dfoxWinThemeType"/>
+    <menulist id="r3dfoxWinThemeType" preference="widget.native-controls.override-win-version">
+      <menupopup>
+        <menuitem label="Current OS version (Default)" value="0"/>
+        <menuitem label="Windows XP" value="5"/>
+        <menuitem label="Windows Vista" value="6"/>
+        <menuitem label="Windows 7" value="7"/>
+        <menuitem label="Windows 8" value="8"/>
+        <menuitem label="Windows 10 (Modern)" value="10"/>
+      </menupopup>
+    </menulist>
+  </hbox>
+  <description id="r3dfoxWinThemeDescription" class="tip-caption" data-l10n-id="r3dfox-win-theme-type-desc"/>
+
+  <hbox align="center">
     <checkbox id="r3dfoxTheme"
               data-l10n-id="r3dfox-theme"
               preference="r3dfox.customizations.enabled"/>
@@ -108,13 +123,6 @@
   <description class="indent tip-caption" data-l10n-id="r3dfox-menubar-desc"/>
 
   <hbox align="center">
-    <checkbox id="r3dfoxGlowMenubar"
-              data-l10n-id="r3dfox-glow-menubar"
-              preference="r3dfox.glow.menubar"/>
-  </hbox>
-  <description class="indent tip-caption" data-l10n-id="r3dfox-glow-menubar-desc"/>
-
-  <hbox align="center">
     <checkbox id="r3dfoxNavbar"
               data-l10n-id="r3dfox-navbar"
               preference="r3dfox.translucent.navbar"/>
@@ -162,13 +170,6 @@
               preference="r3dfox.view.image"/>
   </hbox>
   <description class="indent tip-caption" data-l10n-id="r3dfox-view-image-desc"/>
-
-  <hbox align="center">
-    <checkbox id="r3dfoxmodern"
-              data-l10n-id="r3dfox-modern"
-              preference="widget.windows-style.modern"/>
-  </hbox>
-  <description class="indent tip-caption" data-l10n-id="r3dfox-modern-desc"/>
 
   <hbox align="center">
     <checkbox id="r3dfoxcsp"

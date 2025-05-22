@@ -148,6 +148,10 @@ r3dfox-fake-scroll-type = Non-native scrollbar theme
 
 r3dfox-fake-scroll-type-desc = This controls the theme of the scrollbar.
 
+r3dfox-win-theme-type = Windows version theme override
+
+r3dfox-win-theme-type-desc = Override Windows version theme (requires restart)
+
 r3dfox-theme =
     .label = Use r3dfox theme styles
 
@@ -183,11 +187,6 @@ r3dfox-menubar =
 
 r3dfox-menubar-desc = This removes the menubar background.
 
-r3dfox-glow-menubar =
-    .label = Menubar text glow
-
-r3dfox-glow-menubar-desc = This enables/disables the menubar text glow. Can help with reading the text on some backgrounds or colors.
-
 r3dfox-navbar =
     .label = Translucent design
 
@@ -222,11 +221,6 @@ r3dfox-view-image =
     .label = Restore classic View Image context menu option
 
 r3dfox-view-image-desc = Restore the classic View Image and View Background Image context menu options instead of always opening images in a new tab.
-
-r3dfox-modern =
-    .label = Modern UI (Requires browser restart)
-
-r3dfox-modern-desc = Enable for standard Firefox Windows 10 UI on all platforms.
 
 r3dfox-csp =
     .label = Disable Content Security Policy (CSP)

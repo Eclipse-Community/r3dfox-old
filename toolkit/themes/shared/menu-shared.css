@@ -22,10 +22,12 @@ panel {
 
 /* Accel text */
 
+@media (-moz-windows-non-native-menus) {
 @media not (prefers-contrast) {
   menuitem:not([disabled]) > .menu-accel-container > :is(.menu-accel, .menu-iconic-accel) {
     color: var(--text-color-disabled);
   }
+}
 }
 
 /* Scroll buttons */
@@ -117,7 +119,6 @@ menuitem {
     text-shadow: none;
   }
 
-@media (-moz-windows-non-native-menus) {
   &:where([_moz-menuactive]:not([disabled="true"])) {
     color: -moz-menuhovertext;
     background-color: -moz-menuhover;
@@ -126,7 +127,6 @@ menuitem {
   &:where([_moz-menuactive="true"][disabled="true"]) {
     background-color: -moz-menuhoverdisabled;
   }
-}
 }
 
 @media (-moz-windows-classic) {

@@ -56,12 +56,10 @@ dropmarker {
 dropmarker:not([native]) {
   display: flex;
   appearance: none;
-}
-
-dropmarker:not([native])::part(icon) {
   content: url(chrome://global/skin/icons/arrow-down-12.svg);
   -moz-context-properties: fill;
   fill: currentColor;
+  align-self: center;
 }
 
 #highlightable-label:not([highlightable="true"]),

@@ -81,6 +81,8 @@ bool InProcessWinCompositorWidget::DrawsToMemoryDC() const {
   return ::GetWindowLongPtrW(mWnd, GWL_EXSTYLE) & WS_EX_LAYERED;
 }
 
+void InProcessWinCompositorWidget::OnWindowModeChange(nsSizeMode aSizeMode) {}
+
 bool InProcessWinCompositorWidget::PreRender(WidgetRenderingContext* aContext) {
   // This can block waiting for WM_SETTEXT to finish
   // Using PreRender is unnecessarily pessimistic because
@@ -279,8 +281,14 @@ void InProcessWinCompositorWidget::UpdateTransparency(TransparencyMode aMode) {
 }
 
 void InProcessWinCompositorWidget::NotifyVisibilityUpdated(
-    bool aIsFullyOccluded) {
+    nsSizeMode aSizeMode, bool aIsFullyOccluded) {
+  mSizeMode = aSizeMode;
   mIsFullyOccluded = aIsFullyOccluded;
+}
+
+nsSizeMode InProcessWinCompositorWidget::GetWindowSizeMode() const {
+  nsSizeMode sizeMode = mSizeMode;
+  return sizeMode;
 }
 
 bool InProcessWinCompositorWidget::GetWindowIsFullyOccluded() const {

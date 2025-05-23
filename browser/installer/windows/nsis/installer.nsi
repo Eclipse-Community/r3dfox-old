@@ -434,25 +434,25 @@ Section "-Application" APP_IDX
 
   ${LogHeader} "Adding Registry Entries"
   SetShellVarContext current  ; Set SHCTX to HKCU
-  ${RegCleanMain} "Software\${CompanyName}\${BrandShortName}"
+  ${RegCleanMain} "Software\${CompanyName}"
   ${RegCleanUninstall}
   ${UpdateProtocolHandlers}
 
   ClearErrors
-  WriteRegStr HKLM "Software\${CompanyName}\${BrandShortName}" "${BrandShortName}InstallerTest" "Write Test"
+  WriteRegStr HKLM "Software\${CompanyName}" "${BrandShortName}InstallerTest" "Write Test"
   ${If} ${Errors}
     StrCpy $RegHive "HKCU"
   ${Else}
     SetShellVarContext all  ; Set SHCTX to HKLM
-    DeleteRegValue HKLM "Software\${CompanyName}\${BrandShortName}" "${BrandShortName}InstallerTest"
+    DeleteRegValue HKLM "Software\${CompanyName}" "${BrandShortName}InstallerTest"
     StrCpy $RegHive "HKLM"
-    ${RegCleanMain} "Software\${CompanyName}\${BrandShortName}"
+    ${RegCleanMain} "Software\${CompanyName}"
     ${RegCleanUninstall}
     ${UpdateProtocolHandlers}
 
-    ReadRegStr $0 HKLM "Software\${CompanyName}\${BrandShortName}" "CurrentVersion"
+    ReadRegStr $0 HKLM "Software\${CompanyName}" "CurrentVersion"
     ${If} "$0" != "${GREVersion}"
-      WriteRegStr HKLM "Software\${CompanyName}\${BrandShortName}" "CurrentVersion" "${GREVersion}"
+      WriteRegStr HKLM "Software\${CompanyName}" "CurrentVersion" "${GREVersion}"
     ${EndIf}
   ${EndIf}
 
@@ -1168,12 +1168,12 @@ Function SendPing
   ${EndIf}
 
   ClearErrors
-  WriteRegStr HKLM "Software\${CompanyName}\${BrandShortName}" "${BrandShortName}InstallerTest" \
+  WriteRegStr HKLM "Software\${CompanyName}" "${BrandShortName}InstallerTest" \
                    "Write Test"
   ${If} ${Errors}
     nsJSON::Set /tree ping "Data" "admin_user" /value false
   ${Else}
-    DeleteRegValue HKLM "Software\${CompanyName}\${BrandShortName}" "${BrandShortName}InstallerTest"
+    DeleteRegValue HKLM "Software\${CompanyName}" "${BrandShortName}InstallerTest"
     nsJSON::Set /tree ping "Data" "admin_user" /value true
   ${EndIf}
 
@@ -1306,12 +1306,12 @@ Function WriteInstallationTelemetryData
   ; Check for write access to HKLM, if successful then report this user
   ; as an (elevated) admin.
   ClearErrors
-  WriteRegStr HKLM "Software\${CompanyName}\${BrandShortName}" "${BrandShortName}InstallerTest" \
+  WriteRegStr HKLM "Software\${CompanyName}" "${BrandShortName}InstallerTest" \
                    "Write Test"
   ${If} ${Errors}
     StrCpy $1 "false"
   ${Else}
-    DeleteRegValue HKLM "Software\${CompanyName}\${BrandShortName}" "${BrandShortName}InstallerTest"
+    DeleteRegValue HKLM "Software\${CompanyName}" "${BrandShortName}InstallerTest"
     StrCpy $1 "true"
   ${EndIf}
   ${JSONSet} "admin_user" /value $1
@@ -1544,13 +1544,13 @@ Function preComponents
 
   ; Only show the maintenance service page if we have write access to HKLM
   ClearErrors
-  WriteRegStr HKLM "Software\${CompanyName}\${BrandShortName}" \
+  WriteRegStr HKLM "Software\${CompanyName}" \
               "${BrandShortName}InstallerTest" "Write Test"
   ${If} ${Errors}
     ClearErrors
     Abort
   ${Else}
-    DeleteRegValue HKLM "Software\${CompanyName}\${BrandShortName}" "${BrandShortName}InstallerTest"
+    DeleteRegValue HKLM "Software\${CompanyName}" "${BrandShortName}InstallerTest"
   ${EndIf}
 
   StrCpy $PageName "Components"
@@ -1729,9 +1729,9 @@ Function preSummary
 
   ; Check if it is possible to write to HKLM
   ClearErrors
-  WriteRegStr HKLM "Software\${CompanyName}\${BrandShortName}" "${BrandShortName}InstallerTest" "Write Test"
+  WriteRegStr HKLM "Software\${CompanyName}" "${BrandShortName}InstallerTest" "Write Test"
   ${Unless} ${Errors}
-    DeleteRegValue HKLM "Software\${CompanyName}\${BrandShortName}" "${BrandShortName}InstallerTest"
+    DeleteRegValue HKLM "Software\${CompanyName}" "${BrandShortName}InstallerTest"
     ; Check if Firefox is the http handler for this user.
     SetShellVarContext current ; Set SHCTX to the current user
     ${IsHandlerForInstallDir} "http" $R9

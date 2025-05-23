@@ -232,7 +232,7 @@ Function un.UninstallServiceIfNotUsed
   ; Figure out the number of subkeys
   StrCpy $0 0
   ${Do}
-    EnumRegKey $1 HKLM "Software\${CompanyName}\${BrandShortName}\MaintenanceService" $0
+    EnumRegKey $1 HKLM "Software\${CompanyName}\MaintenanceService" $0
     ${If} "$1" == ""
       ${ExitDo}
     ${EndIf}
@@ -428,8 +428,8 @@ Section "Uninstall"
   ${EndIf}
 
   SetShellVarContext current  ; Set SHCTX to HKCU
-  ${un.RegCleanMain} "Software\${CompanyName}\${BrandShortName}"
-  ${un.RegCleanPrefs} "Software\${CompanyName}\${BrandShortName}"
+  ${un.RegCleanMain} "Software\${CompanyName}"
+  ${un.RegCleanPrefs} "Software\${CompanyName}\${AppName}"
   ${un.RegCleanUninstall}
   ${un.DeleteShortcuts}
 
@@ -454,18 +454,18 @@ Section "Uninstall"
   ${un.CleanMaintenanceServiceLogs} "Mozilla\Firefox"
 
   ; Remove any app model id's stored in the registry for this install path
-  DeleteRegValue HKCU "Software\${CompanyName}\${BrandShortName}\TaskBarIDs" "$INSTDIR"
-  DeleteRegValue HKLM "Software\${CompanyName}\${BrandShortName}\TaskBarIDs" "$INSTDIR"
+  DeleteRegValue HKCU "Software\${CompanyName}\${AppName}\TaskBarIDs" "$INSTDIR"
+  DeleteRegValue HKLM "Software\${CompanyName}\${AppName}\TaskBarIDs" "$INSTDIR"
 
   ClearErrors
-  WriteRegStr HKLM "Software\${CompanyName}\${BrandShortName}" "${BrandShortName}InstallerTest" "Write Test"
+  WriteRegStr HKLM "Software\${CompanyName}" "${BrandShortName}InstallerTest" "Write Test"
   ${If} ${Errors}
     StrCpy $RegHive "HKCU"
   ${Else}
     SetShellVarContext all  ; Set SHCTX to HKLM
-    DeleteRegValue HKLM "Software\${CompanyName}\${BrandShortName}" "${BrandShortName}InstallerTest"
+    DeleteRegValue HKLM "Software\${CompanyName}" "${BrandShortName}InstallerTest"
     StrCpy $RegHive "HKLM"
-    ${un.RegCleanMain} "Software\${CompanyName}\${BrandShortName}"
+    ${un.RegCleanMain} "Software\${CompanyName}"
     ${un.RegCleanUninstall}
     ${un.DeleteShortcuts}
     ${un.SetAppLSPCategories}
@@ -494,10 +494,10 @@ Section "Uninstall"
   ${un.RegCleanFileHandler}  ".pdf"   "FirefoxPDF-$AppUserModelID"
 
   SetShellVarContext all  ; Set SHCTX to HKLM
-  ${un.GetSecondInstallPath} "Software\${CompanyName}\${BrandShortName}" $R9
+  ${un.GetSecondInstallPath} "Software\${CompanyName}" $R9
   ${If} $R9 == "false"
     SetShellVarContext current  ; Set SHCTX to HKCU
-    ${un.GetSecondInstallPath} "Software\${CompanyName}\${BrandShortName}" $R9
+    ${un.GetSecondInstallPath} "Software\${CompanyName}" $R9
   ${EndIf}
 
   DeleteRegKey HKLM "Software\Clients\StartMenuInternet\${AppRegName}-$AppUserModelID"
@@ -1039,7 +1039,7 @@ Function un.onInit
   ${un.UninstallUnOnInitCommon}
 
   ; setup the application model id registration value
-  ${un.InitHashAppModelId} "$INSTDIR" "Software\${CompanyName}\${BrandShortName}\TaskBarIDs"
+  ${un.InitHashAppModelId} "$INSTDIR" "Software\${CompanyName}\${AppName}\TaskBarIDs"
 
   ; Find a default profile for this install.
   SetShellVarContext current

@@ -41,7 +41,7 @@ class RWLockImpl {
 #else
   // SRWLock is pointer-sized. We declare it in such a fashion here to avoid
   // pulling in windows.h wherever this header is used.
-  void* mRWLock;
+  char  mRWLock[100];
 #endif
 };
 

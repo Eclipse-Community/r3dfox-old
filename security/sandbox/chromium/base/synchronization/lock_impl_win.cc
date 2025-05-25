@@ -15,6 +15,11 @@ LockImpl::LockImpl() : native_handle_(SRWLOCK_INIT) {}
 
 LockImpl::~LockImpl() = default;
 
+bool LockImpl::Try() {
+  return !!::TryAcquireSRWLockExclusive(
+      reinterpret_cast<PSRWLOCK>(&native_handle_));
+}
+
 void LockImpl::Lock() {
   // The ScopedLockAcquireActivity below is relatively expensive and so its
   // actions can become significant due to the very large number of locks
@@ -23,6 +28,10 @@ void LockImpl::Lock() {
   // (tracked) blocking call if that fails. Since "try" itself is a system
   // call, and thus also somewhat expensive, don't bother with it unless
   // tracking is actually enabled.
+  if (base::debug::GlobalActivityTracker::IsEnabled())
+    if (Try())
+      return;
+
   base::debug::ScopedLockAcquireActivity lock_activity(this);
   ::AcquireSRWLockExclusive(reinterpret_cast<PSRWLOCK>(&native_handle_));
 }

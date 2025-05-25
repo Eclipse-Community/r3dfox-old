@@ -10,67 +10,39 @@
 
 #include "mozilla/PlatformRWLock.h"
 
-mozilla::detail::RWLockImpl::RWLockImpl()
-    : mWriterThreadId(0), mReaderCount(0) {
-  InitializeCriticalSection(&mLock);
+#include <windows.h>
+
+#define NativeHandle(m) (reinterpret_cast<SRWLOCK*>(&m))
+
+mozilla::detail::RWLockImpl::RWLockImpl() {
+  static_assert(sizeof(SRWLOCK) <= sizeof(mRWLock), "SRWLOCK is too big!");
+  InitializeSRWLock(NativeHandle(mRWLock));
 }
 
-mozilla::detail::RWLockImpl::~RWLockImpl() {
-  DeleteCriticalSection(&mLock);
-}
+mozilla::detail::RWLockImpl::~RWLockImpl() {}
 
 bool mozilla::detail::RWLockImpl::tryReadLock() {
-  EnterCriticalSection(&mLock);
-  if (mWriterThreadId == 0 || mWriterThreadId == GetCurrentThreadId()) {
-    ++mReaderCount;
-    LeaveCriticalSection(&mLock);
-    return true;
-  }
-  LeaveCriticalSection(&mLock);
-  return false;
+  return TryAcquireSRWLockShared(NativeHandle(mRWLock));
 }
 
 void mozilla::detail::RWLockImpl::readLock() {
-  EnterCriticalSection(&mLock);
-  while (mWriterThreadId != 0 && mWriterThreadId != GetCurrentThreadId()) {
-    LeaveCriticalSection(&mLock);
-    Sleep(0);
-    EnterCriticalSection(&mLock);
-  }
-  ++mReaderCount;
-  LeaveCriticalSection(&mLock);
+  AcquireSRWLockShared(NativeHandle(mRWLock));
 }
 
 void mozilla::detail::RWLockImpl::readUnlock() {
-  EnterCriticalSection(&mLock);
-  --mReaderCount;
-  LeaveCriticalSection(&mLock);
+  ReleaseSRWLockShared(NativeHandle(mRWLock));
 }
 
 bool mozilla::detail::RWLockImpl::tryWriteLock() {
-  EnterCriticalSection(&mLock);
-  if (mReaderCount == 0 && mWriterThreadId == 0) {
-    mWriterThreadId = GetCurrentThreadId();
-    LeaveCriticalSection(&mLock);
-    return true;
-  }
-  LeaveCriticalSection(&mLock);
-  return false;
+  return TryAcquireSRWLockExclusive(NativeHandle(mRWLock));
 }
 
 void mozilla::detail::RWLockImpl::writeLock() {
-  EnterCriticalSection(&mLock);
-  while (mReaderCount != 0 || (mWriterThreadId != 0 && mWriterThreadId != GetCurrentThreadId())) {
-    LeaveCriticalSection(&mLock);
-    Sleep(0);
-    EnterCriticalSection(&mLock);
-  }
-  mWriterThreadId = GetCurrentThreadId();
-  LeaveCriticalSection(&mLock);
+  AcquireSRWLockExclusive(NativeHandle(mRWLock));
 }
 
 void mozilla::detail::RWLockImpl::writeUnlock() {
-  EnterCriticalSection(&mLock);
-  mWriterThreadId = 0;
-  LeaveCriticalSection(&mLock);
+  ReleaseSRWLockExclusive(NativeHandle(mRWLock));
 }
+
+#undef NativeHandle

@@ -82,6 +82,7 @@ Preferences.addAll([
   { id: "network.stricttransportsecurity.enabled", type: "bool",  inverted: true },
   { id: "accessibility.force_disabled", type: "int" },
   { id: "browser.tabs.hoverPreview.enabled", type: "bool" },
+  { id: "browser.urlbar.secondaryActions.switchToTab", type: "bool" },
 
   /* Tab preferences
   Preferences:

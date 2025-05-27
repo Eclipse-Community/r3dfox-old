@@ -184,6 +184,11 @@ r3dfox-view-image =
 r3dfox-hover-preview =
     .label = Tab hover preview
 
+r3dfox-switch-to-tab =
+    .label = Reverse urlbar switch to tab behavior
+
+r3dfox-switch-to-tab-desc = This should reverse the behavior of switching to an already open tab in the urlbar (require Shift/Ctrl/Alt to switch to open tab instead of preventing it), however it's a bit buggy currently and just disables it.
+
 r3dfox-advanced-header = Advanced configurations
 
 r3dfox-accessibility = Accessibility services

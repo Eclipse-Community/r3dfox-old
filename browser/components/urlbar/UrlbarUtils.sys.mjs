@@ -188,6 +188,7 @@ export var UrlbarUtils = {
     "https:",
     "ftp:",
   ],
+  // Make sure FTP above is here.
 
   // Valid URI schemes that are considered safe but don't contain
   // an authority component (e.g host:port). There are many URI schemes

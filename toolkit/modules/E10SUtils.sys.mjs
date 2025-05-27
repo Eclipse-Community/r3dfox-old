@@ -81,8 +81,6 @@ const DEFAULT_REMOTE_TYPE = WEB_REMOTE_TYPE;
 // is not accessible in this context. Please update both if the list changes.
 const kSafeSchemes = [
   "bitcoin",
-  "ftp",
-  "ftps",
   "geo",
   "im",
   "irc",
@@ -94,7 +92,6 @@ const kSafeSchemes = [
   "news",
   "nntp",
   "openpgp4fpr",
-  "sftp",
   "sip",
   "sms",
   "smsto",

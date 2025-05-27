@@ -893,8 +893,6 @@ uint32_t Navigator::MaxTouchPoints(CallerType aCallerType) {
 static const char* const kSafeSchemes[] = {
     // clang-format off
     "bitcoin",
-    "ftp",
-    "ftps",
     "geo",
     "im",
     "irc",
@@ -906,7 +904,6 @@ static const char* const kSafeSchemes[] = {
     "news",
     "nntp",
     "openpgp4fpr",
-    "sftp",
     "sip",
     "sms",
     "smsto",

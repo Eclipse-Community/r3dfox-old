@@ -35,7 +35,7 @@ connection-proxy-http = HTTP Proxy
     .accesskey = x
 connection-proxy-http-port = Port
     .accesskey = P
-connection-proxy-http-sharing =
+connection-proxy-https-sharing =
     .label = Also use this proxy for FTP and HTTPS
     .accesskey = s
 

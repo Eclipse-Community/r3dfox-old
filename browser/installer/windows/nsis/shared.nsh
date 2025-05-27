@@ -569,6 +569,7 @@ ${RemoveDefaultBrowserAgentShortcut}
   ; An empty string is used for the 4th & 5th params because the following
   ; protocol handlers already have a display name and the additional keys
   ; required for a protocol handler.
+  ${AddDisabledDDEHandlerValues} "ftp" "$2" "$8,${IDI_DOCUMENT_ZERO_BASED}" "" ""
   ${AddDisabledDDEHandlerValues} "http" "$2" "$8,${IDI_DOCUMENT_ZERO_BASED}" "" ""
   ${AddDisabledDDEHandlerValues} "https" "$2" "$8,${IDI_DOCUMENT_ZERO_BASED}" "" ""
   ${AddDisabledDDEHandlerValues} "mailto" "$2" "$8,${IDI_DOCUMENT_ZERO_BASED}" "" ""
@@ -654,10 +655,7 @@ ${RemoveDefaultBrowserAgentShortcut}
 
   WriteRegStr ${RegKey} "$0\Capabilities\StartMenu" "StartMenuInternet" "$1"
 
-  ; In the past, we supported ftp.  Since we don't delete and re-create the
-  ; entire key, we need to remove any existing registration.
-  DeleteRegValue ${RegKey} "$0\Capabilities\URLAssociations" "ftp"
-
+  WriteRegStr ${RegKey} "$0\Capabilities\URLAssociations" "ftp"    "FirefoxURL$2"
   WriteRegStr ${RegKey} "$0\Capabilities\URLAssociations" "http"   "FirefoxURL$2"
   WriteRegStr ${RegKey} "$0\Capabilities\URLAssociations" "https"  "FirefoxURL$2"
   WriteRegStr ${RegKey} "$0\Capabilities\URLAssociations" "mailto" "FirefoxURL$2"
@@ -1066,8 +1064,7 @@ ${RemoveDefaultBrowserAgentShortcut}
 
   ${IsHandlerForInstallDir} "ftp" $R9
   ${If} "$R9" == "true"
-    ; In the past, we supported ftp, so we need to delete any registration.
-    ${AddDisabledDDEHandlerValues} "ftp" "$2" "$8,${IDI_DOCUMENT_ZERO_BASED}" "" "delete"
+    ${AddDisabledDDEHandlerValues} "ftp" "$2" "$8,${IDI_DOCUMENT_ZERO_BASED}" "" ""
   ${EndIf}
 
   ${IsHandlerForInstallDir} "http" $R9

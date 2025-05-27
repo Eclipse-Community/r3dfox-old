@@ -1,6 +1,6 @@
 /* Color overrides */
 
-@media (-moz-bool-pref: "r3dfox.colors.enabled") {
+@media -moz-pref("r3dfox.colors.enabled") {
   :root {
     --arrowpanel-border-color: light-dark(rgb(255, 60, 60), rgb(160, 60, 60)) !important;
     --toolbar-field-focus-border-color: light-dark(rgb(255, 40, 40), rgb(160, 60, 60)) !important;
@@ -45,7 +45,7 @@
       list-style-image: url(chrome://browser/skin/r3d-toolbar-drag-indicator.svg) !important;
     }
 
-    @media (-moz-bool-pref: "r3dfox.colors.esr") {
+    @media -moz-pref("r3dfox.colors.esr") {
       --arrowpanel-border-color: light-dark(rgb(255, 102, 51), rgb(183, 98, 69)) !important;
       --toolbar-field-focus-border-color: light-dark(rgb(255, 86, 30), rgb(183, 98, 69)) !important;
       --sidebar-border-color: light-dark(rgb(255, 102, 51), rgb(183, 98, 69)) !important;
@@ -87,7 +87,7 @@
       }
     }
 
-    @media (-moz-bool-pref: "r3dfox.colors.plasmafox") {
+    @media -moz-pref("r3dfox.colors.plasmafox") {
       --arrowpanel-border-color: light-dark(rgb(255, 60, 206), rgb(160, 60, 135)) !important;
       --toolbar-field-focus-border-color: light-dark(rgb(255, 40, 201), rgb(160, 60, 135)) !important;
       --sidebar-border-color: light-dark(rgb(255, 60, 206), rgb(160, 60, 135)) !important;
@@ -149,7 +149,7 @@
   }
 }
 
-@media (-moz-bool-pref: "r3dfox.aero.fog") {
+@media -moz-pref("r3dfox.aero.fog") {
   @media (-moz-windows-compositor), (-moz-windows-glass) {
     @media not (-moz-windows-modern) {
       #navigator-toolbox:not([lwtheme]) {
@@ -157,10 +157,10 @@
       }
       #titlebar:not([lwtheme]) {
         appearance: inherit !important;
-        @media (-moz-bool-pref: "r3dfox.less.aero.fog") {
+        @media -moz-pref("r3dfox.less.aero.fog") {
           background-image: radial-gradient(ellipse at bottom, rgba(255,255,255,0.8), rgba(255,255,255,0.5) 40%, transparent) !important;
         }
-        @media not (-moz-bool-pref: "r3dfox.less.aero.fog") {
+        @media not -moz-pref("r3dfox.less.aero.fog") {
           background-image: radial-gradient(ellipse at bottom, rgba(255,255,255,0.8), rgba(255,255,255,0.5) 80%, transparent) !important;
         }
       }
@@ -173,7 +173,7 @@
   }
 }
 
-@media (-moz-bool-pref: "r3dfox.aero.fog") {
+@media -moz-pref("r3dfox.aero.fog") {
   @media (-moz-windows-classic) {
     :root[tabsintitlebar]:not([sizemode=fullscreen]) #TabsToolbar {
       background-image: linear-gradient(transparent, ActiveCaption) !important;
@@ -186,7 +186,7 @@
   }
 }
 
-@media (-moz-bool-pref: "r3dfox.caption.text.color") {
+@media -moz-pref("r3dfox.caption.text.color") {
   #TabsToolbar {
     color: white !important;
     --toolbarbutton-icon-fill: currentColor !important;
@@ -197,14 +197,14 @@
   #main-menubar:not([lwtheme]) {
     color: white !important;
   }
-  @media (-moz-bool-pref: "r3dfox.glow.menubar") {
+  @media -moz-pref("r3dfox.glow.menubar") {
     #toolbar-menubar {
       text-shadow: 0 0 .5em black, 0 0 .5em black, 0 1px 0 rgba(0,0,0,.4) !important;
     }
   }
 }
 
-@media (-moz-bool-pref: "r3dfox.force.transparency") {
+@media -moz-pref("r3dfox.force.transparency") {
   :root {
     --lwt-additional-images: none !important;
     --lwt-header-image: none !important;
@@ -232,30 +232,30 @@
   }
 }
 
-@media (-moz-bool-pref: "r3dfox.transparent.menubar") {
+@media -moz-pref("r3dfox.transparent.menubar") {
   #main-window #main-menubar {
     background: none !important;
   }
 }
 
-@media not (-moz-bool-pref: "r3dfox.glow.menubar") {
+@media not -moz-pref("r3dfox.glow.menubar") {
   #toolbar-menubar {
     text-shadow: none !important;
   }
 }
 
-@media (-moz-bool-pref: "r3dfox.translucent.navbar") {
-  @media (-moz-bool-pref: "r3dfox.aero.fog") {
+@media -moz-pref("r3dfox.translucent.navbar") {
+  @media -moz-pref("r3dfox.aero.fog") {
     @media (-moz-windows-glass) {
       @media not (-moz-windows-modern) {
         #titlebar:not([lwtheme]) {
           appearance: auto !important;
         }
         #navigator-toolbox {
-          @media (-moz-bool-pref: "r3dfox.less.aero.fog") {
+          @media -moz-pref("r3dfox.less.aero.fog") {
             background-image: radial-gradient(ellipse at bottom, rgba(255,255,255,0.8), rgba(255,255,255,0.5) 60%, transparent) !important;
           }
-          @media not (-moz-bool-pref: "r3dfox.less.aero.fog") {
+          @media not -moz-pref("r3dfox.less.aero.fog") {
             background-image: radial-gradient(ellipse at bottom, rgba(255,255,255,0.8), rgba(255,255,255,0.5) 85%, transparent) !important;
           }
         }
@@ -271,7 +271,7 @@
 
 /* Main defines */
 
-@media (-moz-bool-pref: "r3dfox.customizations.enabled") {
+@media -moz-pref("r3dfox.customizations.enabled") {
   :root {
     --align-menu-icons: -2px 6px;
     --tab-first-last-inline-margin: calc(var(--tab-min-height) / 2);
@@ -337,7 +337,7 @@
       display: none !important;
   }
 
-  @media (-moz-bool-pref: "r3dfox.drag-space.enabled") {
+  @media -moz-pref("r3dfox.drag-space.enabled") {
     :root:has(#toolbar-menubar[autohide="true"])[sizemode="normal"] {
       --drag-space: 15px;
 /*      #TabsToolbar > :is(.titlebar-buttonbox-container, .titlebar-spacer) {
@@ -549,7 +549,7 @@
   
   /* -------------------- Selected Tab Indicator -------------------- */
 
-  @media not (-moz-bool-pref: "r3dfox.colors.enabled") {
+  @media not -moz-pref("r3dfox.colors.enabled") {
     :root {
       --lwt-tab-line-color: light-dark(var(--color-blue-50), var(--color-cyan-50)) !important;
       &[privatebrowsingmode=temporary] {
@@ -594,7 +594,7 @@
 
 /* Backgrounds needs to override all */
 
-@media (-moz-bool-pref: "r3dfox.backgrounds.enabled") {
+@media -moz-pref("r3dfox.backgrounds.enabled") {
 
   .tabs-alltabs-button > :is(.toolbarbutton-icon, .toolbarbutton-text, .toolbarbutton-badge-stack) {
   border-radius: 4px 0px 0px 4px !important;
@@ -623,7 +623,7 @@
     :root {
       --lwt-text-color: white !important;
     }
-    @media (not (-moz-bool-pref: "r3dfox.transparent.menubar")) {
+    @media (not -moz-pref("r3dfox.transparent.menubar")) {
       #main-window #main-menubar {
         background-color: rgba(0, 0, 0, 0.33) !Important;
       }
@@ -657,7 +657,7 @@
     :root {
       --lwt-text-color: black !important;
     }
-    @media (not (-moz-bool-pref: "r3dfox.transparent.menubar")) {
+    @media (not -moz-pref("r3dfox.transparent.menubar")) {
       #main-window #main-menubar {
         background-color: rgba(249, 249, 251, 0.33) !Important;
       }

@@ -79,7 +79,7 @@
     }
 
     /* stylelint-disable-next-line media-query-no-invalid */
-    @media (-moz-bool-pref: "widget.gtk.rounded-bottom-corners.enabled") {
+    @media -moz-pref("widget.gtk.rounded-bottom-corners.enabled") {
       #navigator-toolbox {
         /* The body clip below covers this. */
         border-radius: 0;
@@ -131,7 +131,7 @@
 }
 
 /* stylelint-disable-next-line media-query-no-invalid */
-@media (-moz-bool-pref: "browser.urlbar.experimental.expandTextOnFocus") {
+@media -moz-pref("browser.urlbar.experimental.expandTextOnFocus") {
   #urlbar[breakout-extend] {
     font-size: 1.14em;
   }
@@ -234,7 +234,7 @@
   }
 
   /* stylelint-disable-next-line media-query-no-invalid */
-  @media (-moz-bool-pref: "widget.gtk.non-native-titlebar-buttons.enabled") {
+  @media -moz-pref("widget.gtk.non-native-titlebar-buttons.enabled") {
     /* When using lightweight themes, use our own buttons since native ones might
      * assume a native background in order to be visible. */
     :root[lwtheme] & {

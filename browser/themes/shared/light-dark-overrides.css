@@ -34,7 +34,7 @@
   }
 
   @media (-moz-windows-classic) {
-    @media (-moz-bool-pref: "widget.windows-style.show-fog") {
+    @media -moz-pref("widget.windows-style.show-fog") {
       :root[tabsintitlebar]:not([sizemode=fullscreen]) #TabsToolbar {
         background-image: linear-gradient(transparent, ActiveCaption);
         background-size: auto 200%;
@@ -62,7 +62,7 @@
   /* Add a fog for background tabs to be visible on Windows 7 glass window background */
   @media (-moz-windows-default-theme) {
     #TabsToolbar {
-      @media (-moz-bool-pref: "widget.windows-style.show-fog") {
+      @media -moz-pref("widget.windows-style.show-fog") {
         background-image: radial-gradient(ellipse at bottom, rgba(255,255,255,0.8), rgba(255,255,255,0.5) 40%, transparent);
       }
       color: black;

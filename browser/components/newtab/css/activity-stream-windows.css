@@ -1295,7 +1295,7 @@ main section {
   margin-inline-start: 16px;
   width: 134px;
 
-  @media (-moz-bool-pref: "r3dfox.browser.plasmafox") {
+  @media -moz-pref("r3dfox.browser.plasmafox") {
     background-size: 220px;
     width: 220px;
   }

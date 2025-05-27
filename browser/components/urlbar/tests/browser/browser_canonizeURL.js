@@ -32,6 +32,7 @@ add_task(async function checkCtrlWorks() {
     ["ex-ample.foo", "http://ex-ample.foo/", { ctrlKey: true }],
     ["example.foo/bar ", "http://example.foo/bar", { ctrlKey: true }],
     ["1.1.1.1", "http://1.1.1.1/", { ctrlKey: true }],
+    ["ftp://example", "ftp://example/", { ctrlKey: true }],
     ["ftp.example.bar", "http://ftp.example.bar/", { ctrlKey: true }],
     [
       "ex ample",

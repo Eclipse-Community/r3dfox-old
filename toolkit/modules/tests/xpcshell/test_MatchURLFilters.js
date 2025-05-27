@@ -7,10 +7,6 @@ const { MatchURLFilters } = ChromeUtils.importESModule(
   "resource://gre/modules/MatchURLFilters.sys.mjs"
 );
 
-const { Preferences } = ChromeUtils.importESModule(
-  "resource://gre/modules/Preferences.sys.mjs"
-);
-
 function createTestFilter({ url, filters }) {
   let m = new MatchURLFilters(filters);
   return m.matches(url);
@@ -119,13 +115,7 @@ add_task(async function test_match_url_filters() {
     // Port filter: standard (implicit) ports.
     { shouldPass, filters: [{ ports: [443] }], url: "https://mozilla.org" },
     { shouldPass, filters: [{ ports: [80] }], url: "http://mozilla.org" },
-
-    // Port matching unknown protocols will fail.
-    {
-      shouldFail,
-      filters: [{ ports: [21] }],
-      url: "ftp://ftp.mozilla.org",
-    },
+    { shouldPass, filters: [{ ports: [21] }], url: "ftp://ftp.mozilla.org" },
 
     // Port filter: schemes without a default port.
     { shouldFail, filters: [{ ports: [-1] }], url: "about:blank" },
@@ -819,13 +809,7 @@ add_task(async function test_match_url_filters() {
 
   // Run all the the testCases defined above.
   for (let currentTest of testCases) {
-    let { exceptionMessageContains, url, filters, prefs } = currentTest;
-
-    if (prefs !== undefined) {
-      for (let [name, val] of prefs) {
-        Preferences.set(name, val);
-      }
-    }
+    let { exceptionMessageContains, url, filters } = currentTest;
 
     if (currentTest.shouldThrow) {
       expectThrow({ url, filters, exceptionMessageContains });
@@ -833,12 +817,6 @@ add_task(async function test_match_url_filters() {
       expectFail({ url, filters });
     } else {
       expectPass({ url, filters });
-    }
-
-    if (prefs !== undefined) {
-      for (let [name] of prefs) {
-        Preferences.reset(name);
-      }
     }
   }
 });

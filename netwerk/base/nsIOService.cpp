@@ -868,14 +868,6 @@ bool nsIOService::UsesExternalProtocolHandler(const nsACString& aScheme) {
     return true;
   }
 
-  // When ftp protocol is disabled, return true if external protocol handler was
-  // not explicitly disabled by the prererence.
-  if ("ftp"_ns.Equals(aScheme) &&
-      !Preferences::GetBool("network.ftp.enabled", true) &&
-      Preferences::GetBool("network.protocol-handler.external.ftp", true)) {
-    return true;
-  }
-
   // If prefs configure the URI to be handled externally, do so.
   for (const auto& scheme : mForceExternalSchemes) {
     if (aScheme == scheme) {

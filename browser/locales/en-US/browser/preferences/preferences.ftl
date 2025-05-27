@@ -62,6 +62,10 @@ settings-category-labs =
     .tooltiptext = { -firefoxlabs-brand-name }
 pane-experimental-description3 = Give our experimental features a try! They’re in development and evolving, which could impact how { -brand-short-name } works.
 
+pane-r3dfox-title = r3dfox configurations
+category-r3dfox =
+    .tooltiptext = { pane-privacy-title }
+
 pane-experimental-reset =
   .label = Restore Defaults
   .accesskey = R
@@ -133,94 +137,58 @@ search-results-help-link = Need help? Visit <a data-l10n-name="url">Mozilla Supp
 
 ## General Section - r3dfox
 
-r3dfox-title = r3dfox configurations
+r3dfox-title = r3dfox specific options
+
+r3dfox-visual-header = Visual configurations
 
 r3dfox-native-checkbox =
     .label = Use native styles
 
 r3dfox-native-checkbox-desc = This controls whether the scrollbar, checkboxes, and other elements use their native system counterparts or their non-native browser themed style.
 
-r3dfox-native-scroll = Scrollbar style
-
-r3dfox-native-scroll-desc = This controls the style of the scrollbar.
+r3dfox-native-scroll = Scrollbar type
 
 r3dfox-fake-scroll-type = Non-native scrollbar theme
 
-r3dfox-fake-scroll-type-desc = This controls the theme of the scrollbar.
+r3dfox-win-theme-type = Windows version theme override (requires restart)
 
-r3dfox-win-theme-type = Windows version theme override
+r3dfox-colors = r3dfox color schemes
 
-r3dfox-win-theme-type-desc = Override Windows version theme (requires restart)
+r3dfox-fog-type = Caption bar/Aero fog style
+
+r3dfox-caption-text = Override caption/window text color
 
 r3dfox-theme =
     .label = Use r3dfox theme styles
 
-r3dfox-theme-desc = This enables or disables the r3dfox theme.
-
 r3dfox-drag =
     .label = Enable drag space on r3dfox theme styles
-
-r3dfox-drag-desc = This enables or disables the caption/window bar drag space on the r3dfox theme.
 
 r3dfox-backgrounds =
     .label = Backgrounds for tabs and other toolbar items
 
-r3dfox-backgrounds-desc = This enables or disables backgrounds for tabs and other toolbar items.
-
-r3dfox-colors =
-    .label = Use r3dfox colors
-
-r3dfox-colors-desc = This enables or disables all r3dfox colors.
-
-r3dfox-colors-esr =
-    .label = Use r3dfox ESR colors
-
-r3dfox-colors-esr-desc = This enables or disables the r3dfox ESR colors. Requires Use r3dfox colors to be ticked.
-
-r3dfox-colors-plasmafox =
-    .label = Use Plasmafox colors
-
-r3dfox-colors-plasmafox-desc = This enables or disables the Plasmafox colors. Requires Use r3dfox colors to be ticked.
-
 r3dfox-menubar =
     .label = Transparent menubar
-
-r3dfox-menubar-desc = This removes the menubar background.
 
 r3dfox-navbar =
     .label = Translucent design
 
-r3dfox-navbar-desc = This makes the tabs, navbar, urlbar, the top part of the UI all translucent.
-
-r3dfox-less-fog =
-    .label = Less intense caption bar fog
-
-r3dfox-less-fog-desc = This reduces the amount of fog drawn on the caption bar, letting you better see the Aero effects.
-
-r3dfox-fog =
-    .label = Enable caption bar fog
-
-r3dfox-fog-desc = This enables or disables caption bar fog completely.
-
-r3dfox-transparency =
-    .label = Force enable caption bar transparency
-
-r3dfox-transparency-desc = Force enables caption bar transparency, may have varying results.
-
-r3dfox-caption-text =
-    .label = White caption text
-
-r3dfox-caption-text-desc = Enable for white caption text.
+r3dfox-functional-header = Functionality configurations
 
 r3dfox-one-offs =
     .label = Instant one off searches
 
-r3dfox-one-offs-desc = Enable for instant one off searches.
-
 r3dfox-view-image =
     .label = Restore classic View Image context menu option
 
-r3dfox-view-image-desc = Restore the classic View Image and View Background Image context menu options instead of always opening images in a new tab.
+r3dfox-hover-preview =
+    .label = Tab hover preview
+
+r3dfox-advanced-header = Advanced configurations
+
+r3dfox-accessibility = Accessibility services
+
+r3dfox-accessibility-desc = Recommended to disable if you do not need them for enhanced security and performance.
 
 r3dfox-csp =
     .label = Disable Content Security Policy (CSP)
@@ -236,10 +204,6 @@ r3dfox-e10s =
     .label = Disable content multiprocess (e10s) (BETA)
 
 r3dfox-e10s-desc = Disables e10s/electrolysis content multiprocess. There are still multiple processes from other browser components with this enabled. Not recommended unless you know what you are doing.
-
-r3dfox-accessibility = Accessibility services
-
-r3dfox-accessibility-desc = Recommended to disable if you do not need them for enhanced security and performance.
 
 ## General Section - Startup
 

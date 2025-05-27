@@ -117,6 +117,7 @@
   skin/classic/browser/preferences/android-menu.svg            (../shared/preferences/android-menu.svg)
   skin/classic/browser/preferences/category-general.svg        (../shared/preferences/category-general.svg)
   skin/classic/browser/preferences/category-privacy-security.svg    (../shared/preferences/category-privacy-security.svg)
+  skin/classic/browser/preferences/category-r3dfox.svg         (../shared/preferences/category-r3dfox.svg)
   skin/classic/browser/preferences/category-search.svg         (../shared/preferences/category-search.svg)
   skin/classic/browser/preferences/category-sync.svg           (../shared/preferences/category-sync.svg)
   skin/classic/browser/preferences/containers.css              (../shared/preferences/containers.css)

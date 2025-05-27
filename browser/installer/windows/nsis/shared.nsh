@@ -1645,6 +1645,8 @@ Function SetAsDefaultAppUserHKCU
     Pop $0
     AppAssocReg::SetAppAsDefault "$R9" ".xhtml" "file"
     Pop $0
+    AppAssocReg::SetAppAsDefault "$R9" "ftp" "protocol"
+    Pop $0
     AppAssocReg::SetAppAsDefault "$R9" "http" "protocol"
     Pop $0
     AppAssocReg::SetAppAsDefault "$R9" "https" "protocol"

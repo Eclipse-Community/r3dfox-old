@@ -441,7 +441,6 @@ this.browserSettings = class extends ExtensionAPI {
         ftpProtocolEnabled: getSettingsAPI({
           context,
           name: "ftpProtocolEnabled",
-          readOnly: true,
           callback() {
             return Services.prefs.getBoolPref("network.ftp.enabled");
           },

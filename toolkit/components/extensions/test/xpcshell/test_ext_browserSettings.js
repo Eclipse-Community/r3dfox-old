@@ -209,11 +209,12 @@ add_task(async function test_browser_settings() {
     });
   }
 
-  // Bug 1699222 When the pref is removed, the API needs to be updated to always
-  // return false.  At that time it should be deprecated as well.
-  extension.sendMessage("get", "ftpProtocolEnabled");
-  let data = await extension.awaitMessage("settingData");
-  equal(data.value, Services.prefs.getBoolPref("network.ftp.enabled"));
+  await testSetting("ftpProtocolEnabled", false, {
+    "network.ftp.enabled": false,
+  });
+  await testSetting("ftpProtocolEnabled", true, {
+    "network.ftp.enabled": true,
+  });
 
   await testSetting("newTabPosition", "afterCurrent", {
     "browser.tabs.insertRelatedAfterCurrent": false,

@@ -290,7 +290,7 @@ panelview {
 
 /* Tweaks for menupopups hanging off toolbar buttons to make them feel like panels */
 
-@media (-moz-bool-pref: "widget.non-native-theme.enabled") {
+@media -moz-pref("widget.non-native-theme.enabled") {
 .toolbar-menupopup {
   &,
   menupopup {
@@ -1193,7 +1193,7 @@ panelview .toolbarbutton-1,
   flex-shrink: 0;
 }
 
-@media (-moz-bool-pref: "widget.non-native-theme.enabled") {
+@media -moz-pref("widget.non-native-theme.enabled") {
   .toolbar-menupopup :is(menu, menuitem) {
     appearance: none;
     margin: var(--arrowpanel-menuitem-margin);
@@ -2368,7 +2368,7 @@ panelmultiview[mainViewId="PanelUI-fxa"]  {
   padding: 8px;
 }
 
-@media (-moz-bool-pref: "widget.non-native-theme.enabled") {
+@media -moz-pref("widget.non-native-theme.enabled") {
   #PlacesToolbarItems toolbarbutton.bookmark-item menupopup.toolbar-menupopup menuseparator::before {
     border-top: 1px solid var(--panel-separator-color) !important;
     content: "" !important;

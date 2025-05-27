@@ -176,7 +176,7 @@ html|textarea {
   font: inherit;
 }
 
-@media (-moz-bool-pref: "widget.non-native-theme.enabled") {
+@media -moz-pref("widget.non-native-theme.enabled") {
 html|input:where(:not([type=radio i], [type=checkbox i], [type=range i])),
 html|textarea {
   appearance: none;

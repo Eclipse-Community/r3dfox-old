@@ -26,6 +26,7 @@
 #include "mozilla/Unused.h"
 #include "nsIURIMutator.h"
 #include "nsITextToSubURI.h"
+// What is nsIURIMutator.h??
 
 using mozilla::intl::LocaleService;
 using namespace mozilla;
@@ -167,7 +168,29 @@ nsresult nsIndexedToHTML::DoOnStartRequest(nsIRequest* request,
   // would muck up the XUL display
   // - bbaetz
 
-  if (uri->SchemeIs("file")) {
+  if (uri->SchemeIs("ftp")) {
+    // strip out the password here, so it doesn't show in the page title
+    // This is done by the 300: line generation in ftp, but we don't use
+    // that - see above
+
+    nsAutoCString pw;
+    rv = titleURL->GetPassword(pw);
+    if (NS_FAILED(rv)) return rv;
+    if (!pw.IsEmpty()) {
+      nsCOMPtr<nsIURI> newUri;
+      rv = NS_MutateURI(titleURL).SetPassword(""_ns).Finalize(titleURL);
+      if (NS_FAILED(rv)) return rv;
+    }
+
+    nsAutoCString path;
+    rv = uri->GetPathQueryRef(path);
+    if (NS_FAILED(rv)) return rv;
+
+    if (!path.EqualsLiteral("//") && !path.LowerCaseEqualsLiteral("/%2f")) {
+      rv = uri->Resolve(".."_ns, parentStr);
+      if (NS_FAILED(rv)) return rv;
+    }
+  } else if (uri->SchemeIs("file")) {
     nsCOMPtr<nsIFileURL> fileUrl = do_QueryInterface(uri);
     nsCOMPtr<nsIFile> file;
     rv = fileUrl->GetFile(getter_AddRefs(file));

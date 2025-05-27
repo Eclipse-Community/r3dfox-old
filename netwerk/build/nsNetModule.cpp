@@ -103,6 +103,9 @@ WEB_SOCKET_HANDLER_CONSTRUCTOR(WebSocketSSLChannel, true)
 
 ///////////////////////////////////////////////////////////////////////////////
 
+#include "nsFTPDirListingConv.h"
+nsresult NS_NewFTPDirListingConv(nsFTPDirListingConv** result);
+
 #include "nsStreamConverterService.h"
 #include "nsMultiMixedConv.h"
 #include "nsHTTPCompressConv.h"
@@ -124,6 +127,23 @@ nsresult CreateNewStreamConvServiceFactory(REFNSIID aIID, void** aResult) {
   }
   RefPtr<nsStreamConverterService> inst;
   nsresult rv = NS_NewStreamConv(getter_AddRefs(inst));
+  if (NS_FAILED(rv)) {
+    *aResult = nullptr;
+    return rv;
+  }
+  rv = inst->QueryInterface(aIID, aResult);
+  if (NS_FAILED(rv)) {
+    *aResult = nullptr;
+  }
+  return rv;
+}
+
+nsresult CreateNewFTPDirListingConv(REFNSIID aIID, void** aResult) {
+  if (!aResult) {
+    return NS_ERROR_INVALID_POINTER;
+  }
+  RefPtr<nsFTPDirListingConv> inst;
+  nsresult rv = NS_NewFTPDirListingConv(getter_AddRefs(inst));
   if (NS_FAILED(rv)) {
     *aResult = nullptr;
     return rv;

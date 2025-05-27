@@ -14,6 +14,7 @@ nsresult nsNetStartup();
 void nsNetShutdown();
 
 nsresult CreateNewStreamConvServiceFactory(const nsIID& aIID, void** aResult);
+nsresult CreateNewFTPDirListingConv(const nsIID& aIID, void** aResult);
 nsresult CreateNewMultiMixedConvFactory(const nsIID& aIID, void** aResult);
 nsresult CreateNewTXTToHTMLConvFactory(const nsIID& aIID, void** aResult);
 nsresult CreateNewHTTPCompressConvFactory(const nsIID& aIID, void** aResult);

@@ -42,6 +42,7 @@
 #include "nsIThreadRetargetableRequest.h"
 #include "nsContentUtils.h"
 
+#include "ftpCore.h"
 #include "nsIStringBundle.h"
 #include "nsIProtocolHandler.h"
 

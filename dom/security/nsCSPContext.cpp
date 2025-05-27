@@ -1009,12 +1009,13 @@ void StripURIForReporting(nsIURI* aSelfURI, nsIURI* aURI,
   // If the origin of aURI is a globally unique identifier (for example,
   // aURI has a scheme of data, blob, or filesystem), then
   // return the ASCII serialization of uri’s scheme.
-  bool isHttpOrWs = (aURI->SchemeIs("http") || aURI->SchemeIs("https") ||
-                     aURI->SchemeIs("ws") || aURI->SchemeIs("wss"));
+  bool isHttpFtpOrWs =
+      (aURI->SchemeIs("http") || aURI->SchemeIs("https") ||
+       aURI->SchemeIs("ftp") || aURI->SchemeIs("ws") || aURI->SchemeIs("wss"));
 
-  if (!isHttpOrWs) {
+  if (!isHttpFtpOrWs) {
     // not strictly spec compliant, but what we really care about is
-    // http/https. If it's not http/https, then treat aURI
+    // http/https and also ftp. If it's not http/https or ftp, then treat aURI
     // as if it's a globally unique identifier and just return the scheme.
     aURI->GetScheme(outStrippedURI);
     return;

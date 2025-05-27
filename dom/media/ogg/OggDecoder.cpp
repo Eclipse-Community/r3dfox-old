@@ -19,9 +19,12 @@ bool OggDecoder::IsSupportedType(const MediaContainerType& aContainerType) {
   }
 
   if (aContainerType.Type() != MEDIAMIMETYPE(AUDIO_OGG) &&
+      aContainerType.Type() != MEDIAMIMETYPE(VIDEO_OGG) &&
       aContainerType.Type() != MEDIAMIMETYPE("application/ogg")) {
     return false;
   }
+
+  const bool isOggVideo = (aContainerType.Type() != MEDIAMIMETYPE(AUDIO_OGG));
 
   const MediaCodecs& codecs = aContainerType.ExtendedType().Codecs();
   if (codecs.IsEmpty()) {
@@ -33,6 +36,11 @@ bool OggDecoder::IsSupportedType(const MediaContainerType& aContainerType) {
   for (const auto& codec : codecs.Range()) {
     if ((MediaDecoder::IsOpusEnabled() && codec.EqualsLiteral("opus")) ||
         codec.EqualsLiteral("vorbis") || codec.EqualsLiteral("flac")) {
+      continue;
+    }
+    // Note: Only accept Theora in a video container type, not in an audio
+    // container type.
+    if (isOggVideo && codec.EqualsLiteral("theora")) {
       continue;
     }
     // Some unsupported codec.
@@ -61,6 +69,11 @@ nsTArray<UniquePtr<TrackInfo>> OggDecoder::GetTracksInfo(
       tracks.AppendElement(
           CreateTrackInfoWithMIMETypeAndContainerTypeExtraParameters(
               "audio/"_ns + NS_ConvertUTF16toUTF8(codec), aType));
+    } else {
+      MOZ_ASSERT(codec.EqualsLiteral("theora"));
+      tracks.AppendElement(
+          CreateTrackInfoWithMIMETypeAndContainerTypeExtraParameters(
+              "video/"_ns + NS_ConvertUTF16toUTF8(codec), aType));
     }
   }
   return tracks;

@@ -270,132 +270,105 @@
       --arrowpanel-background: light-dark(rgba(255, 255, 255, 0.975), rgba(66, 65, 77, 0.975)) !important;
       --toolbar-field-focus-background-color: light-dark(rgba(255, 255, 255, 0.975), rgba(66, 65, 77, 0.975)) !important;
     }
-    
+
     /* Tab counter at top because it's funny */
-    
+
     #tabbrowser-tabs {
         counter-reset: TabCounter;
     }
-    
+
     .tabbrowser-tab {
         counter-increment: TabCounter;
     }
-    
+
     #tabbrowser-tabs ~ #alltabs-button::after {
         content: counter(TabCounter);
     }
-    
+
     #navigator-toolbox {
       border-bottom: 0px !important;
     }
-    
-      .tab-icon-overlay[indicator-replaces-favicon] {
-      border: none !important;
-      background-size: 100% !important;
-      background-color: transparent !important;
-      fill: color-mix(in srgb, currentcolor 75%, transparent) !important;
-      &:hover {
-        background-color: color-mix(in srgb, currentcolor 15%, transparent) !important;
-        fill: color-mix(in srgb, currentcolor 95%, transparent) !important;
-      }
-    }*/
-    
-    .tab-icon-stack[indicator-replaces-favicon] {
-      grid-template-areas: "a s";
-      & > :is(.tab-icon-image, .tab-icon-overlay) { opacity: 1 !important; }
-      & > .tab-icon-overlay {
-        grid-area: s;
-        border: none !important;
-        background-size: 100% !important;
-        background-color: transparent !important;
-        fill: color-mix(in srgb, currentcolor 75%, transparent) !important;
-        &:hover {
-          background-color: color-mix(in srgb, currentcolor 15%, transparent) !important;
-          fill: color-mix(in srgb, currentcolor 95%, transparent) !important;
-        }
-      }
-    }
-    
+
     /* ---------------------------------------- Indents ---------------------------------------- */
-    
+
     .titlebar-spacer {
         display: none !important;
     }
-    
+
     @media -moz-pref("r3dfox.drag-space.enabled") {
       :root:has(#toolbar-menubar[autohide="true"])[sizemode="normal"] {
         --drag-space: 15px;
-          #TabsToolbar > :is(.titlebar-buttonbox-container, .titlebar-spacer) {
+          /*#TabsToolbar > :is(.titlebar-buttonbox-container, .titlebar-spacer) {
           display: none !important;
         }*/
       }
     }
-    
+
     #TabsToolbar :is(.tabbrowser-tab, .toolbarbutton-1, separator, #personal-bookmarks, #search-container, .accessibility-indicator, .private-browsing-indicator, #private-browsing-indicator-with-label) {
         margin-top: var(--drag-space, 0px) !important;
     }
-    
+
     #tabbrowser-arrowscrollbox {
         --margin-top: var(--drag-space, 0px) !important;
     }
-    
+
     #scrollbutton-up,
     #scrollbutton-down,
     spacer[part="overflow-start-indicator"],
     spacer[part="overflow-end-indicator"] {
         margin-top: var(--margin-top, revert) !important;
     }
-    
+
     #TabsToolbar .toolbarbutton-1 {
       padding-right: 8px !important;
     }
-    
+
     :root:not([privatebrowsingmode], [firefoxviewhidden]) :is(toolbarbutton, toolbarpaletteitem) + #tabbrowser-tabs, :root[privatebrowsingmode]:not([firefoxviewhidden]) :is(toolbarbutton:not(#firefox-view-button), toolbarpaletteitem:not(#wrapper-firefox-view-button)) + #tabbrowser-tabs {
       border-inline-start: 0px solid !important;
       padding-inline-start: 0px !important;
       margin-inline-start: 0px !important;
     }
-    
+
     #TabsToolbar-customization-target > :is(toolbarbutton, toolbaritem):first-child,
     #TabsToolbar-customization-target > toolbarpaletteitem:first-child > :is(toolbarbutton, toolbaritem) {
         margin-inline-start: calc(var(--toolbar-start-end-padding) - var(--toolbarbutton-outer-padding)) !important;
     }
-    
+
     #TabsToolbar-customization-target > :is(toolbarbutton, toolbaritem):last-child,
     #TabsToolbar-customization-target > toolbarpaletteitem:last-child > :is(toolbarbutton, toolbaritem) {
         margin-inline-end: calc(var(--toolbar-start-end-padding) - var(--toolbarbutton-outer-padding)) !important;
     }
-    
+
     #tabbrowser-tabs:not([overflow]) .tabbrowser-tab:nth-child(1 of .tabbrowser-tab:not([pinned], [hidden])) {
         margin-inline-start: 0px !important;
     }
-    
+
     #tabbrowser-tabs:not([overflow]) .tabbrowser-tab:nth-child(1 of .tabbrowser-tab:not([hidden])),
     #tabbrowser-tabs[overflow] .tabbrowser-tab:nth-child(1 of .tabbrowser-tab:not([pinned], [hidden])),
     #tabbrowser-tabs[overflow][haspinnedtabs] {
         margin-inline-start: var(--tab-first-last-inline-margin) !important;
     }
-    
+
     .tabbrowser-tab:nth-last-child(1 of .tabbrowser-tab:not([hidden])) {
         margin-inline-end: var(--tab-first-last-inline-margin) !important;
     }
-    
+
     #tabs-newtab-button {
         margin-inline-start: calc(-1 * var(--tab-first-last-inline-margin) / 2) !important;
     }
-    
+
     .toolbarbutton-1:has(+ #tabbrowser-tabs:not([overflow])),
     .toolbarbutton-1:has(+ #tabbrowser-tabs[overflow][haspinnedtabs]) {
         margin-inline-end: calc(-1 * var(--tab-first-last-inline-margin) / 2 + 1px) !important;
         z-index: 0 !important;
     }
-    
+
     /* ---------------------------------------- Tabs ---------------------------------------- */
-    
+
     :root {
       --inactive-titlebar-opacity: 1 !important;
     }
-    
+
     .tabbrowser-tab[visuallyselected] {
       color: var(--toolbar-color) !important;
 
@@ -403,52 +376,52 @@
         background-color: var(--toolbar-bgcolor) !important;
       }
     }
-    
+
     :root {
         --tab-min-height: 32px !important;
         --tabstrip-min-height: unset !important;
-    
+
       #nav-bar {
         height: 32px !important;
       }
     }
-    
+
     :root[uidensity="compact"] {
         --tab-min-height: 24px !important;
-    
+
       .tab-label-container {
         #tabbrowser-tabs:not([secondarytext-unsupported], [orient=vertical]) & {
           height: 2em !important;
         }
       }
-    
+
       #nav-bar {
         height: 27px !important;
       }
-    
+
       #urlbar-container {
         min-height: 20px !important; height: 28px !important;
       }
     }
-    
+
     :root[uidensity="touch"] {
         --tab-min-height: 40px !important;
     }
-    
+
     @media not (prefers-contrast) {
         .titlebar-buttonbox-container {
             align-items: flex-start !important;
         }
-    
+
         .titlebar-button:not(.titlebar-close):hover {
             background-color: var(--toolbarbutton-hover-background) !important;
         }
-    
+
         .titlebar-button:not(.titlebar-close):hover:active {
             background-color: var(--toolbarbutton-active-background) !important;
         }
     }
-    
+
     .tabbrowser-tab {
       --tab-label-mask-size: 0px !important;
       overflow-clip-margin: var(--tab-min-height) !important;
@@ -458,7 +431,7 @@
         color: var(--toolbar-color) !important;
         position: relative;
         z-index: 2 !important;
-    
+
         .tab-background {
           --gradient-background-image: linear-gradient(var(--toolbar-bgcolor), var(--toolbar-bgcolor));
           --gradient-background-attachment: fixed;

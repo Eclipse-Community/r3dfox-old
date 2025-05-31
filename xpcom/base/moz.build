@@ -279,3 +279,6 @@ if CONFIG["MOZ_PHC"]:
 
 with Files("PHCManager.*"):
     BUG_COMPONENT = ("Core", "Memory Allocator")
+OS_LIBS += ["psapi"]
+
+DEFINES["PSAPI_VERSION"] = "1"

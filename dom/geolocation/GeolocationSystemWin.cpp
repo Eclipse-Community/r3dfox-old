@@ -8,6 +8,7 @@
 #include "mozilla/Components.h"
 #include "mozilla/dom/BrowsingContext.h"
 #include "mozilla/ScopeExit.h"
+#include "mozilla/WindowsVersion.h"
 #include "nsIGeolocationUIUtilsWin.h"
 #include "nsIWifiListener.h"
 #include "nsIWifiMonitor.h"
@@ -34,6 +35,9 @@ const wchar_t kLocationSettingsPage[] = L"ms-settings:privacy-location";
 
 template <typename TypeToCreate>
 ComPtr<TypeToCreate> CreateFromActivationFactory(const wchar_t* aNamespace) {
+  if (!IsWin10Sep2018UpdateOrLater()) {
+    return {};
+  }
   ComPtr<TypeToCreate> newObject;
   GetActivationFactory(HStringReference(aNamespace).Get(), &newObject);
   return newObject;

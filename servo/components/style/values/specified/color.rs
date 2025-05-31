@@ -198,6 +198,7 @@ pub enum SystemColor {
     Window,
     Windowframe,
     Windowtext,
+    MozButtondefault,
     #[parse(aliases = "-moz-default-color")]
     Canvastext,
     #[parse(aliases = "-moz-default-background-color")]

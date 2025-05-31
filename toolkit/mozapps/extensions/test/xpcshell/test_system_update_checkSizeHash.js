@@ -149,7 +149,7 @@ add_task(async function setup() {
   });
 
   xpi = await getSystemAddonXPI(3, "3.0");
-  let [hashFunction, hashValue] = do_get_file_hash(xpi, "sha256").split(":");
+  let [hashFunction, hashValue] = do_get_file_hash(xpi, "sha1").split(":");
   list.push({
     id: "system3@tests.mozilla.org",
     version: "3.0",
@@ -160,7 +160,7 @@ add_task(async function setup() {
   });
 
   xpi = await getSystemAddonXPI(5, "1.0");
-  [hashFunction, hashValue] = do_get_file_hash(xpi, "sha256").split(":");
+  [hashFunction, hashValue] = do_get_file_hash(xpi, "sha1").split(":");
   list.push({
     id: "system5@tests.mozilla.org",
     version: "1.0",

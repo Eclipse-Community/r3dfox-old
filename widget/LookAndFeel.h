@@ -33,7 +33,6 @@ class Document;
 
 namespace widget {
 class FullLookAndFeel;
-class LookAndFeelFont;
 }  // namespace widget
 
 enum class StyleSystemColor : uint8_t;
@@ -513,7 +512,6 @@ class LookAndFeel {
    * @param aStyle Styling to apply to the font.
    */
   static bool GetFont(FontID aID, nsString& aName, gfxFontStyle& aStyle);
-  static void GetFont(FontID, widget::LookAndFeelFont&);
 
   /**
    * GetPasswordCharacter() returns a unicode character which should be used
@@ -575,10 +573,14 @@ class LookAndFeel {
   static void Refresh();
 
   /**
-   * LookAndFeel initialization must be done on the main thread. If you need
-   * LookAndFeel to be initialized OMT then you need to call this first.
+   * GTK's initialization code can't be run off main thread, call this
+   * if you plan on using LookAndFeel off main thread later.
+   *
+   * This initialized state may get reset due to theme changes, so it
+   * must be called prior to each potential off-main-thread LookAndFeel
+   * call, not just once.
    */
-  static void EnsureInit();
+  static void NativeInit();
 
   static void SetData(widget::FullLookAndFeel&& aTables);
   static void NotifyChangedAllWindows(widget::ThemeChangeKind);

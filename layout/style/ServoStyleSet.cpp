@@ -337,6 +337,8 @@ void ServoStyleSet::PreTraverseSync() {
 
   mDocument->ResolveScheduledPresAttrs();
 
+  LookAndFeel::NativeInit();
+
   mDocument->CacheAllKnownLangPrefs();
 
   if (gfxUserFontSet* userFontSet = mDocument->GetUserFontSet()) {

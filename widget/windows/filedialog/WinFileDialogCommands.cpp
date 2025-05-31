@@ -85,7 +85,7 @@ struct Applicator {
   }
   HRESULT Apply(SetFolder const& c) {
     RefPtr<IShellItem> folder;
-    if (SUCCEEDED(SHCreateItemFromParsingName(
+    if (SUCCEEDED(WinUtils::SHCreateItemFromParsingName(
             c.path().get(), nullptr, IID_IShellItem, getter_AddRefs(folder)))) {
       return dialog->SetFolder(folder);
     }

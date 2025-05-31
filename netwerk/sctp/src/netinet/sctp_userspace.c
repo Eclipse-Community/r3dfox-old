@@ -258,7 +258,7 @@ win_if_nametoindex(const char *ifname)
 	return index;
 }
 
-#if WINVER < 0x0600
+#if defined(_WIN32)
 /* These functions are written based on the code at
  * http://www.cs.wustl.edu/~schmidt/win32-cv-1.html
  * Therefore, for the rest of the file the following applies:

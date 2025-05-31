@@ -51,7 +51,7 @@
 #include <windows.h>
 #include "user_environment.h"
 typedef CRITICAL_SECTION userland_mutex_t;
-#if WINVER < 0x0600
+#if defined(_WIN32)
 typedef CRITICAL_SECTION userland_rwlock_t;
 enum {
 	C_SIGNAL = 0,

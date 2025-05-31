@@ -13,6 +13,7 @@ with Files("apz/**"):
 EXPORTS += [
     "composite/CompositableHost.h",
     "CompositorTypes.h",
+    "D3D9SurfaceImage.h",
     "FrameMetrics.h",
     "GLImages.h",
     "GPUVideoImage.h",
@@ -32,6 +33,7 @@ if CONFIG["MOZ_WIDGET_TOOLKIT"] == "windows":
         "D3D11ZeroCopyTextureImage.cpp",
     ]
     UNIFIED_SOURCES += [
+        "D3D9SurfaceImage.cpp",
         "IMFYCbCrImage.cpp",
     ]
     EXPORTS.mozilla.layers += [
@@ -144,6 +146,7 @@ EXPORTS.mozilla.layers += [
     "D3D11ShareHandleImage.h",
     "D3D11YCbCrImage.h",
     "D3D11ZeroCopyTextureImage.h",
+    "D3D9SurfaceImage.h",
     "DirectionUtils.h",
     "Effects.h",
     "Fence.h",

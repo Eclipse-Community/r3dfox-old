@@ -15,6 +15,7 @@
 #include "mozilla/layers/FenceD3D11.h"
 #include "mozilla/layers/CompositeProcessD3D11FencesHolderMap.h"
 #include "mozilla/layers/TextureClient.h"
+#include "d3d9.h"
 
 namespace mozilla {
 namespace layers {

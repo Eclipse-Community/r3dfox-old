@@ -421,11 +421,43 @@ int64_t DxgiOutputDuplicator::num_frames_captured() const {
 
 std::optional<float> DxgiOutputDuplicator::device_scale_factor() const {
   DEVICE_SCALE_FACTOR device_scale_factor = DEVICE_SCALE_FACTOR_INVALID;
-  HRESULT hr = GetScaleFactorForMonitor(monitor_, &device_scale_factor);
-  if (FAILED(hr)) {
-    RTC_LOG(LS_ERROR) << "Failed to get scale factor for monitor: " << hr;
-    return std::nullopt;
-  }
+#define GETPERCENT(dpi) ((dpi * 100 + 50) / 96)
+typedef HRESULT (* LPFNDLLFUNC1)(HMONITOR,DEVICE_SCALE_FACTOR *);
+HINSTANCE hDLL;               // Handle to DLL
+LPFNDLLFUNC1 lpfnDllFunc1;    // Function pointer
+hDLL = LoadLibrary(TEXT("Shcore.dll"));
+if (hDLL != NULL)
+{
+   lpfnDllFunc1 = (LPFNDLLFUNC1)GetProcAddress(hDLL,
+                                           "GetScaleFactorForMonitor");
+   if (!lpfnDllFunc1)
+   {
+      // handle the error
+      FreeLibrary(hDLL);
+        //---- set screen dpi (per session) ----
+        HDC hdc = GetWindowDC(NULL);
+        if (! hdc)
+        {
+           RTC_LOG(LS_ERROR) << "Failed to get scale factor for monitor: ";
+           return std::nullopt;
+        }
+        else
+        {
+            int iDpi = GetDeviceCaps(hdc, LOGPIXELSX);
+            ReleaseDC(NULL, hdc);
+            device_scale_factor = (DEVICE_SCALE_FACTOR) GETPERCENT(iDpi);
+        }
+   }
+   else
+   {
+      // call the function
+      HRESULT hr = lpfnDllFunc1(monitor_, &device_scale_factor);
+      if (FAILED(hr)) {
+        RTC_LOG(LS_ERROR) << "Failed to get scale factor for monitor: " << hr;
+        return std::nullopt;
+      }
+   }
+}
   RTC_DCHECK(device_scale_factor != DEVICE_SCALE_FACTOR_INVALID);
   return static_cast<float>(device_scale_factor) / 100.0f;
 }

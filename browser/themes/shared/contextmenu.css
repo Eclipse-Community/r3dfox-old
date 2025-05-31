@@ -13,6 +13,7 @@
   margin: 0;
   padding: 0;
 
+@media (-moz-windows-non-native-menus) {
   > .menu-iconic-text,
   > .menu-accel-container {
     display: none;
@@ -32,6 +33,7 @@
       fill: currentColor;
     }
   }
+}
 }
 
 #context-back {

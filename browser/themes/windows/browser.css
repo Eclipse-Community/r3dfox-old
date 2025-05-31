@@ -5,6 +5,8 @@
 @import url("chrome://browser/skin/browser-shared.css");
 @import url("chrome://browser/skin/contextmenu.css");
 
+@namespace html url("http://www.w3.org/1999/xhtml");
+
 #menubar-items {
   flex-direction: column; /* for flex hack */
   justify-content: normal; /* align the menubar to the top also in customize mode */
@@ -59,6 +61,79 @@
   }
 }
 
+@media not (-moz-platform: windows-win7) {
+  @media not (-moz-platform: windows-win8) {
+    /* On Windows 10, when temporarily showing the menu bar, make it at least as
+     * tall as the tab bar such that the window controls don't appear to move up. */
+    :root[tabsintitlebar] #toolbar-menubar[autohide="true"] {
+      height: calc(var(--tab-min-height) - var(--tabs-navbar-shadow-size));
+    }
+    :root[tabsintitlebar][sizemode="normal"] #toolbar-menubar[autohide="true"] {
+      height: calc(var(--tab-min-height) - var(--tabs-navbar-shadow-size));
+    }
+  }
+}
+
+/* Add 4px extra margin on top of the tabs toolbar on Windows 7. */
+@media (-moz-platform: windows-win7) {
+  :root[sizemode="normal"][chromehidden~="menubar"] #TabsToolbar > .toolbar-items,
+  :root[sizemode="normal"] #toolbar-menubar[autohide="true"][inactive] ~ :is(#TabsToolbar, #nav-bar) > .toolbar-items {
+    padding-top: 4px;
+  }
+}
+/* Add a fog for background tabs to be visible on Windows 7 glass window background */
+@media (-moz-platform: windows-win7) {
+  @media (-moz-windows-default-theme) {
+    &:not([lwtheme]) #TabsToolbar {
+    isolation: isolate;
+    position: relative;
+     &::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  height: 100%;
+  width: 100%;
+      background-image: radial-gradient(ellipse at bottom, rgba(255,255,255,0.8), rgba(255,255,255,0.5) 80%, transparent);
+  z-index: -1;
+     }
+    }
+  }
+}
+
+@media (-moz-windows-classic) {
+  /**
+   * In the classic themes, the titlebar has a horizontal gradient, which is
+   * problematic for reading the text of background tabs when they're in the
+   * titlebar. We side-step this issue by layering our own background underneath
+   * the tabs.
+   */
+  :root[tabsintitlebar]:not([sizemode=fullscreen]) #TabsToolbar:not([lwtheme]) {
+    background-image: linear-gradient(transparent, ActiveCaption);
+    background-size: auto 200%;
+  }
+
+  :root[tabsintitlebar]:not([sizemode=fullscreen]) #TabsToolbar:not([lwtheme]):-moz-window-inactive {
+    background-image: linear-gradient(transparent, InactiveCaption);
+  }
+
+  /* Add a window top border for webextension themes */
+  :root[tabsintitlebar][sizemode="normal"] #navigator-toolbox[lwtheme] {
+    background-image: linear-gradient(to bottom,
+          ThreeDLightShadow 0, ThreeDLightShadow 1px,
+          ThreeDHighlight 1px, ThreeDHighlight 2px,
+          ActiveBorder 2px, ActiveBorder 4px, transparent 4px);
+  }
+
+  :root[tabsintitlebar] :is(#TabsToolbar, #toolbar-menubar) toolbarbutton:not([lwtheme]) {
+    color: inherit;
+  }
+}
+
+@media not (-moz-windows-compositor) {
+  #nav-bar[tabs-hidden="true"] {
+    box-shadow: none;
+  }
+}
 /* Titlebar */
 
 :root[tabsintitlebar][sizemode="normal"] .browser-titlebar {
@@ -69,6 +144,29 @@
 :root[tabsintitlebar][sizemode="maximized"] .browser-titlebar {
   appearance: auto;
   -moz-default-appearance: -moz-window-titlebar-maximized;
+}
+
+@media not (-moz-windows-compositor) {
+  /**
+   * Anytime we're not using the compositor on Windows, the -moz-window-titlebar
+   * and -moz-window-titlebar-maximized values for -moz-appearance override
+   * backgrounds supplied by lwthemes. We make the #titlebar itself hidden, but
+   * it's children visible in order to hide the background but keep the margin and
+   * padding that comes from those -moz-window-titlebar rules.
+   */
+  :root:not([inFullscreen]) .browser-titlebar[lwtheme] {
+    visibility: hidden;
+  }
+  :root:not([inFullscreen], [chromehidden~="menubar"]) #toolbar-menubar[lwtheme],
+  :root:not([inFullscreen], [chromehidden~="toolbar"]) #TabsToolbar[lwtheme] {
+    visibility: visible;
+  }
+}
+
+@media (-moz-windows-classic) {
+  :root[tabsintitlebar][sizemode="normal"] #toolbar-menubar {
+    margin-top: 4px;
+  }
 }
 
 .titlebar-buttonbox {
@@ -90,12 +188,19 @@
   align-items: stretch;
 }
 
+@media (-moz-platform: windows-win7),
+       (-moz-platform: windows-win8) {
+  /* Preserve window control buttons position at the top of the button box. */
+  .titlebar-buttonbox-container {
+    align-items: flex-start;
+  }
+}
+
 /* Window control buttons */
 
 .titlebar-min {
   appearance: auto;
   -moz-default-appearance: -moz-window-button-minimize;
-  margin-inline-end: 2px;
 }
 
 .titlebar-max {
@@ -111,6 +216,12 @@
 .titlebar-close {
   appearance: auto;
   -moz-default-appearance: -moz-window-button-close;
+}
+
+@media not (-moz-windows-classic) {
+  .titlebar-min {
+    margin-inline-end: 2px;
+  }
 }
 
 :root[tabletmode] .titlebar-min,
@@ -259,8 +370,16 @@ menupopup[touchmode] :is(menu, menuitem, menucaption) {
   padding-block: calc((3.5em - 32px) / 2);
 }
 
+@media not (-moz-windows-non-native-menus) {
+  #context-navigation {
+    background-color: menu;
+  }
+}
+
+@media (-moz-windows-non-native-menus) {
 /* Other menu separators don't extend all the way to the menu edges, but the
    one below the navigation buttons in the content context menu should. */
 #context-sep-navigation {
   padding-inline: 0;
+}
 }

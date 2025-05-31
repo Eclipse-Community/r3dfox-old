@@ -735,6 +735,8 @@ nsWindow::nsWindow(bool aIsChildWindow)
     }
     NS_ASSERTION(sIsOleInitialized, "***** OLE is not initialized!\n");
     MouseScrollHandler::Initialize();
+    // Init theme data
+    nsLookAndFeel::UpdateNativeThemeInfo();
     RedirectedKeyDownMessageManager::Forget();
     if (mPointerEvents.ShouldEnableInkCollector()) {
       InkCollector::sInkCollector = new InkCollector();
@@ -792,6 +794,15 @@ nsWindow::~nsWindow() {
  * Creating and destroying windows for this widget.
  *
  **************************************************************/
+
+static bool ShouldCacheTitleBarInfo(WindowType aWindowType,
+                                    BorderStyle aBorderStyle) {
+  return (aWindowType == WindowType::TopLevel) &&
+         (aBorderStyle == BorderStyle::Default ||
+          aBorderStyle == BorderStyle::All) &&
+         (!nsLookAndFeel::sTitlebarInfoPopulatedThemed ||
+          !nsLookAndFeel::sTitlebarInfoPopulatedAero);
+}
 
 void nsWindow::SendAnAPZEvent(InputData& aEvent) {
   LRESULT popupHandlingResult;
@@ -1172,6 +1183,12 @@ nsresult nsWindow::Create(nsIWidget* aParent, const LayoutDeviceIntRect& aRect,
 
   mDefaultIMC.Init(this);
   IMEHandler::InitInputContext(this, mInputContext);
+
+  // Query for command button metric data for rendering the titlebar. We
+  // only do this once on the first window that has an actual titlebar
+  if (ShouldCacheTitleBarInfo(mWindowType, mBorderStyle)) {
+    nsLookAndFeel::UpdateTitlebarInfo(mWnd);
+  }
 
   static bool a11yPrimed = false;
   if (!a11yPrimed && mWindowType == WindowType::TopLevel) {
@@ -3199,6 +3216,12 @@ void nsWindow::UpdateOpaqueRegion(const LayoutDeviceIntRegion& aOpaqueRegion) {
     margins.cxLeftWidth = largest.X();
     margins.cxRightWidth = clientBounds.Width() - largest.XMost();
     margins.cyBottomHeight = clientBounds.Height() - largest.YMost();
+    if (mCustomNonClient) {
+      // The minimum glass height must be the caption buttons height,
+      // otherwise the buttons are drawn incorrectly.
+      largest.MoveToY(std::max<uint32_t>(
+          largest.Y(), nsLookAndFeel::GetCommandButtonBoxMetrics().cy));
+    }
     margins.cyTopHeight = largest.Y();
   }
 
@@ -5217,7 +5240,10 @@ bool nsWindow::ProcessMessageInternal(UINT msg, WPARAM& wParam, LPARAM& lParam,
     case WM_THEMECHANGED: {
       // Update non-client margin offsets
       UpdateNonClientMargins();
-      // Invalidate the window so that the repaint will pick up the new theme.
+      nsLookAndFeel::UpdateNativeThemeInfo();
+
+      // Invalidate the window so that the repaint will
+      // pick up the new theme.
       Invalidate(true, true, true);
     } break;
 

@@ -600,6 +600,14 @@ html|label[disabled] {
   margin-inline-start: 0;
 }
 
+@media (-moz-platform: windows-win7),
+       (-moz-platform: windows-win8) {
+  #windows-sso,
+  #windows-sso-caption {
+    display: none;
+  }
+}
+
 /**
  * Dialog
  */

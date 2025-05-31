@@ -678,25 +678,8 @@ D3D11TextureData* D3D11TextureData::Create(IntSize aSize, SurfaceFormat aFormat,
     fencesHolderMap->Register(fencesHolderId.ref());
   }
 
-  D3D11TextureData* data =
-      new D3D11TextureData(device, texture11, 0, std::move(handle), aSize, aFormat,
+  return new D3D11TextureData(device, texture11, 0, std::move(handle), aSize, aFormat,
                            fencesHolderId, fence, aFlags);
-
-  texture11->GetDevice(getter_AddRefs(device));
-  if (XRE_IsGPUProcess() &&
-      device == gfx::DeviceManagerDx::Get()->GetCompositorDevice()) {
-    const auto textureId = GpuProcessD3D11TextureMap::GetNextTextureId();
-    data->SetGpuProcessTextureId(textureId);
-    // Register ID3D11Texture2D to GpuProcessD3D11TextureMap
-    auto* textureMap = GpuProcessD3D11TextureMap::Get();
-    if (textureMap) {
-      textureMap->Register(textureId, texture11, 0, aSize, nullptr, handle);
-    } else {
-      gfxCriticalNoteOnce << "GpuProcessD3D11TextureMap does not exist";
-    }
-  }
-
-  return data;
 }
 
 void D3D11TextureData::Deallocate(LayersIPCChannel* aAllocator) {

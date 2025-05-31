@@ -562,14 +562,7 @@ void nsBaseWidget::Destroy() {
 
 nsIWidget* nsIWidget::GetTopLevelWidget() {
   auto* cur = this;
-  while (true) {
-    if (cur->IsTopLevelWidget()) {
-      break;
-    }
-    nsIWidget* parent = cur->GetParent();
-    if (!parent) {
-      break;
-    }
+  while (nsIWidget* parent = cur->GetParent()) {
     cur = parent;
   }
   return cur;

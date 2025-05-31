@@ -77,6 +77,8 @@ static const wchar_t* GetUXThemeClassName(UXThemeClass aClass) {
       return L"Button";
     case UXThemeClass::Edit:
       return L"Edit";
+    case UXThemeClass::Rebar:
+      return L"Rebar";
     case UXThemeClass::Toolbar:
       return L"Toolbar";
     case UXThemeClass::Progress:

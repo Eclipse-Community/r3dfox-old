@@ -25,6 +25,11 @@ if CONFIG["ENABLE_TESTS"]:
         "/xpcom/build",
     ]
 
+    if CONFIG["OS_ARCH"] == "WINNT":
+        UNIFIED_SOURCES += [
+            "TestUCRTDepends.cpp",
+        ]
+
 USE_LIBS += [
     "static:xul",
 ]

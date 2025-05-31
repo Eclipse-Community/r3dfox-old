@@ -315,10 +315,11 @@ Preferences.addSetting({
 Preferences.addSetting({
   id: "mediaControlToggleEnabled",
   pref: "media.hardwaremediakeys.enabled",
-  // For media control toggle button, we support it on Windows, macOS and
+    // For media control toggle button, we support it on Windows 8.1+ (NT6.3),
+    // MacOs 10.4+ (darwin8.0, but we already don't support that) and
   // gtk-based Linux.
   visible: () =>
-    AppConstants.platform == "win" ||
+      AppConstants.isPlatformAndVersionAtLeast("win", "6.3") ||
     AppConstants.platform == "macosx" ||
     AppConstants.MOZ_WIDGET_GTK,
 });

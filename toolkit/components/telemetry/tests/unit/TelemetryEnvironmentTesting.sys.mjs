@@ -825,8 +825,8 @@ export var TelemetryEnvironmentTesting = {
       lazy.Assert.equal(null, Glean.system.appleModelId.testGetValue());
     }
 
-    // This feature is only available on Windows
-    if (AppConstants.platform == "win") {
+    // This feature is only available on Windows 8+
+    if (AppConstants.isPlatformAndVersionAtLeast("win", "6.2")) {
       lazy.Assert.ok(
         "sec" in data.system,
         "sec must be available under data.system"

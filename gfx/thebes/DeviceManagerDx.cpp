@@ -12,6 +12,7 @@
 #include "mozilla/StaticPrefs_gfx.h"
 #include "mozilla/StaticPrefs_layers.h"
 #include "mozilla/glean/GfxMetrics.h"
+#include "mozilla/WindowsVersion.h"
 #include "mozilla/gfx/GPUParent.h"
 #include "mozilla/gfx/GPUProcessManager.h"
 #include "mozilla/gfx/GraphicsMessages.h"
@@ -67,7 +68,9 @@ DeviceManagerDx::DeviceManagerDx()
     : mDeviceLock("gfxWindowsPlatform.mDeviceLock"),
       mCompositorDeviceSupportsVideo(false) {
   // Set up the D3D11 feature levels we can ask for.
-  mFeatureLevels.AppendElement(D3D_FEATURE_LEVEL_11_1);
+  if (IsWin8OrLater()) {
+    mFeatureLevels.AppendElement(D3D_FEATURE_LEVEL_11_1);
+  }
   mFeatureLevels.AppendElement(D3D_FEATURE_LEVEL_11_0);
   mFeatureLevels.AppendElement(D3D_FEATURE_LEVEL_10_1);
   mFeatureLevels.AppendElement(D3D_FEATURE_LEVEL_10_0);
@@ -946,7 +949,12 @@ void DeviceManagerDx::CreateWARPCompositorDevice() {
     return;
   }
 
-  bool textureSharingWorks = D3D11Checks::DoesTextureSharingWork(device);
+  // Only test for texture sharing on Windows 8 since it puts the device into
+  // an unusable state if used on Windows 7
+  bool textureSharingWorks = false;
+  if (IsWin8OrLater()) {
+    textureSharingWorks = D3D11Checks::DoesTextureSharingWork(device);
+  }
 
   RefPtr<ID3D10Multithread> multi;
   hr = device->QueryInterface(__uuidof(ID3D10Multithread),
@@ -1396,6 +1404,15 @@ bool DeviceManagerDx::CanInitializeKeyedMutexTextures() {
   MutexAutoLock lock(mDeviceLock);
   return mDeviceStatus && StaticPrefs::gfx_direct3d11_allow_keyed_mutex() &&
          gfxVars::AllowD3D11KeyedMutex();
+}
+
+bool DeviceManagerDx::HasCrashyInitData() {
+  MutexAutoLock lock(mDeviceLock);
+  if (!mDeviceStatus) {
+    return false;
+  }
+
+  return (mDeviceStatus->adapter().VendorId == 0x8086 && !IsWin10OrLater());
 }
 
 bool DeviceManagerDx::IsWARP() {

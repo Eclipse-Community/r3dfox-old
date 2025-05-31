@@ -410,8 +410,8 @@ function convertPosition(anchor, align) {
  * which can shift the bottom/right up to 0.5px from its "ideal" location,
  * and could cause it to round differently. (See bug 622507.)
  */
-function isWithinAPixel(a, b, message) {
-  ok(Math.abs(a - b) < 1, `${message}: ${a}, ${b}`);
+function isWithinHalfPixel(a, b, message) {
+  ok(Math.abs(a - b) <= 0.5, `${message}: ${a}, ${b}`);
 }
 
 function compareEdge(anchor, popup, edge, offsetX, offsetY, testname) {
@@ -507,71 +507,79 @@ function compareEdge(anchor, popup, edge, offsetX, offsetY, testname) {
         break;
     }
 
-    isWithinAPixel(popuprect.left, cornerX, testname + " x position");
-    isWithinAPixel(popuprect.top, cornerY, testname + " y position");
+    is(
+      Math.round(popuprect.left),
+      Math.round(cornerX),
+      testname + " x position"
+    );
+    is(
+      Math.round(popuprect.top),
+      Math.round(cornerY),
+      testname + " y position"
+    );
     return;
   }
 
   if (edge == "overlap") {
-    isWithinAPixel(
-      anchorrect.left + offsetY,
-      popuprect.left,
+    is(
+      Math.round(anchorrect.left) + offsetY,
+      Math.round(popuprect.left),
       testname + " position1"
     );
-    isWithinAPixel(
-      anchorrect.top + offsetY,
-      popuprect.top,
+    is(
+      Math.round(anchorrect.top) + offsetY,
+      Math.round(popuprect.top),
       testname + " position2"
     );
     return;
   }
 
   if (edge.indexOf("before") == 0) {
-    isWithinAPixel(
+    isWithinHalfPixel(
       anchorrect.top + offsetY,
       popuprect.bottom,
       testname + " position1"
     );
   } else if (edge.indexOf("after") == 0) {
-    isWithinAPixel(
-      anchorrect.bottom + offsetY,
-      popuprect.top,
+    is(
+      Math.round(anchorrect.bottom) + offsetY,
+      Math.round(popuprect.top),
       testname + " position1"
     );
   } else if (edge.indexOf("start") == 0) {
-    isWithinAPixel(
+    isWithinHalfPixel(
       anchorrect.left + offsetX,
       popuprect.right,
       testname + " position1"
     );
   } else if (edge.indexOf("end") == 0) {
-    isWithinAPixel(
-      anchorrect.right + offsetX,
-      popuprect.left,
+    is(
+      Math.round(anchorrect.right) + offsetX,
+      Math.round(popuprect.left),
       testname + " position1"
     );
   }
 
   if (0 < edge.indexOf("before")) {
-    isWithinAPixel(
-      anchorrect.top + offsetY,
-      popuprect.top,
+    is(
+      Math.round(anchorrect.top) + offsetY,
+      Math.round(popuprect.top),
       testname + " position2"
     );
   } else if (0 < edge.indexOf("after")) {
-    isWithinAPixel(
+    isWithinHalfPixel(
       anchorrect.bottom + offsetY,
       popuprect.bottom,
       testname + " position2"
     );
   } else if (0 < edge.indexOf("start")) {
-    isWithinAPixel(
-      anchorrect.left + offsetX,
-      popuprect.left,
+    is(
+      Math.round(anchorrect.left) + offsetX,
+      Math.round(popuprect.left),
       testname + " position2"
     );
   } else if (0 < edge.indexOf("end")) {
-    isWithinAPixel(
+    isWithinHalfPixel(
       anchorrect.right + offsetX,
       popuprect.right,
       testname + " position2"

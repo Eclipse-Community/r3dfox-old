@@ -7977,7 +7977,16 @@ void nsWindow::PickerClosed() {
   }
 }
 
-bool nsWindow::WidgetTypeSupportsAcceleration() { return true; }
+bool nsWindow::WidgetTypeSupportsAcceleration() {
+  if (IsPopup()) {
+    // This transparency+popup checks go back to bug 1150376 and bug 943204,
+    // but removing it causes reproducible timeouts on automation, see bug
+    // 1891063 comment 11.
+    return mTransparencyMode != TransparencyMode::Transparent &&
+           !DeviceManagerDx::Get()->IsWARP();
+  }
+  return true;
+}
 
 bool nsWindow::DispatchTouchEventFromWMPointer(
     UINT msg, LPARAM aLParam, const WinPointerInfo& aPointerInfo,

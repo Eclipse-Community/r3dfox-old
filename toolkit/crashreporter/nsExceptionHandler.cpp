@@ -838,7 +838,7 @@ static void AnnotateMemoryStatus(AnnotationWriter& aWriter) {
   }
 
   PERFORMANCE_INFORMATION info;
-  if (K32GetPerformanceInfo(&info, sizeof(info))) {
+  if (GetPerformanceInfo(&info, sizeof(info))) {
     aWriter.Write(Annotation::TotalPageFile,
                   static_cast<uint64_t>(info.CommitLimit * info.PageSize));
     aWriter.Write(Annotation::AvailablePageFile,

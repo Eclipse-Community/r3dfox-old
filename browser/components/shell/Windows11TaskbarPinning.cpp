@@ -193,12 +193,28 @@ Win11PinToTaskBarResult PinCurrentAppToTaskbarWin11(
   Win11PinToTaskBarResultStatus resultStatus =
       Win11PinToTaskBarResultStatus::NotSupported;
 
+static const wchar_t kShellLibraryName[] =  L"shell32.dll";
+
+    typedef HRESULT (WINAPI * SetCurrentProcessExplicitAppUserModelIDPtr)(PCWSTR AppID);
+
+    SetCurrentProcessExplicitAppUserModelIDPtr funcAppUserModelID = nullptr;
+
+    HMODULE hDLL = ::LoadLibraryW(kShellLibraryName);
+
+    funcAppUserModelID = (SetCurrentProcessExplicitAppUserModelIDPtr)
+                          GetProcAddress(hDLL, "SetCurrentProcessExplicitAppUserModelID");
+
+    if (!funcAppUserModelID) {
+        ::FreeLibrary(hDLL);
+        return unlockStatus;
+    }
+
   EventWrapper event;
 
   // Everything related to the taskbar and pinning must be done on the main /
   // user interface thread or Windows will cause them to fail.
   NS_DispatchToMainThread(NS_NewRunnableFunction(
-      "PinCurrentAppToTaskbarWin11", [&event, &hr, &resultStatus, aCheckOnly,
+      "PinCurrentAppToTaskbarWin11", [&event, &hr, &resultStatus, aCheckOnly, funcAppUserModelID,
                                       aumid = nsString(aAppUserModelId)] {
         // We eventualy want to call SetCurrentProcessExplicitAppUserModelID()
         // on the main thread as it is not thread safe and pinning is called
@@ -210,13 +226,13 @@ Win11PinToTaskBarResult PinCurrentAppToTaskbarWin11(
         nsAutoString primaryAumid;
         mozilla::widget::WinTaskbar::GenerateAppUserModelID(primaryAumid,
                                                             false);
-        auto CompletedOperations = [&event, &resultStatus,
+        auto CompletedOperations = [&event, &resultStatus, funcAppUserModelID,
                                     primaryAumid = nsString(primaryAumid)](
                                        Win11PinToTaskBarResultStatus status) {
           // Set AUMID back and ensure the icon is set correctly
           if (!widget::WinUtils::HasPackageIdentity()) {
             HRESULT hr =
-                SetCurrentProcessExplicitAppUserModelID(primaryAumid.get());
+              funcAppUserModelID(primaryAumid.get());
             if (FAILED(hr)) {
               TASKBAR_PINNING_LOG(LogLevel::Debug,
                                   "Taskbar: reverting AUMID after pinning "
@@ -231,7 +247,7 @@ Win11PinToTaskBarResult PinCurrentAppToTaskbarWin11(
         // Set the process to have the AUMID of the shortcut we want to pin,
         // this is only necessary for Win32 builds
         if (!widget::WinUtils::HasPackageIdentity()) {
-          hr = SetCurrentProcessExplicitAppUserModelID(aumid.get());
+        hr = funcAppUserModelID(aumid.get());
           if (FAILED(hr)) {
             return CompletedOperations(Win11PinToTaskBarResultStatus::Failed);
           }
@@ -263,17 +279,17 @@ Win11PinToTaskBarResult PinCurrentAppToTaskbarWin11(
         // be alive until the async functions complete, so they can be used as
         // references.
         auto isPinnedCallback = Callback<IAsyncOperationCompletedHandler<
-            bool>>([taskbar, &event, &resultStatus, &hr,
+            bool>>([taskbar, &event, &resultStatus, &hr, funcAppUserModelID,
                     primaryAumid = nsString(primaryAumid)](
                        IAsyncOperation<bool>* asyncInfo,
                        AsyncStatus status) mutable -> HRESULT {
           auto CompletedOperations =
-              [&event, &resultStatus,
+              [&event, &resultStatus, funcAppUserModelID,
                primaryAumid](Win11PinToTaskBarResultStatus status) -> HRESULT {
             // Set AUMID back and ensure the icon is set correctly
             if (!widget::WinUtils::HasPackageIdentity()) {
               HRESULT hr =
-                  SetCurrentProcessExplicitAppUserModelID(primaryAumid.get());
+                funcAppUserModelID(primaryAumid.get());
               if (FAILED(hr)) {
                 TASKBAR_PINNING_LOG(LogLevel::Debug,
                                     "Taskbar: reverting AUMID after pinning "
@@ -394,6 +410,7 @@ Win11PinToTaskBarResult PinCurrentAppToTaskbarWin11(
   // block until the pinning is completed on the main thread
   event.Wait();
 
+        ::FreeLibrary(hDLL);
   return {hr, resultStatus};
 }
 

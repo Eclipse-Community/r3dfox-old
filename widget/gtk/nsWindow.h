@@ -297,9 +297,6 @@ class nsWindow final : public nsBaseWidget {
 
   void UpdateOpaqueRegionInternal();
   void UpdateOpaqueRegion(const LayoutDeviceIntRegion&) override;
-  LayoutDeviceIntRegion GetOpaqueRegionForTesting() const override {
-    return GetOpaqueRegion();
-  }
   LayoutDeviceIntRegion GetOpaqueRegion() const;
 
   already_AddRefed<mozilla::gfx::DrawTarget> StartRemoteDrawingInRegion(

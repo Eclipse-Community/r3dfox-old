@@ -253,9 +253,15 @@ class PresentableSharedImage {
     return true;
   }
 
-  bool PresentToWindow(HWND aWindowHandle,
+  bool PresentToWindow(HWND aWindowHandle, TransparencyMode aTransparencyMode,
                        Span<const IpcSafeRect> aDirtyRects) {
-    if (::GetWindowLongPtrW(aWindowHandle, GWL_EXSTYLE) & WS_EX_LAYERED) {
+    if (aTransparencyMode == TransparencyMode::Transparent) {
+      // If our window is a child window or a child-of-a-child, the window
+      // that needs to be updated is the top level ancestor of the tree
+      HWND topLevelWindow = WinUtils::GetTopLevelHWND(aWindowHandle, true);
+      MOZ_ASSERT(::GetWindowLongPtr(topLevelWindow, GWL_EXSTYLE) &
+                 WS_EX_LAYERED);
+
       BLENDFUNCTION bf = {AC_SRC_OVER, 0, 255, AC_SRC_ALPHA};
       POINT srcPos = {0, 0};
       RECT clientRect = {};
@@ -281,7 +287,7 @@ class PresentableSharedImage {
       }
 
       return !!::UpdateLayeredWindow(
-          aWindowHandle, nullptr /*paletteDC*/, nullptr /*newPos*/, &winSize,
+          topLevelWindow, nullptr /*paletteDC*/, nullptr /*newPos*/, &winSize,
           mDeviceContext, &srcPos, 0 /*colorKey*/, &bf, ULW_ALPHA);
     }
 
@@ -382,7 +388,8 @@ Provider::~Provider() {
   }
 }
 
-bool Provider::Initialize(HWND aWindowHandle, DWORD aTargetProcessId) {
+bool Provider::Initialize(HWND aWindowHandle, DWORD aTargetProcessId,
+                          TransparencyMode aTransparencyMode) {
   MOZ_ASSERT(aWindowHandle);
   MOZ_ASSERT(aTargetProcessId);
 
@@ -434,7 +441,13 @@ bool Provider::Initialize(HWND aWindowHandle, DWORD aTargetProcessId) {
       PR_USER_THREAD, [](void* p) { static_cast<Provider*>(p)->ThreadMain(); },
       this, PR_PRIORITY_NORMAL, PR_GLOBAL_THREAD, PR_JOINABLE_THREAD,
       0 /*default stack size*/);
-  return !!mServiceThread;
+  if (!mServiceThread) {
+    return false;
+  }
+
+  mTransparencyMode = uint32_t(aTransparencyMode);
+
+  return true;
 }
 
 Maybe<RemoteBackbufferHandles> Provider::CreateRemoteHandles() {
@@ -442,6 +455,10 @@ Maybe<RemoteBackbufferHandles> Provider::CreateRemoteHandles() {
       RemoteBackbufferHandles(ipc::FileDescriptor(mFileMapping),
                               ipc::FileDescriptor(mRequestReadyEvent),
                               ipc::FileDescriptor(mResponseReadyEvent)));
+}
+
+void Provider::UpdateTransparencyMode(TransparencyMode aTransparencyMode) {
+  mTransparencyMode = uint32_t(aTransparencyMode);
 }
 
 void Provider::ThreadMain() {
@@ -558,7 +575,8 @@ void Provider::HandlePresentRequest(const PresentRequestData& aRequestData,
   }
 
   if (!mBackbuffer->PresentToWindow(
-          mWindowHandle, rectSpan.First(aRequestData.lenDirtyRects))) {
+          mWindowHandle, GetTransparencyMode(),
+          rectSpan.First(aRequestData.lenDirtyRects))) {
     return;
   }
 

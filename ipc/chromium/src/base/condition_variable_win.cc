@@ -11,7 +11,7 @@
 #include "base/time.h"
 
 ConditionVariable::ConditionVariable(Lock* user_lock)
-    : srwlock_(user_lock->lock_.native_handle()) {
+    : crit_sec_(user_lock->lock_.native_handle()) {
   DCHECK(user_lock);
   InitializeConditionVariable(&cv_);
 }
@@ -25,7 +25,7 @@ void ConditionVariable::Wait() {
 void ConditionVariable::TimedWait(const base::TimeDelta& max_time) {
   DWORD timeout = static_cast<DWORD>(max_time.InMilliseconds());
 
-  if (!SleepConditionVariableSRW(&cv_, srwlock_, timeout, 0)) {
+  if (!SleepConditionVariableCS(&cv_, crit_sec_, timeout)) {
     // On failure, we only expect the CV to timeout. Any other error value means
     // that we've unexpectedly woken up.
     // Note that WAIT_TIMEOUT != ERROR_TIMEOUT. WAIT_TIMEOUT is used with the

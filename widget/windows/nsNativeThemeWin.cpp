@@ -746,6 +746,9 @@ mozilla::Maybe<UXThemeClass> nsNativeThemeWin::GetThemeClass(
     case StyleAppearance::MozWindowButtonMinimize:
     case StyleAppearance::MozWindowButtonMaximize:
     case StyleAppearance::MozWindowButtonRestore:
+    case StyleAppearance::MozWindowButtonBox:
+    case StyleAppearance::MozWindowButtonBoxMaximized:
+    case StyleAppearance::MozWinBorderlessGlass:
       return Some(UXThemeClass::WindowFrame);
     default:
       return Nothing();
@@ -1291,6 +1294,12 @@ nsresult nsNativeThemeWin::GetThemePartAndState(nsIFrame* aFrame,
       aState = GetWindowFrameButtonState(aFrame,
                                          GetContentState(aFrame, aAppearance));
       return NS_OK;
+    case StyleAppearance::MozWindowButtonBox:
+    case StyleAppearance::MozWindowButtonBoxMaximized:
+    case StyleAppearance::MozWinBorderlessGlass:
+      aPart = -1;
+      aState = 0;
+      return NS_OK;
     default:
       aPart = 0;
       aState = 0;
@@ -1357,6 +1366,13 @@ nsNativeThemeWin::DrawWidgetBackground(gfxContext* aContext, nsIFrame* aFrame,
       // Not conventional bitmaps, can't be retrieved. If we fall
       // through here and call the theme library we'll get aero
       // basic bitmaps.
+      return NS_OK;
+    case StyleAppearance::MozWinBorderlessGlass:
+      // Nothing to draw, this is the glass background.
+      return NS_OK;
+    case StyleAppearance::MozWindowButtonBox:
+    case StyleAppearance::MozWindowButtonBoxMaximized:
+      // We handle these through nsIWidget::UpdateThemeGeometries
       return NS_OK;
     default:
       break;
@@ -1734,7 +1750,8 @@ LayoutDeviceIntMargin nsNativeThemeWin::GetWidgetBorder(
       aAppearance == StyleAppearance::Menuitemtext ||
       aAppearance == StyleAppearance::Separator ||
       aAppearance == StyleAppearance::MozWindowTitlebar ||
-      aAppearance == StyleAppearance::MozWindowTitlebarMaximized) {
+      aAppearance == StyleAppearance::MozWindowTitlebarMaximized ||
+      aAppearance == StyleAppearance::MozWinBorderlessGlass) {
     return result;  // Don't worry about it.
   }
 
@@ -1797,6 +1814,21 @@ bool nsNativeThemeWin::GetWidgetPadding(nsDeviceContext* aContext,
   }
 
   bool ok = true;
+
+  if (aAppearance == StyleAppearance::MozWindowButtonBox ||
+      aAppearance == StyleAppearance::MozWindowButtonBoxMaximized) {
+    aResult->SizeTo(0, 0, 0, 0);
+
+    // aero glass doesn't display custom buttons
+    if (gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled()) return true;
+
+    // button padding for standard windows
+    if (aAppearance == StyleAppearance::MozWindowButtonBox) {
+      aResult->top = GetSystemMetrics(SM_CXFRAME);
+    }
+    ScaleForFrameDPI(aResult, aFrame);
+    return ok;
+  }
 
   // Content padding
   if (aAppearance == StyleAppearance::MozWindowTitlebar ||
@@ -1961,6 +1993,7 @@ LayoutDeviceIntSize nsNativeThemeWin::GetMinimumWidgetSize(
     case StyleAppearance::Listbox:
     case StyleAppearance::Treeview:
     case StyleAppearance::Menuitemtext:
+    case StyleAppearance::MozWinBorderlessGlass:
       return {};  // Don't worry about it.
     default:
       break;
@@ -2075,7 +2108,8 @@ bool nsNativeThemeWin::WidgetAttributeChangeRequiresRepaint(
       aAppearance == StyleAppearance::Progresschunk ||
       aAppearance == StyleAppearance::ProgressBar ||
       aAppearance == StyleAppearance::Tabpanels ||
-      aAppearance == StyleAppearance::Separator) {
+      aAppearance == StyleAppearance::Separator ||
+      aAppearance == StyleAppearance::MozWinBorderlessGlass) {
     return false;
   }
 
@@ -2164,6 +2198,17 @@ bool nsNativeThemeWin::WidgetAppearanceDependsOnWindowFocus(
   }
 }
 
+nsITheme::ThemeGeometryType nsNativeThemeWin::ThemeGeometryTypeForWidget(
+    nsIFrame* aFrame, StyleAppearance aAppearance) {
+  switch (aAppearance) {
+    case StyleAppearance::MozWindowButtonBox:
+    case StyleAppearance::MozWindowButtonBoxMaximized:
+      return eThemeGeometryTypeWindowButtons;
+    default:
+      return eThemeGeometryTypeUnknown;
+  }
+}
+
 nsITheme::Transparency nsNativeThemeWin::GetWidgetTransparency(
     nsIFrame* aFrame, StyleAppearance aAppearance) {
   if (IsWidgetNonNative(aFrame, aAppearance) != NonNative::No) {
@@ -2171,6 +2216,7 @@ nsITheme::Transparency nsNativeThemeWin::GetWidgetTransparency(
   }
 
   switch (aAppearance) {
+    case StyleAppearance::MozWinBorderlessGlass:
     case StyleAppearance::ProgressBar:
     case StyleAppearance::Progresschunk:
     case StyleAppearance::Range:
@@ -2246,6 +2292,8 @@ bool nsNativeThemeWin::ClassicThemeSupportsWidget(nsIFrame* aFrame,
     case StyleAppearance::MozWindowButtonMinimize:
     case StyleAppearance::MozWindowButtonMaximize:
     case StyleAppearance::MozWindowButtonRestore:
+    case StyleAppearance::MozWindowButtonBox:
+    case StyleAppearance::MozWindowButtonBoxMaximized:
       return true;
     default:
       return false;

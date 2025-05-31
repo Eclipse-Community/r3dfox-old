@@ -44,6 +44,8 @@ class CompositorWidgetParent final : public PCompositorWidgetParent,
   bool InitCompositor(layers::Compositor* aCompositor) override;
   bool IsHidden() const override;
 
+  bool HasGlass() const override;
+
   nsSizeMode GetWindowSizeMode() const override;
   bool GetWindowIsFullyOccluded() const override;
 

@@ -5668,7 +5668,13 @@ static SingleCanvasBackground ComputeSingleCanvasBackground(nsIFrame* aCanvas) {
   MOZ_ASSERT(aCanvas->IsCanvasFrame());
   const nsIFrame* bgFrame = nsCSSRendering::FindBackgroundFrame(aCanvas);
   static constexpr nscolor kTransparent = NS_RGBA(0, 0, 0, 0);
-  if (bgFrame->IsThemed()) {
+  const nsStyleDisplay* disp = bgFrame->StyleDisplay();
+  StyleAppearance appearance = disp->EffectiveAppearance();
+  if (bgFrame->IsThemed(disp) &&
+      appearance != StyleAppearance::MozWinBorderlessGlass) {
+    // Ignore the CSS background-color if -moz-appearance is used and it is
+    // not one of the glass values. (Windows 7 Glass has traditionally not
+    // overridden background colors, so we preserve that behavior for now.)
     // Ignore the CSS background-color if `appearance` is used on the root.
     return {kTransparent, false};
   }

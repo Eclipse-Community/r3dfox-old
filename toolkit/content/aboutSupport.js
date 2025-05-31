@@ -345,6 +345,12 @@ var snapshotFormatters = {
       return;
     }
 
+    if (!AppConstants.isPlatformAndVersionAtLeast("win", "6.2")) {
+      $("security-software").hidden = true;
+      $("security-software-table").hidden = true;
+      return;
+    }
+
     $("security-software-antivirus").textContent = data.registeredAntiVirus;
     $("security-software-antispyware").textContent = data.registeredAntiSpyware;
     $("security-software-firewall").textContent = data.registeredFirewall;

@@ -360,6 +360,7 @@
         ".menu-text": "value=label,accesskey,crop",
         ".menu-iconic-highlightable-text":
           "text=label,crop,accesskey,highlightable",
+        ".menubar-left": "src=image",
         ".menu-iconic-icon":
           "src=image,triggeringprincipal=iconloadingprincipal,validate",
         ".menu-iconic-accel": "value=acceltext",
@@ -391,16 +392,27 @@
     }
 
     get fragment() {
+      let { isMenubarChild, isIconic } = this;
       let fragment = null;
-      if (this.isMenubarChild) {
+      // Add aria-hidden="true" on all DOM, since XULMenuAccessible handles accessibility here.
+      if (isMenubarChild && isIconic) {
+        if (!MozMenu.menubarIconicFrag) {
+          MozMenu.menubarIconicFrag = MozXULElement.parseXULToFragment(`
+          <image class="menubar-left" aria-hidden="true"/>
+          <label class="menubar-text" crop="end" aria-hidden="true"/>
+        `);
+        }
+        fragment = document.importNode(MozMenu.menubarIconicFrag, true);
+      }
+      if (isMenubarChild && !isIconic) {
         if (!MozMenu.menubarFrag) {
-          // Add aria-hidden="true" on all DOM, since XULMenuAccessible handles accessibility here.
           MozMenu.menubarFrag = MozXULElement.parseXULToFragment(`
           <label class="menubar-text" crop="end" aria-hidden="true"/>
         `);
         }
         fragment = document.importNode(MozMenu.menubarFrag, true);
-      } else if (this.isIconic) {
+      }
+      if (!isMenubarChild && isIconic) {
         if (!MozMenu.normalIconicFrag) {
           MozMenu.normalIconicFrag = MozXULElement.parseXULToFragment(`
           <hbox class="menu-iconic-left" align="center" pack="center" aria-hidden="true">
@@ -418,7 +430,8 @@
         }
 
         fragment = document.importNode(MozMenu.normalIconicFrag, true);
-      } else {
+      }
+      if (!isMenubarChild && !isIconic) {
         if (!MozMenu.normalFrag) {
           MozMenu.normalFrag = MozXULElement.parseXULToFragment(`
           <label class="menu-text" crop="end" aria-hidden="true"/>

@@ -133,6 +133,12 @@ static GtkWidget* CreateButtonArrowWidget() {
   return widget;
 }
 
+static GtkWidget* CreateSpinWidget() {
+  GtkWidget* widget = gtk_spin_button_new(nullptr, 1, 0);
+  AddToWindowContainer(widget);
+  return widget;
+}
+
 static GtkWidget* CreateEntryWidget() {
   GtkWidget* widget = gtk_entry_new();
   AddToWindowContainer(widget);
@@ -707,6 +713,8 @@ static GtkWidget* CreateWidget(WidgetNodeType aAppearance) {
       return CreateToolbarWidget();
     case MOZ_GTK_TOOLBAR_SEPARATOR:
       return CreateToolbarSeparatorWidget();
+    case MOZ_GTK_SPINBUTTON:
+      return CreateSpinWidget();
     case MOZ_GTK_BUTTON:
       return CreateButtonWidget();
     case MOZ_GTK_TOGGLE_BUTTON:
@@ -1039,6 +1047,11 @@ static GtkStyleContext* GetCssNodeStyleInternal(WidgetNodeType aNodeType) {
       // TODO - create from CSS node
       style = CreateSubStyleWithClass(MOZ_GTK_GRIPPER, GTK_STYLE_CLASS_GRIP);
       break;
+    case MOZ_GTK_SPINBUTTON_ENTRY:
+      // TODO - create from CSS node
+      style =
+          CreateSubStyleWithClass(MOZ_GTK_SPINBUTTON, GTK_STYLE_CLASS_ENTRY);
+      break;
     case MOZ_GTK_SCROLLED_WINDOW:
       // TODO - create from CSS node
       style = CreateSubStyleWithClass(MOZ_GTK_SCROLLED_WINDOW,
@@ -1178,6 +1191,10 @@ static GtkStyleContext* GetWidgetStyleInternal(WidgetNodeType aNodeType) {
       break;
     case MOZ_GTK_GRIPPER:
       style = CreateSubStyleWithClass(MOZ_GTK_GRIPPER, GTK_STYLE_CLASS_GRIP);
+      break;
+    case MOZ_GTK_SPINBUTTON_ENTRY:
+      style =
+          CreateSubStyleWithClass(MOZ_GTK_SPINBUTTON, GTK_STYLE_CLASS_ENTRY);
       break;
     case MOZ_GTK_SCROLLED_WINDOW:
       style = CreateSubStyleWithClass(MOZ_GTK_SCROLLED_WINDOW,

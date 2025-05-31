@@ -7,9 +7,6 @@
 with Files("**"):
     BUG_COMPONENT = ("Core", "DOM: Geolocation")
 
-with Files("GeolocationSystemWin.cpp"):
-    BUG_COMPONENT = ("Core", "Widget: Win32")
-
 EXPORTS += [
     "nsGeoPositionIPCSerialiser.h",
 ]
@@ -31,19 +28,11 @@ SOURCES += [
 ]
 
 UNIFIED_SOURCES += [
+    "GeolocationSystem.cpp",
     "MLSFallback.cpp",
 ]
 
-# MinGW is missing the headers needed to build the Windows Geolocation System
-# Permission UI so it uses the platform-agnostic version.
-if (
-    CONFIG["OS_TARGET"] == "WINNT"
-    and (CONFIG["CC_TYPE"] == "clang-cl" or CONFIG["MOZ_ARTIFACT_BUILDS"])
-    and CONFIG["MOZ_BUILD_APP"] == "browser"
-):
-    UNIFIED_SOURCES += [
-        "GeolocationSystemWin.cpp",
-    ]
+if CONFIG["OS_TARGET"] == "WINNT" and CONFIG["MOZ_BUILD_APP"] == "browser":
     EXTRA_JS_MODULES += [
         "GeolocationUIUtilsWin.sys.mjs",
     ]
@@ -52,10 +41,6 @@ if (
     ]
     XPIDL_SOURCES += ["nsIGeolocationUIUtilsWin.idl"]
     XPIDL_MODULE = "dom_geolocation"
-else:
-    UNIFIED_SOURCES += [
-        "GeolocationSystem.cpp",
-    ]
 
 include("/ipc/chromium/chromium-config.mozbuild")
 

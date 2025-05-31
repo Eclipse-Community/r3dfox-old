@@ -666,7 +666,6 @@ nsWindow::nsWindow(bool aIsChildWindow)
     : nsBaseWidget(BorderStyle::Default),
       mFrameState(std::in_place, this),
       mIsChildWindow(aIsChildWindow),
-      mPIPWindow(false),
       mMicaBackdrop(false),
       mLastPaintEndTime(TimeStamp::Now()),
       mCachedHitTestTime(TimeStamp::Now()),
@@ -887,7 +886,6 @@ nsresult nsWindow::Create(nsIWidget* aParent, const LayoutDeviceIntRect& aRect,
       aParent ? (HWND)aParent->GetNativeData(NS_NATIVE_WINDOW) : nullptr;
 
   mIsRTL = aInitData->mRTL;
-  mPIPWindow = aInitData->mPIPWindow;
   mOpeningAnimationSuppressed = aInitData->mIsAnimationSuppressed;
   mAlwaysOnTop = aInitData->mAlwaysOnTop;
   mIsAlert = aInitData->mIsAlert;
@@ -2703,9 +2701,6 @@ bool nsWindow::UpdateNonClientMargins(bool aReflowWindow) {
         }
       }
     }
-  } else if (mPIPWindow &&
-             !StaticPrefs::widget_windows_pip_decorations_enabled()) {
-    metrics.mOffset = metrics.DefaultMargins();
   } else {
     metrics.mOffset = NormalWindowNonClientOffset();
   }

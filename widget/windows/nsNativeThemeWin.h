@@ -82,6 +82,8 @@ class nsNativeThemeWin final : public Theme {
 
   bool ThemeWantsButtonInnerFocusRing() override { return true; }
 
+  bool WidgetAppearanceDependsOnWindowFocus(StyleAppearance) override;
+
   nsNativeThemeWin();
 
  protected:

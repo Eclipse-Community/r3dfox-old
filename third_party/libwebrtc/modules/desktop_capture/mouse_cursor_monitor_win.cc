@@ -107,7 +107,8 @@ void MouseCursorMonitorWin::Capture() {
   }
 
   if (!IsSameCursorShape(cursor_info, last_cursor_)) {
-    if (cursor_info.flags == CURSOR_SUPPRESSED) {
+    // Mozilla - CURSOR_SUPPRESSED is win8 and above; so we seem not to be able to see the symbol
+    if (cursor_info.flags != CURSOR_SHOWING) {
       // The cursor is intentionally hidden now, send an empty bitmap.
       last_cursor_ = cursor_info;
       callback_->OnMouseCursor(new MouseCursor(

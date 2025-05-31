@@ -15,6 +15,7 @@
 #include "WindowsUIUtils.h"
 #include "mozilla/FontPropertyTypes.h"
 #include "mozilla/glean/WidgetWindowsMetrics.h"
+#include "mozilla/WindowsVersion.h"
 #include "mozilla/widget/WinRegistry.h"
 
 #define AVG2(a, b) (((a) + (b) + 1) >> 1)
@@ -660,6 +661,11 @@ nsresult nsLookAndFeel::NativeGetInt(IntID aID, int32_t& aResult) {
       aResult = GetTooltipOffsetVertical();
       break;
     case IntID::SystemUsesDarkTheme: {
+  if (!IsWin10OrLater()) {
+    aResult = false;
+      break;
+  }
+
       if (mHighContrastOn) {
         aResult =
             LookAndFeel::IsDarkColor(GetColorForSysColorIndex(COLOR_WINDOW));

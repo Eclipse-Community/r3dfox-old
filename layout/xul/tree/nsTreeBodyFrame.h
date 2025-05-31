@@ -289,10 +289,10 @@ class nsTreeBodyFrame final : public mozilla::SimpleXULLeafFrame,
                  nsCSSAnonBoxPseudoStaticAtom** aChildElt);
 
   // Retrieve the area for the twisty for a cell.
-  void GetTwistyRect(int32_t aRowIndex, nsTreeColumn* aColumn,
-                     nsRect& aImageRect, nsRect& aTwistyRect,
-                     nsPresContext* aPresContext,
-                     ComputedStyle* aTwistyContext);
+  nsITheme* GetTwistyRect(int32_t aRowIndex, nsTreeColumn* aColumn,
+                          nsRect& aImageRect, nsRect& aTwistyRect,
+                          nsPresContext* aPresContext,
+                          ComputedStyle* aTwistyContext);
 
   // Fetch an image from the image cache, or request it.
   already_AddRefed<imgIContainer> GetImage(int32_t aRowIndex,

@@ -512,6 +512,11 @@ static GtkStyleContext* GetCssNodeStyleInternal(WidgetNodeType aNodeType) {
     case MOZ_GTK_FRAME_BORDER:
       style = CreateChildCSSNode("border", MOZ_GTK_FRAME);
       break;
+    case MOZ_GTK_TREEVIEW_EXPANDER:
+      // TODO - create from CSS node
+      style =
+          CreateSubStyleWithClass(MOZ_GTK_TREEVIEW, GTK_STYLE_CLASS_EXPANDER);
+      break;
     case MOZ_GTK_WINDOW_DECORATION: {
       GtkStyleContext* parentStyle =
           CreateSubStyleWithClass(MOZ_GTK_HEADERBAR_WINDOW, "csd");
@@ -560,6 +565,10 @@ static GtkStyleContext* GetWidgetStyleInternal(WidgetNodeType aNodeType) {
       break;
     case MOZ_GTK_FRAME_BORDER:
       return GetWidgetRootStyle(MOZ_GTK_FRAME);
+    case MOZ_GTK_TREEVIEW_EXPANDER:
+      style =
+          CreateSubStyleWithClass(MOZ_GTK_TREEVIEW, GTK_STYLE_CLASS_EXPANDER);
+      break;
     default:
       return GetWidgetRootStyle(aNodeType);
   }

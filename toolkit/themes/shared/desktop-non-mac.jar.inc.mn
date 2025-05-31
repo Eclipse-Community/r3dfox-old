@@ -20,4 +20,7 @@
 
   skin/classic/mozapps/handling/handling.css               (../../windows/mozapps/handling/handling.css)
 
+  skin/classic/global/tree/sort-asc.svg                    (../../windows/global/tree/sort-asc.svg)
+  skin/classic/global/tree/sort-dsc.svg                    (../../windows/global/tree/sort-dsc.svg)
+
 % override chrome://mozapps/skin/xpinstall/xpinstallItemGeneric.png       chrome://mozapps/skin/extensions/extensionGeneric.svg

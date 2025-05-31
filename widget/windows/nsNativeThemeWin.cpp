@@ -500,7 +500,12 @@ mozilla::Maybe<UXThemeClass> nsNativeThemeWin::GetThemeClass(
       return Some(UXThemeClass::Trackbar);
     case StyleAppearance::Menulist:
       return Some(UXThemeClass::Combobox);
+    case StyleAppearance::Treeheadercell:
+      return Some(UXThemeClass::Header);
     case StyleAppearance::Listbox:
+    case StyleAppearance::Treeview:
+    case StyleAppearance::Treetwistyopen:
+    case StyleAppearance::Treeitem:
       return Some(UXThemeClass::Listview);
     default:
       return Nothing();
@@ -712,6 +717,7 @@ nsresult nsNativeThemeWin::GetThemePartAndState(nsIFrame* aFrame,
       }
       return NS_OK;
     }
+    case StyleAppearance::Treeview:
     case StyleAppearance::Listbox: {
       aPart = TREEVIEW_BODY;
       aState = TS_NORMAL;
@@ -740,6 +746,17 @@ nsresult nsNativeThemeWin::GetThemePartAndState(nsIFrame* aFrame,
         aState = TS_ACTIVE;  // The selected tab is always "pressed".
       } else
         aState = StandardGetState(aFrame, aAppearance, true);
+
+      return NS_OK;
+    }
+    case StyleAppearance::Treeheadercell: {
+      aPart = 1;
+      if (!aFrame) {
+        aState = TS_NORMAL;
+        return NS_OK;
+      }
+
+      aState = StandardGetState(aFrame, aAppearance, true);
 
       return NS_OK;
     }
@@ -1191,6 +1208,7 @@ LayoutDeviceIntSize nsNativeThemeWin::GetMinimumWidgetSize(
     case StyleAppearance::Progresschunk:
     case StyleAppearance::Tabpanels:
     case StyleAppearance::Listbox:
+    case StyleAppearance::Treeview:
       return {};  // Don't worry about it.
     default:
       break;
@@ -1358,6 +1376,7 @@ bool nsNativeThemeWin::ClassicThemeSupportsWidget(nsIFrame* aFrame,
     case StyleAppearance::RangeThumb:
     case StyleAppearance::Menulist:
     case StyleAppearance::Listbox:
+    case StyleAppearance::Treeview:
     case StyleAppearance::ProgressBar:
     case StyleAppearance::Progresschunk:
     case StyleAppearance::Tab:
@@ -1376,6 +1395,7 @@ LayoutDeviceIntMargin nsNativeThemeWin::ClassicGetWidgetBorder(
       result.top = result.left = result.bottom = result.right = 2;
       break;
     case StyleAppearance::Listbox:
+    case StyleAppearance::Treeview:
     case StyleAppearance::Menulist:
     case StyleAppearance::Tab:
     case StyleAppearance::NumberInput:
@@ -1425,6 +1445,7 @@ LayoutDeviceIntSize nsNativeThemeWin::ClassicGetMinimumWidgetSize(
     case StyleAppearance::Menulist:
     case StyleAppearance::Button:
     case StyleAppearance::Listbox:
+    case StyleAppearance::Treeview:
     case StyleAppearance::NumberInput:
     case StyleAppearance::PasswordInput:
     case StyleAppearance::Textfield:
@@ -1482,6 +1503,7 @@ nsresult nsNativeThemeWin::ClassicGetThemePartAndState(
       return NS_OK;
     }
     case StyleAppearance::Listbox:
+    case StyleAppearance::Treeview:
     case StyleAppearance::NumberInput:
     case StyleAppearance::PasswordInput:
     case StyleAppearance::Textfield:
@@ -1690,6 +1712,15 @@ RENDER_AGAIN:
         ::FillRect(hdc, &widgetRect, (HBRUSH)(COLOR_BTNFACE + 1));
       else
         ::FillRect(hdc, &widgetRect, (HBRUSH)(COLOR_WINDOW + 1));
+
+      break;
+    }
+    case StyleAppearance::Treeview: {
+      // Draw inset edge
+      ::DrawEdge(hdc, &widgetRect, EDGE_SUNKEN, BF_RECT | BF_ADJUST);
+
+      // Fill in window color background
+      ::FillRect(hdc, &widgetRect, (HBRUSH)(COLOR_WINDOW + 1));
 
       break;
     }

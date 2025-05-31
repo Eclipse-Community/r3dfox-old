@@ -15,7 +15,7 @@ use windows_sys::Win32::{
     System::{
         Diagnostics::Debug::ReadProcessMemory,
         ProcessStatus::{
-            K32EnumProcessModules, K32GetModuleBaseNameW, K32GetModuleInformation, MODULEINFO,
+            EnumProcessModules, GetModuleBaseNameW, GetModuleInformation, MODULEINFO,
         },
     },
 };
@@ -88,7 +88,7 @@ impl ProcessReader {
         loop {
             let buffer_size: u32 = (module_num * size_of::<HMODULE>()).try_into()?;
             let res = unsafe {
-                K32EnumProcessModules(
+                EnumProcessModules(
                     self.process,
                     module_array.as_mut_ptr() as *mut _,
                     buffer_size,
@@ -120,7 +120,7 @@ impl ProcessReader {
     fn get_module_name(&self, module: HMODULE) -> Option<String> {
         let mut path: [u16; MAX_PATH as usize] = [0; MAX_PATH as usize];
         let res =
-            unsafe { K32GetModuleBaseNameW(self.process, module, path.as_mut_ptr(), MAX_PATH) };
+            unsafe { GetModuleBaseNameW(self.process, module, path.as_mut_ptr(), MAX_PATH) };
 
         if res == 0 {
             None
@@ -134,7 +134,7 @@ impl ProcessReader {
     fn get_module_info(&self, module: HMODULE) -> Option<MODULEINFO> {
         let mut info: MaybeUninit<MODULEINFO> = MaybeUninit::uninit();
         let res = unsafe {
-            K32GetModuleInformation(
+            GetModuleInformation(
                 self.process,
                 module,
                 info.as_mut_ptr(),

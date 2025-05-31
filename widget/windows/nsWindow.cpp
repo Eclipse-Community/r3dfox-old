@@ -1307,6 +1307,16 @@ DWORD nsWindow::WindowStyle() {
 
   style &= ~WindowStylesRemovedForBorderStyle(mBorderStyle);
 
+  if (mBorderStyle != BorderStyle::Default &&
+      mBorderStyle != BorderStyle::All) {
+    if (IsPopupWithTitleBar()) {
+      style |= WS_CAPTION;
+      if (mBorderStyle & BorderStyle::Close) {
+        style |= WS_SYSMENU;
+      }
+    }
+  }
+
   if (mIsChildWindow) {
     style |= WS_CLIPCHILDREN;
     if (!(style & WS_POPUP)) {
@@ -3678,7 +3688,7 @@ LayoutDeviceIntPoint nsWindow::WidgetToScreenOffset() {
 }
 
 LayoutDeviceIntMargin nsWindow::NormalSizeModeClientToWindowMargin() {
-  if (mWindowType == WindowType::Popup) {
+  if (mWindowType == WindowType::Popup && !IsPopupWithTitleBar()) {
     return {};
   }
 

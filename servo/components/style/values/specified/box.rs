@@ -1494,21 +1494,37 @@ pub enum Appearance {
     /// A groupbox.
     #[parse(condition = "ParserContext::chrome_rules_enabled")]
     Groupbox,
+    /// Menu Bar background
+    #[parse(condition = "ParserContext::chrome_rules_enabled")]
+    Menubar,
     /// <menu> and <menuitem> appearances
     #[parse(condition = "ParserContext::chrome_rules_enabled")]
     Menuitem,
     #[parse(condition = "ParserContext::chrome_rules_enabled")]
     Checkmenuitem,
+    #[parse(condition = "ParserContext::chrome_rules_enabled")]
+    Radiomenuitem,
     /// For text on non-iconic menuitems only
+    #[parse(condition = "ParserContext::chrome_rules_enabled")]
+    Menuitemtext,
     /// The text part of a dropdown list, to left of button.
     #[parse(condition = "ParserContext::chrome_rules_enabled")]
     MenulistText,
     /// Menu Popup background.
     #[parse(condition = "ParserContext::chrome_rules_enabled")]
     Menupopup,
-    /// Menu item arrow.
+    /// menu checkbox/radio appearances
+    #[parse(condition = "ParserContext::chrome_rules_enabled")]
+    Menucheckbox,
+    #[parse(condition = "ParserContext::chrome_rules_enabled")]
+    Menuradio,
+    #[parse(condition = "ParserContext::chrome_rules_enabled")]
+    Menuseparator,
     #[parse(condition = "ParserContext::chrome_rules_enabled")]
     Menuarrow,
+    /// An image in the menu gutter, like in bookmarks or history.
+    #[parse(condition = "ParserContext::chrome_rules_enabled")]
+    Menuimage,
     /// The meter bar's meter indicator.
     #[parse(condition = "ParserContext::chrome_rules_enabled")]
     Meterchunk,

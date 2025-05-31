@@ -174,15 +174,6 @@ nsWifiMonitor::Observe(nsISupports* subject, const char* topic,
   return NS_OK;
 }
 
-void nsWifiMonitor::EnsureWifiScanner() {
-  if (mWifiScanner) {
-    return;
-  }
-
-  LOG(("Constructing WifiScanner"));
-  mWifiScanner = MakeUnique<mozilla::WifiScannerImpl>();
-}
-
 NS_IMETHODIMP nsWifiMonitor::StartWatching(nsIWifiListener* aListener,
                                            bool aForcePolling) {
   LOG(("nsWifiMonitor::StartWatching %p | listener %p | mPollingId %" PRIu64
@@ -323,7 +314,10 @@ void nsWifiMonitor::Scan(uint64_t aPollingId) {
 nsresult nsWifiMonitor::DoScan() {
   MOZ_ASSERT(IsBackgroundThread());
 
-  EnsureWifiScanner();
+  if (!mWifiScanner) {
+    LOG(("Constructing WifiScanner"));
+    mWifiScanner = MakeUnique<mozilla::WifiScannerImpl>();
+  }
   MOZ_ASSERT(mWifiScanner);
 
   LOG(("Scanning Wifi for access points"));
@@ -409,16 +403,4 @@ nsresult nsWifiMonitor::PassErrorToWifiListeners(nsresult rv) {
   return NotifyListeners([&](nsIWifiListener* aListener, WifiListenerData&) {
     aListener->OnError(rv);
   });
-}
-
-bool nsWifiMonitor::GetHasWifiAdapter() {
-#ifdef XP_WIN
-  EnsureWifiScanner();
-  MOZ_ASSERT(mWifiScanner);
-  return static_cast<WifiScannerImpl*>(mWifiScanner.get())->HasWifiAdapter();
-#else
-  MOZ_ASSERT_UNREACHABLE(
-      "nsWifiMonitor::HasWifiAdapter is not available on this platform");
-  return false;
-#endif
 }

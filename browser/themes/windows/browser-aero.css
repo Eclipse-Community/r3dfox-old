@@ -1,0 +1,51 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
+@media (-moz-windows-default-theme) {
+@media (-moz-windows-accent-color-in-titlebar) {
+  :root[tabsintitlebar] {
+    /* stylelint-disable-next-line media-query-no-invalid */
+    @media (-moz-bool-pref: "browser.theme.windows.accent-color-in-tabs.enabled") {
+      --toolbox-non-lwt-bgcolor: ActiveCaption;
+      --toolbox-non-lwt-textcolor: CaptionText;
+      --toolbox-non-lwt-bgcolor-inactive: InactiveCaption;
+      --toolbox-non-lwt-textcolor-inactive: InactiveCaptionText;
+
+      &:not([lwtheme]) #TabsToolbar {
+        /* These colors match the Linux/HCM default button colors. We need to
+         * override these on the tabs toolbar because the accent color is
+         * arbitrary, so the hardcoded colors from browser-custom-colors might
+         * not provide sufficient contrast. */
+        --toolbarbutton-icon-fill: currentColor;
+        --toolbarbutton-hover-background: color-mix(in srgb, currentColor 17%, transparent);
+        --toolbarbutton-active-background: color-mix(in srgb, currentColor 30%, transparent);
+      }
+    }
+
+    &[sizemode="normal"] #navigator-toolbox {
+      border-top: .5px solid ActiveBorder;
+      &:-moz-window-inactive {
+        border-top-color: InactiveBorder;
+      }
+    }
+  }
+}
+}
+
+/* See bug 1715990 about why we do this ourselves on HCM */
+@media (prefers-contrast) {
+  :root[tabsintitlebar]:not([lwtheme]) {
+    background-color: ActiveCaption;
+    color: CaptionText;
+  }
+
+  :root[tabsintitlebar]:not([lwtheme]):-moz-window-inactive {
+    background-color: InactiveCaption;
+    color: InactiveCaptionText;
+  }
+
+  &:not([lwtheme]) #appcontent {
+    background-color: -moz-dialog;
+  }
+}

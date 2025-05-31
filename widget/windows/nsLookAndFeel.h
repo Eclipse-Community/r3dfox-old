@@ -174,6 +174,7 @@ class nsLookAndFeel final : public nsXPLookAndFeel {
   nscolor mColorAccentText = 0;
 
   nscolor mSysColorTable[SYS_COLOR_COUNT]{0};
+  static bool sIsDefaultWindowsTheme;
   bool mHighContrastOn = false;
 
   mozilla::EnumeratedArray<UXThemeClass, UXThemeHandle,

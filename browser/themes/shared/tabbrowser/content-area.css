@@ -211,7 +211,7 @@
   color: -moz-dialogText;
   text-shadow: none;
 
-  @media (not (prefers-contrast)) and (not (-moz-platform: linux)) {
+  @media (-moz-windows-default-theme) and (not (-moz-platform: linux)) {
     background-color: light-dark(#f9f9fa, hsl(240,1%,20%));
     border-color: light-dark(#ddd, hsl(240,1%,40%));
     color: light-dark(#444, rgb(249,249,250));

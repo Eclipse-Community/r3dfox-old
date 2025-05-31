@@ -56,8 +56,6 @@ checkbox {
   align-items: center;
 
   @media (-moz-platform: windows) {
-    width: 13px;
-    height: 13px;
     margin-inline-end: 5px;
   }
 
@@ -87,6 +85,8 @@ checkbox {
 
 @media (-moz-platform: windows) {
   checkbox:where([native]) {
+    appearance: auto;
+    -moz-default-appearance: checkbox-container;
     margin: 2px 4px;
     padding-block: 1px;
     padding-inline: 4px 2px;

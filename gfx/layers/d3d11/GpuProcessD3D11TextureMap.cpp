@@ -50,8 +50,7 @@ void GpuProcessD3D11TextureMap::Register(
     RefPtr<ZeroCopyUsageInfo> aUsageInfo,
     RefPtr<gfx::FileHandleWrapper> aSharedHandle) {
   MonitorAutoLock lock(mMonitor);
-  Register(lock, aTextureId, aTexture, aArrayIndex, aSize, aUsageInfo,
-           aSharedHandle);
+  Register(lock, aTextureId, aTexture, aArrayIndex, aSize, aUsageInfo, nullptr);
 }
 void GpuProcessD3D11TextureMap::Register(
     const MonitorAutoLock& aProofOfLock, GpuProcessTextureId aTextureId,

@@ -37,7 +37,7 @@ use windows_sys::Win32::{
         EXCEPTION_POINTERS, MINIDUMP_EXCEPTION_INFORMATION, MINIDUMP_TYPE,
     },
     System::ErrorReporting::WER_RUNTIME_EXCEPTION_INFORMATION,
-    System::ProcessStatus::K32GetModuleFileNameExW,
+    System::ProcessStatus::GetModuleFileNameExW,
     System::SystemInformation::{
         VerSetConditionMask, VerifyVersionInfoW, OSVERSIONINFOEXW, VER_MAJORVERSION,
         VER_MINORVERSION, VER_SERVICEPACKMAJOR, VER_SERVICEPACKMINOR,
@@ -473,7 +473,7 @@ impl ApplicationInformation {
     fn get_application_path(process: HANDLE) -> Result<PathBuf> {
         let mut path: [u16; MAX_PATH as usize + 1] = [0; MAX_PATH as usize + 1];
         unsafe {
-            let res = K32GetModuleFileNameExW(
+            let res = GetModuleFileNameExW(
                 process,
                 0,
                 (&mut path).as_mut_ptr(),

@@ -7,6 +7,10 @@
 #ifndef ETWTools_h
 #define ETWTools_h
 
+// This code needs to run on Windows 7 and this is magic which
+// removes static linking to EventSetInformation
+#define TLG_HAVE_EVENT_SET_INFORMATION 2
+
 #include "mozilla/BaseProfilerMarkers.h"
 #include "mozilla/Flow.h"
 #include "mozilla/TimeStamp.h"

@@ -54,6 +54,13 @@ button {
   text-align: center;
 }
 
+@media (-moz-windows-classic) {
+  button:where([disabled="true"]) {
+    color: ThreeDShadow;
+    text-shadow: 1px 1px ThreeDHighlight;
+  }
+}
+
 /* ::::: menu buttons ::::: */
 
 .button-menu-dropmarker {

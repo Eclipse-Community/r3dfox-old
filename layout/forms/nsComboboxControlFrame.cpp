@@ -273,15 +273,11 @@ static void printSize(char* aDesc, nscoord aSize) {
 
 bool nsComboboxControlFrame::HasDropDownButton() const {
   const nsStyleDisplay* disp = StyleDisplay();
-  switch (disp->EffectiveAppearance()) {
-    case StyleAppearance::MenulistButton:
-      return true;
-    case StyleAppearance::Menulist:
-      return !IsThemed(disp) ||
-             PresContext()->Theme()->ThemeNeedsComboboxDropmarker();
-    default:
-      return false;
-  }
+  // FIXME(emilio): Blink also shows this for menulist-button and such... Seems
+  // more similar to our mac / linux implementation.
+  return disp->EffectiveAppearance() == StyleAppearance::Menulist &&
+         (!IsThemed(disp) ||
+          PresContext()->Theme()->ThemeNeedsComboboxDropmarker());
 }
 
 nscoord nsComboboxControlFrame::DropDownButtonISize() {

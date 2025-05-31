@@ -25,6 +25,9 @@
 #define MOZ_WM_MOUSE_RESERVED_UNUSED_2 (WM_APP + 0x0312)
 #define MOZ_WM_MOUSE_RESERVED_UNUSED_3 (WM_APP + 0x0313)
 
+// If a popup window is being activated, we try to reactivate the previous
+// window with this message.
+#define MOZ_WM_REACTIVATE (WM_APP + 0x0314)
 // If TSFTextStore needs to notify TSF/TIP of layout change later, this
 // message is posted.
 #define MOZ_WM_NOTIFY_TSF_OF_LAYOUT_CHANGE (WM_APP + 0x0315)

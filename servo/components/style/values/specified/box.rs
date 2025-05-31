@@ -1517,6 +1517,18 @@ pub enum Appearance {
     /// The progress bar's progress indicator
     #[parse(condition = "ParserContext::chrome_rules_enabled")]
     Progresschunk,
+    /// A generic container that always repaints on state changes. This is a
+    /// hack to make XUL checkboxes and radio buttons work.
+    #[parse(condition = "ParserContext::chrome_rules_enabled")]
+    CheckboxContainer,
+    #[parse(condition = "ParserContext::chrome_rules_enabled")]
+    RadioContainer,
+    /// The label part of a checkbox or radio button, used for painting a focus
+    /// outline.
+    #[parse(condition = "ParserContext::chrome_rules_enabled")]
+    CheckboxLabel,
+    #[parse(condition = "ParserContext::chrome_rules_enabled")]
+    RadioLabel,
     /// nsRangeFrame and its subparts
     #[parse(condition = "ParserContext::chrome_rules_enabled")]
     Range,

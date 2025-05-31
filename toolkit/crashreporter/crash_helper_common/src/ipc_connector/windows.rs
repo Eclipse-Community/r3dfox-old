@@ -22,7 +22,7 @@ use std::{
 use windows_sys::Win32::{
     Foundation::{
         GetLastError, BOOL, ERROR_FILE_NOT_FOUND, ERROR_INVALID_MESSAGE, ERROR_IO_PENDING,
-        ERROR_PIPE_BUSY, FALSE, HANDLE, INVALID_HANDLE_VALUE, WAIT_TIMEOUT,
+        ERROR_PIPE_BUSY, FALSE, HANDLE, INVALID_HANDLE_VALUE, WAIT_TIMEOUT, TRUE, WAIT_OBJECT_0
     },
     Security::SECURITY_ATTRIBUTES,
     Storage::FileSystem::{
@@ -34,7 +34,8 @@ use windows_sys::Win32::{
             GetNamedPipeClientProcessId, SetNamedPipeHandleState, WaitNamedPipeA,
             PIPE_READMODE_MESSAGE,
         },
-        IO::{GetOverlappedResult, GetOverlappedResultEx, OVERLAPPED},
+        IO::{GetOverlappedResult, OVERLAPPED},
+        Threading::WaitForSingleObject,
     },
 };
 
@@ -276,13 +277,17 @@ impl IPCConnector {
         if res == FALSE {
             let error = unsafe { GetLastError() };
             if error == ERROR_IO_PENDING {
+                let wait_result = unsafe { WaitForSingleObject(overlapped.hEvent, IO_TIMEOUT as u32) };
+                if wait_result != WAIT_OBJECT_0 {
+                  return Err(IPCError::System(unsafe { GetLastError() }));
+                }
+
                 let res = unsafe {
-                    GetOverlappedResultEx(
+                    GetOverlappedResult(
                         self.as_raw(),
                         overlapped,
                         number_of_bytes_transferred,
-                        IO_TIMEOUT as u32,
-                        /* bAlertable */ FALSE,
+                        TRUE,
                     )
                 };
 

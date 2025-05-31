@@ -50,6 +50,12 @@ static int32_t GetTooltipOffsetVertical() {
                     float(cursorSize) / float(kDefaultCursorSize));
 }
 
+const wchar_t
+nsLookAndFeel::kThemeLibraryName[] = L"uxtheme.dll";
+
+HMODULE
+nsLookAndFeel::sThemeDLL = nullptr;
+
 const int NUM_COMMAND_BUTTONS = 3;
 SIZE nsLookAndFeel::sCommandButtonMetrics[NUM_COMMAND_BUTTONS];
 bool nsLookAndFeel::sCommandButtonMetricsInitialized = false;
@@ -299,6 +305,13 @@ const struct {
                     {L"zune.msstyles", WindowsTheme::Zune},
                     {L"royale.msstyles", WindowsTheme::Royale}};
 
+
+HMODULE
+nsLookAndFeel::GetThemeDLL() {
+  if (!sThemeDLL)
+    sThemeDLL = ::LoadLibraryW(kThemeLibraryName);
+  return sThemeDLL;
+}
 
 bool nsLookAndFeel::sIsDefaultWindowsTheme = false;
 HANDLE nsLookAndFeel::GetTheme(UXThemeClass aClass) {

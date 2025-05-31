@@ -12,6 +12,7 @@
 #include "mozilla/ArrayUtils.h"
 #include "mozilla/mscom/COMWrappers.h"
 #include "mozilla/DebugOnly.h"
+#include "mozilla/DynamicallyLinkedFunctionPtr.h"
 #include "mozilla/mscom/Utils.h"
 #include "mozilla/RefPtr.h"
 #include "mozilla/WindowsVersion.h"
@@ -26,20 +27,82 @@
 extern "C" IMAGE_DOS_HEADER __ImageBase;
 #endif
 
+static bool
+IsCurrentThreadMTALegacy()
+{
+  // We don't use RefPtr for token because CoGetContextToken does *not*
+  // increment its refcount!
+  IUnknown* token = nullptr;
+  HRESULT hr =
+    CoGetContextToken(reinterpret_cast<ULONG_PTR*>(&token));
+  if (FAILED(hr)) {
+    return false;
+  }
+
+  RefPtr<IComThreadingInfo> threadingInfo;
+  hr = token->QueryInterface(IID_IComThreadingInfo,
+                             getter_AddRefs(threadingInfo));
+  if (FAILED(hr)) {
+    return false;
+  }
+
+  APTTYPE aptType;
+  hr = threadingInfo->GetCurrentApartmentType(&aptType);
+  if (FAILED(hr)) {
+    return false;
+  }
+
+  return aptType == APTTYPE_MTA;
+}
+
 namespace mozilla {
 namespace mscom {
 
 bool IsCOMInitializedOnCurrentThread() {
+  static DynamicallyLinkedFunctionPtr<decltype(&::CoGetApartmentType)>
+    pCoGetApartmentType(L"ole32.dll", "CoGetApartmentType");
+
+  if (!pCoGetApartmentType) {
+    // XP and Vista do not expose the newer API.
+  // We don't use RefPtr for token because CoGetContextToken does *not*
+  // increment its refcount!
+  IUnknown* token = nullptr;
+  HRESULT hr =
+    CoGetContextToken(reinterpret_cast<ULONG_PTR*>(&token));
+  if (FAILED(hr)) {
+    return false;
+  }
+
+  RefPtr<IComThreadingInfo> threadingInfo;
+  hr = token->QueryInterface(IID_IComThreadingInfo,
+                             getter_AddRefs(threadingInfo));
+  if (FAILED(hr)) {
+    return false;
+  }
+
+  APTTYPE aptType;
+  hr = threadingInfo->GetCurrentApartmentType(&aptType);
+  return hr != CO_E_NOTINITIALIZED;
+  }
+
   APTTYPE aptType;
   APTTYPEQUALIFIER aptTypeQualifier;
-  HRESULT hr = wrapped::CoGetApartmentType(&aptType, &aptTypeQualifier);
+  HRESULT hr = pCoGetApartmentType(&aptType, &aptTypeQualifier);
   return hr != CO_E_NOTINITIALIZED;
 }
 
 bool IsCurrentThreadMTA() {
+  static DynamicallyLinkedFunctionPtr<decltype(&::CoGetApartmentType)>
+    pCoGetApartmentType(L"ole32.dll", "CoGetApartmentType");
+
+  if (!pCoGetApartmentType) {
+    // XP and Vista do not expose the newer API.
+    return IsCurrentThreadMTALegacy();
+  }
+
   APTTYPE aptType;
   APTTYPEQUALIFIER aptTypeQualifier;
-  HRESULT hr = wrapped::CoGetApartmentType(&aptType, &aptTypeQualifier);
+  HRESULT hr = pCoGetApartmentType(&aptType, &aptTypeQualifier);
   if (FAILED(hr)) {
     return false;
   }
@@ -48,9 +111,17 @@ bool IsCurrentThreadMTA() {
 }
 
 bool IsCurrentThreadExplicitMTA() {
+  static DynamicallyLinkedFunctionPtr<decltype(&::CoGetApartmentType)>
+    pCoGetApartmentType(L"ole32.dll", "CoGetApartmentType");
+
+  if (!pCoGetApartmentType) {
+    // XP and Vista do not expose the newer API.
+    return IsCurrentThreadMTALegacy();
+  }
+
   APTTYPE aptType;
   APTTYPEQUALIFIER aptTypeQualifier;
-  HRESULT hr = wrapped::CoGetApartmentType(&aptType, &aptTypeQualifier);
+  HRESULT hr = pCoGetApartmentType(&aptType, &aptTypeQualifier);
   if (FAILED(hr)) {
     return false;
   }
@@ -60,9 +131,17 @@ bool IsCurrentThreadExplicitMTA() {
 }
 
 bool IsCurrentThreadImplicitMTA() {
+  static DynamicallyLinkedFunctionPtr<decltype(&::CoGetApartmentType)>
+    pCoGetApartmentType(L"ole32.dll", "CoGetApartmentType");
+
+  if (!pCoGetApartmentType) {
+    // XP and Vista do not expose the newer API.
+    return IsCurrentThreadMTALegacy();
+  }
+
   APTTYPE aptType;
   APTTYPEQUALIFIER aptTypeQualifier;
-  HRESULT hr = wrapped::CoGetApartmentType(&aptType, &aptTypeQualifier);
+  HRESULT hr = pCoGetApartmentType(&aptType, &aptTypeQualifier);
   if (FAILED(hr)) {
     return false;
   }

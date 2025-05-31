@@ -104,7 +104,9 @@ class nsLookAndFeel final : public nsXPLookAndFeel {
   nsLookAndFeel();
   virtual ~nsLookAndFeel();
 
+  static HMODULE sThemeDLL;
   static HANDLE GetTheme(UXThemeClass);
+  static HMODULE GetThemeDLL();
 
   // We initialize sCommandButtonBoxMetrics separately as a performance
   // optimization to avoid fetching dummy values for sCommandButtonMetrics
@@ -116,6 +118,7 @@ class nsLookAndFeel final : public nsXPLookAndFeel {
 
   static void EnsureCommandButtonMetrics();
   static void EnsureCommandButtonBoxMetrics();
+  static const wchar_t kThemeLibraryName[];
   static bool sTitlebarInfoPopulatedAero;
   static bool sTitlebarInfoPopulatedThemed;
   // nsWindow calls this to update desktop settings info

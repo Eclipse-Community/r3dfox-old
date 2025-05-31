@@ -35,6 +35,7 @@ class WinPromiseWorker extends PromiseWorker {
 
     this.call("init", [
       {
+        breakAwayFromJob: false,
         comspec: Services.env.get("COMSPEC"),
         signalEvent: String(
           ctypes.cast(this.signalEvent, ctypes.uintptr_t).value

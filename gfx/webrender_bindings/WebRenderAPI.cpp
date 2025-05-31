@@ -369,7 +369,7 @@ already_AddRefed<WebRenderAPI> WebRenderAPI::Create(
   bool useDComp = false;
   bool useTripleBuffering = false;
   bool supportsExternalBufferTextures = false;
-  layers::SyncHandle syncHandle = {};
+  layers::SyncHandle syncHandle = 0;
 
   // Dispatch a synchronous task because the DocumentHandle object needs to be
   // created on the render thread. If need be we could delay waiting on this

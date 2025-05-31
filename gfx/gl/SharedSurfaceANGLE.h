@@ -17,11 +17,6 @@ struct ID3D11Device;
 struct ID3D11Texture2D;
 
 namespace mozilla {
-
-namespace gfx {
-class FileHandleWrapper;
-}  // namespace gfx
-
 namespace layers {
 class FenceD3D11;
 }  // namespace layers
@@ -36,7 +31,7 @@ class SharedSurface_ANGLEShareHandle final : public SharedSurface {
   const RefPtr<ID3D11Device> mDevice;
   const std::weak_ptr<EglDisplay> mEGL;
   const EGLSurface mPBuffer;
-  const RefPtr<gfx::FileHandleWrapper> mSharedHandle;
+  const HANDLE mShareHandle;
   const Maybe<layers::CompositeProcessFencesHolderId> mFencesHolderId;
   const RefPtr<layers::FenceD3D11> mWriteFence;
   const RefPtr<IDXGIKeyedMutex> mKeyedMutex;
@@ -48,7 +43,7 @@ class SharedSurface_ANGLEShareHandle final : public SharedSurface {
   SharedSurface_ANGLEShareHandle(
       const SharedSurfaceDesc&, const RefPtr<ID3D11Device> aDevice,
       const std::weak_ptr<EglDisplay>& egl, EGLSurface pbuffer,
-      RefPtr<gfx::FileHandleWrapper>&& aSharedHandle,
+      HANDLE shareHandle,
       const Maybe<layers::CompositeProcessFencesHolderId> aFencesHolderId,
       const RefPtr<layers::FenceD3D11>& aWriteFence,
       const RefPtr<IDXGIKeyedMutex>& keyedMutex);

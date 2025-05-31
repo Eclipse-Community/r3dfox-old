@@ -87,6 +87,8 @@ static const wchar_t* GetUXThemeClassName(UXThemeClass aClass) {
       return L"Trackbar";
     case UXThemeClass::Combobox:
       return L"Combobox";
+    case UXThemeClass::Header:
+      return L"Header";
     case UXThemeClass::Listview:
       return L"Listview";
     case UXThemeClass::Menu:

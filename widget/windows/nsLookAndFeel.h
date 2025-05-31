@@ -57,6 +57,7 @@ enum class UXThemeClass : uint8_t {
   Tab,
   Trackbar,
   Combobox,
+  Header,
   Listview,
   Menu,
   NumClasses

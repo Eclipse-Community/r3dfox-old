@@ -289,6 +289,12 @@ bool nsNativeThemeGTK::GetGtkWidgetAndState(StyleAppearance aAppearance,
       }
       break;
     }
+    case StyleAppearance::Separator:
+      aGtkWidgetType = MOZ_GTK_TOOLBAR_SEPARATOR;
+      break;
+    case StyleAppearance::Toolbargripper:
+      aGtkWidgetType = MOZ_GTK_GRIPPER;
+      break;
     case StyleAppearance::NumberInput:
     case StyleAppearance::PasswordInput:
     case StyleAppearance::Textfield:
@@ -300,6 +306,37 @@ bool nsNativeThemeGTK::GetGtkWidgetAndState(StyleAppearance aAppearance,
     case StyleAppearance::Listbox:
     case StyleAppearance::Treeview:
       aGtkWidgetType = MOZ_GTK_TREEVIEW;
+      break;
+    case StyleAppearance::Treeheadercell:
+      if (aWidgetFlags) {
+        // In this case, the flag denotes whether the header is the sorted one
+        // or not
+        if (GetTreeSortDirection(aFrame) == eTreeSortDirection_Natural)
+          *aWidgetFlags = false;
+        else
+          *aWidgetFlags = true;
+      }
+      aGtkWidgetType = MOZ_GTK_TREE_HEADER_CELL;
+      break;
+    case StyleAppearance::Treeheadersortarrow:
+      if (aWidgetFlags) {
+        switch (GetTreeSortDirection(aFrame)) {
+          case eTreeSortDirection_Ascending:
+            *aWidgetFlags = GTK_ARROW_DOWN;
+            break;
+          case eTreeSortDirection_Descending:
+            *aWidgetFlags = GTK_ARROW_UP;
+            break;
+          case eTreeSortDirection_Natural:
+          default:
+            /* This prevents the treecolums from getting smaller
+             * and wider when switching sort direction off and on
+             * */
+            *aWidgetFlags = GTK_ARROW_NONE;
+            break;
+        }
+      }
+      aGtkWidgetType = MOZ_GTK_TREE_HEADER_SORTARROW;
       break;
     case StyleAppearance::Treetwisty:
       aGtkWidgetType = MOZ_GTK_TREEVIEW_EXPANDER;
@@ -331,6 +368,9 @@ bool nsNativeThemeGTK::GetGtkWidgetAndState(StyleAppearance aAppearance,
         else if (aAppearance == StyleAppearance::ButtonArrowPrevious)
           *aWidgetFlags = GTK_ARROW_LEFT;
       }
+      break;
+    case StyleAppearance::Toolbar:
+      aGtkWidgetType = MOZ_GTK_TOOLBAR;
       break;
     case StyleAppearance::Tooltip:
       aGtkWidgetType = MOZ_GTK_TOOLTIP;
@@ -1076,7 +1116,9 @@ LayoutDeviceIntSize nsNativeThemeGTK::GetMinimumWidgetSize(
       break;
     }
     case StyleAppearance::Button:
-    case StyleAppearance::Menulist: {
+    case StyleAppearance::Menulist:
+    case StyleAppearance::Toolbarbutton:
+    case StyleAppearance::Treeheadercell: {
       if (aAppearance == StyleAppearance::Menulist) {
         // Include the arrow size.
         moz_gtk_get_arrow_size(MOZ_GTK_DROPDOWN, &result.width, &result.height);
@@ -1125,11 +1167,15 @@ LayoutDeviceIntSize nsNativeThemeGTK::GetMinimumWidgetSize(
         result.height = height;
       }
     } break;
+    case StyleAppearance::Separator: {
+      moz_gtk_get_toolbar_separator_width(&result.width);
+    } break;
     case StyleAppearance::Spinner:
       // hard code these sizes
       result.width = 14;
       result.height = 26;
       break;
+    case StyleAppearance::Treeheadersortarrow:
     case StyleAppearance::SpinnerUpbutton:
     case StyleAppearance::SpinnerDownbutton:
       // hard code these sizes
@@ -1196,6 +1242,7 @@ nsNativeThemeGTK::ThemeSupportsWidget(nsPresContext* aPresContext,
     case StyleAppearance::Radio:
     case StyleAppearance::Checkbox:
     case StyleAppearance::Toolbox:  // N/A
+    case StyleAppearance::Toolbar:
     case StyleAppearance::Toolbarbutton:
     case StyleAppearance::Dualbutton:  // so we can override the border with 0
     case StyleAppearance::ToolbarbuttonDropdown:
@@ -1203,12 +1250,16 @@ nsNativeThemeGTK::ThemeSupportsWidget(nsPresContext* aPresContext,
     case StyleAppearance::ButtonArrowDown:
     case StyleAppearance::ButtonArrowNext:
     case StyleAppearance::ButtonArrowPrevious:
+    case StyleAppearance::Separator:
+    case StyleAppearance::Toolbargripper:
     case StyleAppearance::Listbox:
     case StyleAppearance::Treeview:
       // case StyleAppearance::Treeitem:
     case StyleAppearance::Treetwisty:
       // case StyleAppearance::Treeline:
       // case StyleAppearance::Treeheader:
+    case StyleAppearance::Treeheadercell:
+    case StyleAppearance::Treeheadersortarrow:
     case StyleAppearance::Treetwistyopen:
     case StyleAppearance::ProgressBar:
     case StyleAppearance::Progresschunk:
@@ -1275,6 +1326,7 @@ bool nsNativeThemeGTK::ThemeDrawsFocusForWidget(nsIFrame* aFrame,
     case StyleAppearance::Menulist:
     case StyleAppearance::Textarea:
     case StyleAppearance::Textfield:
+    case StyleAppearance::Treeheadercell:
     case StyleAppearance::NumberInput:
     case StyleAppearance::PasswordInput:
       return true;

@@ -271,6 +271,18 @@ bool nsNativeThemeGTK::GetGtkWidgetAndState(StyleAppearance aAppearance,
     case StyleAppearance::SpinnerTextfield:
       aGtkWidgetType = MOZ_GTK_SPINBUTTON_ENTRY;
       break;
+    case StyleAppearance::Spinner:
+      aGtkWidgetType = MOZ_GTK_SPINBUTTON;
+      break;
+    case StyleAppearance::SpinnerUpbutton:
+      aGtkWidgetType = MOZ_GTK_SPINBUTTON_UP;
+      break;
+    case StyleAppearance::SpinnerDownbutton:
+      aGtkWidgetType = MOZ_GTK_SPINBUTTON_DOWN;
+      break;
+    case StyleAppearance::SpinnerTextfield:
+      aGtkWidgetType = MOZ_GTK_SPINBUTTON_ENTRY;
+      break;
     case StyleAppearance::Range: {
       if (IsRangeHorizontal(aFrame)) {
         if (aWidgetFlags) *aWidgetFlags = GTK_ORIENTATION_HORIZONTAL;

@@ -15,7 +15,6 @@
 #include "WindowsUIUtils.h"
 #include "mozilla/FontPropertyTypes.h"
 #include "mozilla/Telemetry.h"
-#include "mozilla/intl/LocaleService.h"
 #include "mozilla/widget/WinRegistry.h"
 
 #define AVG2(a, b) (((a) + (b) + 1) >> 1)
@@ -555,10 +554,38 @@ nsresult nsLookAndFeel::NativeGetInt(IntID aID, int32_t& aResult) {
       aResult = WinUtils::MicaPopupsEnabled();
       break;
     case IntID::AlertNotificationOrigin:
-      aResult = NS_ALERT_TOP;
-      if (intl::LocaleService::GetInstance()->IsAppLocaleRTL()) {
-        // If the task bar is right-to-left, move the origin to the left
-        aResult |= NS_ALERT_LEFT;
+      aResult = 0;
+      {
+        // Get task bar window handle
+        HWND shellWindow = FindWindowW(L"Shell_TrayWnd", nullptr);
+
+        if (shellWindow != nullptr) {
+          // Determine position
+          APPBARDATA appBarData;
+          appBarData.hWnd = shellWindow;
+          appBarData.cbSize = sizeof(appBarData);
+          if (SHAppBarMessage(ABM_GETTASKBARPOS, &appBarData)) {
+            // Set alert origin as a bit field - see LookAndFeel.h
+            // 0 represents bottom right, sliding vertically.
+            switch (appBarData.uEdge) {
+              case ABE_LEFT:
+                aResult = NS_ALERT_HORIZONTAL | NS_ALERT_LEFT;
+                break;
+              case ABE_RIGHT:
+                aResult = NS_ALERT_HORIZONTAL;
+                break;
+              case ABE_TOP:
+                aResult = NS_ALERT_TOP;
+                [[fallthrough]];
+              case ABE_BOTTOM:
+                // If the task bar is right-to-left,
+                // move the origin to the left
+                if (::GetWindowLong(shellWindow, GWL_EXSTYLE) & WS_EX_LAYOUTRTL)
+                  aResult |= NS_ALERT_LEFT;
+                break;
+            }
+          }
+        }
       }
       break;
     case IntID::IMERawInputUnderlineStyle:

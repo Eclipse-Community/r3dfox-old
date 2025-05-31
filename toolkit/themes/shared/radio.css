@@ -24,6 +24,13 @@ radio {
   }
 }
 
+@media (-moz-windows-classic) {
+  radio[disabled="true"] {
+    color: ThreeDShadow;
+    text-shadow: 1px 1px ThreeDHighlight;
+  }
+}
+
 .radio-label {
   margin: 0;
 }

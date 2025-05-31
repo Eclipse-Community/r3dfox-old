@@ -14,7 +14,6 @@
 #include "WGLLibrary.h"
 #include "nsPrintfCString.h"
 #include "mozilla/gfx/DeviceManagerDx.h"
-#include "mozilla/gfx/FileHandleWrapper.h"
 #include "mozilla/gfx/Logging.h"
 #include "mozilla/layers/LayersSurfaces.h"
 #include "mozilla/StaticPrefs_webgl.h"
@@ -325,8 +324,7 @@ UniquePtr<SharedSurface_D3D11Interop> SharedSurface_D3D11Interop::Create(
   // Create a texture in case we need to readback.
   const DXGI_FORMAT format = DXGI_FORMAT_B8G8R8A8_UNORM;
   CD3D11_TEXTURE2D_DESC texDesc(format, size.width, size.height, 1, 1);
-  texDesc.MiscFlags = D3D11_RESOURCE_MISC_SHARED_NTHANDLE |
-                      D3D11_RESOURCE_MISC_SHARED_KEYEDMUTEX;
+  texDesc.MiscFlags = D3D11_RESOURCE_MISC_SHARED_KEYEDMUTEX;
 
   auto hr =
       d3d->CreateTexture2D(&texDesc, nullptr, getter_AddRefs(data.texD3D));
@@ -335,20 +333,15 @@ UniquePtr<SharedSurface_D3D11Interop> SharedSurface_D3D11Interop::Create(
     return nullptr;
   }
 
-  RefPtr<IDXGIResource1> texDXGI;
-  hr = data.texD3D->QueryInterface(__uuidof(IDXGIResource1),
+  RefPtr<IDXGIResource> texDXGI;
+  hr = data.texD3D->QueryInterface(__uuidof(IDXGIResource),
                                    getter_AddRefs(texDXGI));
   if (FAILED(hr)) {
     NS_WARNING("Failed to open texture for sharing!");
     return nullptr;
   }
 
-  HANDLE sharedHandle = nullptr;
-  texDXGI->CreateSharedHandle(
-      nullptr, DXGI_SHARED_RESOURCE_READ | DXGI_SHARED_RESOURCE_WRITE, nullptr,
-      &sharedHandle);
-
-  data.dxgiHandle = new gfx::FileHandleWrapper(UniqueFileHandle(sharedHandle));
+  texDXGI->GetSharedHandle(&data.dxgiHandle);
 
   ////
 
@@ -449,7 +442,7 @@ Maybe<layers::SurfaceDescriptor>
 SharedSurface_D3D11Interop::ToSurfaceDescriptor() {
   const auto format = gfx::SurfaceFormat::B8G8R8A8;
   return Some(layers::SurfaceDescriptorD3D10(
-      mData.dxgiHandle, /* gpuProcessTextureId */ Nothing(),
+      WindowsHandle(mData.dxgiHandle), /* gpuProcessTextureId */ Nothing(),
       /* arrayIndex */ 0, format, mDesc.size, mDesc.colorSpace,
       gfx::ColorRange::FULL, /* hasKeyedMutex */ true,
       /* fencesHolderId */ Nothing()));

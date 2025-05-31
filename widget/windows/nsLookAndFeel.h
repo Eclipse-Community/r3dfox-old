@@ -53,7 +53,12 @@ enum class UXThemeClass : uint8_t {
   Button = 0,
   Edit,
   Rebar,
+  MediaRebar,
+  CommunicationsRebar,
+  BrowserTabBarRebar,
   Toolbar,
+  MediaToolbar,
+  CommunicationsToolbar,
   Progress,
   Tab,
   Trackbar,
@@ -157,6 +162,8 @@ class nsLookAndFeel final : public nsXPLookAndFeel {
 
   // Cached colors and flags indicating success in their retrieval.
   mozilla::Maybe<nscolor> mColorMenuHoverText;
+  mozilla::Maybe<nscolor> mColorMediaText;
+  mozilla::Maybe<nscolor> mColorCommunicationsText;
 
   mozilla::Maybe<nscolor> mDarkHighlight;
   mozilla::Maybe<nscolor> mDarkHighlightText;

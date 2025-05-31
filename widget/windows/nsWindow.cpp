@@ -1060,7 +1060,17 @@ nsresult nsWindow::Create(nsIWidget* aParent, const LayoutDeviceIntRect& aRect,
         (aInitData->mIsPrivate) &&
         !StaticPrefs::browser_privatebrowsing_autostart();
     RefPtr<IPropertyStore> pPropStore;
-    if (!FAILED(SHGetPropertyStoreForWindow(mWnd, IID_IPropertyStore,
+const wchar_t kShellLibraryName[] =  L"shell32.dll";
+
+  typedef HRESULT (WINAPI * SHGetPropertyStoreForWindowPtr)
+                    (HWND hwnd, REFIID riid, void** ppv);
+  SHGetPropertyStoreForWindowPtr funcGetProStore = nullptr;
+
+  HMODULE hDLL = ::LoadLibraryW(kShellLibraryName);
+  funcGetProStore = (SHGetPropertyStoreForWindowPtr)
+    GetProcAddress(hDLL, "SHGetPropertyStoreForWindow");
+
+    if (funcGetProStore && !FAILED(funcGetProStore(mWnd, IID_IPropertyStore,
                                             getter_AddRefs(pPropStore)))) {
       PROPVARIANT pv;
       nsAutoString aumid;
@@ -1090,6 +1100,7 @@ nsresult nsWindow::Create(nsIWidget* aParent, const LayoutDeviceIntRect& aRect,
         PropVariantClear(&pv);
       }
     }
+    ::FreeLibrary(hDLL);
     HICON icon = ::LoadIconW(
         ::GetModuleHandleW(nullptr),
         MAKEINTRESOURCEW(usePrivateAumid ? IDI_PBMODE : IDI_APPICON));

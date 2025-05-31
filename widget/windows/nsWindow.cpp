@@ -2993,6 +2993,30 @@ void nsWindow::SetCursor(const Cursor& aCursor) {
 
 /**************************************************************
  *
+ * SECTION: nsIWidget::Get/SetTransparencyMode
+ *
+ * Manage the transparency mode of the window containing this
+ * widget.
+ *
+ **************************************************************/
+
+TransparencyMode nsWindow::GetTransparencyMode() {
+  return GetTopLevelWindow(true)->GetWindowTranslucencyInner();
+}
+
+void nsWindow::SetTransparencyMode(TransparencyMode aMode) {
+  nsWindow* window = GetTopLevelWindow(true);
+  MOZ_ASSERT(window);
+
+  if (!window || window->DestroyCalled()) {
+    return;
+  }
+
+  window->SetWindowTranslucencyInner(aMode);
+}
+
+/**************************************************************
+ *
  * SECTION: nsIWidget::UpdateWindowDraggingRegion
  *
  * For setting the draggable titlebar region from CSS
@@ -7194,13 +7218,22 @@ a11y::LocalAccessible* nsWindow::GetAccessible() {
 }
 #endif
 
-void nsWindow::SetTransparencyMode(TransparencyMode aMode) {
-  if (aMode == mTransparencyMode || DestroyCalled()) {
+/**************************************************************
+ **************************************************************
+ **
+ ** BLOCK: Transparency
+ **
+ ** Window transparency helpers.
+ **
+ **************************************************************
+ **************************************************************/
+
+void nsWindow::SetWindowTranslucencyInner(TransparencyMode aMode) {
+  if (aMode == mTransparencyMode) {
     return;
   }
 
   MOZ_ASSERT(WinUtils::GetTopLevelHWND(mWnd, true) == mWnd);
-  MOZ_ASSERT(GetTopLevelWindow(true) == this);
 
   mTransparencyMode = aMode;
 

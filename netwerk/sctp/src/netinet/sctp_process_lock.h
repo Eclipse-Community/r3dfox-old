@@ -130,7 +130,7 @@
 	LeaveCriticalSection(&SCTP_BASE_INFO(wq_addr_mtx))
 #define SCTP_WQ_ADDR_LOCK_ASSERT()
 
-#if WINVER < 0x0600
+#if defined(_WIN32)
 #define SCTP_INP_INFO_LOCK_INIT() \
 	InitializeCriticalSection(&SCTP_BASE_INFO(ipi_ep_mtx))
 #define SCTP_INP_INFO_LOCK_DESTROY() \
@@ -536,7 +536,7 @@
 
 #if defined(_WIN32)
 /* address list locks */
-#if WINVER < 0x0600
+#if defined(_WIN32)
 #define SCTP_IPI_ADDR_INIT() \
 	InitializeCriticalSection(&SCTP_BASE_INFO(ipi_addr_mtx))
 #define SCTP_IPI_ADDR_DESTROY() \

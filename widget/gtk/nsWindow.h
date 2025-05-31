@@ -403,7 +403,8 @@ class nsWindow final : public nsBaseWidget {
   void GetCompositorWidgetInitData(
       mozilla::widget::CompositorWidgetInitData* aInitData) override;
 
-  void SetCustomTitlebar(bool) override;
+  nsresult SetNonClientMargins(const LayoutDeviceIntMargin&) override;
+  void SetDrawsInTitlebar(bool aState);
   void UpdateWindowDraggingRegion(
       const LayoutDeviceIntRegion& aRegion) override;
 

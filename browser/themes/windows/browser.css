@@ -25,7 +25,7 @@
   }
 }
 
-:root[customtitlebar]:not([lwtheme]) {
+:root[tabsintitlebar]:not([lwtheme]) {
   @media (-moz-windows-mica) {
     background-color: transparent;
     /* stylelint-disable-next-line media-query-no-invalid */

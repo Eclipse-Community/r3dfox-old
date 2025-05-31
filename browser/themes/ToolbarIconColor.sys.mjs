@@ -22,7 +22,7 @@ export const ToolbarIconColor = {
     const state = {
       active: false,
       fullscreen: false,
-      customtitlebar: false,
+    tabsintitlebar: false,
       toolbarLuminanceCache: new Map(),
     };
 
@@ -95,8 +95,8 @@ export const ToolbarIconColor = {
       case "toolbarvisibilitychange":
         // toolbar changes dont require reset of the cached color values
         break;
-      case "customtitlebar":
-        state.customtitlebar = reasonValue;
+      case "tabsintitlebar":
+        state.tabsintitlebar = reasonValue;
         break;
     }
 

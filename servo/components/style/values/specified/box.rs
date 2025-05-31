@@ -1560,12 +1560,18 @@ pub enum Appearance {
     /// A separator.  Can be horizontal or vertical.
     #[parse(condition = "ParserContext::chrome_rules_enabled")]
     Separator,
+    /// A spin control (up/down control for time/date pickers).
+    #[parse(condition = "ParserContext::chrome_rules_enabled")]
+    Spinner,
     /// The up button of a spin control.
     #[parse(condition = "ParserContext::chrome_rules_enabled")]
     SpinnerUpbutton,
     /// The down button of a spin control.
     #[parse(condition = "ParserContext::chrome_rules_enabled")]
     SpinnerDownbutton,
+    /// The textfield of a spin control
+    #[parse(condition = "ParserContext::chrome_rules_enabled")]
+    SpinnerTextfield,
     /// A splitter.  Can be horizontal or vertical.
     #[parse(condition = "ParserContext::chrome_rules_enabled")]
     Splitter,
@@ -1581,6 +1587,11 @@ pub enum Appearance {
     /// The tab panels container.
     #[parse(condition = "ParserContext::chrome_rules_enabled")]
     Tabpanels,
+    /// The tabs scroll arrows (left/right).
+    #[parse(condition = "ParserContext::chrome_rules_enabled")]
+    TabScrollArrowBack,
+    #[parse(condition = "ParserContext::chrome_rules_enabled")]
+    TabScrollArrowForward,
     /// A single toolbar button (with no associated dropdown).
     #[parse(condition = "ParserContext::chrome_rules_enabled")]
     Toolbarbutton,

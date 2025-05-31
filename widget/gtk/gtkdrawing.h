@@ -69,6 +69,12 @@ struct MozGtkSize {
   }
 };
 
+struct ToggleGTKMetrics {
+  bool initialized;
+  MozGtkSize minSizeWithBorder;
+  GtkBorder borderAndPadding;
+};
+
 struct ToolbarButtonGTKMetrics {
   MozGtkSize minSizeWithBorder{};
   gint iconXPosition = 0;
@@ -117,6 +123,15 @@ enum WidgetNodeType : int {
   /* Paints a button arrow */
   MOZ_GTK_BUTTON_ARROW,
 
+  /* Paints the container part of a GtkCheckButton. */
+  MOZ_GTK_CHECKBUTTON_CONTAINER,
+  /* Paints a GtkCheckButton. flags is a boolean, 1=checked, 0=not checked. */
+  MOZ_GTK_CHECKBUTTON,
+
+  /* Paints the container part of a GtkRadioButton. */
+  MOZ_GTK_RADIOBUTTON_CONTAINER,
+  /* Paints a GtkRadioButton. flags is a boolean, 1=checked, 0=not checked. */
+  MOZ_GTK_RADIOBUTTON,
   /* Vertical GtkScrollbar counterparts */
   MOZ_GTK_SCROLLBAR_VERTICAL,
   MOZ_GTK_SCROLLBAR_CONTENTS_VERTICAL,
@@ -134,6 +149,12 @@ enum WidgetNodeType : int {
   /* Paints a GtkScale thumb. */
   MOZ_GTK_SCALE_THUMB_HORIZONTAL,
   MOZ_GTK_SCALE_THUMB_VERTICAL,
+  /* Paints a GtkSpinButton */
+  MOZ_GTK_INNER_SPIN_BUTTON,
+  MOZ_GTK_SPINBUTTON,
+  MOZ_GTK_SPINBUTTON_UP,
+  MOZ_GTK_SPINBUTTON_DOWN,
+  MOZ_GTK_SPINBUTTON_ENTRY,
   /* Paints a GtkEntry. */
   MOZ_GTK_ENTRY,
   /* Paints a GtkExpander. */
@@ -183,6 +204,8 @@ enum WidgetNodeType : int {
   MOZ_GTK_TAB_BOTTOM,
   /* Paints the background and border of a GtkNotebook. */
   MOZ_GTK_TABPANELS,
+  /* Paints a GtkArrow for a GtkNotebook. flags is a GtkArrowType. */
+  MOZ_GTK_TAB_SCROLLARROW,
   /* Paints the expander and border of a GtkTreeView */
   MOZ_GTK_TREEVIEW,
   /* Paints the border of a GtkTreeView */
@@ -334,6 +357,34 @@ gint moz_gtk_get_widget_border(WidgetNodeType widget, gint* left, gint* top,
 gint moz_gtk_get_tab_border(gint* left, gint* top, gint* right, gint* bottom,
                             GtkTextDirection direction, GtkTabFlags flags,
                             WidgetNodeType widget);
+
+/**
+ * Get the desired size of a GtkCheckButton
+ * indicator_size:     [OUT] the indicator size
+ * indicator_spacing:  [OUT] the spacing between the indicator and its
+ *                     container
+ *
+ * returns:    MOZ_GTK_SUCCESS if there was no error, an error code otherwise
+ */
+gint moz_gtk_checkbox_get_metrics(gint* indicator_size,
+                                  gint* indicator_spacing);
+
+/**
+ * Get metrics of the toggle (radio or checkbox)
+ * isRadio:            [IN] true when requesting metrics for the radio button
+ * returns:    pointer to ToggleGTKMetrics struct
+ */
+const ToggleGTKMetrics* GetToggleMetrics(WidgetNodeType aWidgetType);
+
+/**
+ * Get the desired size of a GtkRadioButton
+ * indicator_size:     [OUT] the indicator size
+ * indicator_spacing:  [OUT] the spacing between the indicator and its
+ *                     container
+ *
+ * returns:    MOZ_GTK_SUCCESS if there was no error, an error code otherwise
+ */
+gint moz_gtk_radio_get_metrics(gint* indicator_size, gint* indicator_spacing);
 
 /**
  * Some GTK themes draw their indication for the default button outside

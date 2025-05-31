@@ -52,6 +52,7 @@ class KeyWatcher;
 enum class UXThemeClass : uint8_t {
   Button = 0,
   Edit,
+  Rebar,
   Toolbar,
   Progress,
   Tab,

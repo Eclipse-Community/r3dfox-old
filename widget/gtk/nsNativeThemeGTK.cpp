@@ -192,7 +192,8 @@ bool nsNativeThemeGTK::GetGtkWidgetAndState(StyleAppearance aAppearance,
         aAppearance == StyleAppearance::MozWindowButtonRestore ||
         aAppearance == StyleAppearance::MozWindowButtonMaximize ||
         aAppearance == StyleAppearance::MozWindowButtonClose ||
-        aAppearance == StyleAppearance::Menulist) {
+        aAppearance == StyleAppearance::Menulist ||
+        aAppearance == StyleAppearance::MenulistButton) {
       aState->active &= aState->inHover;
     } else if (aAppearance == StyleAppearance::Treetwisty ||
                aAppearance == StyleAppearance::Treetwistyopen) {
@@ -222,7 +223,8 @@ bool nsNativeThemeGTK::GetGtkWidgetAndState(StyleAppearance aAppearance,
           aAppearance == StyleAppearance::Toolbarbutton ||
           aAppearance == StyleAppearance::Dualbutton ||
           aAppearance == StyleAppearance::ToolbarbuttonDropdown ||
-          aAppearance == StyleAppearance::Menulist) {
+          aAppearance == StyleAppearance::Menulist ||
+          aAppearance == StyleAppearance::MenulistButton) {
         bool menuOpen = IsOpenButton(aFrame);
         aState->depressed = IsCheckedButton(aFrame) || menuOpen;
         // we must not highlight buttons with open drop down menus on hover.
@@ -346,6 +348,7 @@ bool nsNativeThemeGTK::GetGtkWidgetAndState(StyleAppearance aAppearance,
       aGtkWidgetType = MOZ_GTK_TREEVIEW_EXPANDER;
       if (aWidgetFlags) *aWidgetFlags = GTK_EXPANDER_EXPANDED;
       break;
+    case StyleAppearance::MenulistButton:
     case StyleAppearance::Menulist:
       aGtkWidgetType = MOZ_GTK_DROPDOWN;
       if (aWidgetFlags)
@@ -1129,9 +1132,11 @@ LayoutDeviceIntSize nsNativeThemeGTK::GetMinimumWidgetSize(
     case StyleAppearance::RadioLabel:
     case StyleAppearance::Button:
     case StyleAppearance::Menulist:
+    case StyleAppearance::MenulistButton:
     case StyleAppearance::Toolbarbutton:
     case StyleAppearance::Treeheadercell: {
-      if (aAppearance == StyleAppearance::Menulist) {
+      if (aAppearance == StyleAppearance::Menulist ||
+          aAppearance == StyleAppearance::MenulistButton) {
         // Include the arrow size.
         moz_gtk_get_arrow_size(MOZ_GTK_DROPDOWN, &result.width, &result.height);
       }
@@ -1247,6 +1252,7 @@ nsNativeThemeGTK::ThemeSupportsWidget(nsPresContext* aPresContext,
     // Combobox dropdowns don't support native theming in vertical mode.
     case StyleAppearance::Menulist:
     case StyleAppearance::MenulistText:
+    case StyleAppearance::MenulistButton:
       if (aFrame && aFrame->GetWritingMode().IsVertical()) {
         return false;
       }
@@ -1343,6 +1349,7 @@ bool nsNativeThemeGTK::ThemeDrawsFocusForWidget(nsIFrame* aFrame,
       return true;
     case StyleAppearance::Button:
     case StyleAppearance::Menulist:
+    case StyleAppearance::MenulistButton:
     case StyleAppearance::Textarea:
     case StyleAppearance::Textfield:
     case StyleAppearance::Treeheadercell:

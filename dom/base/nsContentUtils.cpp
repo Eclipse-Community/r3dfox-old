@@ -1047,9 +1047,6 @@ nsresult nsContentUtils::Init() {
     RunOnShutdown(
         [&] { glean_pings::UseCounters.Submit("app_shutdown_confirmed"_ns); },
         ShutdownPhase::AppShutdownConfirmed);
-
-    // On child process, this is initialized in ContentChild.
-    LookAndFeel::EnsureInit();
   }
 
   RefPtr<UserInteractionObserver> uio = new UserInteractionObserver();

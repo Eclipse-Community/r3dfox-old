@@ -1491,11 +1491,18 @@ pub enum Appearance {
     Textfield,
     /// The dropdown button(s) that open up a dropdown list.
     MenulistButton,
+    /// A groupbox.
+    #[parse(condition = "ParserContext::chrome_rules_enabled")]
+    Groupbox,
     /// <menu> and <menuitem> appearances
     #[parse(condition = "ParserContext::chrome_rules_enabled")]
     Menuitem,
     #[parse(condition = "ParserContext::chrome_rules_enabled")]
     Checkmenuitem,
+    /// For text on non-iconic menuitems only
+    /// The text part of a dropdown list, to left of button.
+    #[parse(condition = "ParserContext::chrome_rules_enabled")]
+    MenulistText,
     /// Menu Popup background.
     #[parse(condition = "ParserContext::chrome_rules_enabled")]
     Menupopup,

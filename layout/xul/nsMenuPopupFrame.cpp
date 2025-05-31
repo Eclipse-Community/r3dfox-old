@@ -207,16 +207,21 @@ widget::PopupLevel nsMenuPopupFrame::GetPopupLevel(bool aIsNoAutoHide) const {
   }
 
   // If the level attribute has been set, use that.
-  static Element::AttrValuesArray strings[] = {nsGkAtoms::top,
-                                               nsGkAtoms::parent, nullptr};
+  static Element::AttrValuesArray strings[] = {
+      nsGkAtoms::top, nsGkAtoms::parent, nsGkAtoms::floating, nullptr};
   switch (mContent->AsElement()->FindAttrValueIn(
       kNameSpaceID_None, nsGkAtoms::level, strings, eCaseMatters)) {
     case 0:
       return PopupLevel::Top;
     case 1:
       return PopupLevel::Parent;
-    default:
-      break;
+    case 2:
+      return PopupLevel::Floating;
+  }
+
+  // Panels with titlebars most likely want to be floating popups.
+  if (mContent->AsElement()->HasAttr(nsGkAtoms::titlebar)) {
+    return PopupLevel::Floating;
   }
 
   // If this panel is a noautohide panel, the default is the parent level.
@@ -294,6 +299,20 @@ nsresult nsMenuPopupFrame::CreateWidgetForView(nsView* aView) {
     }
   }
 
+  nsAutoString title;
+  if (IsNoAutoHide() &&
+      mContent->AsElement()->AttrValueIs(kNameSpaceID_None, nsGkAtoms::titlebar,
+                                         nsGkAtoms::normal, eCaseMatters)) {
+    widgetData.mBorderStyle = widget::BorderStyle::Title;
+
+    mContent->AsElement()->GetAttr(nsGkAtoms::label, title);
+    if (mContent->AsElement()->AttrValueIs(kNameSpaceID_None, nsGkAtoms::close,
+                                           nsGkAtoms::_true, eCaseMatters)) {
+      widgetData.mBorderStyle =
+          widgetData.mBorderStyle | widget::BorderStyle::Close;
+    }
+  }
+
   const bool remote = HasRemoteContent();
 
   const auto mode = nsLayoutUtils::GetFrameTransparency(this, this);
@@ -316,6 +335,12 @@ nsresult nsMenuPopupFrame::CreateWidgetForView(nsView* aView) {
 
   widget->SetTransparencyMode(mode);
   PropagateStyleToWidget();
+
+  // most popups don't have a title so avoid setting the title if there isn't
+  // one
+  if (!title.IsEmpty()) {
+    widget->SetTitle(title);
+  }
 
   return NS_OK;
 }

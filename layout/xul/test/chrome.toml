@@ -10,6 +10,7 @@ support-files = [
   "windowminmaxsize8.xhtml",
   "windowminmaxsize9.xhtml",
   "windowminmaxsize10.xhtml",
+  "titledpanelwindow.xhtml",
 ]
 
 ["test_bug159346.xhtml"]

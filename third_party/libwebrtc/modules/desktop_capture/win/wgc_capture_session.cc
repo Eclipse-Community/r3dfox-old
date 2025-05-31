@@ -483,10 +483,42 @@ HRESULT WgcCaptureSession::ProcessFrame() {
   // values are some distinct numbers in the range of [1,5], for example,
   // 1, 1.5, 2.5, etc.
   DEVICE_SCALE_FACTOR device_scale_factor = DEVICE_SCALE_FACTOR_INVALID;
-  HRESULT scale_factor_hr =
-      GetScaleFactorForMonitor(monitor, &device_scale_factor);
-  RTC_LOG_IF(LS_ERROR, FAILED(scale_factor_hr))
-      << "Failed to get scale factor for monitor: " << scale_factor_hr;
+#define GETPERCENT(dpi) ((dpi * 100 + 50) / 96)
+typedef HRESULT (* LPFNDLLFUNC1)(HMONITOR,DEVICE_SCALE_FACTOR *);
+HINSTANCE hDLL;               // Handle to DLL
+LPFNDLLFUNC1 lpfnDllFunc1;    // Function pointer
+hDLL = LoadLibrary(TEXT("Shcore.dll"));
+if (hDLL != NULL)
+{
+   lpfnDllFunc1 = (LPFNDLLFUNC1)GetProcAddress(hDLL,
+                                           "GetScaleFactorForMonitor");
+   if (!lpfnDllFunc1)
+   {
+      // handle the error
+      FreeLibrary(hDLL);
+        //---- set screen dpi (per session) ----
+        HDC hdc = GetWindowDC(NULL);
+        if (! hdc)
+        {
+           RTC_LOG(LS_ERROR)
+               << "Failed to get scale factor for monitor: ";
+        }
+        else
+        {
+            int iDpi = GetDeviceCaps(hdc, LOGPIXELSX);
+            ReleaseDC(NULL, hdc);
+            device_scale_factor = (DEVICE_SCALE_FACTOR) GETPERCENT(iDpi);
+        }
+   }
+   else
+   {
+      // call the function
+      HRESULT scale_factor_hr =
+          lpfnDllFunc1(monitor, &device_scale_factor);
+      RTC_LOG_IF(LS_ERROR, FAILED(scale_factor_hr))
+          << "Failed to get scale factor for monitor: " << scale_factor_hr;
+   }
+}
   if (device_scale_factor != DEVICE_SCALE_FACTOR_INVALID) {
     current_frame->set_device_scale_factor(
         static_cast<float>(device_scale_factor) / 100.0f);

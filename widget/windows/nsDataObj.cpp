@@ -51,6 +51,7 @@
 #include "nsLocalFile.h"
 
 #include "mozilla/LazyIdleThread.h"
+#include "mozilla/WindowsVersion.h"
 #include <algorithm>
 
 using namespace mozilla;

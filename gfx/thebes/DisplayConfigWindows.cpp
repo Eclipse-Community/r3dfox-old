@@ -7,6 +7,9 @@
 
 #include "DisplayConfigWindows.h"
 
+typedef LONG(CALLBACK* QUERYDISPLAYCONFIG)(UINT32, UINT32*, DISPLAYCONFIG_PATH_INFO*, UINT32*, DISPLAYCONFIG_MODE_INFO*, DISPLAYCONFIG_TOPOLOGY_ID*);
+typedef LONG(CALLBACK* GETDISPLAYCONFIGBUFFERSIZES)(UINT32, UINT32*, UINT32*);
+
 namespace mozilla {
 namespace gfx {
 
@@ -19,8 +22,20 @@ optional<DisplayConfig> GetDisplayConfig() {
   UINT32 numModes;
   vector<DISPLAYCONFIG_PATH_INFO> paths;
   vector<DISPLAYCONFIG_MODE_INFO> modes;
+	static QUERYDISPLAYCONFIG pQueryDisplayConfig;
+	static GETDISPLAYCONFIGBUFFERSIZES pGetDisplayConfigBufferSizes;
+	if (!pQueryDisplayConfig)
+		pQueryDisplayConfig = (QUERYDISPLAYCONFIG)GetProcAddress(GetModuleHandleW(L"user32.dll"), "QueryDisplayConfig");
+
+	if (!pGetDisplayConfigBufferSizes)
+		pGetDisplayConfigBufferSizes = (GETDISPLAYCONFIGBUFFERSIZES)GetProcAddress(GetModuleHandleW(L"user32.dll"), "GetDisplayConfigBufferSizes");
+
+   if (!pQueryDisplayConfig ||
+       !pGetDisplayConfigBufferSizes)
+       return {};
+
   do {
-    result = GetDisplayConfigBufferSizes(QDC_ONLY_ACTIVE_PATHS, &numPaths,
+    result = pGetDisplayConfigBufferSizes(QDC_ONLY_ACTIVE_PATHS, &numPaths,
                                          &numModes);
     if (result != ERROR_SUCCESS) {
       return {};
@@ -29,7 +44,7 @@ optional<DisplayConfig> GetDisplayConfig() {
     paths.resize(numPaths);
     modes.resize(numModes);
 
-    result = QueryDisplayConfig(QDC_ONLY_ACTIVE_PATHS, &numPaths, paths.data(),
+    result = pQueryDisplayConfig(QDC_ONLY_ACTIVE_PATHS, &numPaths, paths.data(),
                                 &numModes, modes.data(), NULL);
     // try again if there wasn't enough space
   } while (result == ERROR_INSUFFICIENT_BUFFER);

@@ -3941,15 +3941,7 @@ uint32_t nsWindow::GetMaxTouchPoints() const {
 }
 
 void nsWindow::SetIsEarlyBlankWindow(bool aIsEarlyBlankWindow) {
-  if (mIsEarlyBlankWindow == aIsEarlyBlankWindow) {
-    return;
-  }
   mIsEarlyBlankWindow = aIsEarlyBlankWindow;
-  if (!aIsEarlyBlankWindow && mNeedsNCAreaClear) {
-    // We skip processing WM_PAINT messages while we're the blank window;
-    // ensure we get one to do any work we might have missed.
-    ::RedrawWindow(mWnd, nullptr, nullptr, RDW_INVALIDATE | RDW_INTERNALPAINT);
-  }
 }
 
 /**************************************************************
@@ -7300,7 +7292,7 @@ void nsWindow::UpdateOpaqueRegionInternal() {
   DwmExtendFrameIntoClientArea(mWnd, &margins);
   if (mTransparencyMode == TransparencyMode::Transparent) {
     mNeedsNCAreaClear = true;
-    ::RedrawWindow(mWnd, nullptr, nullptr, RDW_INVALIDATE | RDW_INTERNALPAINT);
+    Invalidate();
   }
 }
 

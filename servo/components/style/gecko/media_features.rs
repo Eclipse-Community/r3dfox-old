@@ -527,6 +527,10 @@ fn eval_moz_print_preview(context: &Context) -> bool {
     is_print_preview
 }
 
+fn eval_moz_non_native_content_theme(context: &Context) -> bool {
+    unsafe { bindings::Gecko_MediaFeatures_ShouldAvoidNativeTheme(context.device().document()) }
+}
+
 fn eval_moz_is_resource_document(context: &Context) -> bool {
     unsafe { bindings::Gecko_MediaFeatures_IsResourceDocument(context.device().document()) }
 }
@@ -657,7 +661,7 @@ macro_rules! lnf_int_feature {
 /// to support new types in these entries and (2) ensuring that either
 /// nsPresContext::MediaFeatureValuesChanged is called when the value that
 /// would be returned by the evaluator function could change.
-pub static MEDIA_FEATURES: [QueryFeatureDescription; 62] = [
+pub static MEDIA_FEATURES: [QueryFeatureDescription; 63] = [
     feature!(
         atom!("width"),
         AllowsRanges::Yes,
@@ -920,6 +924,12 @@ pub static MEDIA_FEATURES: [QueryFeatureDescription; 62] = [
         atom!("-moz-print-preview"),
         AllowsRanges::No,
         Evaluator::BoolInteger(eval_moz_print_preview),
+        FeatureFlags::CHROME_AND_UA_ONLY,
+    ),
+    feature!(
+        atom!("-moz-non-native-content-theme"),
+        AllowsRanges::No,
+        Evaluator::BoolInteger(eval_moz_non_native_content_theme),
         FeatureFlags::CHROME_AND_UA_ONLY,
     ),
     feature!(

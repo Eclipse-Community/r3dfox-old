@@ -465,7 +465,9 @@ var gBrowserInit = {
     }
 
     FullScreen.init();
+    if (AppConstants.isPlatformAndVersionAtLeast("win", "10")) {
     MenuTouchModeObserver.init();
+    }
 
     if (AppConstants.MOZ_DATA_REPORTING) {
       gDataNotificationInfoBar.init();
@@ -1111,7 +1113,9 @@ var gBrowserInit = {
         "intl:app-locales-changed"
       );
 
+    if (AppConstants.isPlatformAndVersionAtLeast("win", "10")) {
       MenuTouchModeObserver.uninit();
+    }
       BrowserOffline.uninit();
       CanvasPermissionPromptHelper.uninit();
       WebAuthnPromptHelper.uninit();

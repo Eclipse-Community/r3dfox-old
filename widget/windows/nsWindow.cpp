@@ -9172,45 +9172,41 @@ nsresult nsWindow::ClearNativeTouchSequence(nsIObserver* aObserver) {
   return NS_OK;
 }
 
-#if !defined(NTDDI_WIN10_RS5) || (NTDDI_VERSION < NTDDI_WIN10_RS5)
-static CreateSyntheticPointerDevicePtr CreateSyntheticPointerDevice;
-static DestroySyntheticPointerDevicePtr DestroySyntheticPointerDevice;
-static InjectSyntheticPointerInputPtr InjectSyntheticPointerInput;
-#endif
+static CreateSyntheticPointerDevicePtr fnCreateSyntheticPointerDevice;
+static DestroySyntheticPointerDevicePtr fnDestroySyntheticPointerDevice;
+static InjectSyntheticPointerInputPtr fnInjectSyntheticPointerInput;
 static HSYNTHETICPOINTERDEVICE sSyntheticPenDevice;
 
 static bool InitPenInjection() {
   if (sSyntheticPenDevice) {
     return true;
   }
-#if !defined(NTDDI_WIN10_RS5) || (NTDDI_VERSION < NTDDI_WIN10_RS5)
   HMODULE hMod = LoadLibraryW(kUser32LibName);
   if (!hMod) {
     return false;
   }
-  CreateSyntheticPointerDevice =
+  fnCreateSyntheticPointerDevice =
       (CreateSyntheticPointerDevicePtr)GetProcAddress(
           hMod, "CreateSyntheticPointerDevice");
-  if (!CreateSyntheticPointerDevice) {
+  if (!fnCreateSyntheticPointerDevice) {
     WinUtils::Log("CreateSyntheticPointerDevice not available.");
     return false;
   }
-  DestroySyntheticPointerDevice =
+  fnDestroySyntheticPointerDevice =
       (DestroySyntheticPointerDevicePtr)GetProcAddress(
           hMod, "DestroySyntheticPointerDevice");
-  if (!DestroySyntheticPointerDevice) {
+  if (!fnDestroySyntheticPointerDevice) {
     WinUtils::Log("DestroySyntheticPointerDevice not available.");
     return false;
   }
-  InjectSyntheticPointerInput = (InjectSyntheticPointerInputPtr)GetProcAddress(
+  fnInjectSyntheticPointerInput = (InjectSyntheticPointerInputPtr)GetProcAddress(
       hMod, "InjectSyntheticPointerInput");
-  if (!InjectSyntheticPointerInput) {
+  if (!fnInjectSyntheticPointerInput) {
     WinUtils::Log("InjectSyntheticPointerInput not available.");
     return false;
   }
-#endif
   sSyntheticPenDevice =
-      CreateSyntheticPointerDevice(PT_PEN, 1, POINTER_FEEDBACK_DEFAULT);
+      fnCreateSyntheticPointerDevice(PT_PEN, 1, POINTER_FEEDBACK_DEFAULT);
   return !!sSyntheticPenDevice;
 }
 
@@ -9273,7 +9269,7 @@ nsresult nsWindow::SynthesizeNativePenInput(
     info.penInfo.tiltX = aTiltX;
     info.penInfo.tiltY = aTiltY;
 
-    return InjectSyntheticPointerInput(sSyntheticPenDevice, &info, 1)
+    return fnInjectSyntheticPointerInput(sSyntheticPenDevice, &info, 1)
                ? NS_OK
                : NS_ERROR_UNEXPECTED;
   });

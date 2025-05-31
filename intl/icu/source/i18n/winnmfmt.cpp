@@ -62,43 +62,43 @@ UOBJECT_DEFINE_RTTI_IMPLEMENTATION(Win32NumberFormat)
  * end in ";0" then the return value should be multiplied by 10.
  * (e.g. "3" => 30, "3;2" => 320)
  */
-static UINT getGrouping(const wchar_t *grouping)
+static UINT getGrouping(const char *grouping)
 {
     UINT g = 0;
-    const wchar_t *s;
+	const char *s;
 
-    for (s = grouping; *s != L'\0'; s += 1) {
-        if (*s > L'0' && *s < L'9') {
-            g = g * 10 + (*s - L'0');
-        } else if (*s != L';') {
+    for (s = grouping; *s != '\0'; s += 1) {
+        if (*s > '0' && *s < '9') {
+            g = g * 10 + (*s - '0');
+        } else if (*s != ';') {
             break;
         }
     }
 
-    if (*s != L'0') {
+    if (*s != '0') {
         g *= 10;
     }
 
     return g;
 }
 
-static void getNumberFormat(NUMBERFMTW *fmt, const wchar_t *windowsLocaleName)
+static void getNumberFormat(NUMBERFMTW *fmt, int32_t lcid)
 {
-    wchar_t buf[10];
+    char buf[10];
 
-    GetLocaleInfoEx(windowsLocaleName, LOCALE_RETURN_NUMBER|LOCALE_IDIGITS, (LPWSTR) &fmt->NumDigits, sizeof(UINT));
-    GetLocaleInfoEx(windowsLocaleName, LOCALE_RETURN_NUMBER|LOCALE_ILZERO,  (LPWSTR) &fmt->LeadingZero, sizeof(UINT));
+    GetLocaleInfoW(lcid, LOCALE_RETURN_NUMBER|LOCALE_IDIGITS, (LPWSTR) &fmt->NumDigits, sizeof(UINT));
+    GetLocaleInfoW(lcid, LOCALE_RETURN_NUMBER|LOCALE_ILZERO,  (LPWSTR) &fmt->LeadingZero, sizeof(UINT));
 
-    GetLocaleInfoEx(windowsLocaleName, LOCALE_SGROUPING, (LPWSTR)buf, 10);
+    GetLocaleInfoA(lcid, LOCALE_SGROUPING, buf, 10);
     fmt->Grouping = getGrouping(buf);
 
     fmt->lpDecimalSep = NEW_ARRAY(wchar_t, 6);
-    GetLocaleInfoEx(windowsLocaleName, LOCALE_SDECIMAL,  fmt->lpDecimalSep,  6);
+    GetLocaleInfoW(lcid, LOCALE_SDECIMAL,  fmt->lpDecimalSep,  6);
 
     fmt->lpThousandSep = NEW_ARRAY(wchar_t, 6);
-    GetLocaleInfoEx(windowsLocaleName, LOCALE_STHOUSAND, fmt->lpThousandSep, 6);
+    GetLocaleInfoW(lcid, LOCALE_STHOUSAND, fmt->lpThousandSep, 6);
 
-    GetLocaleInfoEx(windowsLocaleName, LOCALE_RETURN_NUMBER|LOCALE_INEGNUMBER, (LPWSTR) &fmt->NegativeOrder, sizeof(UINT));
+    GetLocaleInfoW(lcid, LOCALE_RETURN_NUMBER|LOCALE_INEGNUMBER, (LPWSTR) &fmt->NegativeOrder, sizeof(UINT));
 }
 
 static void freeNumberFormat(NUMBERFMTW *fmt)
@@ -109,27 +109,27 @@ static void freeNumberFormat(NUMBERFMTW *fmt)
     }
 }
 
-static void getCurrencyFormat(CURRENCYFMTW *fmt, const wchar_t *windowsLocaleName)
+static void getCurrencyFormat(CURRENCYFMTW *fmt, int32_t lcid)
 {
-    wchar_t buf[10];
+    char buf[10];
 
-    GetLocaleInfoEx(windowsLocaleName, LOCALE_RETURN_NUMBER|LOCALE_ICURRDIGITS, (LPWSTR) &fmt->NumDigits, sizeof(UINT));
-    GetLocaleInfoEx(windowsLocaleName, LOCALE_RETURN_NUMBER|LOCALE_ILZERO, (LPWSTR) &fmt->LeadingZero, sizeof(UINT));
+    GetLocaleInfoW(lcid, LOCALE_RETURN_NUMBER|LOCALE_ICURRDIGITS, (LPWSTR) &fmt->NumDigits, sizeof(UINT));
+    GetLocaleInfoW(lcid, LOCALE_RETURN_NUMBER|LOCALE_ILZERO, (LPWSTR) &fmt->LeadingZero, sizeof(UINT));
 
-    GetLocaleInfoEx(windowsLocaleName, LOCALE_SMONGROUPING, (LPWSTR)buf, sizeof(buf));
+    GetLocaleInfoA(lcid, LOCALE_SMONGROUPING, buf, sizeof(buf));
     fmt->Grouping = getGrouping(buf);
 
     fmt->lpDecimalSep = NEW_ARRAY(wchar_t, 6);
-    GetLocaleInfoEx(windowsLocaleName, LOCALE_SMONDECIMALSEP,  fmt->lpDecimalSep,  6);
+    GetLocaleInfoW(lcid, LOCALE_SMONDECIMALSEP,  fmt->lpDecimalSep,  6);
 
     fmt->lpThousandSep = NEW_ARRAY(wchar_t, 6);
-    GetLocaleInfoEx(windowsLocaleName, LOCALE_SMONTHOUSANDSEP, fmt->lpThousandSep, 6);
+    GetLocaleInfoW(lcid, LOCALE_SMONTHOUSANDSEP, fmt->lpThousandSep, 6);
 
-    GetLocaleInfoEx(windowsLocaleName, LOCALE_RETURN_NUMBER|LOCALE_INEGCURR,  (LPWSTR) &fmt->NegativeOrder, sizeof(UINT));
-    GetLocaleInfoEx(windowsLocaleName, LOCALE_RETURN_NUMBER|LOCALE_ICURRENCY, (LPWSTR) &fmt->PositiveOrder, sizeof(UINT));
+    GetLocaleInfoW(lcid, LOCALE_RETURN_NUMBER|LOCALE_INEGCURR,  (LPWSTR) &fmt->NegativeOrder, sizeof(UINT));
+    GetLocaleInfoW(lcid, LOCALE_RETURN_NUMBER|LOCALE_ICURRENCY, (LPWSTR) &fmt->PositiveOrder, sizeof(UINT));
 
     fmt->lpCurrencySymbol = NEW_ARRAY(wchar_t, 8);
-    GetLocaleInfoEx(windowsLocaleName, LOCALE_SCURRENCY, (LPWSTR) fmt->lpCurrencySymbol, 8);
+    GetLocaleInfoW(lcid, LOCALE_SCURRENCY, (LPWSTR) fmt->lpCurrencySymbol, 8);
 }
 
 static void freeCurrencyFormat(CURRENCYFMTW *fmt)
@@ -141,82 +141,11 @@ static void freeCurrencyFormat(CURRENCYFMTW *fmt)
     }
 }
 
-// TODO: This is copied in both winnmfmt.cpp and windtfmt.cpp, but really should
-// be factored out into a common helper for both.
-static UErrorCode GetEquivalentWindowsLocaleName(const Locale& locale, UnicodeString** buffer)
-{
-    UErrorCode status = U_ZERO_ERROR;
-
-    // Convert from names like "en_CA" and "de_DE@collation=phonebook" to "en-CA" and "de-DE-u-co-phonebk".
-    CharString asciiBCP47Tag = ulocimp_toLanguageTag(locale.getName(), false, status);
-
-    if (U_SUCCESS(status))
-    {
-        // Need it to be UTF-16, not 8-bit
-        // TODO: This seems like a good thing for a helper
-        wchar_t bcp47Tag[LOCALE_NAME_MAX_LENGTH] = {};
-        int32_t i;
-        for (i = 0; i < UPRV_LENGTHOF(bcp47Tag); i++)
-        {
-            if (asciiBCP47Tag[i] == '\0')
-            {
-                break;
-            }
-            else
-            {
-                // normally just copy the character
-                bcp47Tag[i] = static_cast<wchar_t>(asciiBCP47Tag[i]);
-            }
-        }
-
-        // Ensure it's null terminated
-        if (i < (UPRV_LENGTHOF(bcp47Tag) - 1))
-        {
-            bcp47Tag[i] = L'\0';
-        }
-        else
-        {
-            // Ran out of room.
-            bcp47Tag[UPRV_LENGTHOF(bcp47Tag) - 1] = L'\0';
-        }
-
-
-        wchar_t windowsLocaleName[LOCALE_NAME_MAX_LENGTH] = {};
-
-        // Note: On Windows versions below 10, there is no support for locale name aliases.
-        // This means that it will fail for locales where ICU has a completely different
-        // name (like ku vs ckb), and it will also not work for alternate sort locale
-        // names like "de-DE-u-co-phonebk".
-
-        // TODO: We could add some sort of exception table for cases like ku vs ckb.
-
-        int length = ResolveLocaleName(bcp47Tag, windowsLocaleName, UPRV_LENGTHOF(windowsLocaleName));
-
-        if (length > 0)
-        {
-            *buffer = new UnicodeString(windowsLocaleName);
-        }
-        else
-        {
-            status = U_UNSUPPORTED_ERROR;
-        }
-    }
-    return status;
-}
-
 Win32NumberFormat::Win32NumberFormat(const Locale &locale, UBool currency, UErrorCode &status)
-  : NumberFormat(), fCurrency(currency), fFormatInfo(nullptr), fFractionDigitsSet(false), fWindowsLocaleName(nullptr)
+  : NumberFormat(), fCurrency(currency), fFormatInfo(nullptr), fFractionDigitsSet(false)
 {
     if (!U_FAILURE(status)) {
         fLCID = locale.getLCID();
-
-        GetEquivalentWindowsLocaleName(locale, &fWindowsLocaleName);
-        // Note: In the previous code, it would look up the LCID for the locale, and if
-        // the locale was not recognized then it would get an LCID of 0, which is a
-        // synonym for LOCALE_USER_DEFAULT on Windows.
-        // If the above method fails, then fWindowsLocaleName will remain as nullptr, and 
-        // then we will pass nullptr to API GetLocaleInfoEx, which is the same as passing
-        // LOCALE_USER_DEFAULT.
 
         // Resolve actual locale to be used later
         UErrorCode tmpsts = U_ZERO_ERROR;
@@ -227,19 +156,12 @@ Win32NumberFormat::Win32NumberFormat(const Locale &locale, UBool currency, UErro
             fLocale = Locale((const char*)tmpLocID);
         }
 
-        const wchar_t *localeName = nullptr;
-
-        if (fWindowsLocaleName != nullptr)
-        {
-            localeName = reinterpret_cast<const wchar_t*>(toOldUCharPtr(fWindowsLocaleName->getTerminatedBuffer()));
-        }
-
         fFormatInfo = (FormatInfo*)uprv_malloc(sizeof(FormatInfo));
 
         if (fCurrency) {
-            getCurrencyFormat(&fFormatInfo->currency, localeName);
+            getCurrencyFormat(&fFormatInfo->currency, fLCID);
         } else {
-            getNumberFormat(&fFormatInfo->number, localeName);
+            getNumberFormat(&fFormatInfo->number, fLCID);
         }
     }
 }
@@ -264,7 +186,6 @@ Win32NumberFormat::~Win32NumberFormat()
 
         uprv_free(fFormatInfo);
     }
-    delete fWindowsLocaleName;
 }
 
 Win32NumberFormat &Win32NumberFormat::operator=(const Win32NumberFormat &other)
@@ -276,21 +197,13 @@ Win32NumberFormat &Win32NumberFormat::operator=(const Win32NumberFormat &other)
     this->fLocale            = other.fLocale;
     this->fLCID              = other.fLCID;
     this->fFractionDigitsSet = other.fFractionDigitsSet;
-    this->fWindowsLocaleName = other.fWindowsLocaleName == nullptr ? nullptr : new UnicodeString(*other.fWindowsLocaleName);
-    
-    const wchar_t *localeName = nullptr;
-
-    if (fWindowsLocaleName != nullptr)
-    {
-        localeName = reinterpret_cast<const wchar_t*>(toOldUCharPtr(fWindowsLocaleName->getTerminatedBuffer()));
-    }
 
     if (fCurrency) {
         freeCurrencyFormat(&fFormatInfo->currency);
-        getCurrencyFormat(&fFormatInfo->currency, localeName);
+        getCurrencyFormat(&fFormatInfo->currency, fLCID);
     } else {
         freeNumberFormat(&fFormatInfo->number);
-        getNumberFormat(&fFormatInfo->number, localeName);
+        getNumberFormat(&fFormatInfo->number, fLCID);
     }
 
     return *this;
@@ -391,13 +304,6 @@ UnicodeString &Win32NumberFormat::format(int32_t numDigits, UnicodeString &appen
     formatInfo = *fFormatInfo;
     buffer[0] = 0x0000;
 
-    const wchar_t *localeName = nullptr;
-
-    if (fWindowsLocaleName != nullptr)
-    {
-        localeName = reinterpret_cast<const wchar_t*>(toOldUCharPtr(fWindowsLocaleName->getTerminatedBuffer()));
-    }
-
     if (fCurrency) {
         if (fFractionDigitsSet) {
             formatInfo.currency.NumDigits = (UINT) numDigits;
@@ -407,17 +313,17 @@ UnicodeString &Win32NumberFormat::format(int32_t numDigits, UnicodeString &appen
             formatInfo.currency.Grouping = 0;
         }
 
-        result = GetCurrencyFormatEx(localeName, 0, nBuffer, &formatInfo.currency, buffer, STACK_BUFFER_SIZE);
+        result = GetCurrencyFormatW(fLCID, 0, nBuffer, &formatInfo.currency, buffer, STACK_BUFFER_SIZE);
 
         if (result == 0) {
             DWORD lastError = GetLastError();
 
             if (lastError == ERROR_INSUFFICIENT_BUFFER) {
-                int newLength = GetCurrencyFormatEx(localeName, 0, nBuffer, &formatInfo.currency, nullptr, 0);
+                int newLength = GetCurrencyFormatW(fLCID, 0, nBuffer, &formatInfo.currency, nullptr, 0);
 
                 buffer = NEW_ARRAY(wchar_t, newLength);
                 buffer[0] = 0x0000;
-                GetCurrencyFormatEx(localeName, 0, nBuffer,  &formatInfo.currency, buffer, newLength);
+                GetCurrencyFormatW(fLCID, 0, nBuffer,  &formatInfo.currency, buffer, newLength);
             }
         }
     } else {
@@ -429,15 +335,15 @@ UnicodeString &Win32NumberFormat::format(int32_t numDigits, UnicodeString &appen
             formatInfo.number.Grouping = 0;
         }
 
-        result = GetNumberFormatEx(localeName, 0, nBuffer, &formatInfo.number, buffer, STACK_BUFFER_SIZE);
+        result = GetNumberFormatW(fLCID, 0, nBuffer, &formatInfo.number, buffer, STACK_BUFFER_SIZE);
 
         if (result == 0) {
             if (GetLastError() == ERROR_INSUFFICIENT_BUFFER) {
-                int newLength = GetNumberFormatEx(localeName, 0, nBuffer, &formatInfo.number, nullptr, 0);
+                int newLength = GetNumberFormatW(fLCID, 0, nBuffer, &formatInfo.number, nullptr, 0);
 
                 buffer = NEW_ARRAY(wchar_t, newLength);
                 buffer[0] = 0x0000;
-                GetNumberFormatEx(localeName, 0, nBuffer, &formatInfo.number, buffer, newLength);
+                GetNumberFormatW(fLCID, 0, nBuffer, &formatInfo.number, buffer, newLength);
             }
         }
     }

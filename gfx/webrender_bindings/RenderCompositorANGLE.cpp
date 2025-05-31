@@ -208,7 +208,6 @@ bool RenderCompositorANGLE::CreateSwapChainForHWND() {
   }
 
   HWND hwnd = mWidget->AsWindows()->GetHwnd();
-  const bool alpha = ShouldUseAlpha();
   if (dxgiFactory2) {
     RefPtr<IDXGISwapChain1> swapChain1;
     bool useTripleBuffering = false;
@@ -240,8 +239,6 @@ bool RenderCompositorANGLE::CreateSwapChainForHWND() {
       desc.SwapEffect = DXGI_SWAP_EFFECT_SEQUENTIAL;
       desc.Scaling = DXGI_SCALING_STRETCH;
     }
-    desc.AlphaMode =
-        alpha ? DXGI_ALPHA_MODE_PREMULTIPLIED : DXGI_ALPHA_MODE_IGNORE;
     desc.Flags = 0;
 
     hr = dxgiFactory2->CreateSwapChainForHwnd(
@@ -252,7 +249,6 @@ bool RenderCompositorANGLE::CreateSwapChainForHWND() {
       mSwapChain = swapChain1;
       mSwapChain1 = swapChain1;
       mUseTripleBuffering = useTripleBuffering;
-      mSwapChainUsingAlpha = alpha;
       return true;
     }
     if (useFlipSequential) {
@@ -291,11 +287,10 @@ bool RenderCompositorANGLE::CreateSwapChainForHWND() {
   hr =
       mSwapChain->QueryInterface((IDXGISwapChain1**)getter_AddRefs(swapChain1));
   if (SUCCEEDED(hr)) {
-    mSwapChain1 = std::move(swapChain1);
+      mSwapChain1 = swapChain1;
   } else {
     mSwapChain1 = nullptr;
   }
-  mSwapChainUsingAlpha = alpha;
   return true;
 }
 
@@ -406,10 +401,7 @@ RefPtr<IDXGISwapChain1> RenderCompositorANGLE::CreateSwapChainForDComp(
   // DXGI_SCALING_NONE caused swap chain creation failure.
   desc.Scaling = DXGI_SCALING_STRETCH;
   desc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL;
-  const bool alpha = ShouldUseAlpha();
-  // See if we need to use transparency.
-  desc.AlphaMode =
-      alpha ? DXGI_ALPHA_MODE_PREMULTIPLIED : DXGI_ALPHA_MODE_IGNORE;
+  desc.AlphaMode = DXGI_ALPHA_MODE_IGNORE;
   desc.Flags = 0;
 
   hr = dxgiFactory2->CreateSwapChainForComposition(mDevice, &desc, nullptr,
@@ -417,31 +409,17 @@ RefPtr<IDXGISwapChain1> RenderCompositorANGLE::CreateSwapChainForDComp(
   if (SUCCEEDED(hr) && swapChain1) {
     DXGI_RGBA color = {1.0f, 1.0f, 1.0f, 1.0f};
     swapChain1->SetBackgroundColor(&color);
-    mSwapChainUsingAlpha = alpha;
     return swapChain1;
   }
 
   return nullptr;
 }
 
-bool RenderCompositorANGLE::ShouldUseAlpha() const {
-  return mWidget->AsWindows()->TransparencyModeIs(
-      widget::TransparencyMode::Transparent);
-}
-
 bool RenderCompositorANGLE::BeginFrame() {
   mWidget->AsWindows()->UpdateCompositorWndSizeIfNecessary();
 
-  if (!UseCompositor()) {
-    if (NS_WARN_IF(!mSwapChainUsingAlpha && ShouldUseAlpha())) {
-      if (NS_WARN_IF(!RecreateNonNativeCompositorSwapChain())) {
-        return false;
-      }
-      MOZ_ASSERT(mSwapChainUsingAlpha);
-    }
-    if (!ResizeBufferIfNeeded()) {
-      return false;
-    }
+  if (!UseCompositor() && !ResizeBufferIfNeeded()) {
+    return false;
   }
 
   if (!MakeCurrent()) {
@@ -827,9 +805,15 @@ gfx::DeviceResetReason RenderCompositorANGLE::IsContextLost(bool aForce) {
   return layers::DXGIErrorToDeviceResetReason(reason);
 }
 
-bool RenderCompositorANGLE::UseCompositor() const {
-  return mUseNativeCompositor && mDCLayerTree &&
-         gfx::gfxVars::UseWebRenderCompositor();
+bool RenderCompositorANGLE::UseCompositor() {
+  if (!mUseNativeCompositor) {
+    return false;
+  }
+
+  if (!mDCLayerTree || !gfx::gfxVars::UseWebRenderCompositor()) {
+    return false;
+  }
+  return true;
 }
 
 bool RenderCompositorANGLE::SupportAsyncScreenshot() {
@@ -928,7 +912,7 @@ void RenderCompositorANGLE::GetCompositorCapabilities(
 }
 
 void RenderCompositorANGLE::GetWindowProperties(WindowProperties* aProperties) {
-  aProperties->is_opaque = !ShouldUseAlpha();
+  aProperties->is_opaque = true;
 }
 
 void RenderCompositorANGLE::EnableNativeCompositor(bool aEnable) {
@@ -944,34 +928,27 @@ void RenderCompositorANGLE::EnableNativeCompositor(bool aEnable) {
   mUseNativeCompositor = false;
   mDCLayerTree->DisableNativeCompositor();
 
-  if (!RecreateNonNativeCompositorSwapChain()) {
-    gfxCriticalNote << "Failed to re-create SwapChain";
-    RenderThread::Get()->HandleWebRenderError(WebRenderError::NEW_SURFACE);
-    return;
-  }
-
-  mDisablingNativeCompositor = true;
-}
-
-bool RenderCompositorANGLE::RecreateNonNativeCompositorSwapChain() {
   DestroyEGLSurface();
   mBufferSize.reset();
 
   if (mDCLayerTree) {
     RefPtr<IDXGISwapChain1> swapChain1 =
         CreateSwapChainForDComp(mUseTripleBuffering);
-    if (!swapChain1) {
-      return false;
-    }
+  if (swapChain1) {
     mSwapChain = swapChain1;
-    mSwapChain1 = swapChain1;
     mDCLayerTree->SetDefaultSwapChain(swapChain1);
+    ResizeBufferIfNeeded();
+  } else {
+    gfxCriticalNote << "Failed to re-create SwapChain";
+    RenderThread::Get()->HandleWebRenderError(WebRenderError::NEW_SURFACE);
+    return;
+   }
   } else {
     if (NS_WARN_IF(!CreateSwapChainForHWND())) {
-      return false;
+      return;
     }
   }
-  return ResizeBufferIfNeeded();
+  mDisablingNativeCompositor = true;
 }
 
 void RenderCompositorANGLE::InitializeUsePartialPresent() {

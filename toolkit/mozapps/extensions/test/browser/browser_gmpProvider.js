@@ -378,7 +378,7 @@ add_task(async function testEmeSupport() {
       }
     } else if (addon.id == WIDEVINE_L3_ID) {
       if (
-        AppConstants.platform == "win" ||
+        AppConstants.isPlatformAndVersionAtLeast("win", "6") ||
         AppConstants.platform == "macosx" ||
         AppConstants.platform == "linux"
       ) {

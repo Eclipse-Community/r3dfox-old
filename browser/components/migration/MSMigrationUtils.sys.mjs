@@ -2,6 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+import { AppConstants } from "resource://gre/modules/AppConstants.sys.mjs";
 import { ctypes } from "resource://gre/modules/ctypes.sys.mjs";
 import { MigrationUtils } from "resource:///modules/MigrationUtils.sys.mjs";
 
@@ -557,19 +558,23 @@ function getTypedURLs(registryKeyPath) {
   return typedURLs;
 }
 
-// Migrator for form passwords
+// Migrator for form passwords on Windows 8 and higher.
 function WindowsVaultFormPasswords() {}
 
 WindowsVaultFormPasswords.prototype = {
   type: MigrationUtils.resourceTypes.PASSWORDS,
 
   get exists() {
-    // check if there are passwords available for migration.
-    return this.migrate(() => {}, true);
+    // work only on windows 8+
+    if (AppConstants.isPlatformAndVersionAtLeast("win", "6.2")) {
+      // check if there are passwords available for migration.
+      return this.migrate(() => {}, true);
+    }
+    return false;
   },
 
   /**
-   * If aOnlyCheckExists is false, import the form passwords from the vault
+   * If aOnlyCheckExists is false, import the form passwords on Windows 8 and higher from the vault
    * and then call the aCallback.
    * Otherwise, check if there are passwords in the vault.
    *

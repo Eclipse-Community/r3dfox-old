@@ -67,6 +67,7 @@ enum class UXThemeClass : uint8_t {
   Header,
   Listview,
   Menu,
+  WindowFrame,
   NumClasses
 };
 

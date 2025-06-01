@@ -146,17 +146,11 @@ oddly_ordered_inclnames = set(
         "psapi.h",  # Must be included after "util/WindowsWrapper.h" on Windows
         "machine/endian.h",  # Must be included after <sys/types.h> on BSD
         "process.h",  # Windows-specific
-        "util/WindowsWrapper.h",  # Must precede other system headers(?)
+        "winbase.h",  # Must precede other system headers(?)
+        "windef.h",  # Must precede other system headers(?)
+        "windows.h",  # Must precede other system headers(?)
     ]
 )
-
-# System headers which shouldn't be included directly, but instead use the
-# designated wrapper.
-wrapper_system_inclnames = {
-    "windows.h": "util/WindowsWrapper.h",
-    "windef.h": "util/WindowsWrapper.h",
-    "winbase.h": "util/WindowsWrapper.h",
-}
 
 # The files in tests/style/ contain code that fails this checking in various
 # ways.  Here is the output we expect.  If the actual output differs from
@@ -719,18 +713,6 @@ def check_file(
                     'the #include "..." form',
                 )
 
-            # Check for system header which shouldn't be included directly.
-            if (
-                include.inclname in wrapper_system_inclnames
-                and wrapper_system_inclnames[include.inclname] != inclname
-            ):
-                wrapper_inclname = wrapper_system_inclnames[include.inclname]
-                error(
-                    filename,
-                    include.linenum,
-                    f"{include.quote()} should not be included directly, "
-                    f'instead use "{wrapper_inclname}"',
-                )
         else:
             msg = deprecated_inclnames.get(include.inclname)
             if msg:

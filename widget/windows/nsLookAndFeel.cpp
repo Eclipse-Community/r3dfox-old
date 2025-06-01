@@ -114,6 +114,7 @@ static const wchar_t* GetUXThemeClassName(UXThemeClass aClass) {
   return L"";
 }
 
+bool nsLookAndFeel::sIsDefaultWindowsTheme = false;
 HANDLE nsLookAndFeel::GetTheme(UXThemeClass aClass) {
   auto& handle =
       static_cast<nsLookAndFeel*>(GetInstance())->mThemeHandles[aClass];
@@ -153,7 +154,7 @@ nsresult nsLookAndFeel::NativeGetColor(ColorID aID, ColorScheme aScheme,
   EnsureInit();
 
   auto UseNonNativeMenuColors = [&]() -> bool {
-    return !mHighContrastOn || aScheme == ColorScheme::Dark;
+  return LookAndFeel::GetInt(LookAndFeel::IntID::WindowsDefaultTheme) || aScheme == ColorScheme::Dark;
   };
 
   auto IsHighlightColor = [&] {
@@ -566,6 +567,9 @@ nsresult nsLookAndFeel::NativeGetInt(IntID aID, int32_t& aResult) {
       break;
     case IntID::TreeScrollLinesMax:
       aResult = 3;
+      break;
+    case IntID::WindowsDefaultTheme:
+      aResult = sIsDefaultWindowsTheme;
       break;
     case IntID::WindowsAccentColorInTitlebar:
       aResult = mTitlebarColors.mUseAccent;

@@ -145,7 +145,6 @@ include = [
   "GenericFontFamily",
   "FontFamily",
   "FontFamilyNameSyntax",
-  "MozTheme",
   "OverflowWrap",
   "OffsetPath",
   "OffsetPathFunction",

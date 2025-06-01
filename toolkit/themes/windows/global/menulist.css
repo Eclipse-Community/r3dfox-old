@@ -40,7 +40,7 @@ label {
 }
 
 
-@media not (prefers-contrast) {
+@media (-moz-windows-default-theme) {
   #label-box[native] {
     background-color: transparent !important;
     color: inherit !important;

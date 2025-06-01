@@ -12,6 +12,7 @@
 #include "mozilla/ProfilerMarkers.h"
 #include "mozilla/SyncRunnable.h"
 #include "mozilla/TaskQueue.h"
+#include "mozilla/WindowsVersion.h"
 #include "nsTArray.h"
 
 #define LOG(...) MOZ_LOG(sPDMLog, mozilla::LogLevel::Debug, (__VA_ARGS__))
@@ -119,6 +120,12 @@ bool WMFMediaDataDecoder::ShouldGuardAgaintIncorrectFirstSample(
   // Incorrect first samples have only been observed in video tracks, so only
   // guard video tracks.
   if (mMFTManager->GetType() != TrackInfo::kVideoTrack) {
+    return false;
+  }
+
+  // By observation so far this issue only happens on Windows 10 so we don't
+  // need to enable this on other versions.
+  if (!IsWin10OrLater()) {
     return false;
   }
 

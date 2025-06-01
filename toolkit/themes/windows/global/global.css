@@ -89,6 +89,15 @@ xul|separator.groove[orient="vertical"] {
   margin-inline: 0.4em;
 }
 
+/* Windows classic disabled labels */
+
+@media (-moz-windows-classic) {
+  xul|label[disabled="true"] {
+    color: ThreeDShadow;
+    text-shadow: 1px 1px ThreeDHighlight;
+  }
+}
+
 /* Content select */
 
 .contentSelectDropdown-ingroup > .menu-iconic-text {

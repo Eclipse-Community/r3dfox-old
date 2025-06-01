@@ -108,6 +108,8 @@ static const wchar_t* GetUXThemeClassName(UXThemeClass aClass) {
       return L"Listview";
     case UXThemeClass::Menu:
       return L"Menu";
+    case UXThemeClass::WindowFrame:
+      return L"Window";
     case UXThemeClass::NumClasses:
       break;
   }

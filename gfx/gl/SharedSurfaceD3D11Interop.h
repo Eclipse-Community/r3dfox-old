@@ -11,11 +11,6 @@
 #include "SharedSurface.h"
 
 namespace mozilla {
-
-namespace gfx {
-class FileHandleWrapper;
-}  // namespace gfx
-
 namespace gl {
 
 class DXInterop2Device;
@@ -28,7 +23,7 @@ class SharedSurface_D3D11Interop final : public SharedSurface {
     const RefPtr<DXInterop2Device> interop;
     HANDLE lockHandle;
     RefPtr<ID3D11Texture2D> texD3D;
-    RefPtr<gfx::FileHandleWrapper> dxgiHandle;
+    HANDLE dxgiHandle;
     UniquePtr<Renderbuffer> interopRb;
     UniquePtr<MozFramebuffer> interopFbIfNeedsIndirect;
   };

@@ -284,7 +284,7 @@ void nsLookAndFeel::UpdateTitlebarInfo(HWND aWnd) {
   // get the wrong information if the window isn't activated, so we have to:
   if (sThemeId == WindowsTheme::AeroLite ||
       (sThemeId == WindowsTheme::Aero &&
-       !dwmCompositionEnabled) {
+       !dwmCompositionEnabled)) {
     showType = SW_SHOW;
   }
   ShowWindow(hWnd, showType);

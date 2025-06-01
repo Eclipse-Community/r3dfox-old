@@ -614,8 +614,9 @@ bool TSFUtils::ShouldSetInputScopeOfURLBarToDefault() {
     case TextInputProcessorID::MicrosoftPinyinNewExperienceInputStyle:
     case TextInputProcessorID::MicrosoftOldHangul:
     case TextInputProcessorID::MicrosoftWubi:
-    case TextInputProcessorID::MicrosoftIMEForKorean:
       return true;
+    case TextInputProcessorID::MicrosoftIMEForKorean:
+      return IsWin8OrLater();
     default:
       return false;
   }

@@ -188,6 +188,7 @@ FRAME_CLASSES = [
     AbstractFrame("SVGPaintServerFrame"),
     # Interfaces (for FrameIID use)
     AbstractFrame("nsIAnonymousContentCreator"),
+    AbstractFrame("nsIFormControlFrame"),
     AbstractFrame("nsIMathMLFrame"),
     AbstractFrame("nsIPercentBSizeObserver"),
     AbstractFrame("nsIPopupContainer"),
@@ -198,4 +199,5 @@ FRAME_CLASSES = [
     AbstractFrame("ISVGSVGFrame"),
     AbstractFrame("nsITableCellLayout"),
     AbstractFrame("nsITableLayout"),
+    AbstractFrame("nsITextControlFrame"),
 ]

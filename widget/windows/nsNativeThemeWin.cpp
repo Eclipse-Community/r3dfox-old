@@ -2559,6 +2559,7 @@ LayoutDeviceIntSize nsNativeThemeWin::GetMinimumWidgetSize(
     }
 
     case StyleAppearance::MozWindowButtonMinimize: {
+      SIZE sz = nsLookAndFeel::GetCommandButtonMetrics(CMDBUTTONIDX_MINIMIZE);
       if (!IsVistaOrLater()) {
         LayoutDeviceIntSize result(sz.cx - 4, sz.cy - 4);
         AddPaddingRect(&result, CAPTIONBUTTON_MINIMIZE);

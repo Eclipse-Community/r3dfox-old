@@ -8,6 +8,7 @@
 
 #include "mozilla/MouseEvents.h"
 #include "mozilla/PresShell.h"
+#include "nsIFormControlFrame.h"
 #include "nsPresContext.h"
 #include "nsGkAtoms.h"
 #include "nsStyleConsts.h"
@@ -16,7 +17,8 @@
 
 using namespace mozilla;
 
-class nsImageControlFrame final : public nsImageFrame {
+class nsImageControlFrame final : public nsImageFrame,
+                                  public nsIFormControlFrame {
  public:
   explicit nsImageControlFrame(ComputedStyle* aStyle,
                                nsPresContext* aPresContext);
@@ -44,6 +46,10 @@ class nsImageControlFrame final : public nsImageFrame {
 #endif
 
   Cursor GetCursor(const nsPoint&) final;
+
+  // nsIFormContromFrame
+  void SetFocus(bool aOn, bool aRepaint) final;
+  nsresult SetFormProperty(nsAtom* aName, const nsAString& aValue) final;
 };
 
 nsImageControlFrame::nsImageControlFrame(ComputedStyle* aStyle,
@@ -73,6 +79,7 @@ void nsImageControlFrame::Init(nsIContent* aContent, nsContainerFrame* aParent,
 }
 
 NS_QUERYFRAME_HEAD(nsImageControlFrame)
+  NS_QUERYFRAME_ENTRY(nsIFormControlFrame)
 NS_QUERYFRAME_TAIL_INHERITING(nsImageFrame)
 
 #ifdef ACCESSIBILITY
@@ -127,10 +134,17 @@ nsresult nsImageControlFrame::HandleEvent(nsPresContext* aPresContext,
   return nsImageFrame::HandleEvent(aPresContext, aEvent, aEventStatus);
 }
 
+void nsImageControlFrame::SetFocus(bool aOn, bool aRepaint) {}
+
 nsIFrame::Cursor nsImageControlFrame::GetCursor(const nsPoint&) {
   StyleCursorKind kind = StyleUI()->Cursor().keyword;
   if (kind == StyleCursorKind::Auto) {
     kind = StyleCursorKind::Pointer;
   }
   return Cursor{kind, AllowCustomCursorImage::Yes};
+}
+
+nsresult nsImageControlFrame::SetFormProperty(nsAtom* aName,
+                                              const nsAString& aValue) {
+  return NS_OK;
 }

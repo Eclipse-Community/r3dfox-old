@@ -89,6 +89,10 @@ class DeviceManagerDx final {
   // need to avoid it.
   bool CanInitializeKeyedMutexTextures();
 
+  // Intel devices on older windows versions seem to occasionally have
+  // stability issues when supplying InitData to CreateTexture2D.
+  bool HasCrashyInitData();
+
   // Enumerate and return all outputs on the current adapter.
   nsTArray<DXGI_OUTPUT_DESC1> EnumerateOutputs();
 

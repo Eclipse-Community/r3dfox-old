@@ -8,7 +8,6 @@
 
 #include <windows.h>
 
-#include "mozilla/EnumeratedArray.h"
 #include "nsXPLookAndFeel.h"
 #include "gfxFont.h"
 
@@ -49,93 +48,14 @@ namespace mozilla::widget::WinRegistry {
 class KeyWatcher;
 }
 
-enum class UXThemeClass : uint8_t {
-  Button = 0,
-  Edit,
-  Rebar,
-  MediaRebar,
-  CommunicationsRebar,
-  BrowserTabBarRebar,
-  Toolbar,
-  MediaToolbar,
-  CommunicationsToolbar,
-  Progress,
-  Tab,
-  Trackbar,
-  Spin,
-  Combobox,
-  Header,
-  Listview,
-  Menu,
-  WindowFrame,
-  NumClasses
-};
-
-enum CmdButtonIdx {
-  CMDBUTTONIDX_MINIMIZE = 0,
-  CMDBUTTONIDX_RESTORE,
-  CMDBUTTONIDX_CLOSE,
-  CMDBUTTONIDX_BUTTONBOX
-};
-
-// This class makes sure we don't attempt to open a theme if the previous
-// loading attempt has failed because OpenThemeData is a heavy task and
-// it's less likely that the API returns a different result.
-class UXThemeHandle final {
-  mozilla::Maybe<HANDLE> mHandle;
-
- public:
-  UXThemeHandle() = default;
-  ~UXThemeHandle();
-
-  // Disallow copy and move
-  UXThemeHandle(const UXThemeHandle&) = delete;
-  UXThemeHandle(UXThemeHandle&&) = delete;
-  UXThemeHandle& operator=(const UXThemeHandle&) = delete;
-  UXThemeHandle& operator=(UXThemeHandle&&) = delete;
-
-  operator HANDLE();
-  void OpenOnce(LPCWSTR aClassList);
-  void Close();
-};
-
 class nsLookAndFeel final : public nsXPLookAndFeel {
  public:
   nsLookAndFeel();
   virtual ~nsLookAndFeel();
 
   static HMODULE sThemeDLL;
-  static HANDLE GetTheme(UXThemeClass);
   static HMODULE GetThemeDLL();
-
-  // We initialize sCommandButtonBoxMetrics separately as a performance
-  // optimization to avoid fetching dummy values for sCommandButtonMetrics
-  // when we don't need those.
-  static SIZE sCommandButtonMetrics[3];
-  static bool sCommandButtonMetricsInitialized;
-  static SIZE sCommandButtonBoxMetrics;
-  static bool sCommandButtonBoxMetricsInitialized;
-
-  static void EnsureCommandButtonMetrics();
-  static void EnsureCommandButtonBoxMetrics();
   static const wchar_t kThemeLibraryName[];
-  static bool sTitlebarInfoPopulatedAero;
-  static bool sTitlebarInfoPopulatedThemed;
-  // nsWindow calls this to update desktop settings info
-  static void UpdateTitlebarInfo(HWND aWnd);
-
-  static SIZE GetCommandButtonMetrics(CmdButtonIdx aMetric) {
-    EnsureCommandButtonMetrics();
-    return sCommandButtonMetrics[aMetric];
-  }
-  static SIZE GetCommandButtonBoxMetrics() {
-    EnsureCommandButtonBoxMetrics();
-    return sCommandButtonBoxMetrics;
-  }
-
-  static bool AreFlatMenusEnabled();
-  static bool IsAppThemed();
-  static void UpdateNativeThemeInfo();
 
   void NativeInit() final;
   void RefreshImpl() override;
@@ -211,13 +131,7 @@ class nsLookAndFeel final : public nsXPLookAndFeel {
   nscolor mColorAccent = 0;
   nscolor mColorAccentText = 0;
 
-  nscolor mSysColorTable[SYS_COLOR_COUNT]{0};
-  static bool sIsDefaultWindowsTheme;
-  bool mHighContrastOn = false;
-
-  mozilla::EnumeratedArray<UXThemeClass, UXThemeHandle,
-                           size_t(UXThemeClass::NumClasses)>
-      mThemeHandles;
+  nscolor mSysColorTable[SYS_COLOR_COUNT];
 
   mozilla::UniquePtr<mozilla::widget::WinRegistry::KeyWatcher>
       mColorFilterWatcher;

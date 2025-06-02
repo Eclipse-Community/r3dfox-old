@@ -739,7 +739,7 @@ nsWindow::nsWindow(bool aIsChildWindow)
     NS_ASSERTION(sIsOleInitialized, "***** OLE is not initialized!\n");
     MouseScrollHandler::Initialize();
     // Init theme data
-    nsLookAndFeel::UpdateNativeThemeInfo();
+    nsUXThemeData::UpdateNativeThemeInfo();
     RedirectedKeyDownMessageManager::Forget();
     if (mPointerEvents.ShouldEnableInkCollector()) {
       InkCollector::sInkCollector = new InkCollector();
@@ -803,8 +803,8 @@ static bool ShouldCacheTitleBarInfo(WindowType aWindowType,
   return (aWindowType == WindowType::TopLevel) &&
          (aBorderStyle == BorderStyle::Default ||
           aBorderStyle == BorderStyle::All) &&
-         (!nsLookAndFeel::sTitlebarInfoPopulatedThemed ||
-          !nsLookAndFeel::sTitlebarInfoPopulatedAero);
+         (!nsUXThemeData::sTitlebarInfoPopulatedThemed ||
+          !nsUXThemeData::sTitlebarInfoPopulatedAero);
 }
 
 void nsWindow::SendAnAPZEvent(InputData& aEvent) {
@@ -1202,7 +1202,7 @@ const wchar_t kShellLibraryName[] =  L"shell32.dll";
   // Query for command button metric data for rendering the titlebar. We
   // only do this once on the first window that has an actual titlebar
   if (ShouldCacheTitleBarInfo(mWindowType, mBorderStyle)) {
-    nsLookAndFeel::UpdateTitlebarInfo(mWnd);
+    nsUXThemeData::UpdateTitlebarInfo(mWnd);
   }
 
   static bool a11yPrimed = false;
@@ -3251,7 +3251,7 @@ void nsWindow::UpdateOpaqueRegion(const LayoutDeviceIntRegion& aOpaqueRegion) {
       // The minimum glass height must be the caption buttons height,
       // otherwise the buttons are drawn incorrectly.
       largest.MoveToY(std::max<uint32_t>(
-          largest.Y(), nsLookAndFeel::GetCommandButtonBoxMetrics().cy));
+          largest.Y(), nsUXThemeData::GetCommandButtonBoxMetrics().cy));
     }
     margins.cyTopHeight = largest.Y();
   }
@@ -5271,7 +5271,7 @@ bool nsWindow::ProcessMessageInternal(UINT msg, WPARAM& wParam, LPARAM& lParam,
     case WM_THEMECHANGED: {
       // Update non-client margin offsets
       UpdateNonClientMargins();
-      nsLookAndFeel::UpdateNativeThemeInfo();
+      nsUXThemeData::UpdateNativeThemeInfo();
 
       // Invalidate the window so that the repaint will
       // pick up the new theme.

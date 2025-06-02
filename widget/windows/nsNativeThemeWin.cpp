@@ -34,6 +34,7 @@
 #include "Theme.h"
 #include "nsPresContext.h"
 #include "nsRect.h"
+#include "nsUXThemeConstants.h"
 #include "nsSize.h"
 #include "nsStyleConsts.h"
 #include "nsTransform2D.h"
@@ -62,8 +63,6 @@ nsNativeThemeWin::nsNativeThemeWin()
   // static widget style variables (e.g. sButtonBorderSize) should be
   // reinitialized here.
 }
-
-nsNativeThemeWin::~nsNativeThemeWin() { nsUXThemeData::Invalidate(); }
 
 auto nsNativeThemeWin::IsWidgetNonNative(
     nsIFrame* aFrame, StyleAppearance aAppearance) -> NonNative {
@@ -350,7 +349,7 @@ static CaptionButtonPadding buttonData[3] = {
 static void AddPaddingRect(LayoutDeviceIntSize* aSize, CaptionButton button) {
   if (!aSize) return;
   RECT offset;
-  if (!nsUXThemeData::IsAppThemed())
+  if (!nsLookAndFeel::IsAppThemed())
     offset = buttonData[CAPTION_CLASSIC].hotPadding[button];
   else
     offset = buttonData[CAPTION_BASIC].hotPadding[button];
@@ -362,7 +361,7 @@ static void AddPaddingRect(LayoutDeviceIntSize* aSize, CaptionButton button) {
 // the area we draw into to compensate.
 static void OffsetBackgroundRect(RECT& rect, CaptionButton button) {
   RECT offset;
-  if (!nsUXThemeData::IsAppThemed())
+  if (!nsLookAndFeel::IsAppThemed())
     offset = buttonData[CAPTION_CLASSIC].hotPadding[button];
   else
     offset = buttonData[CAPTION_BASIC].hotPadding[button];
@@ -584,9 +583,10 @@ void nsNativeThemeWin::DrawThemedProgressMeter(
 }
 
 LayoutDeviceIntMargin nsNativeThemeWin::GetCachedWidgetBorder(
-    HTHEME aTheme, nsUXThemeClass aThemeClass, StyleAppearance aAppearance,
+    HTHEME aTheme, UXThemeClass aThemeClass, StyleAppearance aAppearance,
     int32_t aPart, int32_t aState) {
-  int32_t cacheIndex = aThemeClass * THEME_PART_DISTINCT_VALUE_COUNT + aPart;
+  int32_t cacheIndex =
+      int32_t(aThemeClass) * THEME_PART_DISTINCT_VALUE_COUNT + aPart;
   int32_t cacheBitIndex = cacheIndex / 8;
   uint8_t cacheBit = 1u << (cacheIndex % 8);
 
@@ -621,9 +621,9 @@ LayoutDeviceIntMargin nsNativeThemeWin::GetCachedWidgetBorder(
 }
 
 nsresult nsNativeThemeWin::GetCachedMinimumWidgetSize(
-    nsIFrame* aFrame, HANDLE aTheme, nsUXThemeClass aThemeClass,
+    nsIFrame* aFrame, HANDLE aTheme, UXThemeClass aThemeClass,
     StyleAppearance aAppearance, int32_t aPart, int32_t aState,
-    THEMESIZE aSizeReq, mozilla::LayoutDeviceIntSize* aResult) {
+    int32_t aSizeReq, mozilla::LayoutDeviceIntSize* aResult) {
   int32_t cachePart = aPart;
 
   if (aAppearance == StyleAppearance::Button && aSizeReq == TS_MIN) {
@@ -636,7 +636,7 @@ nsresult nsNativeThemeWin::GetCachedMinimumWidgetSize(
 
   MOZ_ASSERT(aPart < THEME_PART_DISTINCT_VALUE_COUNT);
   int32_t cacheIndex =
-      aThemeClass * THEME_PART_DISTINCT_VALUE_COUNT + cachePart;
+      int32_t(aThemeClass) * THEME_PART_DISTINCT_VALUE_COUNT + cachePart;
   int32_t cacheBitIndex = cacheIndex / 8;
   uint8_t cacheBit = 1u << (cacheIndex % 8);
 
@@ -651,7 +651,8 @@ nsresult nsNativeThemeWin::GetCachedMinimumWidgetSize(
   }
 
   SIZE sz;
-  GetThemePartSize(aTheme, hdc, aPart, aState, nullptr, aSizeReq, &sz);
+  GetThemePartSize(aTheme, hdc, aPart, aState, nullptr, THEMESIZE(aSizeReq),
+                   &sz);
   aResult->width = sz.cx;
   aResult->height = sz.cy;
 
@@ -686,55 +687,55 @@ nsresult nsNativeThemeWin::GetCachedMinimumWidgetSize(
   return NS_OK;
 }
 
-mozilla::Maybe<nsUXThemeClass> nsNativeThemeWin::GetThemeClass(
+mozilla::Maybe<UXThemeClass> nsNativeThemeWin::GetThemeClass(
     StyleAppearance aAppearance) {
   switch (aAppearance) {
     case StyleAppearance::Button:
     case StyleAppearance::Radio:
     case StyleAppearance::Checkbox:
     case StyleAppearance::Groupbox:
-      return Some(eUXButton);
+      return Some(UXThemeClass::Button);
     case StyleAppearance::NumberInput:
     case StyleAppearance::PasswordInput:
     case StyleAppearance::Textfield:
     case StyleAppearance::Textarea:
-      return Some(eUXEdit);
+      return Some(UXThemeClass::Edit);
     case StyleAppearance::Toolbox:
-      return Some(eUXRebar);
+      return Some(UXThemeClass::Rebar);
     case StyleAppearance::MozWinMediaToolbox:
-      return Some(eUXMediaRebar);
+      return Some(UXThemeClass::MediaRebar);
     case StyleAppearance::MozWinCommunicationsToolbox:
-      return Some(eUXCommunicationsRebar);
+      return Some(UXThemeClass::CommunicationsRebar);
     case StyleAppearance::MozWinBrowsertabbarToolbox:
-      return Some(eUXBrowserTabBarRebar);
+      return Some(UXThemeClass::BrowserTabBarRebar);
     case StyleAppearance::Toolbar:
     case StyleAppearance::Toolbarbutton:
     case StyleAppearance::Separator:
-      return Some(eUXToolbar);
+      return Some(UXThemeClass::Toolbar);
     case StyleAppearance::ProgressBar:
     case StyleAppearance::Progresschunk:
-      return Some(eUXProgress);
+      return Some(UXThemeClass::Progress);
     case StyleAppearance::Tab:
     case StyleAppearance::Tabpanel:
     case StyleAppearance::Tabpanels:
-      return Some(eUXTab);
+      return Some(UXThemeClass::Tab);
     case StyleAppearance::Range:
     case StyleAppearance::RangeThumb:
-      return Some(eUXTrackbar);
+      return Some(UXThemeClass::Trackbar);
     case StyleAppearance::SpinnerUpbutton:
     case StyleAppearance::SpinnerDownbutton:
-      return Some(eUXSpin);
+      return Some(UXThemeClass::Spin);
     case StyleAppearance::Menulist:
     case StyleAppearance::MozMenulistArrowButton:
-      return Some(eUXCombobox);
+      return Some(UXThemeClass::Combobox);
     case StyleAppearance::Treeheadercell:
     case StyleAppearance::Treeheadersortarrow:
-      return Some(eUXHeader);
+      return Some(UXThemeClass::Header);
     case StyleAppearance::Listbox:
     case StyleAppearance::Treeview:
     case StyleAppearance::Treetwistyopen:
     case StyleAppearance::Treeitem:
-      return Some(eUXListview);
+      return Some(UXThemeClass::Listview);
     case StyleAppearance::Menubar:
     case StyleAppearance::Menupopup:
     case StyleAppearance::Menuitem:
@@ -746,7 +747,7 @@ mozilla::Maybe<nsUXThemeClass> nsNativeThemeWin::GetThemeClass(
     case StyleAppearance::Menuarrow:
     case StyleAppearance::Menuimage:
     case StyleAppearance::Menuitemtext:
-      return Some(eUXMenu);
+      return Some(UXThemeClass::Menu);
     case StyleAppearance::MozWindowTitlebar:
     case StyleAppearance::MozWindowTitlebarMaximized:
     case StyleAppearance::MozWindowButtonClose:
@@ -756,7 +757,7 @@ mozilla::Maybe<nsUXThemeClass> nsNativeThemeWin::GetThemeClass(
     case StyleAppearance::MozWindowButtonBox:
     case StyleAppearance::MozWindowButtonBoxMaximized:
     case StyleAppearance::MozWinBorderlessGlass:
-      return Some(eUXWindowFrame);
+      return Some(UXThemeClass::WindowFrame);
     default:
       return Nothing();
   }
@@ -764,11 +765,11 @@ mozilla::Maybe<nsUXThemeClass> nsNativeThemeWin::GetThemeClass(
 
 HANDLE
 nsNativeThemeWin::GetTheme(StyleAppearance aAppearance) {
-  mozilla::Maybe<nsUXThemeClass> themeClass = GetThemeClass(aAppearance);
+  mozilla::Maybe<UXThemeClass> themeClass = GetThemeClass(aAppearance);
   if (themeClass.isNothing()) {
     return nullptr;
   }
-  return nsUXThemeData::GetTheme(themeClass.value());
+  return nsLookAndFeel::GetTheme(themeClass.value());
 }
 
 int32_t nsNativeThemeWin::StandardGetState(nsIFrame* aFrame,
@@ -1321,7 +1322,7 @@ nsresult nsNativeThemeWin::GetThemePartAndState(nsIFrame* aFrame,
 
 static bool AssumeThemePartAndStateAreTransparent(int32_t aPart,
                                                   int32_t aState) {
-  if (!(IsWin8Point1OrLater() && nsUXThemeData::IsHighContrastOn()) &&
+  if (!(IsWin8Point1OrLater() && LookAndFeel::GetInt(LookAndFeel::IntID::UseAccessibilityTheme)) &&
       aPart == MENU_POPUPITEM && aState == MBI_NORMAL) {
     return true;
   }
@@ -1740,10 +1741,10 @@ static void ScaleForFrameDPI(LayoutDeviceIntSize* aSize, nsIFrame* aFrame) {
 LayoutDeviceIntMargin nsNativeThemeWin::GetWidgetBorder(
     nsDeviceContext* aContext, nsIFrame* aFrame, StyleAppearance aAppearance) {
   LayoutDeviceIntMargin result;
-  mozilla::Maybe<nsUXThemeClass> themeClass = GetThemeClass(aAppearance);
-  HTHEME theme = NULL;
-  if (!themeClass.isNothing()) {
-    theme = nsUXThemeData::GetTheme(themeClass.value());
+  mozilla::Maybe<UXThemeClass> themeClass = GetThemeClass(aAppearance);
+  HTHEME theme = nullptr;
+  if (themeClass.isSome()) {
+    theme = nsLookAndFeel::GetTheme(themeClass.value());
   }
   if (!theme) {
     result = ClassicGetWidgetBorder(aContext, aFrame, aAppearance);
@@ -1981,10 +1982,10 @@ LayoutDeviceIntSize nsNativeThemeWin::GetMinimumWidgetSize(
     return Theme::GetMinimumWidgetSize(aPresContext, aFrame, aAppearance);
   }
 
-  mozilla::Maybe<nsUXThemeClass> themeClass = GetThemeClass(aAppearance);
+  mozilla::Maybe<UXThemeClass> themeClass = GetThemeClass(aAppearance);
   HTHEME theme = NULL;
   if (!themeClass.isNothing()) {
-    theme = nsUXThemeData::GetTheme(themeClass.value());
+    theme = nsLookAndFeel::GetTheme(themeClass.value());
   }
   if (!theme) {
     auto result = ClassicGetMinimumWidgetSize(aFrame, aAppearance);
@@ -2090,21 +2091,21 @@ LayoutDeviceIntSize nsNativeThemeWin::GetMinimumWidgetSize(
       // The only way to get accurate titlebar button info is to query a
       // window w/buttons when it's visible. nsWindow takes care of this and
       // stores that info in nsUXThemeData.
-      SIZE sz = nsUXThemeData::GetCommandButtonMetrics(CMDBUTTONIDX_RESTORE);
+      SIZE sz = nsLookAndFeel::GetCommandButtonMetrics(CMDBUTTONIDX_RESTORE);
       LayoutDeviceIntSize result(sz.cx, sz.cy);
       AddPaddingRect(&result, CAPTIONBUTTON_RESTORE);
       return result;
     }
 
     case StyleAppearance::MozWindowButtonMinimize: {
-      SIZE sz = nsUXThemeData::GetCommandButtonMetrics(CMDBUTTONIDX_MINIMIZE);
+      SIZE sz = nsLookAndFeel::GetCommandButtonMetrics(CMDBUTTONIDX_MINIMIZE);
       LayoutDeviceIntSize result(sz.cx, sz.cy);
       AddPaddingRect(&result, CAPTIONBUTTON_MINIMIZE);
       return result;
     }
 
     case StyleAppearance::MozWindowButtonClose: {
-      SIZE sz = nsUXThemeData::GetCommandButtonMetrics(CMDBUTTONIDX_CLOSE);
+      SIZE sz = nsLookAndFeel::GetCommandButtonMetrics(CMDBUTTONIDX_CLOSE);
       LayoutDeviceIntSize result(sz.cx, sz.cy);
       AddPaddingRect(&result, CAPTIONBUTTON_CLOSE);
       return result;
@@ -2131,7 +2132,7 @@ LayoutDeviceIntSize nsNativeThemeWin::GetMinimumWidgetSize(
     case StyleAppearance::MozWindowButtonBox:
     case StyleAppearance::MozWindowButtonBoxMaximized: {
       if (gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled()) {
-        SIZE sz = nsUXThemeData::GetCommandButtonBoxMetrics();
+        SIZE sz = nsLookAndFeel::GetCommandButtonBoxMetrics();
         LayoutDeviceIntSize result(sz.cx,
                                    sz.cy - GetSystemMetrics(SM_CYFRAME) -
                                        GetSystemMetrics(SM_CXPADDEDBORDER));
@@ -2192,7 +2193,6 @@ bool nsNativeThemeWin::WidgetAttributeChangeRequiresRepaint(
 
 NS_IMETHODIMP
 nsNativeThemeWin::ThemeChanged() {
-  nsUXThemeData::Invalidate();
   memset(mBorderCacheValid, 0, sizeof(mBorderCacheValid));
   memset(mMinimumWidgetSizeCacheValid, 0, sizeof(mMinimumWidgetSizeCacheValid));
   mGutterSizeCacheValid = false;
@@ -2328,7 +2328,7 @@ bool nsNativeThemeWin::ClassicThemeSupportsWidget(nsIFrame* aFrame,
     case StyleAppearance::Menubar:
     case StyleAppearance::Menupopup:
       // Classic non-flat menus are handled almost entirely through CSS.
-      if (!nsUXThemeData::AreFlatMenusEnabled()) return false;
+      if (!nsLookAndFeel::AreFlatMenusEnabled()) return false;
       [[fallthrough]];
     case StyleAppearance::Button:
     case StyleAppearance::NumberInput:
@@ -2423,7 +2423,7 @@ bool nsNativeThemeWin::ClassicGetWidgetPadding(nsDeviceContext* aContext,
         return false;
 
       if (part == 1) {  // top-level menu
-        if (nsUXThemeData::AreFlatMenusEnabled() || !(state & DFCS_PUSHED)) {
+        if (nsLookAndFeel::AreFlatMenusEnabled() || !(state & DFCS_PUSHED)) {
           (*aResult).top = (*aResult).bottom = (*aResult).left =
               (*aResult).right = 2;
         } else {
@@ -3127,7 +3127,7 @@ RENDER_AGAIN:
     case StyleAppearance::Menubar:
       break;
     case StyleAppearance::Menupopup:
-      NS_ASSERTION(nsUXThemeData::AreFlatMenusEnabled(),
+      NS_ASSERTION(nsLookAndFeel::AreFlatMenusEnabled(),
                    "Classic menus are styled entirely through CSS");
       ::FillRect(hdc, &widgetRect, (HBRUSH)(COLOR_MENU + 1));
       ::FrameRect(hdc, &widgetRect, ::GetSysColorBrush(COLOR_BTNSHADOW));
@@ -3137,7 +3137,7 @@ RENDER_AGAIN:
     case StyleAppearance::Radiomenuitem:
       // part == 0 for normal items
       // part == 1 for top-level menu items
-      if (nsUXThemeData::AreFlatMenusEnabled()) {
+      if (nsLookAndFeel::AreFlatMenusEnabled()) {
         // Not disabled and hot/pushed.
         if ((state & (DFCS_HOT | DFCS_PUSHED)) != 0) {
           ::FillRect(hdc, &widgetRect, (HBRUSH)(COLOR_MENUHILIGHT + 1));

@@ -19,7 +19,6 @@
 #include <nsServiceManagerUtils.h>
 #include "nsIXULAppInfo.h"
 #include "nsILegacyJumpListBuilder.h"
-#include "nsUXThemeData.h"
 #include "nsWindow.h"
 #include "WinUtils.h"
 #include "TaskbarTabPreview.h"

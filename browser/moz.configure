@@ -8,12 +8,11 @@ imply_option("MOZ_PLACES", True)
 imply_option("MOZ_SERVICES_HEALTHREPORT", False)
 imply_option("MOZ_SERVICES_SYNC", True)
 imply_option("MOZ_DEDICATED_PROFILES", True)
-imply_option("MOZ_BLOCK_PROFILE_DOWNGRADE", True)
+imply_option("MOZ_BLOCK_PROFILE_DOWNGRADE", False)
 imply_option("MOZ_NORMANDY", False)
 imply_option("MOZ_PROFILE_MIGRATOR", True)
 
 
-imply_option("MOZ_APP_VENDOR", "Mozilla")
 imply_option("MOZ_APP_ID", "{ec8030f7-c20a-464f-9b0e-13a3a9e97384}")
 # Include the DevTools client, not just the server (which is the default)
 imply_option("MOZ_DEVTOOLS", "all")
@@ -72,5 +71,38 @@ def requires_stub_installer(
 
 
 imply_option("MOZ_STUB_INSTALLER", True, when=requires_stub_installer)
+
+option(
+    "--enable-r3dfox-branding",
+    help="Enable Official r3dfox Branding. "
+    "Do not distribute builds unless you are part of Eclipse Community",
+)
+
+with only_when("--enable-r3dfox-branding"):
+    imply_option("MOZ_APP_UA_NAME", "r3dfox")
+    imply_option("MOZ_APP_VENDOR", "Eclipse Community")
+    imply_option("MOZ_APP_PROFILE", "Eclipse Community/r3dfox")
+
+option(
+    "--enable-r3desr-branding",
+    help="Enable Official r3dfox ESR Branding. "
+    "Do not distribute builds unless you are part of Eclipse Community",
+)
+
+with only_when("--enable-r3desr-branding"):
+    imply_option("MOZ_APP_UA_NAME", "r3dfox")
+    imply_option("MOZ_APP_VENDOR", "Eclipse Community")
+    imply_option("MOZ_APP_PROFILE", "Eclipse Community/r3dfox ESR")
+
+option(
+    "--enable-plasmafox-branding",
+    help="Enable Official plasmafox Branding. "
+    "Do not distribute builds unless you are part of Eclipse Community",
+)
+
+with only_when("--enable-plasmafox-branding"):
+    imply_option("MOZ_APP_UA_NAME", "r3dfox")
+    imply_option("MOZ_APP_VENDOR", "Eclipse Community")
+    imply_option("MOZ_APP_PROFILE", "Eclipse Community/Plasmafox")
 
 include("../toolkit/moz.configure")

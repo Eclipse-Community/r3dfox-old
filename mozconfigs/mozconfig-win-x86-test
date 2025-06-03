@@ -9,14 +9,17 @@ ac_add_options --disable-sandbox
 # Please do not redistribute this build with official branding if you are not part of Eclipse Community.
 ac_add_options --with-app-name=r3dfox
 ac_add_options --with-app-basename=r3dfox
+ac_add_options --enable-r3dfox-branding
 # For ESR enable the below and disable the above
 #ac_add_options --with-branding=browser/branding/esr
 #ac_add_options --with-app-name=r3dfox_esr
 #ac_add_options --with-app-basename="r3dfox ESR"
+#ac_add_options --enable-esr-branding
 # For potential nightly experimentation enable the below and disable the above.
 #ac_add_options --with-branding=browser/branding/nightly
 #ac_add_options --with-app-name=plasmafox
 #ac_add_options --with-app-basename=Plasmafox
+#ac_add_options --enable-plasmafox-branding
 ac_add_options --enable-official-branding
 
 # Updater stuffs

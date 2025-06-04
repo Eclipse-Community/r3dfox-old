@@ -5542,7 +5542,7 @@ MaybeGetSurfaceDescriptorForRemoteCanvas(
       // FileHandleWrapper::mHandle is not possible simply by using shmen. When
       // it is tried, parent side process just causes crash during destroying
       // FileHandleWrapper.
-      descD3D10.handle() = nullptr;
+      descD3D10.handle() = 0;
       return sd;
     }
   }

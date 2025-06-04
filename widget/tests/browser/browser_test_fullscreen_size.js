@@ -40,7 +40,7 @@ add_task(async function fullscreen_size_moz_appearance() {
   const style = win.document.createElement("style");
   style.innerHTML = `
     #main-window {
-      -moz-appearance: button;
+      -moz-appearance: -moz-win-borderless-glass;
     }
   `;
   win.document.head.appendChild(style);

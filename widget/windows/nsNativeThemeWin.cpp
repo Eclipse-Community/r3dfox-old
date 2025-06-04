@@ -1792,6 +1792,7 @@ nsresult nsNativeThemeWin::ClassicGetThemePartAndState(
     case StyleAppearance::Tab:
     case StyleAppearance::Tabpanel:
     case StyleAppearance::Tabpanels:
+    case StyleAppearance::Groupbox:
       // these don't use DrawFrameControl
       return NS_OK;
     case StyleAppearance::MozMenulistArrowButton: {

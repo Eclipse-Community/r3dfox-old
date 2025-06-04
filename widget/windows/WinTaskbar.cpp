@@ -281,13 +281,25 @@ bool WinTaskbar::GenerateAppUserModelID(nsAString& aAppUserModelId,
 // static
 bool WinTaskbar::GetAppUserModelID(nsAString& aAppUserModelId,
                                    bool aPrivateBrowsing) {
+static const wchar_t kShellLibraryName[] =  L"shell32.dll";
+
+    typedef HRESULT (WINAPI * SetCurrentProcessExplicitAppUserModelIDPtr)(PWSTR *AppID);
+
+    SetCurrentProcessExplicitAppUserModelIDPtr funcAppUserModelID = nullptr;
+
+    HMODULE hDLL = ::LoadLibraryW(kShellLibraryName);
+
+    funcAppUserModelID = (SetCurrentProcessExplicitAppUserModelIDPtr)
+                          GetProcAddress(hDLL, "GetCurrentProcessExplicitAppUserModelID");
+
   // If an ID has already been set then use that.
   PWSTR id;
-  if (SUCCEEDED(GetCurrentProcessExplicitAppUserModelID(&id))) {
+  if (funcAppUserModelID && SUCCEEDED(funcAppUserModelID(&id))) {
     aAppUserModelId.Assign(id);
     CoTaskMemFree(id);
   }
 
+        ::FreeLibrary(hDLL);
   return GenerateAppUserModelID(aAppUserModelId, aPrivateBrowsing);
 }
 

@@ -59,6 +59,8 @@ using FDPromise = filedialog::Promise<Res>;
 
 MOZ_RUNINIT UniquePtr<char16_t[], nsFilePicker::FreeDeleter>
     nsFilePicker::sLastUsedUnicodeDirectory;
+static const wchar_t kDialogPtrProp[] = L"DialogPtrProperty";
+static const DWORD kDialogTimerID = 9999;
 
 #define MAX_EXTENSION_LENGTH 10
 

@@ -764,9 +764,16 @@ function Set-DefaultHandlerRegistry($Association, $Path, $ProgID, $Hash, $RegRen
 nsresult SetDefaultExtensionHandlersUserChoiceImpl(
     const wchar_t* aAumi, const wchar_t* const aSid, const bool aRegRename,
     const nsTArray<nsString>& aFileExtensions) {
+  static LONG (*plat_fn)(UINT32*, PWSTR);
+  if (!plat_fn) {
+    if (auto* module = GetModuleHandle(L"Kernel32.dll"); module) {
+      plat_fn = reinterpret_cast<decltype(plat_fn)>(
+          GetProcAddress(module, "GetCurrentPackageFullName"));
+    }
+  }
   UINT32 pfnLen = 0;
-  bool inMsix =
-      GetCurrentPackageFullName(&pfnLen, nullptr) != APPMODEL_ERROR_NO_PACKAGE;
+  bool inMsix =plat_fn ? 
+      ((*plat_fn)(&pfnLen, nullptr) != APPMODEL_ERROR_NO_PACKAGE) : false;
 
   if (inMsix) {
     return SetDefaultExtensionHandlersUserChoiceImplMsix(

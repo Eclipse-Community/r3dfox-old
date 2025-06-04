@@ -272,6 +272,27 @@ html|input.tree-input {
       color: -moz-ButtonActiveText;
     }
   }
+
+  @media (-moz-windows-classic) {
+    treecol,
+    .tree-columnpicker-button {
+      border: 1px solid;
+      border-top-color: ThreeDHighlight;
+      border-inline-end-color: ThreeDShadow;
+      border-bottom-color: ThreeDShadow;
+      border-inline-start-color: ThreeDHighlight;
+      box-shadow: none;
+      background-color: -moz-Dialog;
+    }
+
+    treecol:where(:hover:active),
+    .tree-columnpicker-button:where(:hover:active) {
+      border-top-color: ThreeDShadow;
+      border-inline-end-color: ThreeDHighlight;
+      border-bottom-color: ThreeDHighlight;
+      border-inline-start-color: ThreeDShadow;
+    }
+  }
 }
 
 @media (-moz-platform: macos) and (not (prefers-contrast)) {

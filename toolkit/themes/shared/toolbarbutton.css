@@ -15,7 +15,7 @@ toolbarbutton {
     padding-inline: 2px;
   }
 
-  @media not (prefers-contrast) {
+  @media (-moz-windows-default-theme) {
     :root[lwtheme-image] & {
       text-shadow: none;
     }
@@ -37,10 +37,12 @@ toolbarbutton {
     }
   }
 
+ @media not (-moz-windows-default-theme) {
   &:where([disabled="true"]) {
     color: GrayText;
     text-shadow: none;
   }
+ }
 }
 
 .toolbarbutton-text {

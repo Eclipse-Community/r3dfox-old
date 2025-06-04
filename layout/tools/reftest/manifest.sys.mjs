@@ -734,6 +734,8 @@ function BuildConditionSandbox(aURL) {
 
   // always true except for windows mingwclang builds
   sandbox.webrtc = AppConstants.MOZ_WEBRTC;
+    // Set a flag on sandbox if the windows default theme is active
+    sandbox.windowsDefaultTheme = g.containingWindow.matchMedia("(-moz-windows-default-theme)").matches;
 
   sandbox.prefs = Cu.cloneInto(
     {

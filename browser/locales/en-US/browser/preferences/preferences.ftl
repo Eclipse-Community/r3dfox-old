@@ -197,12 +197,17 @@ r3dfox-accessibility-desc = Recommended to disable if you do not need them for e
 r3dfox-csp =
     .label = Disable Content Security Policy (CSP)
 
-r3dfox-csp-desc = CSP is a security feature, improperly designed websites may require disabling CSP.  Not recommended unless you know what you are doing.
+r3dfox-csp-desc = CSP is a security feature, improperly designed websites may require disabling CSP. Not recommended unless you know what you are doing.
+
+r3dfox-dwrite =
+    .label = Use Skia GDI font rendering (BETA)
+
+r3dfox-dwrite-desc = Disable DirectWrite font rendering. Not recommended unless you know what you are doing. Currently buggy. https://github.com/Eclipse-Community/r3dfox/issues/290
 
 r3dfox-hsts =
     .label = Disable HTTP Strict Transport Security (HSTS)
 
-r3dfox-hsts-desc = HSTS is a security feature, websites with missing, expired, or wrong certificates may require disabling HSTS to access.  Not recommended unless you know what you are doing.
+r3dfox-hsts-desc = HSTS is a security feature, websites with missing, expired, or wrong certificates may require disabling HSTS to access. Not recommended unless you know what you are doing.
 
 r3dfox-e10s =
     .label = Disable content multiprocess (e10s) (BETA)

@@ -6,7 +6,6 @@
 #ifndef GPU_ExternalTextureD3D11_H_
 #define GPU_ExternalTextureD3D11_H_
 
-#include "mozilla/gfx/FileHandleWrapper.h"
 #include "mozilla/webgpu/ExternalTexture.h"
 
 struct ID3D11Texture2D;
@@ -32,7 +31,6 @@ class ExternalTextureD3D11 final : public ExternalTexture {
       const struct ffi::WGPUTextureFormat aFormat,
       const ffi::WGPUTextureUsages aUsage,
       const RefPtr<ID3D11Texture2D> aTexture,
-      RefPtr<gfx::FileHandleWrapper>&& aSharedHandle,
       const layers::CompositeProcessFencesHolderId aFencesHolderId,
       RefPtr<layers::FenceD3D11>&& aWriteFence);
   virtual ~ExternalTextureD3D11();
@@ -48,7 +46,6 @@ class ExternalTextureD3D11 final : public ExternalTexture {
 
  protected:
   const RefPtr<ID3D11Texture2D> mTexture;
-  const RefPtr<gfx::FileHandleWrapper> mSharedHandle;
   const layers::CompositeProcessFencesHolderId mFencesHolderId;
   const RefPtr<layers::FenceD3D11> mWriteFence;
 };

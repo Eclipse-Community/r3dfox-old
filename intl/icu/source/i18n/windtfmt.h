@@ -95,7 +95,7 @@ public:
      * <pre>
      * .   Base* polymorphic_pointer = createPolymorphicObject();
      * .   if (polymorphic_pointer->getDynamicClassID() ==
-     * .       derived::getStaticClassID()) ...
+     * .       erived::getStaticClassID()) ...
      * </pre>
      * @return          The class ID for all objects of this class.
      */
@@ -124,10 +124,9 @@ private:
     DateFormat::EStyle fTimeStyle;
     DateFormat::EStyle fDateStyle;
     Locale fLocale;
+    int32_t fLCID;
     UnicodeString fZoneID;
     TIME_ZONE_INFORMATION *fTZI;
-
-    UnicodeString* fWindowsLocaleName; // Stores the equivalent Windows locale name.
 };
 
 U_NAMESPACE_END

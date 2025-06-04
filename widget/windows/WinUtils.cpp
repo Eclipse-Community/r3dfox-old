@@ -98,7 +98,7 @@ void WinUtils::Initialize() {
   // Dpi-Awareness is not supported with Win32k Lockdown enabled, so we don't
   // initialize DPI-related members and assert later that nothing accidently
   // uses these static members
-  if (!IsWin32kLockedDown()) {
+  if (IsWin10OrLater() && !IsWin32kLockedDown()) {
     HMODULE user32Dll = ::GetModuleHandleW(L"user32");
     if (user32Dll) {
       auto getThreadDpiAwarenessContext =
@@ -127,7 +127,9 @@ void WinUtils::Initialize() {
     }
   }
 
-  sHasPackageIdentity = mozilla::HasPackageIdentity();
+  if (IsWin8OrLater()) {
+    sHasPackageIdentity = mozilla::HasPackageIdentity();
+  }
 }
 
 // static
@@ -1552,6 +1554,10 @@ static bool IsTabletDevice() {
   // - The device has a touch screen.
   // - It is used as a tablet which means that it has no keyboard connected.
 
+  if (!IsWin8OrLater()) {
+    return false;
+  }
+
   if (WindowsUIUtils::GetInWin10TabletMode()) {
     return true;
   }
@@ -2131,6 +2137,10 @@ static LONG SetRelativeScaleStep(LUID aAdapterId, int32_t aRelativeScaleStep) {
 }
 
 nsresult WinUtils::SetHiDPIMode(bool aHiDPI) {
+  if (!IsWin10OrLater()) {
+    return NS_ERROR_NOT_AVAILABLE;
+  }
+
   auto config = GetDisplayConfig();
   if (!config) {
     return NS_ERROR_NOT_AVAILABLE;
@@ -2186,6 +2196,10 @@ nsresult WinUtils::SetHiDPIMode(bool aHiDPI) {
 }
 
 nsresult WinUtils::RestoreHiDPIMode() {
+  if (!IsWin10OrLater()) {
+    return NS_ERROR_NOT_AVAILABLE;
+  }
+
   if (sCurRelativeScaleStep == std::numeric_limits<int>::max()) {
     // The DPI setting hasn't been changed.
     return NS_ERROR_UNEXPECTED;

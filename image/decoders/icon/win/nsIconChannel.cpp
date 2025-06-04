@@ -264,6 +264,15 @@ static mozilla::Maybe<SHSTOCKICONID> GetStockIconIDForName(
 
 // Specific to Vista and above
 static nsresult GetStockHIcon(nsIMozIconURI* aIconURI, HICON* aIcon) {
+  nsresult rv = NS_OK;
+
+  // We can only do this on Vista or above
+  HMODULE hShellDLL = ::LoadLibraryW(L"shell32.dll");
+  decltype(SHGetStockIconInfo)* pSHGetStockIconInfo =
+    (decltype(SHGetStockIconInfo)*) ::GetProcAddress(hShellDLL,
+                                                    "SHGetStockIconInfo");
+
+  if (pSHGetStockIconInfo) {
   uint32_t desiredImageSize;
   aIconURI->GetImageSize(&desiredImageSize);
   nsAutoCString stockIcon;
@@ -279,14 +288,21 @@ static nsresult GetStockHIcon(nsIMozIconURI* aIconURI, HICON* aIcon) {
 
   SHSTOCKICONINFO sii = {0};
   sii.cbSize = sizeof(sii);
-  HRESULT hr = SHGetStockIconInfo(*stockIconID, infoFlags, &sii);
-  if (FAILED(hr)) {
-    return NS_ERROR_FAILURE;
+  HRESULT hr = pSHGetStockIconInfo(*stockIconID, infoFlags, &sii);
+    if (SUCCEEDED(hr)) {
+      *aIcon = sii.hIcon;
+    } else {
+      rv = NS_ERROR_FAILURE;
+    }
+  } else {
+    rv = NS_ERROR_NOT_AVAILABLE;
   }
 
-  *aIcon = sii.hIcon;
+  if (hShellDLL) {
+    ::FreeLibrary(hShellDLL);
+  }
 
-  return NS_OK;
+  return rv;
 }
 
 // Given a BITMAPINFOHEADER, returns the size of the color table.

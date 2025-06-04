@@ -300,7 +300,7 @@
 
 /* Apply crisp rendering for favicons at exactly 2x resolution */
 @media (resolution: 2x) {
-  :is(.bookmark-item, .menuitem-with-favicon) > .menu-icon,
+  :is(.bookmark-item, .menuitem-with-favicon) > .menu-iconic-left > .menu-iconic-icon,
   .bookmark-item > .toolbarbutton-icon {
     image-rendering: -moz-crisp-edges;
   }

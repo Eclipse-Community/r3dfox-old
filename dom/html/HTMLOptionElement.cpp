@@ -15,6 +15,7 @@
 #include "nsISelectControlFrame.h"
 
 // Notify/query select frame for selected state
+#include "nsIFormControlFrame.h"
 #include "mozilla/dom/Document.h"
 #include "nsNodeInfoManager.h"
 #include "nsCOMPtr.h"

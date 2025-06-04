@@ -1117,7 +1117,6 @@ class gfxFontFamily {
 
   // mark this family as being in the "bad" underline offset blocklist
   void SetBadUnderlineFamily() {
-    mozilla::AutoWriteLock lock(mLock);
     mIsBadUnderlineFamily = true;
     if (mHasStyles) {
       SetBadUnderlineFonts();

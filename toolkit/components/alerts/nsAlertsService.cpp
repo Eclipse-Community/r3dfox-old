@@ -23,8 +23,23 @@
 
 #ifdef XP_WIN
 #  include <windows.h>
-#  include <shellapi.h>
 #endif
+#ifdef XP_WIN
+typedef enum tagMOZ_QUERY_USER_NOTIFICATION_STATE {
+    QUNS_NOT_PRESENT = 1,
+    QUNS_BUSY = 2,
+    QUNS_RUNNING_D3D_FULL_SCREEN = 3,
+    QUNS_PRESENTATION_MODE = 4,
+    QUNS_ACCEPTS_NOTIFICATIONS = 5,
+    QUNS_QUIET_TIME = 6,
+    QUNS_IMMERSIVE = 7
+} MOZ_QUERY_USER_NOTIFICATION_STATE;
+
+extern "C" {
+// This function is Windows Vista or later
+typedef HRESULT (__stdcall *SHQueryUserNotificationStatePtr)(MOZ_QUERY_USER_NOTIFICATION_STATE *pquns);
+}
+#endif // defined(XP_WIN)
 
 using namespace mozilla;
 
@@ -60,12 +75,23 @@ bool nsAlertsService::ShouldShowAlert() {
 
 #ifdef XP_WIN
   if (!xpc::IsInAutomation()) {
-    QUERY_USER_NOTIFICATION_STATE qstate;
-    if (SUCCEEDED(SHQueryUserNotificationState(&qstate))) {
+  HMODULE shellDLL = ::LoadLibraryW(L"shell32.dll");
+  if (!shellDLL)
+    return result;
+
+  SHQueryUserNotificationStatePtr pSHQueryUserNotificationState =
+    (SHQueryUserNotificationStatePtr) ::GetProcAddress(shellDLL, "SHQueryUserNotificationState");
+
+  if (pSHQueryUserNotificationState) {
+    MOZ_QUERY_USER_NOTIFICATION_STATE qstate;
+    if (SUCCEEDED(pSHQueryUserNotificationState(&qstate))) {
       if (qstate != QUNS_ACCEPTS_NOTIFICATIONS) {
-        result = false;
+         result = false;
+      }
       }
     }
+
+  ::FreeLibrary(shellDLL);
   }
 #endif
 

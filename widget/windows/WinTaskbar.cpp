@@ -32,6 +32,7 @@
 #include "nsAppRunner.h"
 #include "nsXREDirProvider.h"
 #include "mozilla/widget/WinRegistry.h"
+#include "mozilla/WindowsVersion.h"
 #include <io.h>
 #include <propvarutil.h>
 #include <propkey.h>

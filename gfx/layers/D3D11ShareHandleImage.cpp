@@ -185,8 +185,7 @@ bool D3D11ShareHandleImage::AllocateTexture(D3D11RecycleAllocator* aAllocator,
     CD3D11_TEXTURE2D_DESC newDesc(
         DXGI_FORMAT_B8G8R8A8_UNORM, mSize.width, mSize.height, 1, 1,
         D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE);
-    newDesc.MiscFlags =
-        D3D11_RESOURCE_MISC_SHARED_NTHANDLE | D3D11_RESOURCE_MISC_SHARED;
+    newDesc.MiscFlags = D3D11_RESOURCE_MISC_SHARED;
 
     HRESULT hr =
         aDevice->CreateTexture2D(&newDesc, nullptr, getter_AddRefs(mTexture));
@@ -363,7 +362,7 @@ RefPtr<ID3D11Texture2D> D3D11RecycleAllocator::GetStagingTextureNV12(
     desc.Usage = D3D11_USAGE_STAGING;
     desc.BindFlags = 0;
     desc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
-    desc.MiscFlags = 0;
+    desc.MiscFlags = D3D11_RESOURCE_MISC_SHARED_KEYEDMUTEX;
     desc.SampleDesc.Count = 1;
 
     HRESULT hr = mDevice->CreateTexture2D(&desc, nullptr,

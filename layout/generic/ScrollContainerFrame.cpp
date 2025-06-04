@@ -29,6 +29,7 @@
 #include "nsScrollbarFrame.h"
 #include "nsINode.h"
 #include "nsIScrollbarMediator.h"
+#include "nsITextControlFrame.h"
 #include "nsILayoutHistoryState.h"
 #include "nsNodeInfoManager.h"
 #include "nsContentCreatorFunctions.h"

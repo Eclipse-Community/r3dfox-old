@@ -218,3 +218,6 @@ if CONFIG["CC_TYPE"] == "clang-cl":
     ]
 
 SPHINX_TREES["/widget/windows"] = "docs"
+OS_LIBS += ["psapi"]
+
+DEFINES["PSAPI_VERSION"] = "1"

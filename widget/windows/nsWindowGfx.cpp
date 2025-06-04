@@ -327,7 +327,8 @@ bool nsWindow::OnPaint(HDC aDC, uint32_t aNestingLevel) {
     if (nsIWidgetListener* listener = GetPaintListener()) {
       result = listener->PaintWindow(this, region);
     }
-    if (!gfxEnv::MOZ_DISABLE_FORCE_PRESENT()) {
+        if (!gfxEnv::MOZ_DISABLE_FORCE_PRESENT() &&
+            gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled()) {
       nsCOMPtr<nsIRunnable> event = NewRunnableMethod(
           "nsWindow::ForcePresent", this, &nsWindow::ForcePresent);
       NS_DispatchToMainThread(event);

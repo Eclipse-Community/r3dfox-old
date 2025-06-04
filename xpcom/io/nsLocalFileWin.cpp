@@ -674,12 +674,10 @@ static nsresult OpenDir(const nsString& aName, nsDir** aDir) {
 
   filename.ReplaceChar(L'/', L'\\');
 
-  // FindFirstFileExW Will have a last error of ERROR_DIRECTORY if
+  // FindFirstFileW Will have a last error of ERROR_DIRECTORY if
   // <file_path>\* is passed in.  If <unknown_path>\* is passed in then
   // ERROR_PATH_NOT_FOUND will be the last error.
-  d->handle = ::FindFirstFileExW(filename.get(), FindExInfoBasic, &(d->data),
-                                 FindExSearchNameMatch, nullptr,
-                                 FIND_FIRST_EX_LARGE_FETCH);
+  d->handle = ::FindFirstFileW(filename.get(), &(d->data));
 
   if (d->handle == INVALID_HANDLE_VALUE) {
     delete d;

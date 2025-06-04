@@ -79,6 +79,8 @@ checkbox {
 
 @media (-moz-platform: windows) or (-moz-platform: linux) {
   checkbox[native]:focus-visible > .checkbox-label-box {
+    /* On Linux, native theming should take care of this but it appears to be
+     * broken with some Gtk themes. Bug 1312169. */
     outline: var(--focus-outline);
   }
 }

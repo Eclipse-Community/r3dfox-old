@@ -10,23 +10,6 @@
   justify-content: normal; /* align the menubar to the top also in customize mode */
 }
 
-@media (-moz-windows-default-theme) {
-#main-menubar > menu {
-  appearance: none;
-  color: inherit;
-
-  &[_moz-menuactive] {
-    background-color: light-dark(hsla(0,0%,0%,.12), hsla(0,0%,100%,.22));
-    color: inherit;
-
-    @media (prefers-contrast) {
-      background-color: -moz-menuhover;
-      color: -moz-menuhovertext;
-    }
-  }
-}
-}
-
 :root[tabsintitlebar]:not([lwtheme]) {
   @media (-moz-windows-mica) {
     background-color: transparent;
@@ -78,6 +61,16 @@
 
 /* Titlebar */
 
+:root[tabsintitlebar][sizemode="normal"] .browser-titlebar {
+  appearance: auto;
+  -moz-default-appearance: -moz-window-titlebar;
+}
+
+:root[tabsintitlebar][sizemode="maximized"] .browser-titlebar {
+  appearance: auto;
+  -moz-default-appearance: -moz-window-titlebar-maximized;
+}
+
 .titlebar-buttonbox {
   appearance: none;
   /* The button box must appear on top of the navigator-toolbox in order for
@@ -94,169 +87,31 @@
 
 /* Window control buttons */
 
-.titlebar-button {
-  appearance: none;
-  border: none;
-  margin: 0;
-  padding: 8px 17px;
-  -moz-context-properties: stroke;
-  stroke: currentColor;
-
-  /* Win10's tablet mode is non-windowed -- windows can't be moved or resized
-     freely. In theory "minimize" might still make sense, but for simplicity we
-     just hide everything but "close".
-
-     (This is not called for in Win11's tablet mode, which _is_ windowed.)
-  */
-  :root[win10-tablet-mode] &:not(.titlebar-close) {
-    display: none;
-  }
-
-  &:focus-visible {
-    outline: var(--focus-outline);
-    outline-offset: var(--focus-outline-inset);
-  }
-
-  > .toolbarbutton-icon {
-    width: 12px;
-    height: 12px;
-
-    &:-moz-locale-dir(rtl) {
-      transform: scaleX(-1);
-    }
-  }
-}
-
 .titlebar-min {
-  /* Even though we use appearance: none, -moz-default-appearance is necessary
-   * for Windows 11's "snap layouts" feature, see
-   * DealWithWindowsAppearanceHacks */
+  appearance: auto;
   -moz-default-appearance: -moz-window-button-minimize;
-  list-style-image: url(chrome://browser/skin/window-controls/minimize.svg);
+  margin-inline-end: 2px;
 }
 
 .titlebar-max {
+  appearance: auto;
   -moz-default-appearance: -moz-window-button-maximize;
-  list-style-image: url(chrome://browser/skin/window-controls/maximize.svg);
 }
 
 .titlebar-restore {
+  appearance: auto;
   -moz-default-appearance: -moz-window-button-restore;
-  list-style-image: url(chrome://browser/skin/window-controls/restore.svg);
 }
 
 .titlebar-close {
+  appearance: auto;
   -moz-default-appearance: -moz-window-button-close;
-  list-style-image: url(chrome://browser/skin/window-controls/close.svg);
 }
 
-:root[lwtheme-image] {
-  .titlebar-button {
-    -moz-context-properties: unset;
-  }
-  .titlebar-min {
-    list-style-image: url(chrome://browser/skin/window-controls/minimize-themes.svg);
-  }
-  .titlebar-max {
-    list-style-image: url(chrome://browser/skin/window-controls/maximize-themes.svg);
-  }
-  .titlebar-restore {
-    list-style-image: url(chrome://browser/skin/window-controls/restore-themes.svg);
-  }
-  .titlebar-close {
-    list-style-image: url(chrome://browser/skin/window-controls/close-themes.svg);
-  }
-}
-
-@media (-moz-windows-default-theme) {
-  .titlebar-button:hover {
-    background-color: light-dark(hsla(0,0%,0%,.12), hsla(0,0%,100%,.22));
-
-    &:active {
-      background-color: light-dark(hsla(0,0%,0%,.22), hsla(0,0%,100%,.32));
-    }
-  }
-
-  .titlebar-close:hover {
-    stroke: white;
-    background-color: hsl(355,86%,49%);
-
-    &:active {
-      background-color: hsl(355,82%,69%);
-    }
-  }
-}
-
-@media not (-moz-windows-default-theme) {
-  .titlebar-button {
-    background-color: -moz-field;
-    stroke: ButtonText;
-
-    &:hover {
-      background-color: SelectedItem;
-      stroke: SelectedItemText;
-    }
-  }
-
-  .titlebar-min {
-    list-style-image: url(chrome://browser/skin/window-controls/minimize-highcontrast.svg);
-  }
-
-  .titlebar-max {
-    list-style-image: url(chrome://browser/skin/window-controls/maximize-highcontrast.svg);
-  }
-
-  .titlebar-restore {
-    list-style-image: url(chrome://browser/skin/window-controls/restore-highcontrast.svg);
-  }
-
-  .titlebar-close {
-    list-style-image: url(chrome://browser/skin/window-controls/close-highcontrast.svg);
-  }
-}
-
-/* the 12px image renders a 10px icon, and the 10px upscaled gets rounded to 12.5, which
- * rounds up to 13px, which makes the icon one pixel too big on 1.25dppx. Fix: */
-@media (1.20dppx <= resolution <= 1.45dppx) {
-  .titlebar-button > .toolbarbutton-icon {
-    width: 11.5px;
-    height: 11.5px;
-  }
-}
-
-/* 175% dpi should result in the same device pixel sizes as 150% dpi. */
-@media (1.70dppx <= resolution <= 1.95dppx) {
-  .titlebar-button {
-    padding-inline: 14.1px;
-
-    > .toolbarbutton-icon {
-      width: 10.8px;
-      height: 10.8px;
-    }
-  }
-}
-
-/* 225% dpi should result in the same device pixel sizes as 200% dpi. */
-@media (2.20dppx <= resolution <= 2.45dppx) {
-  .titlebar-button {
-    padding-inline: 15.3333px;
-
-    > .toolbarbutton-icon {
-      width: 10.8px;
-      height: 10.8px;
-    }
-  }
-}
-
-/* 275% dpi should result in the same device pixel sizes as 250% dpi. */
-@media (2.70dppx <= resolution <= 2.95dppx) {
-  /* NB: todo: this should also change padding on the buttons
-   * themselves, but without a device to test this on, it's
-   * impossible to know by how much. */
-  .titlebar-button > .toolbarbutton-icon {
-    width: 10.8px;
-    height: 10.8px;
-  }
+:root[tabletmode] .titlebar-min,
+:root[tabletmode] .titlebar-restore,
+:root[tabletmode] .titlebar-max {
+  display: none;
 }
 
 /* Bookmark menus */

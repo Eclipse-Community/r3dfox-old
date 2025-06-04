@@ -295,7 +295,7 @@ class nsWindow final : public nsBaseWidget,
   TextEventDispatcherListener* GetNativeTextEventDispatcherListener() override;
   void SetTransparencyMode(TransparencyMode aMode) override;
   TransparencyMode GetTransparencyMode() override;
-  void SetCustomTitlebar(bool) override;
+  nsresult SetNonClientMargins(const LayoutDeviceIntMargin&) override;
   void SetResizeMargin(mozilla::LayoutDeviceIntCoord aResizeMargin) override;
   void UpdateWindowDraggingRegion(
       const LayoutDeviceIntRegion& aRegion) override;
@@ -825,14 +825,17 @@ class nsWindow final : public nsBaseWidget,
       return margins;
     }
   } mCustomNonClientMetrics;
+  // Margins set by the owner
+  LayoutDeviceIntMargin mNonClientMargins{-1, -1, -1, -1};
+  // Margins we'd like to set once chrome is reshown:
+  LayoutDeviceIntMargin mFutureMarginsOnceChromeShows;
+  // Indicates we need to apply margins once toggling chrome into showing:
+  bool mFutureMarginsToUse = false;
 
-  // Indicates the custom titlebar is enabled.
+  // Indicates custom frames are enabled
   bool mCustomNonClient = false;
-  // Whether we want to draw to the titlebar once the chrome shows. (Always
-  // Nothing if mHideChrome is false.)
-  mozilla::Maybe<bool> mCustomTitlebarOnceChromeShows;
-  // Custom extra resize margin width.
-  mozilla::LayoutDeviceIntCoord mCustomResizeMargin{0};
+  // Indicates custom resize margins are in effect
+  bool mUseResizeMarginOverrides = false;
 
   // not yet set, will be calculated on first use
   double mDefaultScale = -1.0;

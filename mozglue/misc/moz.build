@@ -103,7 +103,11 @@ if CONFIG["OS_ARCH"] == "WINNT":
         "WindowsUnicode.cpp",
     ]
 
-    OS_LIBS += ["dbghelp", "oleaut32", "ole32", "mincore"]
+    OS_LIBS += [
+        "dbghelp",
+        "oleaut32",
+        "ole32",
+    ]
 
     if not CONFIG["JS_STANDALONE"]:
         SOURCES += [

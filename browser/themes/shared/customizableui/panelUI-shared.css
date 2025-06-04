@@ -342,30 +342,40 @@ panelview {
   }
 
   .menu-text,
-  .menu-icon,
+  .menu-iconic-text,
+  .menu-iconic-icon,
+  .menu-iconic-left,
+  .menu-iconic-accel,
+  .menu-accel-container,
   .menu-accel,
-  menu::after {
-    /* Reset spacing set by menu.css */
+  .menu-right {
+    /* Reset every spacing and appearance set by the platforms' menu.css
+     * and set the ones we need in the following rules. */
     margin: 0;
     padding: 0;
+    appearance: none;
   }
 
-  menuitem:not(.menuitem-iconic, [image]) > .menu-icon,
-  menu:not(.menu-iconic) > .menu-icon {
-    display: none;
-  }
-
-  .menu-icon {
+  :is(.menu-iconic, .menuitem-iconic) > .menu-iconic-left {
     margin-inline-end: 8px;
   }
 
-  menu::after,
-  .menu-accel {
+  .menu-accel,
+  .menu-iconic-accel {
     margin-inline-start: 16px;
   }
 
-  menu::after {
+  menu > .menu-right {
+    list-style-image: url(chrome://global/skin/icons/arrow-right.svg);
+    -moz-context-properties: fill, fill-opacity;
+    fill: currentColor;
     fill-opacity: 0.6;
+    width: unset;
+    height: unset;
+
+    &:-moz-locale-dir(rtl) {
+      list-style-image: url(chrome://global/skin/icons/arrow-left.svg);
+    }
   }
 
   menuseparator {

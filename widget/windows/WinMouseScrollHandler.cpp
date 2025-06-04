@@ -22,6 +22,7 @@
 #include "mozilla/dom/WheelEventBinding.h"
 #include "mozilla/StaticPrefs_mousewheel.h"
 #include "mozilla/widget/WinRegistry.h"
+#include "mozilla/WindowsVersion.h"
 
 #include <psapi.h>
 

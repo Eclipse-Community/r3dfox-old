@@ -305,9 +305,6 @@ class LookAndFeel {
     /** GTK button-to-button spacing in the inline axis */
     TitlebarButtonSpacing,
 
-    /** GTK tooltip radius */
-    TooltipRadius,
-
     /**
      * Corresponding to dynamic-range.
      * https://drafts.csswg.org/mediaqueries-5/#dynamic-range

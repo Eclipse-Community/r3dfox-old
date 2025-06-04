@@ -11,7 +11,7 @@ use windows_sys::Win32::{
     Security::Cryptography::{
         szOID_CERT_STRONG_SIGN_OS_1, szOID_CERT_STRONG_SIGN_OS_CURRENT,
         Catalog::{
-            CryptCATAdminAcquireContext2, CryptCATAdminCalcHashFromFileHandle2,
+            CryptCATAdminAcquireContext, CryptCATAdminCalcHashFromFileHandle,
             CryptCATAdminEnumCatalogFromHash, CryptCATAdminReleaseCatalogContext,
             CryptCATAdminReleaseContext, CryptCATCatalogInfoFromContext, CATALOG_INFO,
         },
@@ -38,23 +38,10 @@ impl CATAdmin {
         let mut ret = Self::default();
         // Annoyingly, szOID_CERT_STRONG_SIGN_OS_CURRENT is a wide string, but all other such
         // constants are C strings.
-        let oid_string = utf16_ptr_to_ascii(szOID_CERT_STRONG_SIGN_OS_CURRENT);
-        let policy = CERT_STRONG_SIGN_PARA {
-            cbSize: std::mem::size_of::<CERT_STRONG_SIGN_PARA>() as u32,
-            dwInfoChoice: CERT_STRONG_SIGN_OID_INFO_CHOICE,
-            Anonymous: CERT_STRONG_SIGN_PARA_0 {
-                pszOID: oid_string
-                    .as_ref()
-                    .map(|c| c.as_ptr() as *mut u8)
-                    .unwrap_or(szOID_CERT_STRONG_SIGN_OS_1 as *mut u8),
-            },
-        };
         unsafe {
-            CryptCATAdminAcquireContext2(
+            CryptCATAdminAcquireContext(
                 &mut *ret,
                 std::ptr::null(),
-                BCRYPT_SHA256_ALGORITHM,
-                &policy as *const _,
                 0,
             )
         }
@@ -66,8 +53,7 @@ impl CATAdmin {
     pub fn calculate_file_hash(&self, file: &File) -> Option<Vec<u8>> {
         let calc_hash = |size: *mut u32, dest: *mut u8| -> BOOL {
             unsafe {
-                CryptCATAdminCalcHashFromFileHandle2(
-                    self.0,
+                CryptCATAdminCalcHashFromFileHandle(
                     file.as_raw_handle() as _,
                     size,
                     dest,

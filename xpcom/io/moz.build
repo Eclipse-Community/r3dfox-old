@@ -160,3 +160,6 @@ LOCAL_INCLUDES += [
     "!..",
     "../build",
 ]
+OS_LIBS += ["psapi"]
+
+DEFINES["PSAPI_VERSION"] = "1"

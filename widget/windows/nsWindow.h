@@ -651,9 +651,6 @@ class nsWindow final : public nsBaseWidget,
 
   void UpdateOpaqueRegion(const LayoutDeviceIntRegion&) override;
   void UpdateOpaqueRegionInternal();
-  LayoutDeviceIntRegion GetOpaqueRegionForTesting() const override {
-    return mOpaqueRegion;
-  }
 
   void SetColorScheme(const mozilla::Maybe<mozilla::ColorScheme>&) override;
   void SetMicaBackdrop(bool) override;

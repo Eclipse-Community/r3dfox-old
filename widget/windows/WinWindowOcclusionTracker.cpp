@@ -583,7 +583,7 @@ bool WinWindowOcclusionTracker::IsWindowVisibleAndFullyOpaque(
   // size of the desktop. It's usually behind Chrome windows in the z-order,
   // but using a remote desktop can move it up in the z-order. So, ignore them.
   DWORD reason;
-  if (SUCCEEDED(::DwmGetWindowAttribute(aHwnd, DWMWA_CLOAKED, &reason,
+  if (WinUtils::dwmGetWindowAttributePtr && SUCCEEDED(WinUtils::dwmGetWindowAttributePtr(aHwnd, DWMWA_CLOAKED, &reason,
                                         sizeof(reason))) &&
       reason != 0) {
     return false;

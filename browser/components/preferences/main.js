@@ -82,6 +82,7 @@ Preferences.addAll([
   { id: "accessibility.force_disabled", type: "int" },
   { id: "browser.tabs.hoverPreview.enabled", type: "bool" },
   { id: "browser.urlbar.secondaryActions.switchToTab", type: "bool" },
+  { id: "gfx.dwrite.enabled", type: "bool",  inverted: true },
 
   /* Tab preferences
   Preferences:

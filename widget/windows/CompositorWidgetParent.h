@@ -35,6 +35,7 @@ class CompositorWidgetParent final : public PCompositorWidgetParent,
   void EndRemoteDrawingInRegion(
       gfx::DrawTarget* aDrawTarget,
       const LayoutDeviceIntRegion& aInvalidRegion) override;
+  bool NeedsToDeferEndRemoteDrawing() override;
   LayoutDeviceIntSize GetClientSize() override;
   already_AddRefed<gfx::DrawTarget> GetBackBufferDrawTarget(
       gfx::DrawTarget* aScreenTarget, const gfx::IntRect& aRect,
@@ -53,6 +54,7 @@ class CompositorWidgetParent final : public PCompositorWidgetParent,
       const bool& aIsFullyOccluded) override;
   mozilla::ipc::IPCResult RecvUpdateTransparency(
       const TransparencyMode& aTransparencyMode) override;
+  mozilla::ipc::IPCResult RecvClearTransparentWindow() override;
   void ActorDestroy(ActorDestroyReason aWhy) override;
 
   nsIWidget* RealWidget() override;

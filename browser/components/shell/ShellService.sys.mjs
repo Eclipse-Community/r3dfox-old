@@ -363,7 +363,7 @@ let ShellServiceInternal = {
   },
 
   // override nsIShellService.setDefaultBrowser() on the ShellService proxy.
-  async setDefaultBrowser(forAllUsers) {
+  async setDefaultBrowser(claimAllTypes, forAllUsers) {
     // On Windows 10, our best chance is to set UserChoice, so try that first.
     if (
       AppConstants.isPlatformAndVersionAtLeast("win", "10") &&
@@ -382,14 +382,25 @@ let ShellServiceInternal = {
       }
     }
 
-    this.shellService.setDefaultBrowser(forAllUsers);
+    this.shellService.setDefaultBrowser(claimAllTypes, forAllUsers);
     this._maybeShowSetDefaultGuidanceNotification();
   },
 
   async setAsDefault() {
+    let claimAllTypes = true;
     let setAsDefaultError = false;
+    if (AppConstants.platform == "win") {
+      try {
+        // In Windows 8+, the UI for selecting default protocol is much
+        // nicer than the UI for setting file type associations. So we
+        // only show the protocol association screen on Windows 8+.
+        // Windows 8 is version 6.2.
+        let version = Services.sysinfo.getProperty("version");
+        claimAllTypes = parseFloat(version) < 6.2;
+      } catch (ex) {}
+    }
     try {
-      await ShellService.setDefaultBrowser(false);
+      await ShellService.setDefaultBrowser(claimAllTypes, false);
     } catch (ex) {
       setAsDefaultError = true;
       console.error(ex);

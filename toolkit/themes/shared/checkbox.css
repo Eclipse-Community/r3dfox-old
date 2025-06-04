@@ -77,6 +77,12 @@ checkbox {
   }
 }
 
+@media (-moz-platform: windows) or (-moz-platform: linux) {
+  checkbox[native]:focus-visible > .checkbox-label-box {
+    outline: var(--focus-outline);
+  }
+}
+
 @media (-moz-platform: windows) {
   checkbox:where([native]) {
     margin: 2px 4px;

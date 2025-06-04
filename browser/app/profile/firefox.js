@@ -1318,7 +1318,7 @@ pref("browser.xul.error_pages.expert_bad_cert", false);
 pref("browser.xul.error_pages.show_safe_browsing_details_on_load", false);
 
 // Enable captive portal detection.
-pref("network.captive-portal-service.enabled", false);
+pref("network.captive-portal-service.enabled", true);
 
 // If true, network link events will change the value of navigator.onLine
 pref("network.manage-offline-status", true);

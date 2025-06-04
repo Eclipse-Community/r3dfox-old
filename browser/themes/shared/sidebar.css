@@ -53,9 +53,11 @@
   }
   @media (-moz-platform: windows-win7),
          (-moz-platform: windows-win8) {
+   @media (-moz-windows-default-theme) {
     @media -moz-pref("sidebar.verticalTabs") {
       background-color: -moz-headerbar;
     }
+   }
   }
 }
 
@@ -264,7 +266,9 @@ sidebar-main,
       background-color: var(--toolbox-bgcolor);
       @media (-moz-platform: windows-win7),
              (-moz-platform: windows-win8) {
-        background-color: -moz-headerbar;
+        @media (-moz-windows-default-theme) {
+          background-color: -moz-headerbar;
+        }
       }
 
       &:not([sidebar-positionend]) {
@@ -283,7 +287,9 @@ sidebar-main,
       background-color: var(--toolbox-bgcolor);
       @media (-moz-platform: windows-win7),
              (-moz-platform: windows-win8) {
-        background-color: -moz-headerbar;
+        @media (-moz-windows-default-theme) {
+          background-color: -moz-headerbar;
+        }
       }
 
       &:-moz-window-inactive {
@@ -291,7 +297,9 @@ sidebar-main,
         background-color: var(--toolbox-bgcolor-inactive);
         @media (-moz-platform: windows-win7),
                (-moz-platform: windows-win8) {
-          background-color: -moz-headerbarinactive;
+          @media (-moz-windows-default-theme) {
+            background-color: -moz-headerbarinactive;
+          }
         }
       }
     }

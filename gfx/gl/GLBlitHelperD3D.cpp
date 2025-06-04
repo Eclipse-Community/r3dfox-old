@@ -244,7 +244,7 @@ bool GLBlitHelper::BlitDescriptor(const layers::SurfaceDescriptorD3D10& desc,
     auto* textureMap = layers::GpuProcessD3D11TextureMap::Get();
     if (textureMap) {
       Maybe<HANDLE> handle =
-          textureMap->GetSharedHandle(gpuProcessTextureId.ref());
+          textureMap->GetSharedHandleOfCopiedTexture(gpuProcessTextureId.ref());
       if (handle.isSome()) {
         tex = OpenSharedTexture(d3d, (WindowsHandle)handle.ref());
         arrayIndex = 0;

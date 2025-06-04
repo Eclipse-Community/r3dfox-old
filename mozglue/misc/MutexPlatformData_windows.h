@@ -12,7 +12,7 @@
 #include "mozilla/PlatformMutex.h"
 
 struct mozilla::detail::MutexImpl::PlatformData {
-  SRWLOCK lock;
+  CRITICAL_SECTION criticalSection;
 };
 
 #endif  // MutexPlatformData_windows_h

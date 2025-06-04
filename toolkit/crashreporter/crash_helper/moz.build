@@ -40,3 +40,6 @@ else:
     ]
 
     GeckoProgram("crashhelper", linkage=None)
+OS_LIBS += ["psapi"]
+
+DEFINES["PSAPI_VERSION"] = "1"

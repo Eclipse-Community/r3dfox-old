@@ -7,6 +7,9 @@
 #include "MP4Decoder.h"
 #include "H264.h"
 #include "VPXDecoder.h"
+#ifdef XP_WIN
+#include "mozilla/WindowsVersion.h"
+#endif
 #ifdef MOZ_AV1
 #  include "AOMDecoder.h"
 #endif
@@ -28,6 +31,14 @@ static bool IsWhitelistedH264Codec(const nsAString& aCodec) {
   if (!ExtractH264CodecDetails(aCodec, profile, constraint, level)) {
     return false;
   }
+
+#ifdef XP_WIN
+  // Disable 4k video on windows vista since it performs poorly.
+  if (!IsWin7OrLater() &&
+      level >= H264_LEVEL::H264_LEVEL_5) {
+    return false;
+  }
+#endif
 
   // Just assume what we can play on all platforms the codecs/formats that
   // WMF can play, since we don't have documentation about what other

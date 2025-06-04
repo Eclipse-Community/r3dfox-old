@@ -231,30 +231,6 @@ pub enum CursorKind {
     Auto,
 }
 
-/// The keywords allowed in the -moz-theme property.
-#[derive(
-    Clone,
-    Copy,
-    Debug,
-    Eq,
-    FromPrimitive,
-    MallocSizeOf,
-    Parse,
-    PartialEq,
-    SpecifiedValueInfo,
-    ToComputedValue,
-    ToCss,
-    ToResolvedValue,
-    ToShmem,
-)]
-#[repr(u8)]
-pub enum MozTheme {
-    /// Choose the default (maybe native) rendering.
-    Auto,
-    /// Choose the non-native rendering.
-    NonNative,
-}
-
 /// The pointer-events property
 /// https://svgwg.org/svg2-draft/interact.html#PointerEventsProperty
 #[allow(missing_docs)]

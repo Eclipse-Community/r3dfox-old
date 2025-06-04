@@ -27,6 +27,7 @@
 #include "nsGkAtoms.h"
 #include "nsComboboxControlFrame.h"
 #include "mozilla/dom/Document.h"
+#include "nsIFormControlFrame.h"
 #include "nsIFrame.h"
 #include "nsListControlFrame.h"
 #include "nsISelectControlFrame.h"
@@ -562,7 +563,15 @@ int32_t HTMLSelectElement::GetFirstChildOptionIndex(nsIContent* aOptions,
 }
 
 nsISelectControlFrame* HTMLSelectElement::GetSelectFrame() {
-  return do_QueryFrame(GetPrimaryFrame());
+  nsIFormControlFrame* form_control_frame = GetFormControlFrame(false);
+
+  nsISelectControlFrame* select_frame = nullptr;
+
+  if (form_control_frame) {
+    select_frame = do_QueryFrame(form_control_frame);
+  }
+
+  return select_frame;
 }
 
 void HTMLSelectElement::Add(

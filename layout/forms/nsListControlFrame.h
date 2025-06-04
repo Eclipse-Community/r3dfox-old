@@ -9,6 +9,7 @@
 #include "mozilla/Attributes.h"
 #include "mozilla/ScrollContainerFrame.h"
 #include "mozilla/StaticPtr.h"
+#include "nsIFormControlFrame.h"
 #include "nsISelectControlFrame.h"
 #include "nsSelectsAreaFrame.h"
 
@@ -32,9 +33,10 @@ class HTMLOptionsCollection;
  */
 
 class nsListControlFrame final : public mozilla::ScrollContainerFrame,
+                                 public nsIFormControlFrame,
                                  public nsISelectControlFrame {
  public:
-  using HTMLOptionElement = mozilla::dom::HTMLOptionElement;
+  typedef mozilla::dom::HTMLOptionElement HTMLOptionElement;
 
   friend nsListControlFrame* NS_NewListControlFrame(
       mozilla::PresShell* aPresShell, ComputedStyle* aStyle);
@@ -78,7 +80,11 @@ class nsListControlFrame final : public mozilla::ScrollContainerFrame,
   nsresult GetFrameName(nsAString& aResult) const final;
 #endif
 
-  void ElementStateChanged(mozilla::dom::ElementState aStates) final;
+  // nsIFormControlFrame
+  nsresult SetFormProperty(nsAtom* aName, const nsAString& aValue) final;
+  MOZ_CAN_RUN_SCRIPT_BOUNDARY
+  void SetFocus(bool aOn = true, bool aRepaint = false) final;
+
   bool ShouldPropagateComputedBSizeToScrolledContent() const final;
 
   // for accessibility purposes
@@ -146,7 +152,7 @@ class nsListControlFrame final : public mozilla::ScrollContainerFrame,
   HTMLOptionElement* GetOption(uint32_t aIndex) const;
 
   // Helper
-  bool IsFocused() const;
+  bool IsFocused() { return this == mFocused; }
 
   /**
    * Function to paint the focus rect when our nsSelectsAreaFrame is painting.
@@ -314,7 +320,7 @@ class nsListControlFrame final : public mozilla::ScrollContainerFrame,
 
   RefPtr<mozilla::HTMLSelectEventListener> mEventListener;
 
-  static nsListControlFrame* sFocused;
+  static nsListControlFrame* mFocused;
 };
 
 #endif /* nsListControlFrame_h___ */

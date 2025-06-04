@@ -75,6 +75,7 @@ UNIFIED_SOURCES += [
     "GfxInfo.cpp",
     "IEnumFE.cpp",
     "IMMHandler.cpp",
+    "InkCollector.cpp",
     "JumpListBuilder.cpp",
     "KeyboardLayout.cpp",
     "LegacyJumpListItem.cpp",

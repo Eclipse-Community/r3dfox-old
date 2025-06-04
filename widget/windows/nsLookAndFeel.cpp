@@ -15,6 +15,7 @@
 #include "WindowsUIUtils.h"
 #include "mozilla/FontPropertyTypes.h"
 #include "mozilla/glean/WidgetWindowsMetrics.h"
+#include "mozilla/WindowsVersion.h"
 #include "mozilla/widget/WinRegistry.h"
 
 #define AVG2(a, b) (((a) + (b) + 1) >> 1)
@@ -50,6 +51,10 @@ static int32_t GetTooltipOffsetVertical() {
 }
 
 static bool SystemWantsDarkTheme() {
+  if (!IsWin10OrLater()) {
+    return false;
+  }
+
   if (nsUXThemeData::IsHighContrastOn()) {
     return LookAndFeel::IsDarkColor(
         LookAndFeel::Color(StyleSystemColor::Window, ColorScheme::Light,

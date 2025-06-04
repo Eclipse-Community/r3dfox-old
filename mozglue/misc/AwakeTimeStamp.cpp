@@ -84,11 +84,15 @@ AwakeTimeStamp AwakeTimeStamp::NowLoRes() { return Now(); }
 static constexpr uint64_t kHNSperUS = 10;
 
 AwakeTimeStamp AwakeTimeStamp::NowLoRes() {
-  ULONGLONG interrupt_time;
-  DebugOnly<bool> rv = QueryUnbiasedInterruptTime(&interrupt_time);
-  MOZ_ASSERT(rv);
+LARGE_INTEGER ticks;
+LARGE_INTEGER Frequency;
 
-  return AwakeTimeStamp(interrupt_time / kHNSperUS);
+QueryPerformanceFrequency(&Frequency); 
+QueryPerformanceCounter(&ticks);
+ticks.QuadPart *= 1000000;
+ticks.QuadPart /= Frequency.QuadPart;
+
+  return AwakeTimeStamp(ticks.QuadPart);
 }
 
 AwakeTimeStamp AwakeTimeStamp::Now() { return NowLoRes(); }

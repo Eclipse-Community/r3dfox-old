@@ -1628,10 +1628,10 @@ gint moz_gtk_get_widget_border(WidgetNodeType widget, gint* left, gint* top,
       return MOZ_GTK_SUCCESS;
     }
     /* These widgets have no borders, since they are not containers. */
-    case MOZ_GTK_SPLITTER_HORIZONTAL:
-    case MOZ_GTK_SPLITTER_VERTICAL:
     case MOZ_GTK_CHECKBUTTON_LABEL:
     case MOZ_GTK_RADIOBUTTON_LABEL:
+    case MOZ_GTK_SPLITTER_HORIZONTAL:
+    case MOZ_GTK_SPLITTER_VERTICAL:
     case MOZ_GTK_SCALE_THUMB_HORIZONTAL:
     case MOZ_GTK_SCALE_THUMB_VERTICAL:
     case MOZ_GTK_GRIPPER:

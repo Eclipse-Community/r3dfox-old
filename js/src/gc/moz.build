@@ -59,3 +59,6 @@ UNIFIED_SOURCES += [
 SOURCES += [
     "StoreBuffer.cpp",
 ]
+OS_LIBS += ["psapi"]
+
+DEFINES["PSAPI_VERSION"] = "1"

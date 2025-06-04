@@ -23,9 +23,11 @@ panel {
 /* Accel text */
 
 @media (-moz-windows-non-native-menus) {
+@media not (prefers-contrast) {
   menuitem:not([disabled]) > .menu-accel-container > :is(.menu-accel, .menu-iconic-accel) {
     color: var(--text-color-disabled);
   }
+}
 }
 
 /* Scroll buttons */

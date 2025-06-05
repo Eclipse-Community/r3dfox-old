@@ -99,7 +99,7 @@ def is_skiplisted(dep):
     # Skip the ICU data DLL because preloading it at startup
     # leads to startup performance problems because of its excessive
     # size (around 10MB).
-    if dep.startswith("icu"):
+    if dep.startswith(("icu", "d3dcompiler_47")):
         return True
     # Skip the MSVC Runtimes. See bug #1921713.
     if substs.get("WIN32_REDIST_DIR"):

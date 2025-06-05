@@ -27,8 +27,7 @@ namespace wr {
 class RenderDXGITextureHost final : public RenderTextureHostSWGL {
  public:
   RenderDXGITextureHost(
-      RefPtr<gfx::FileHandleWrapper> aHandle,
-      Maybe<layers::GpuProcessTextureId>& aGpuProcessTextureId,
+      HANDLE aHandle, Maybe<layers::GpuProcessTextureId>& aGpuProcessTextureId,
       uint32_t aArrayIndex, gfx::SurfaceFormat aFormat, gfx::ColorSpace2,
       gfx::ColorRange aColorRange, gfx::IntSize aSize, bool aHasKeyedMutex,
       gfx::FenceInfo& aAcquireFenceInfo,
@@ -103,7 +102,7 @@ class RenderDXGITextureHost final : public RenderTextureHostSWGL {
 
   RefPtr<gl::GLContext> mGL;
 
-  RefPtr<gfx::FileHandleWrapper> mHandle;
+  HANDLE mHandle;
   Maybe<layers::GpuProcessTextureId> mGpuProcessTextureId;
   Maybe<layers::GpuProcessQueryId> mGpuProcessQueryId;
   RefPtr<ID3D11Texture2D> mTexture;
@@ -140,10 +139,12 @@ class RenderDXGITextureHost final : public RenderTextureHostSWGL {
 
 class RenderDXGIYCbCrTextureHost final : public RenderTextureHostSWGL {
  public:
-  explicit RenderDXGIYCbCrTextureHost(
-      RefPtr<gfx::FileHandleWrapper> (&aHandles)[3],
-      gfx::YUVColorSpace aYUVColorSpace, gfx::ColorDepth aColorDepth,
-      gfx::ColorRange aColorRange, gfx::IntSize aSizeY, gfx::IntSize aSizeCbCr);
+  explicit RenderDXGIYCbCrTextureHost(HANDLE (&aHandles)[3],
+                                      gfx::YUVColorSpace aYUVColorSpace,
+                                      gfx::ColorDepth aColorDepth,
+                                      gfx::ColorRange aColorRange,
+                                      gfx::IntSize aSizeY,
+                                      gfx::IntSize aSizeCbCr);
 
   RenderDXGIYCbCrTextureHost* AsRenderDXGIYCbCrTextureHost() override {
     return this;
@@ -201,7 +202,7 @@ class RenderDXGIYCbCrTextureHost final : public RenderTextureHostSWGL {
 
   RefPtr<gl::GLContext> mGL;
 
-  RefPtr<gfx::FileHandleWrapper> mHandles[3];
+  HANDLE mHandles[3];
   RefPtr<ID3D11Texture2D> mTextures[3];
   RefPtr<IDXGIKeyedMutex> mKeyedMutexs[3];
 

@@ -58,10 +58,14 @@ body {
   --browser-stack-z-index-dialog-stack: 2;
   --browser-stack-z-index-rdm-toolbar: 3;
 
+@media not (-moz-platform: windows-win7) {
+  @media not (-moz-platform: windows-win8) {
   --toolbox-non-lwt-bgcolor: -moz-headerbar;
   --toolbox-non-lwt-textcolor: -moz-headerbartext;
   --toolbox-non-lwt-bgcolor-inactive: -moz-headerbarinactive;
   --toolbox-non-lwt-textcolor-inactive: -moz-headerbarinactivetext;
+  }
+}
 
   --toolbarbutton-border-radius: 4px;
 
@@ -123,12 +127,14 @@ body {
     --inactive-titlebar-opacity: .75;
   }
 
-@media not (-moz-windows-default-theme) {
+@media not (-moz-platform: windows-win7) {
+  @media not (-moz-platform: windows-win8) {
   &:where([tabsintitlebar]) {
     --toolbox-non-lwt-bgcolor: ActiveCaption;
     --toolbox-non-lwt-textcolor: CaptionText;
     --toolbox-non-lwt-bgcolor-inactive: InactiveCaption;
     --toolbox-non-lwt-textcolor-inactive: InactiveCaptionText;
+  }
   }
 }
 
@@ -204,6 +210,12 @@ body {
     border-bottom-style: none;
   }
 
+/* TODO bug 1695280: Remove these media selectors and merge the rule below
+   with the ruleset above. We must set background properties on :root and not
+   #navigator-toolbox on Windows 7/8 due to a WebRender bug that hides the
+   minimize/maximize/close buttons. */
+@media not (-moz-platform: windows-win7) {
+  @media not (-moz-platform: windows-win8) {
   :root[lwtheme] & {
     background-image: var(--lwt-additional-images);
     background-repeat: var(--lwt-background-tiling);
@@ -223,6 +235,8 @@ body {
     background-repeat: no-repeat, var(--lwt-background-tiling);
     background-position: right top, var(--lwt-background-alignment);
   }
+  }
+}
 }
 
 .browser-toolbar {

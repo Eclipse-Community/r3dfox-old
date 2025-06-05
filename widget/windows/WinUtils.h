@@ -335,6 +335,11 @@ class WinUtils {
   static nsWindow* GetNSWindowPtr(HWND aWnd);
 
   /**
+   * GetMonitorCount() returns count of monitors on the environment.
+   */
+  static int32_t GetMonitorCount();
+
+  /**
    * IsOurProcessWindow() returns TRUE if aWnd belongs our process.
    * Otherwise, FALSE.
    */

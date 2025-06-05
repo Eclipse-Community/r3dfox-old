@@ -30,6 +30,13 @@ checkbox {
   margin: 1px 0;
 }
 
+  @media (-moz-windows-classic) {
+    checkbox[native][disabled="true"] {
+      color: ThreeDShadow;
+      text-shadow: 1px 1px ThreeDHighlight;
+    }
+  }
+
 /* ::::: checkmark image ::::: */
 
 .checkbox-check {

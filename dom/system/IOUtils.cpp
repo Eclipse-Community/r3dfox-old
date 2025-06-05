@@ -2050,6 +2050,10 @@ Result<nsCString, IOUtils::IOError> IOUtils::ComputeHexDigestSync(
 
   SECOidTag alg;
   switch (aAlgorithm) {
+    case HashAlgorithm::Sha1:
+      alg = SEC_OID_SHA1;
+      break;
+
     case HashAlgorithm::Sha256:
       alg = SEC_OID_SHA256;
       break;

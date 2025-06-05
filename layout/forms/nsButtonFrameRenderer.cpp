@@ -7,6 +7,9 @@
 #include "nsCSSRendering.h"
 #include "nsPresContext.h"
 #include "nsPresContextInlines.h"
+#include "nsGkAtoms.h"
+#include "nsCSSPseudoElements.h"
+#include "nsNameSpaceManager.h"
 #include "mozilla/ServoStyleSet.h"
 #include "mozilla/Unused.h"
 #include "nsDisplayList.h"
@@ -42,6 +45,18 @@ void nsButtonFrameRenderer::SetFrame(nsIFrame* aFrame,
 }
 
 nsIFrame* nsButtonFrameRenderer::GetFrame() { return mFrame; }
+
+void nsButtonFrameRenderer::SetDisabled(bool aDisabled, bool aNotify) {
+  dom::Element* element = mFrame->GetContent()->AsElement();
+  if (aDisabled)
+    element->SetAttr(kNameSpaceID_None, nsGkAtoms::disabled, u""_ns, aNotify);
+  else
+    element->UnsetAttr(kNameSpaceID_None, nsGkAtoms::disabled, aNotify);
+}
+
+bool nsButtonFrameRenderer::isDisabled() {
+  return mFrame->GetContent()->AsElement()->IsDisabled();
+}
 
 nsresult nsButtonFrameRenderer::DisplayButton(nsDisplayListBuilder* aBuilder,
                                               nsDisplayList* aBackground,

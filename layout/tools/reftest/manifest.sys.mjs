@@ -694,6 +694,8 @@ function BuildConditionSandbox(aURL) {
     "sandbox.apple_silicon",
     false
   );
+    // Set a flag on sandbox if the windows default theme is active
+    sandbox.windowsDefaultTheme = g.containingWindow.matchMedia("(-moz-windows-default-theme)").matches;
 
   sandbox.prefs = Cu.cloneInto(
     {

@@ -346,12 +346,6 @@ static SystemTimeConverter<DWORD>& TimeConverter() {
   return timeConverterSingleton;
 }
 
-static const wchar_t* GetMainWindowClass();
-static const wchar_t* ChooseWindowClass(mozilla::widget::WindowType);
-// This method registers the given window class, and returns the class name.
-static void RegisterWindowClass(const wchar_t* aClassName, UINT aExtraStyle,
-                                LPWSTR aIconID);
-
 // Global event hook for window cloaking. Never deregistered.
 //  - `Nothing` if not yet set.
 //  - `Some(nullptr)` if no attempt should be made to set it.
@@ -1192,28 +1186,40 @@ void nsWindow::Destroy() {
  *
  **************************************************************/
 
-static void RegisterWindowClass(const wchar_t* aClassName, UINT aExtraStyle,
-                                LPWSTR aIconID) {
-  WNDCLASSW wc = {};
+/* static */
+const wchar_t* nsWindow::RegisterWindowClass(const wchar_t* aClassName,
+                                             UINT aExtraStyle, LPWSTR aIconID) {
+  WNDCLASSW wc;
   if (::GetClassInfoW(nsToolkit::mDllInstance, aClassName, &wc)) {
     // already registered
-    return;
+    return aClassName;
   }
 
   wc.style = CS_DBLCLKS | aExtraStyle;
   wc.lpfnWndProc = WinUtils::NonClientDpiScalingDefWindowProcW;
+  wc.cbClsExtra = 0;
+  wc.cbWndExtra = 0;
   wc.hInstance = nsToolkit::mDllInstance;
   wc.hIcon =
       aIconID ? ::LoadIconW(::GetModuleHandleW(nullptr), aIconID) : nullptr;
+  wc.hCursor = nullptr;
+  wc.hbrBackground = nullptr;
+  wc.lpszMenuName = nullptr;
   wc.lpszClassName = aClassName;
 
-  // Failures are ignored as they are handled when ::CreateWindow fails
-  ::RegisterClassW(&wc);
+  if (!::RegisterClassW(&wc)) {
+    // For older versions of Win32 (i.e., not XP), the registration may
+    // fail with aExtraStyle, so we have to re-register without it.
+    wc.style = CS_DBLCLKS;
+    ::RegisterClassW(&wc);
+  }
+  return aClassName;
 }
 
 static LPWSTR const gStockApplicationIcon = MAKEINTRESOURCEW(32512);
 
-static const wchar_t* ChooseWindowClass(WindowType aWindowType) {
+/* static */
+const wchar_t* nsWindow::ChooseWindowClass(WindowType aWindowType) {
   const wchar_t* className = [aWindowType] {
     switch (aWindowType) {
       case WindowType::Invisible:
@@ -1226,8 +1232,7 @@ static const wchar_t* ChooseWindowClass(WindowType aWindowType) {
         return GetMainWindowClass();
     }
   }();
-  RegisterWindowClass(className, 0, gStockApplicationIcon);
-  return className;
+  return RegisterWindowClass(className, 0, gStockApplicationIcon);
 }
 
 /**************************************************************
@@ -8117,7 +8122,7 @@ bool nsWindow::CanTakeFocus() {
   return false;
 }
 
-static const wchar_t* GetMainWindowClass() {
+/* static */ const wchar_t* nsWindow::GetMainWindowClass() {
   static const wchar_t* sMainWindowClass = nullptr;
   if (!sMainWindowClass) {
     nsAutoString className;

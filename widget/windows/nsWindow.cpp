@@ -1223,9 +1223,9 @@ const wchar_t* nsWindow::ChooseWindowClass(WindowType aWindowType) {
     case WindowType::Invisible:
       return RegisterWindowClass(kClassNameHidden, 0, gStockApplicationIcon);
     case WindowType::Dialog:
-      return RegisterWindowClass(kClassNameDialog, 0, nullptr);
+      return RegisterWindowClass(kClassNameDialog, 0, 0);
     case WindowType::Popup:
-      return RegisterWindowClass(kClassNameDropShadow, 0,
+      return RegisterWindowClass(kClassNameDropShadow, CS_DROPSHADOW,
                                  gStockApplicationIcon);
     default:
       return RegisterWindowClass(GetMainWindowClass(), 0,
@@ -1577,6 +1577,15 @@ void nsWindow::Show(bool bState) {
 
   if (mWindowType == WindowType::Popup) {
     MOZ_ASSERT(ChooseWindowClass(mWindowType) == kClassNameDropShadow);
+    const bool shouldUseDropShadow =
+        mTransparencyMode != TransparencyMode::Transparent;
+
+    static bool sShadowEnabled = true;
+    if (sShadowEnabled != shouldUseDropShadow) {
+      ::SetClassLongA(mWnd, GCL_STYLE, shouldUseDropShadow ? CS_DROPSHADOW : 0);
+      sShadowEnabled = shouldUseDropShadow;
+    }
+
     // WS_EX_COMPOSITED conflicts with the WS_EX_LAYERED style and causes
     // some popup menus to become invisible.
     LONG_PTR exStyle = ::GetWindowLongPtrW(mWnd, GWL_EXSTYLE);
@@ -1704,6 +1713,26 @@ void nsWindow::Show(bool bState) {
 //
 // This does not take cloaking into account.
 bool nsWindow::IsVisible() const { return mIsVisible; }
+
+/**************************************************************
+ *
+ * SECTION: Window clipping utilities
+ *
+ * Used in Size and Move operations for setting the proper
+ * window clipping regions for window transparency.
+ *
+ **************************************************************/
+
+// XP and Vista visual styles sometimes require window clipping regions to be
+// applied for proper transparency. These routines are called on size and move
+// operations.
+// XXX this is apparently still needed in Windows 7 and later
+void nsWindow::ClearThemeRegion() {
+  if (mWindowType == WindowType::Popup && !IsPopupWithTitleBar() &&
+      (mPopupType == PopupType::Tooltip || mPopupType == PopupType::Panel)) {
+    SetWindowRgn(mWnd, nullptr, false);
+  }
+}
 
 /**************************************************************
  *
@@ -1879,6 +1908,8 @@ void nsWindow::Move(double aX, double aY) {
       pl.rcNormalPosition.bottom += deltaY;
       VERIFY(::SetWindowPlacement(mWnd, &pl));
     } else {
+      ClearThemeRegion();
+
       UINT flags = SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOSIZE;
       double oldScale = mDefaultScale;
       mResizeState = IN_SIZEMOVE;
@@ -1943,6 +1974,7 @@ void nsWindow::Resize(double aWidth, double aHeight, bool aRepaint) {
         flags |= SWP_NOREDRAW;
       }
 
+      ClearThemeRegion();
       double oldScale = mDefaultScale;
       mResizeState = RESIZING;
       VERIFY(
@@ -2020,6 +2052,8 @@ void nsWindow::Resize(double aX, double aY, double aWidth, double aHeight,
       if (!aRepaint) {
         flags |= SWP_NOREDRAW;
       }
+
+      ClearThemeRegion();
 
       double oldScale = mDefaultScale;
       mResizeState = RESIZING;

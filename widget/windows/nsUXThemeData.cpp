@@ -14,6 +14,10 @@
 #include "nsUXThemeConstants.h"
 #include "gfxWindowsPlatform.h"
 
+// -- native controls patch includes --
+#include "mozilla/StaticPrefs_widget.h"
+// -- end native controls patch includes --
+
 using namespace mozilla;
 using namespace mozilla::widget;
 
@@ -86,6 +90,8 @@ const wchar_t* nsUXThemeData::GetClassName(nsUXThemeClass cls) {
       return L"Button";
     case eUXEdit:
       return L"Edit";
+    case eUXTooltip:
+      return L"Tooltip";
     case eUXRebar:
       return L"Rebar";
     case eUXMediaRebar:
@@ -94,6 +100,8 @@ const wchar_t* nsUXThemeData::GetClassName(nsUXThemeClass cls) {
       return L"Communications::Rebar";
     case eUXBrowserTabBarRebar:
       return L"BrowserTabBar::Rebar";
+    case eUXScrollbar:
+      return L"Scrollbar";
     case eUXToolbar:
       return L"Toolbar";
     case eUXMediaToolbar:
@@ -108,6 +116,8 @@ const wchar_t* nsUXThemeData::GetClassName(nsUXThemeClass cls) {
       return L"Trackbar";
     case eUXSpin:
       return L"Spin";
+    case eUXStatus:
+      return L"Status";
     case eUXCombobox:
       return L"Combobox";
     case eUXHeader:
@@ -178,9 +188,18 @@ void nsUXThemeData::EnsureCommandButtonBoxMetrics() {
 void nsUXThemeData::UpdateTitlebarInfo(HWND aWnd) {
   if (!aWnd) return;
 
-  if (!sTitlebarInfoPopulatedAero &&
-      gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled()) {
+  bool dwmCompositionEnabled =
+      StaticPrefs::widget_ev_native_controls_patch_force_dwm_report_off()
+          ? false
+          : gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled();
+
+  if (!sTitlebarInfoPopulatedAero && dwmCompositionEnabled) {
     RECT captionButtons;
+    int overrideCaptionButtonsWidth = StaticPrefs::
+        widget_ev_native_controls_patch_override_aero_caption_buttons_mask_width();
+    int overrideCaptionButtonsHeight = StaticPrefs::
+        widget_ev_native_controls_patch_override_aero_caption_buttons_mask_height();
+
     if (SUCCEEDED(DwmGetWindowAttribute(aWnd, DWMWA_CAPTION_BUTTON_BOUNDS,
                                         &captionButtons,
                                         sizeof(captionButtons)))) {
@@ -188,16 +207,27 @@ void nsUXThemeData::UpdateTitlebarInfo(HWND aWnd) {
           captionButtons.right - captionButtons.left - 3;
       sCommandButtonBoxMetrics.cy =
           (captionButtons.bottom - captionButtons.top) - 1;
+
+      if (overrideCaptionButtonsWidth > 0) {
+        sCommandButtonBoxMetrics.cx = overrideCaptionButtonsWidth;
+      }
+
+      if (overrideCaptionButtonsHeight > 0) {
+        sCommandButtonBoxMetrics.cy = overrideCaptionButtonsHeight;
+      }
+
       sCommandButtonBoxMetricsInitialized = true;
-      MOZ_ASSERT(
-          sCommandButtonBoxMetrics.cx > 0 && sCommandButtonBoxMetrics.cy > 0,
-          "We must not cache bad command button box dimensions");
+      // MOZ_ASSERT(
+      // sCommandButtonBoxMetrics.cx > 0 && sCommandButtonBoxMetrics.cy > 0,
+      // "We must not cache bad command button box dimensions");
       sTitlebarInfoPopulatedAero = true;
     }
   }
 
   // NB: sTitlebarInfoPopulatedThemed is always true pre-vista.
-  if (sTitlebarInfoPopulatedThemed || IsWin8OrLater()) return;
+  if (sTitlebarInfoPopulatedThemed ||
+      (IsWin8OrLater() && dwmCompositionEnabled))
+    return;
 
   // Query a temporary, visible window with command buttons to get
   // the right metrics.
@@ -227,9 +257,7 @@ void nsUXThemeData::UpdateTitlebarInfo(HWND aWnd) {
   // We try to avoid activating this window, but on Aero basic (aero without
   // compositor) and aero lite (special theme for win server 2012/2013) we may
   // get the wrong information if the window isn't activated, so we have to:
-  if (sThemeId == WindowsTheme::AeroLite ||
-      (sThemeId == WindowsTheme::Aero &&
-       !gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled())) {
+  if (!dwmCompositionEnabled) {
     showType = SW_SHOW;
   }
   ShowWindow(hWnd, showType);

@@ -15319,13 +15319,49 @@
 # Prefs starting with "widget."
 #---------------------------------------------------------------------------
 
+- name: widget.ev-native-controls-patch.override-win-version
+  type: int32_t
+  value: 0
+  mirror: always
+  
+- name: widget.ev-native-controls-patch.force-dwm-report-off
+  type: bool
+  value: false
+  mirror: always
+  
+- name: widget.ev-native-controls-patch.force-glass-reporting
+  type: int32_t
+  value: 0
+  mirror: always
+  
+- name: widget.ev-native-controls-patch.override-aero-caption-buttons-mask-width
+  type: int32_t
+  value: 0
+  mirror: always
+  
+- name: widget.ev-native-controls-patch.override-aero-caption-buttons-mask-height
+  type: int32_t
+  value: 0
+  mirror: always
+  
+- name: widget.ev-native-controls-patch.scrollbar-style
+  type: int32_t
+  value: 0
+  mirror: always
+  
+- name: widget.ev-native-controls-patch.tooltip-style
+  type: int32_t
+  value: 0
+  mirror: always
+
 # Global user preference for disabling native theme in content processes.
 #
 # NOTE(emilio): When changing this make sure to update the non_native_theme
 # entry in python/mozbuild/mozbuild/mozinfo.py and test_fission_autostart.py
+# ^^^ no ~ev
 - name: widget.non-native-theme.enabled
   type: RelaxedAtomicBool
-  value: true
+  value: false
   mirror: always
 
 # Whether the non-native theme should always use system colors. Useful mostly

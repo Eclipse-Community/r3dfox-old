@@ -18,12 +18,28 @@ menubar > menu:-moz-window-inactive {
 
 /* ..... Internal content .... */
 
+.menu-text {
+  padding-inline-start: 1.45em !important;
+  appearance: auto;
+  -moz-default-appearance: menuitemtext;
+}
+
+.menu-text,
+.menu-iconic-text {
+  margin-inline-start: 2px !important;
+  padding-inline-end: 2px;
+}
+
 .menu-accel,
 .menu-iconic-accel,
 .menu-text,
 .menu-iconic-text {
   margin: 0;
   padding: 1px 0;
+}
+
+.menu-iconic-left {
+  width: 1.45em;
 }
 
 .menu-accel,
@@ -53,6 +69,16 @@ menubar > menu[_moz-menuactive="true"]:not([disabled="true"]) {
   color: -moz-menubarhovertext;
 }
 
+@media (-moz-windows-classic) {
+  menubar > menu {
+    border: 2px solid transparent;
+  }
+
+  menubar > menu[_moz-menuactive="true"][open="true"] {
+    border-width: 3px 1px 1px 3px;
+  }
+}
+
 *|*:root[lwtheme] {
   menubar > menu {
     appearance: none;
@@ -70,6 +96,18 @@ menubar > menu[_moz-menuactive="true"]:not([disabled="true"]) {
 }
 
 
+@media (-moz-windows-default-theme) {
+  menubar > menu[lwtheme] {
+    appearance: auto;
+    -moz-default-appearance: menuitem;
+  }
+
+  menubar > menu[lwtheme][_moz-menuactive="true"]:not([disabled="true"]) {
+    color: inherit !important;
+    text-shadow: inherit;
+  }
+}
+
 /* ..... internal content .... */
 
 .menubar-text {
@@ -84,10 +122,28 @@ menulist > menupopup > menu {
   max-width: none;
 }
 
-menulist > menupopup > menuitem {
-  padding-inline-end: 1em;
+@media (-moz-windows-non-native-menus) {
+  menulist > menupopup > menuitem {
+    padding-inline-end: 1em;
+  }
 }
 
+
+@media not (-moz-windows-non-native-menus) {
+  menulist > menupopup > menuitem,
+  menulist > menupopup > menucaption,
+  menulist > menupopup > menu {
+    appearance: none !important;
+    border: 1px solid transparent;
+    padding-inline: 5px;
+  }
+
+  menulist > menupopup > menuitem[_moz-menuactive="true"],
+  menulist > menupopup > menu[_moz-menuactive="true"] {
+    background-color: highlight;
+    color: highlighttext;
+  }
+}
 
 menulist > menupopup > menuitem > .menu-iconic-left,
 menulist > menupopup > menucaption > .menu-iconic-left,
@@ -105,42 +161,93 @@ menulist > menupopup > menuitem[_moz-menuactive="true"][disabled="true"] {
   color: GrayText;
 }
 
+@media (-moz-windows-classic) {
+  menulist > menupopup > menuitem[disabled="true"]:not([_moz-menuactive="true"]) {
+    color: GrayText;
+    text-shadow: none;
+  }
+}
+
 menulist > menupopup > :is(menuitem, menucaption):not(.menuitem-iconic) > .menu-iconic-text {
   margin: 0;
 }
 
 /* ::::: checkbox and radio menuitems ::::: */
 
-menupopup[needsgutter] menu:not([icon], .menu-iconic),
-menupopup[needsgutter] menuitem:not([checked="true"], [icon], .menuitem-iconic) {
-  padding-inline-start: 36px;
+menuitem:is([type="checkbox"], [checked="true"]) {
+  appearance: auto;
+  -moz-default-appearance: checkmenuitem;
 }
 
-.menu-iconic > .menu-iconic-left,
-.menuitem-iconic > .menu-iconic-left {
-  margin-inline-end: 8px;
+menuitem:is([type="checkbox"], [checked="true"]) > .menu-iconic-left {
+  appearance: auto;
+  -moz-default-appearance: menucheckbox;
+  padding-top: 0;
 }
 
-menuitem[checked="true"] {
-  padding-inline-start: 12px;
+menuitem[type="radio"] {
+  appearance: auto;
+  -moz-default-appearance: radiomenuitem;
 }
 
-/* We need to do something to override the default style for selected
-   checkboxes and radio buttons because the native drawing we use on other
-   Windows versions looks pretty bad with the Win10 styles, so for now we'll
-   insert a generic checkmark icon for both types. */
-menuitem[checked="true"] > .menu-iconic-left {
-  -moz-context-properties: fill, fill-opacity;
-  fill: currentColor;
-  fill-opacity: var(--menu-icon-opacity);
-  list-style-image: url("chrome://global/skin/icons/menu-check.svg");
-  width: 16px;
-  margin-inline-end: 8px;
+menuitem[type="radio"] > .menu-iconic-left {
+  appearance: auto;
+  -moz-default-appearance: menuradio;
+  padding-top: 0;
+}
+
+menuitem:is([type="checkbox"], [checked="true"], [type="radio"]) > .menu-iconic-left > .menu-iconic-icon {
+  /* prevent .menu-iconic-icon from enforcing a minimal height of 16px (see bug 411064)
+     XXXzeniko apply that .menu-iconic-icon rule only for children of .menu-iconic */
+  display: none;
+}
+
+@media (-moz-windows-non-native-menus) {
+  menupopup[needsgutter] menu:not([icon], .menu-iconic),
+  menupopup[needsgutter] menuitem:not([checked="true"], [icon], .menuitem-iconic) {
+    padding-inline-start: 36px;
+  }
+
+  /* For Windows 10, checkbox, radio and iconified menuitems need the default
+     appearance disabled so they pick up our custom styles instead. */
+  .menu-iconic-left,
+  menuitem[type="checkbox"],
+  menuitem[type="radio"] {
+    appearance: none !important; /* to override more specific selectors above. */
+    width: unset;
+  }
+
+  .menu-iconic > .menu-iconic-left,
+  .menuitem-iconic > .menu-iconic-left {
+    margin-inline-end: 8px;
+  }
+
+  menuitem[checked="true"] {
+    padding-inline-start: 12px;
+  }
+
+  /* We need to do something to override the default style for selected
+     checkboxes and radio buttons because the native drawing we use on other
+     Windows versions looks pretty bad with the Win10 styles, so for now we'll
+     insert a generic checkmark icon for both types. */
+  menuitem[checked="true"] > .menu-iconic-left {
+    -moz-context-properties: fill, fill-opacity;
+    fill: currentColor;
+    fill-opacity: var(--menu-icon-opacity);
+    list-style-image: url("chrome://global/skin/icons/menu-check.svg");
+    width: 16px;
+    margin-inline-end: 8px;
+  }
+  menuitem[checked="true"] > .menu-iconic-left > .menu-iconic-icon {
+    display: initial;
+  }
 }
 
 /* ::::: menuseparator ::::: */
 
-menuseparator {
-  /* The side padding should align with the start of the menu item text. */
-  padding-inline: 1em;
+@media (-moz-windows-non-native-menus) {
+  menuseparator {
+    /* The side padding should align with the start of the menu item text. */
+    padding-inline: 1em;
+  }
 }

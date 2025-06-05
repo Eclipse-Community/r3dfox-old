@@ -92,6 +92,8 @@ const wchar_t* nsUXThemeData::GetClassName(nsUXThemeClass cls) {
       return L"Listview";
     case eUXMenu:
       return L"Menu";
+    case eUXWindowFrame:
+      return L"Window";
     default:
       MOZ_ASSERT_UNREACHABLE("unknown uxtheme class");
       return L"";
@@ -110,7 +112,7 @@ void nsUXThemeData::UpdateNativeThemeInfo() {
   HIGHCONTRAST highContrastInfo;
   highContrastInfo.cbSize = sizeof(HIGHCONTRAST);
   if (SystemParametersInfo(SPI_GETHIGHCONTRAST, 0, &highContrastInfo, 0)) {
-    sIsHighContrastOn = highContrastInfo.dwFlags & HCF_HIGHCONTRASTON;
+    sIsHighContrastOn = ((highContrastInfo.dwFlags & HCF_HIGHCONTRASTON) != 0);
   } else {
     sIsHighContrastOn = false;
   }

@@ -135,7 +135,7 @@ void nsWindow::ForcePresent() {
   }
 }
 
-bool nsWindow::OnPaint(uint32_t aNestingLevel) {
+bool nsWindow::OnPaint(HDC aDC, uint32_t aNestingLevel) {
   gfx::DeviceResetReason resetReason = gfx::DeviceResetReason::OK;
   if (gfxWindowsPlatform::GetPlatform()->DidRenderingDeviceReset(
           &resetReason)) {
@@ -203,16 +203,12 @@ bool nsWindow::OnPaint(uint32_t aNestingLevel) {
   }
   mLastPaintBounds = mBounds;
 
-  // For layered translucent windows all drawing should go to memory DC and no
-  // WM_PAINT messages are normally generated. To support asynchronous painting
-  // we force generation of WM_PAINT messages by invalidating window areas with
-  // RedrawWindow, InvalidateRect or InvalidateRgn function calls.
-  const bool usingMemoryDC =
-      renderer->GetBackendType() == LayersBackend::LAYERS_NONE &&
-      mTransparencyMode == TransparencyMode::Transparent;
-
-  HDC hDC = nullptr;
-  if (usingMemoryDC) {
+  if (!aDC && renderer->GetBackendType() == LayersBackend::LAYERS_NONE &&
+      TransparencyMode::Transparent == mTransparencyMode) {
+    // For layered translucent windows all drawing should go to memory DC and no
+    // WM_PAINT messages are normally generated. To support asynchronous
+    // painting we force generation of WM_PAINT messages by invalidating window
+    // areas with RedrawWindow, InvalidateRect or InvalidateRgn function calls.
     // BeginPaint/EndPaint must be called to make Windows think that invalid
     // area is painted. Otherwise it will continue sending the same message
     // endlessly.
@@ -221,13 +217,13 @@ bool nsWindow::OnPaint(uint32_t aNestingLevel) {
 
     // We're guaranteed to have a widget proxy since we called
     // GetLayerManager().
-    hDC = mBasicLayersSurface->GetTransparentDC();
-  } else {
-    hDC = ::BeginPaint(mWnd, &ps);
+    aDC = mBasicLayersSurface->GetTransparentDC();
   }
 
-  const bool forceRepaint = mTransparencyMode == TransparencyMode::Transparent;
-  const LayoutDeviceIntRegion region = GetRegionToPaint(forceRepaint, ps, hDC);
+  HDC hDC = aDC ? aDC : ::BeginPaint(mWnd, &ps);
+
+  bool forceRepaint = aDC || TransparencyMode::Transparent == mTransparencyMode;
+  LayoutDeviceIntRegion region = GetRegionToPaint(forceRepaint, ps, hDC);
 
   if (knowsCompositor && layerManager) {
     // We need to paint to the screen even if nothing changed, since if we
@@ -344,7 +340,7 @@ bool nsWindow::OnPaint(uint32_t aNestingLevel) {
     }
   }
 
-  if (!usingMemoryDC) {
+  if (!aDC) {
     ::EndPaint(mWnd, &ps);
   }
 
@@ -355,7 +351,7 @@ bool nsWindow::OnPaint(uint32_t aNestingLevel) {
   if (listener) listener->DidPaintWindow();
 
   if (aNestingLevel == 0 && ::GetUpdateRect(mWnd, nullptr, false)) {
-    OnPaint(1);
+    OnPaint(aDC, 1);
   }
 
   return result;

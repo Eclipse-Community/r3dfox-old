@@ -123,12 +123,14 @@ body {
     --inactive-titlebar-opacity: .75;
   }
 
+@media not (-moz-windows-default-theme) {
   &:where([tabsintitlebar]) {
     --toolbox-non-lwt-bgcolor: ActiveCaption;
     --toolbox-non-lwt-textcolor: CaptionText;
     --toolbox-non-lwt-bgcolor-inactive: InactiveCaption;
     --toolbox-non-lwt-textcolor-inactive: InactiveCaptionText;
   }
+}
 
   &[lwtheme] {
     color: var(--lwt-text-color);

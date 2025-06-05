@@ -9,6 +9,7 @@
 #include "nsWindowsDllInterceptor.h"
 #include "mozilla/NativeNt.h"
 #include "mozilla/StackWalk_windows.h"
+#include "mozilla/WindowsVersion.h"
 
 namespace mozilla {
 
@@ -54,8 +55,11 @@ void WindowsStackWalkInitialization() {
 
   NtDllIntercept.Init("ntdll.dll");
   stub_LdrUnloadDll.Set(NtDllIntercept, "LdrUnloadDll", &patched_LdrUnloadDll);
-  stub_LdrResolveDelayLoadedAPI.Set(NtDllIntercept, "LdrResolveDelayLoadedAPI",
-                                    &patched_LdrResolveDelayLoadedAPI);
+  if (IsWin8OrLater()) {  // LdrResolveDelayLoadedAPI was introduced in Win8
+    stub_LdrResolveDelayLoadedAPI.Set(NtDllIntercept,
+                                      "LdrResolveDelayLoadedAPI",
+                                      &patched_LdrResolveDelayLoadedAPI);
+  }
 }
 #endif  // _M_AMD64 || _M_ARM64
 

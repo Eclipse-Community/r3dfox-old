@@ -167,30 +167,6 @@ nsresult nsLookAndFeel::NativeGetColor(ColorID aID, ColorScheme aScheme,
     return NS_OK;
   }
 
-  // Titlebar colors are color-scheme aware.
-  switch (aID) {
-    case ColorID::Activecaption:
-      aColor = mTitlebarColors.Get(aScheme, true).mBg;
-      return NS_OK;
-    case ColorID::Captiontext:
-      aColor = mTitlebarColors.Get(aScheme, true).mFg;
-      return NS_OK;
-    case ColorID::Activeborder:
-      aColor = mTitlebarColors.Get(aScheme, true).mBorder;
-      return NS_OK;
-    case ColorID::Inactivecaption:
-      aColor = mTitlebarColors.Get(aScheme, false).mBg;
-      return NS_OK;
-    case ColorID::Inactivecaptiontext:
-      aColor = mTitlebarColors.Get(aScheme, false).mFg;
-      return NS_OK;
-    case ColorID::Inactiveborder:
-      aColor = mTitlebarColors.Get(aScheme, false).mBorder;
-      return NS_OK;
-    default:
-      break;
-  }
-
   if (aScheme == ColorScheme::Dark) {
     if (auto color = GenericDarkColor(aID)) {
       aColor = *color;
@@ -279,6 +255,24 @@ nsresult nsLookAndFeel::NativeGetColor(ColorID aID, ColorScheme aScheme,
         return NS_OK;
       }
       aColor = NS_TRANSPARENT;
+      return NS_OK;
+    case ColorID::Activecaption:
+      aColor = mTitlebarColors.Get(aScheme, true).mBg;
+      return NS_OK;
+    case ColorID::Captiontext:
+      aColor = mTitlebarColors.Get(aScheme, true).mFg;
+      return NS_OK;
+    case ColorID::Activeborder:
+      aColor = mTitlebarColors.Get(aScheme, true).mBorder;
+      return NS_OK;
+    case ColorID::Inactivecaption:
+      aColor = mTitlebarColors.Get(aScheme, false).mBg;
+      return NS_OK;
+    case ColorID::Inactivecaptiontext:
+      aColor = mTitlebarColors.Get(aScheme, false).mFg;
+      return NS_OK;
+    case ColorID::Inactiveborder:
+      aColor = mTitlebarColors.Get(aScheme, false).mBorder;
       return NS_OK;
     case ColorID::Infobackground:
       idx = COLOR_INFOBK;
@@ -781,26 +775,11 @@ auto nsLookAndFeel::ComputeTitlebarColors() -> TitlebarColors {
                            GetColorForSysColorIndex(COLOR_INACTIVECAPTIONTEXT),
                            GetColorForSysColorIndex(COLOR_INACTIVEBORDER)};
 
-  if (!nsUXThemeData::IsHighContrastOn()) {
-    // Use our non-native colors.
-    result.mActiveLight = {
-        GetStandinForNativeColor(ColorID::Activecaption, ColorScheme::Light),
-        GetStandinForNativeColor(ColorID::Captiontext, ColorScheme::Light),
-        GetStandinForNativeColor(ColorID::Activeborder, ColorScheme::Light)};
-    result.mInactiveLight = {
-        GetStandinForNativeColor(ColorID::Inactivecaption, ColorScheme::Light),
-        GetStandinForNativeColor(ColorID::Inactivecaptiontext,
-                                 ColorScheme::Light),
-        GetStandinForNativeColor(ColorID::Inactiveborder, ColorScheme::Light)};
-  }
-
-  // Our dark colors are always non-native.
-  result.mActiveDark = {*GenericDarkColor(ColorID::Activecaption),
-                        *GenericDarkColor(ColorID::Captiontext),
-                        *GenericDarkColor(ColorID::Activeborder)};
-  result.mInactiveDark = {*GenericDarkColor(ColorID::Inactivecaption),
-                          *GenericDarkColor(ColorID::Inactivecaptiontext),
-                          *GenericDarkColor(ColorID::Inactiveborder)};
+  // Foreground and background taken from Windows Mica material theme colors.
+  result.mActiveDark = {NS_RGB(0x2e, 0x2e, 0x2e), NS_RGB(0xff, 0xff, 0xff),
+                        NS_RGB(57, 57, 57)};
+  result.mInactiveDark = {NS_RGB(0x33, 0x33, 0x33), NS_RGB(0xff, 0xff, 0xff),
+                          NS_RGB(57, 57, 57)};
 
   // TODO(bug 1825241): Somehow get notified when this changes? Hopefully the
   // sys color notification is enough.

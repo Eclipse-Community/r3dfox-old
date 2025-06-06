@@ -7184,6 +7184,8 @@ var gCSSProperties = {
       "hidden scroll",
       "auto hidden",
       "clip clip",
+      "overlay",
+      "overlay overlay",
     ],
     invalid_values: [
       "clip -moz-scrollbars-none",
@@ -7203,7 +7205,7 @@ var gCSSProperties = {
       contain: "none",
     },
     initial_values: ["visible"],
-    other_values: ["auto", "scroll", "hidden", "clip"],
+    other_values: ["auto", "scroll", "hidden", "clip", "overlay"],
     invalid_values: [],
   },
   "overflow-y": {
@@ -7217,7 +7219,7 @@ var gCSSProperties = {
       contain: "none",
     },
     initial_values: ["visible"],
-    other_values: ["auto", "scroll", "hidden", "clip"],
+    other_values: ["auto", "scroll", "hidden", "clip", "overlay"],
     invalid_values: [],
   },
   "overflow-inline": {
@@ -11956,24 +11958,16 @@ function get_computed_value(cs, property) {
   const mozHiddenUnscrollableEnabled = IsCSSPropertyPrefEnabled(
     "layout.css.overflow-moz-hidden-unscrollable.enabled"
   );
-  const overlayEnabled = IsCSSPropertyPrefEnabled(
-    "layout.css.overflow-overlay.enabled"
-  );
   for (let p of ["overflow", "overflow-x", "overflow-y"]) {
     let prop = gCSSProperties[p];
     let mozHiddenUnscrollableValues = mozHiddenUnscrollableEnabled
       ? prop.other_values
       : prop.invalid_values;
-    let overlayValues = overlayEnabled
-      ? prop.other_values
-      : prop.invalid_values;
     mozHiddenUnscrollableValues.push("-moz-hidden-unscrollable");
-    overlayValues.push("overlay");
     if (p == "overflow") {
       mozHiddenUnscrollableValues.push(
         "-moz-hidden-unscrollable -moz-hidden-unscrollable"
       );
-      overlayValues.push("overlay overlay");
     }
   }
 }

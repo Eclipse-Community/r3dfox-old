@@ -50,16 +50,17 @@
 
 dropmarker {
   pointer-events: none;
-  flex: 0;
 }
 
 dropmarker:not([native]) {
   display: flex;
   appearance: none;
+  width: 12px;
+  height: unset;
 }
 
 dropmarker:not([native])::part(icon) {
-  content: url(chrome://global/skin/icons/arrow-down-12.svg);
+  list-style-image: url(chrome://global/skin/icons/arrow-down.svg);
   -moz-context-properties: fill;
   fill: currentColor;
 }

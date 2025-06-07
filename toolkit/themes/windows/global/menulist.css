@@ -39,7 +39,6 @@ label {
   outline: var(--default-focusring);
 }
 
-
 @media (-moz-windows-default-theme) {
   #label-box[native] {
     background-color: transparent !important;
@@ -52,6 +51,7 @@ label {
   }
 
   dropmarker[native] {
+    margin-top: -2px;
     margin-inline: 3px -3px;
   }
 }

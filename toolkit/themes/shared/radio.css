@@ -22,12 +22,12 @@ radio {
   &[disabled="true"] {
     color: GrayText;
   }
-}
 
-@media (-moz-windows-classic) {
-  radio[disabled="true"] {
-    color: ThreeDShadow;
-    text-shadow: 1px 1px ThreeDHighlight;
+  @media (-moz-windows-classic) {
+    &[disabled="true"] {
+      color: ThreeDShadow;
+      text-shadow: 1px 1px ThreeDHighlight;
+    }
   }
 }
 
@@ -63,15 +63,17 @@ radio {
   }
 }
 
-@media (-moz-platform: windows) or (-moz-platform: linux) {
-  /* On Linux, native theming should take care of this but it appears to be
-   * broken with some Gtk themes. Bug 1312169. */
+.radio-icon[src] {
+  margin-inline-end: 2px;
+}
+
+/* On the linux native theme, focus is not indicated by the radio itself, so
+ * indicate it in the label.
+ * TODO(emilio): Consider using non-native radio buttons / checkboxes
+ * everywhere instead */
+@media (-moz-platform: linux) {
   radiogroup:focus-visible > radio[focused="true"] > .radio-label-box {
     outline: var(--focus-outline);
-  }
-
-  .radio-icon[src] {
-    margin-inline-end: 2px;
   }
 }
 
@@ -83,21 +85,9 @@ radio {
   }
 }
 
-@media (-moz-platform: linux) {
-  /* FIXME: Is this needed given the focused styles above? */
-  .radio-label-box {
-    appearance: auto;
-    -moz-default-appearance: radio-label;
-  }
-}
-
 @media (-moz-platform: macos) {
   .radio-label,
   radiogroup {
     margin: 1px 0;
-  }
-
-  .radio-icon {
-    margin-inline-end: 2px;
   }
 }

@@ -8,9 +8,28 @@
 
 @namespace html url("http://www.w3.org/1999/xhtml");
 
+:root {
+  --sidebar-border-color: ThreeDLightShadow;
+}
+
 #menubar-items {
   flex-direction: column; /* for flex hack */
   justify-content: normal; /* align the menubar to the top also in customize mode */
+}
+
+#main-menubar > menu {
+  appearance: none;
+  color: inherit;
+
+  &[_moz-menuactive] {
+    background-color: light-dark(hsla(0,0%,0%,.12), hsla(0,0%,100%,.22));
+    color: inherit;
+
+    @media (prefers-contrast) {
+      background-color: -moz-menuhover;
+      color: -moz-menuhovertext;
+    }
+  }
 }
 
 @media (-moz-windows-accent-color-in-titlebar) {
@@ -42,6 +61,18 @@
   }
 }
 
+/* Use a different color only on Windows 8 and higher in inactive windows.
+ * On Win 7, the menubar fog disappears for inactive windows, and renders gray
+ * illegible.
+ */
+@media (-moz-windows-default-theme) {
+  @media not (-moz-platform: windows-win7) {
+    #toolbar-menubar:not([lwtheme]):-moz-window-inactive {
+      color: ThreeDShadow;
+    }
+  }
+}
+
 @media not (-moz-platform: windows-win7) {
   @media not (-moz-platform: windows-win8) {
     /* On Windows 10, when temporarily showing the menu bar, make it at least as
@@ -66,8 +97,23 @@
 @media (-moz-platform: windows-win7) {
   @media (-moz-windows-default-theme) {
     &:not([lwtheme]) #TabsToolbar {
-      background-image: radial-gradient(ellipse at bottom, rgba(255,255,255,0.8), rgba(255,255,255,0.5) 80%, transparent);
+      background-image: radial-gradient(ellipse at bottom, rgba(255,255,255,0.8), rgba(255,255,255,0.5) 40%, transparent);
     }
+  }
+}
+
+@media not (-moz-windows-compositor),
+       not (-moz-windows-default-theme),
+       (-moz-platform: windows-win8) {
+  /* Please keep the menu text colors in this media block in sync with
+   * light-dark-overrides.css, minus the :not([lwtheme]) condition - see Bug 1165718.
+   */
+  :root[tabsintitlebar]:not([lwtheme]) {
+    color: CaptionText;
+  }
+
+  :root[tabsintitlebar]:not([lwtheme]):-moz-window-inactive {
+    color: InactiveCaptionText;
   }
 }
 
@@ -272,6 +318,14 @@
     .findbar-textbox:not(:focus) {
       border-color: ThreeDShadow;
     }
+  }
+}
+
+/* Address bar results view */
+
+@media not (-moz-windows-default-theme) {
+  :root:not([lwtheme]) {
+    --urlbar-popup-action-color: LinkText;
   }
 }
 

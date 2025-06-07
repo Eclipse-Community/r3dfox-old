@@ -1,5 +1,23 @@
 /* Color overrides */
 
+@media -moz-pref("r3dfox.colors", 0) {
+  :root {
+    --color-blue-05: #deeafc !important;
+    --color-blue-30: #73a7f3 !important;
+    --color-blue-50: #0060df !important;
+    --color-blue-60: #0250bb !important;
+    --color-blue-70: #054096 !important;
+    --color-blue-80: #003070 !important;
+    --color-cyan-20: #aaf2ff !important;
+    --color-cyan-30: #80ebff !important;
+    --color-cyan-50: #00ddff !important;
+    --color-accent-primary: light-dark(var(--color-blue-50), var(--color-cyan-50)) !important;
+    @media (-moz-content-prefers-color-scheme: dark), (prefers-color-scheme: dark) {
+      --color-accent-primary: var(--color-cyan-50) !important;
+    }
+  }
+}
+
 @media -moz-pref("r3dfox.colors", 1) {
   :root {
     --arrowpanel-border-color: light-dark(rgb(255, 60, 60), rgb(160, 60, 60)) !important;

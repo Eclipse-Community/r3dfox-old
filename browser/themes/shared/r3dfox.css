@@ -1,5 +1,22 @@
 /* Color overrides */
 
+@media -moz-pref("r3dfox.colors", 0) {
+  @media (-moz-content-prefers-color-scheme: dark) {
+    :root {
+      --color-accent-primary: var(--color-cyan-30) !important;
+      --color-blue-05: #deeafc;
+      --color-blue-30: #73a7f3;
+      --color-blue-50: #0060df;
+      --color-blue-60: #0250bb;
+      --color-blue-70: #054096;
+      --color-blue-80: #003070;
+      --color-cyan-20: #aaf2ff;
+      --color-cyan-30: #80ebff;
+      --color-cyan-50: #00ddff;
+    }
+  }
+}
+
 @media -moz-pref("r3dfox.colors", 1) {
   :root {
     --arrowpanel-border-color: light-dark(rgb(255, 60, 60), rgb(160, 60, 60)) !important;
@@ -53,7 +70,6 @@
   #main-window[privatebrowsingmode="temporary"] #TabsToolbar {
     background-color: #CC190032 !important;
   }
-
 }
 
 @media -moz-pref("r3dfox.colors", 2) {
@@ -106,7 +122,6 @@
   #main-window[privatebrowsingmode="temporary"] #TabsToolbar {
     background-color: #CC190032 !important;
   }
-
 }
 
 @media -moz-pref("r3dfox.colors", 3) {

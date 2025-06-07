@@ -63,7 +63,7 @@ addAccessibleTask(
         null,
         undefined,
       ],
-      ["world", "#0000ee", "#ffffff", 1, "#0000ee", 1, 32, "a1", undefined],
+      ["world", "#0066cc", "#ffffff", 1, "#0066cc", 1, 32, "a1", undefined],
       [
         "this ",
         "#000000",
@@ -111,10 +111,10 @@ addAccessibleTask(
       ],
       [
         "test",
-        "#0000ee",
+        "#0066cc",
         "#ffffff",
         1,
-        "#0000ee",
+        "#0066cc",
         undefined,
         16,
         "a2",

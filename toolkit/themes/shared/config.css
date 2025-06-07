@@ -47,3 +47,8 @@
 #configTreeBody::-moz-tree-cell-text(locked) {
   font-style: italic;
 }
+
+tabpanels > .deck-selected,
+deck > .deck-selected {
+  overflow: auto;
+}

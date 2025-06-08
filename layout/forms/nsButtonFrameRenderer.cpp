@@ -244,7 +244,13 @@ bool nsDisplayButtonBorder::CreateWebRenderCommands(
       nsRect(ToReferenceFrame(), mFrame->GetSize()), mFrame->Style(),
       &borderIsEmpty, mFrame->GetSkipSides());
   if (!br) {
-    return borderIsEmpty;
+    if (borderIsEmpty) {
+      return true;
+    }
+    return false;
+  }
+  if (!br->CanCreateWebRenderCommands()) {
+    return false;
   }
 
   br->CreateWebRenderCommands(this, aBuilder, aResources, aSc);
@@ -374,7 +380,13 @@ bool nsDisplayButtonForeground::CreateWebRenderCommands(
   }
 
   if (!br) {
-    return borderIsEmpty;
+    if (borderIsEmpty) {
+      return true;
+    }
+    return false;
+  }
+  if (!br->CanCreateWebRenderCommands()) {
+    return false;
   }
 
   br->CreateWebRenderCommands(this, aBuilder, aResources, aSc);

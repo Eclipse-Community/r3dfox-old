@@ -8128,6 +8128,47 @@ if (IsCSSPropertyPrefEnabled("layout.css.prefixes.gradients")) {
   );
 }
 
+  gCSSProperties["-moz-border-bottom-colors"] = {
+    domProp: "MozBorderBottomColors",
+    inherited: false,
+    type: CSS_TYPE_LONGHAND,
+    applies_to_first_letter: true,
+    initial_values: [ "none" ],
+    other_values: [ "red green", "red #fc3", "#ff00cc", "currentColor", "blue currentColor orange currentColor" ],
+    invalid_values: [ "red none", "red inherit", "red, green", "none red", "inherit red", "ff00cc" ]
+  };
+
+  gCSSProperties["-moz-border-left-colors"] = {
+    domProp: "MozBorderLeftColors",
+    inherited: false,
+    type: CSS_TYPE_LONGHAND,
+    applies_to_first_letter: true,
+    initial_values: [ "none" ],
+    other_values: [ "red green", "red #fc3", "#ff00cc", "currentColor", "blue currentColor orange currentColor" ],
+    invalid_values: [ "red none", "red inherit", "red, green", "none red", "inherit red", "ff00cc" ]
+  };
+
+  gCSSProperties["-moz-border-right-colors"] = {
+    domProp: "MozBorderRightColors",
+    inherited: false,
+    type: CSS_TYPE_LONGHAND,
+    applies_to_first_letter: true,
+    initial_values: [ "none" ],
+    other_values: [ "red green", "red #fc3", "#ff00cc", "currentColor", "blue currentColor orange currentColor" ],
+    invalid_values: [ "red none", "red inherit", "red, green", "none red", "inherit red", "ff00cc" ]
+  };
+
+  gCSSProperties["-moz-border-top-colors"] = {
+    domProp: "MozBorderTopColors",
+    inherited: false,
+    type: CSS_TYPE_LONGHAND,
+    applies_to_first_letter: true,
+    initial_values: [ "none" ],
+    other_values: [ "red green", "red #fc3", "#ff00cc", "currentColor", "blue currentColor orange currentColor" ],
+    invalid_values: [ "red none", "red inherit", "red, green", "none red", "inherit red", "ff00cc" ]
+  };
+}
+
 if (IsCSSPropertyPrefEnabled("layout.css.scrollbar-colors.enabled")) {
   gCSSProperties["scrollbar-face-color"] = {
     domProp: "scrollbarFaceColor",

@@ -2807,6 +2807,22 @@ nsComputedDOMStyle::DoGetBorderRightStyle()
   return GetBorderStyleFor(eSideRight);
 }
 
+already_AddRefed<CSSValue> nsComputedDOMStyle::DoGetBorderBottomColors() {
+  return GetBorderColorsFor(eSideBottom);
+}
+
+already_AddRefed<CSSValue> nsComputedDOMStyle::DoGetBorderLeftColors() {
+  return GetBorderColorsFor(eSideLeft);
+}
+
+already_AddRefed<CSSValue> nsComputedDOMStyle::DoGetBorderRightColors() {
+  return GetBorderColorsFor(eSideRight);
+}
+
+already_AddRefed<CSSValue> nsComputedDOMStyle::DoGetBorderTopColors() {
+  return GetBorderColorsFor(eSideTop);
+}
+
 already_AddRefed<CSSValue>
 nsComputedDOMStyle::DoGetBorderBottomLeftRadius()
 {
@@ -4323,6 +4339,27 @@ nsComputedDOMStyle::GetLineHeightCoord(nscoord& aCoord)
   aCoord = NSToCoordRound(fCoord);
 
   return true;
+}
+
+already_AddRefed<CSSValue> nsComputedDOMStyle::GetBorderColorsFor(mozilla::Side aSide){
+  const nsStyleBorder *border = StyleBorder();
+
+  if (border->mBorderColors) {
+    const nsTArray<nscolor>& borderColors = (*border->mBorderColors)[aSide];
+    if (!borderColors.IsEmpty()) {
+      RefPtr<nsDOMCSSValueList> valueList = GetROCSSValueList(false);
+      for (nscolor color : borderColors) {
+        RefPtr<nsROCSSPrimitiveValue> primitive = new nsROCSSPrimitiveValue;
+        SetToRGBAColor(primitive, color);
+        valueList->AppendCSSValue(primitive.forget());
+      }
+      return valueList.forget();
+    }
+  }
+
+  RefPtr<nsROCSSPrimitiveValue> val = new nsROCSSPrimitiveValue;
+  val->SetIdent(eCSSKeyword_none);
+  return val.forget();
 }
 
 already_AddRefed<CSSValue>

@@ -285,7 +285,13 @@ nsDisplayButtonBorder::CreateWebRenderCommands(mozilla::wr::DisplayListBuilder& 
                                        &borderIsEmpty,
                                        mFrame->GetSkipSides());
   if (!br) {
-    return borderIsEmpty;
+    if (borderIsEmpty) {
+      return true;
+    }
+    return false;
+  }
+  if (!br->CanCreateWebRenderCommands()) {
+    return false;
   }
 
   br->CreateWebRenderCommands(this, aBuilder, aResources, aSc);
@@ -422,7 +428,13 @@ nsDisplayButtonForeground::CreateWebRenderCommands(mozilla::wr::DisplayListBuild
   }
 
   if (!br) {
-    return borderIsEmpty;
+    if (borderIsEmpty) {
+      return true;
+    }
+    return false;
+  }
+  if (!br->CanCreateWebRenderCommands()) {
+    return false;
   }
 
   br->CreateWebRenderCommands(this, aBuilder, aResources, aSc);

@@ -678,13 +678,16 @@ bool nsCSSRendering::CreateWebRenderCommandsForBorder(
     }
 
     if (br) {
+      if (!br->CanCreateWebRenderCommands()) {
+        return false;
+      }
       br->CreateWebRenderCommands(aItem, aBuilder, aResources, aSc);
       return true;
     }
   }
 
   // Next try to draw an image border
-  const nsStyleBorder* styleBorder = aForFrame->StyleContext()->StyleBorder();
+  const nsStyleBorder *styleBorder = aForFrame->StyleContext()->StyleBorder();
   const nsStyleImage* image = &styleBorder->mBorderImageSource;
 
   // Filter out unsupported image/border types
@@ -817,7 +820,8 @@ static nsCSSBorderRenderer ConstructBorderRenderer(
 
   return nsCSSBorderRenderer(
       aPresContext, document, aDrawTarget, dirtyRect, joinedBorderAreaPx,
-      borderStyles, borderWidths, bgRadii, borderColors, bgColor,
+      borderStyles, borderWidths, bgRadii, borderColors,
+      aStyleBorder.mBorderColors.get(), bgColor,
       !aForFrame->BackfaceIsHidden(),
       *aNeedsClip ? Some(NSRectToRect(aBorderArea, oneDevPixel)) : Nothing());
 }
@@ -1053,8 +1057,8 @@ Maybe<nsCSSBorderRenderer> nsCSSRendering::CreateBorderRendererForOutline(
       aRenderingContext ? aRenderingContext->GetDrawTarget() : nullptr;
   nsCSSBorderRenderer br(aPresContext, document, dt, dirtyRect, oRect,
                          outlineStyles, outlineWidths, outlineRadii,
-                         outlineColors, bgColor, !aForFrame->BackfaceIsHidden(),
-                         Nothing());
+                         outlineColors, nullptr, bgColor,
+                         !aForFrame->BackfaceIsHidden(), Nothing());
 
   return Some(br);
 }
@@ -1110,7 +1114,8 @@ void nsCSSRendering::PaintFocus(nsPresContext* aPresContext,
   // the backface-visibility to true for this case.
   nsCSSBorderRenderer br(aPresContext, nullptr, aDrawTarget, focusRect,
                          focusRect, focusStyles, focusWidths, focusRadii,
-                         focusColors, NS_RGB(255, 0, 0), true, Nothing());
+                         focusColors, nullptr, NS_RGB(255, 0, 0), true,
+                         Nothing());
   br.DrawBorders();
 
   PrintAsStringNewline();
@@ -1955,6 +1960,8 @@ static bool IsOpaqueBorderEdge(const nsStyleBorder& aBorder,
  * Returns true if all border edges are either missing or opaque.
  */
 static bool IsOpaqueBorder(const nsStyleBorder& aBorder) {
+  if (aBorder.mBorderColors)
+    return false;
   NS_FOR_CSS_SIDES(i) {
     if (!IsOpaqueBorderEdge(aBorder, i)) return false;
   }

@@ -206,6 +206,20 @@
   <description id="r3dfoxCookieBannersPrivateDescription" class="tip-caption" data-l10n-id="r3dfox-cookiebanners-desc"/>
 
   <hbox align="center">
+    <label id="r3dfoxCaptionWidth" data-l10n-id="r3dfox-caption-width" control="r3dfoxCaptionWidthType" hidden="true"/>
+    <html:input id="r3dfoxCaptionWidthType" type="number" class="option" data-type="int" onkeydown="return event.keyCode !== 190"
+              preference="widget.native-controls.override-aero-caption-buttons-mask-width" hidden="true"/>
+  </hbox>
+  <description id="r3dfoxCaptionWidthDescription" class="tip-caption" data-l10n-id="r3dfox-caption-width-desc" hidden="true"/>
+
+  <hbox align="center">
+    <label id="r3dfoxCaptionHeight" data-l10n-id="r3dfox-caption-height" control="r3dfoxCaptionWidthType" hidden="true"/>
+    <html:input id="r3dfoxCaptionHeightType" type="number" class="option" data-type="int" onkeydown="return event.keyCode !== 190"
+              preference="widget.native-controls.override-aero-caption-buttons-mask-height" hidden="true"/>
+  </hbox>
+  <description id="r3dfoxCaptionHeighteDescription" class="tip-caption" data-l10n-id="r3dfox-caption-height-desc" hidden="true"/>
+
+  <hbox align="center">
     <checkbox id="r3dfoxcsp"
               data-l10n-id="r3dfox-csp"
               preference="security.csp.enable"/>

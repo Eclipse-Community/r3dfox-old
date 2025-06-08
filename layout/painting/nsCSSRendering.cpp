@@ -725,6 +725,9 @@ nsCSSRendering::CreateWebRenderCommandsForBorder(nsDisplayItem* aItem,
     }
 
     if (br) {
+      if (!br->CanCreateWebRenderCommands()) {
+        return false;
+      }
       br->CreateWebRenderCommands(aItem, aBuilder, aResources, aSc);
       return true;
     }
@@ -880,7 +883,7 @@ ConstructBorderRenderer(nsPresContext* aPresContext,
                              borderStyles,
                              borderWidths,
                              bgRadii,
-                             borderColors,
+                             borderColors, aStyleBorder.mBorderColors.get(),
                              bgColor,
                              !aForFrame->BackfaceIsHidden(),
                              *aNeedsClip ? Some(NSRectToRect(aBorderArea, oneDevPixel)) : Nothing());
@@ -1161,7 +1164,7 @@ nsCSSRendering::CreateBorderRendererForOutline(nsPresContext* aPresContext,
                          outlineStyles,
                          outlineWidths,
                          outlineRadii,
-                         outlineColors,
+                         outlineColors, nullptr,
                          bgColor,
                          !aForFrame->BackfaceIsHidden(),
                          Nothing());
@@ -1237,7 +1240,7 @@ nsCSSRendering::PaintFocus(nsPresContext* aPresContext,
                          focusStyles,
                          focusWidths,
                          focusRadii,
-                         focusColors,
+                         focusColors, nullptr,
                          NS_RGB(255, 0, 0),
                          true,
                          Nothing());
@@ -2177,9 +2180,9 @@ IsOpaqueBorderEdge(const nsStyleBorder& aBorder, mozilla::Side aSide)
 /**
  * Returns true if all border edges are either missing or opaque.
  */
-static bool
-IsOpaqueBorder(const nsStyleBorder& aBorder)
-{
+static bool IsOpaqueBorder(const nsStyleBorder& aBorder) {
+  if (aBorder.mBorderColors)
+    return false;
   NS_FOR_CSS_SIDES(i) {
     if (!IsOpaqueBorderEdge(aBorder, i))
       return false;

@@ -19,6 +19,11 @@ textbox[nomatch="true"][highlightnonmatches="true"] {
 
 panel[type="autocomplete-richlistbox"] {
   -moz-appearance: none;
+  border-width: 1px;
+  -moz-border-top-colors: ThreeDShadow;
+  -moz-border-right-colors: ThreeDShadow;
+  -moz-border-bottom-colors: ThreeDShadow;
+  -moz-border-left-colors: ThreeDShadow;
   padding: 0;
   color: -moz-FieldText;
   background-color: -moz-Field;

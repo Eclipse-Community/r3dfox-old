@@ -121,7 +121,6 @@ class nsLoadGroup : public nsILoadGroup,
   uint32_t mCachedRequests{0};
   uint64_t mPageSize{0};
   uint64_t mTotalSubresourcesSize{0};
-  nsCString mUserAgentOverrideCache;
 };
 
 }  // namespace net

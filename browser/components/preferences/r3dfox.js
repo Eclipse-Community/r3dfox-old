@@ -31,4 +31,6 @@ Preferences.addAll([
   { id: "gfx.dwrite.enabled", type: "bool",  inverted: true },
   { id: "cookiebanners.service.mode", type: "int" },
   { id: "cookiebanners.service.mode.privateBrowsing", type: "int" },
+  { id: "widget.native-controls.override-aero-caption-buttons-mask-height", type: "int" },
+  { id: "widget.native-controls.override-aero-caption-buttons-mask-width", type: "int" },
 ]);

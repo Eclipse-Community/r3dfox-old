@@ -681,6 +681,9 @@ ImgDrawResult nsCSSRendering::CreateWebRenderCommandsForBorder(
     }
 
     if (br) {
+      if (!br->CanCreateWebRenderCommands()) {
+        return false;
+      }
       br->CreateWebRenderCommands(aItem, aBuilder, aResources, aSc);
       return ImgDrawResult::SUCCESS;
     }
@@ -804,7 +807,7 @@ static nsCSSBorderRenderer ConstructBorderRenderer(
   return nsCSSBorderRenderer(
       aPresContext, document, aDrawTarget, dirtyRect, joinedBorderAreaPx,
       borderStyles, borderWidths, bgRadii, borderColors,
-      !aForFrame->BackfaceIsHidden(),
+      aStyleBorder.mBorderColors.get(), !aForFrame->BackfaceIsHidden(),
       *aNeedsClip ? Some(NSRectToRect(aBorderArea, oneDevPixel)) : Nothing());
 }
 
@@ -1038,7 +1041,7 @@ Maybe<nsCSSBorderRenderer> nsCSSRendering::CreateBorderRendererForOutline(
       aRenderingContext ? aRenderingContext->GetDrawTarget() : nullptr;
   nsCSSBorderRenderer br(aPresContext, document, dt, dirtyRect, oRect,
                          outlineStyles, outlineWidths, outlineRadii,
-                         outlineColors, !aForFrame->BackfaceIsHidden(),
+                         outlineColors, nullptr, !aForFrame->BackfaceIsHidden(),
                          Nothing());
 
   return Some(br);
@@ -1095,7 +1098,7 @@ void nsCSSRendering::PaintFocus(nsPresContext* aPresContext,
   // the backface-visibility to true for this case.
   nsCSSBorderRenderer br(aPresContext, nullptr, aDrawTarget, focusRect,
                          focusRect, focusStyles, focusWidths, focusRadii,
-                         focusColors, true, Nothing());
+                         focusColors, nullptr, true, Nothing());
   br.DrawBorders();
 
   PrintAsStringNewline();
@@ -1939,6 +1942,8 @@ static bool IsOpaqueBorderEdge(const nsStyleBorder& aBorder,
  * Returns true if all border edges are either missing or opaque.
  */
 static bool IsOpaqueBorder(const nsStyleBorder& aBorder) {
+  if (aBorder.mBorderColors)
+    return false;
   NS_FOR_CSS_SIDES(i) {
     if (!IsOpaqueBorderEdge(aBorder, i)) return false;
   }

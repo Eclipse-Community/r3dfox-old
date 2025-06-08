@@ -1010,6 +1010,9 @@ extern "C" {
     ) -> bool;
 }
 extern "C" {
+    pub fn Gecko_EnsureMozBorderColors(aBorder: *mut nsStyleBorder);
+}
+extern "C" {
     pub fn Gecko_CopyFontFamilyFrom(dst: *mut nsFont, src: *const nsFont);
 }
 extern "C" {

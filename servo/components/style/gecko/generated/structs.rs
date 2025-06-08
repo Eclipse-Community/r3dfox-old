@@ -8895,6 +8895,7 @@ pub mod root {
         pub const SERVO_PREF_ENABLED_border_block_start_width: bool = false;
         pub const SERVO_PREF_ENABLED_border_bottom: bool = false;
         pub const SERVO_PREF_ENABLED_border_bottom_color: bool = false;
+        pub const SERVO_PREF_ENABLED__moz_border_bottom_colors: bool = false;
         pub const SERVO_PREF_ENABLED_border_bottom_left_radius: bool = false;
         pub const SERVO_PREF_ENABLED_border_bottom_right_radius: bool = false;
         pub const SERVO_PREF_ENABLED_border_bottom_style: bool = false;
@@ -8917,17 +8918,20 @@ pub mod root {
         pub const SERVO_PREF_ENABLED_border_inline_start_width: bool = false;
         pub const SERVO_PREF_ENABLED_border_left: bool = false;
         pub const SERVO_PREF_ENABLED_border_left_color: bool = false;
+        pub const SERVO_PREF_ENABLED__moz_border_left_colors: bool = false;
         pub const SERVO_PREF_ENABLED_border_left_style: bool = false;
         pub const SERVO_PREF_ENABLED_border_left_width: bool = false;
         pub const SERVO_PREF_ENABLED_border_radius: bool = false;
         pub const SERVO_PREF_ENABLED_border_right: bool = false;
         pub const SERVO_PREF_ENABLED_border_right_color: bool = false;
+        pub const SERVO_PREF_ENABLED__moz_border_right_colors: bool = false;
         pub const SERVO_PREF_ENABLED_border_right_style: bool = false;
         pub const SERVO_PREF_ENABLED_border_right_width: bool = false;
         pub const SERVO_PREF_ENABLED_border_spacing: bool = false;
         pub const SERVO_PREF_ENABLED_border_style: bool = false;
         pub const SERVO_PREF_ENABLED_border_top: bool = false;
         pub const SERVO_PREF_ENABLED_border_top_color: bool = false;
+        pub const SERVO_PREF_ENABLED__moz_border_top_colors: bool = false;
         pub const SERVO_PREF_ENABLED_border_top_left_radius: bool = false;
         pub const SERVO_PREF_ENABLED_border_top_right_radius: bool = false;
         pub const SERVO_PREF_ENABLED_border_top_style: bool = false;
@@ -12906,7 +12910,7 @@ pub mod root {
         fn bindgen_test_layout_GeckoBorder() {
             assert_eq!(
                 ::std::mem::size_of::<GeckoBorder>(),
-                304usize,
+                312usize,
                 concat!("Size of: ", stringify!(GeckoBorder))
             );
             assert_eq!(
@@ -23245,6 +23249,7 @@ pub mod root {
         eCSSProperty_border_block_start_style = 29,
         eCSSProperty_border_block_start_width = 30,
         eCSSProperty_border_bottom_color = 31,
+        eCSSProperty__moz_border_bottom_colors = 32,
         eCSSProperty_border_bottom_left_radius = 32,
         eCSSProperty_border_bottom_right_radius = 33,
         eCSSProperty_border_bottom_style = 34,
@@ -23262,13 +23267,16 @@ pub mod root {
         eCSSProperty_border_inline_start_style = 46,
         eCSSProperty_border_inline_start_width = 47,
         eCSSProperty_border_left_color = 48,
+        eCSSProperty__moz_border_left_colors = 50,
         eCSSProperty_border_left_style = 49,
         eCSSProperty_border_left_width = 50,
         eCSSProperty_border_right_color = 51,
+        eCSSProperty__moz_border_right_colors = 54,
         eCSSProperty_border_right_style = 52,
         eCSSProperty_border_right_width = 53,
         eCSSProperty_border_spacing = 54,
         eCSSProperty_border_top_color = 55,
+        eCSSProperty__moz_border_top_colors = 59,
         eCSSProperty_border_top_left_radius = 56,
         eCSSProperty_border_top_right_radius = 57,
         eCSSProperty_border_top_style = 58,
@@ -32533,7 +32541,36 @@ pub mod root {
     }
     #[repr(C)]
     #[derive(Debug)]
+    pub struct nsBorderColors {
+        pub mColors: [root::nsTArray<root::nscolor>; 4usize],
+    }
+    #[test]
+    fn bindgen_test_layout_nsBorderColors() {
+        assert_eq!(
+            ::std::mem::size_of::<nsBorderColors>(),
+            32usize,
+            concat!("Size of: ", stringify!(nsBorderColors))
+        );
+        assert_eq!(
+            ::std::mem::align_of::<nsBorderColors>(),
+            8usize,
+            concat!("Alignment of ", stringify!(nsBorderColors))
+        );
+        assert_eq!(
+            unsafe { &(*(::std::ptr::null::<nsBorderColors>())).mColors as *const _ as usize },
+            0usize,
+            concat!(
+                "Offset of field: ",
+                stringify!(nsBorderColors),
+                "::",
+                stringify!(mColors)
+            )
+        );
+    }
+    #[repr(C)]
+    #[derive(Debug)]
     pub struct nsStyleBorder {
+        pub mBorderColors: root::mozilla::UniquePtr<root::nsBorderColors>,
         pub mBorderRadius: root::nsStyleCorners,
         pub mBorderImageSource: root::nsStyleImage,
         pub mBorderImageSlice: root::nsStyleSides,
@@ -32678,7 +32715,7 @@ pub mod root {
     fn bindgen_test_layout_nsStyleBorder() {
         assert_eq!(
             ::std::mem::size_of::<nsStyleBorder>(),
-            304usize,
+            312usize,
             concat!("Size of: ", stringify!(nsStyleBorder))
         );
         assert_eq!(
@@ -32687,8 +32724,18 @@ pub mod root {
             concat!("Alignment of ", stringify!(nsStyleBorder))
         );
         assert_eq!(
-            unsafe { &(*(::std::ptr::null::<nsStyleBorder>())).mBorderRadius as *const _ as usize },
+            unsafe { &(*(::std::ptr::null::<nsStyleBorder>())).mBorderColors as *const _ as usize },
             0usize,
+            concat!(
+                "Offset of field: ",
+                stringify!(nsStyleBorder),
+                "::",
+                stringify!(mBorderColors)
+            )
+        );
+        assert_eq!(
+            unsafe { &(*(::std::ptr::null::<nsStyleBorder>())).mBorderRadius as *const _ as usize },
+            8usize,
             concat!(
                 "Offset of field: ",
                 stringify!(nsStyleBorder),
@@ -32700,7 +32747,7 @@ pub mod root {
             unsafe {
                 &(*(::std::ptr::null::<nsStyleBorder>())).mBorderImageSource as *const _ as usize
             },
-            72usize,
+            80usize,
             concat!(
                 "Offset of field: ",
                 stringify!(nsStyleBorder),
@@ -32712,7 +32759,7 @@ pub mod root {
             unsafe {
                 &(*(::std::ptr::null::<nsStyleBorder>())).mBorderImageSlice as *const _ as usize
             },
-            104usize,
+            112usize,
             concat!(
                 "Offset of field: ",
                 stringify!(nsStyleBorder),
@@ -32724,7 +32771,7 @@ pub mod root {
             unsafe {
                 &(*(::std::ptr::null::<nsStyleBorder>())).mBorderImageWidth as *const _ as usize
             },
-            144usize,
+            152usize,
             concat!(
                 "Offset of field: ",
                 stringify!(nsStyleBorder),
@@ -32736,7 +32783,7 @@ pub mod root {
             unsafe {
                 &(*(::std::ptr::null::<nsStyleBorder>())).mBorderImageOutset as *const _ as usize
             },
-            184usize,
+            192usize,
             concat!(
                 "Offset of field: ",
                 stringify!(nsStyleBorder),
@@ -32748,7 +32795,7 @@ pub mod root {
             unsafe {
                 &(*(::std::ptr::null::<nsStyleBorder>())).mBorderImageFill as *const _ as usize
             },
-            224usize,
+            232usize,
             concat!(
                 "Offset of field: ",
                 stringify!(nsStyleBorder),
@@ -32760,7 +32807,7 @@ pub mod root {
             unsafe {
                 &(*(::std::ptr::null::<nsStyleBorder>())).mBorderImageRepeatH as *const _ as usize
             },
-            225usize,
+            233usize,
             concat!(
                 "Offset of field: ",
                 stringify!(nsStyleBorder),
@@ -32772,7 +32819,7 @@ pub mod root {
             unsafe {
                 &(*(::std::ptr::null::<nsStyleBorder>())).mBorderImageRepeatV as *const _ as usize
             },
-            226usize,
+            234usize,
             concat!(
                 "Offset of field: ",
                 stringify!(nsStyleBorder),
@@ -32782,7 +32829,7 @@ pub mod root {
         );
         assert_eq!(
             unsafe { &(*(::std::ptr::null::<nsStyleBorder>())).mFloatEdge as *const _ as usize },
-            227usize,
+            235usize,
             concat!(
                 "Offset of field: ",
                 stringify!(nsStyleBorder),
@@ -32794,7 +32841,7 @@ pub mod root {
             unsafe {
                 &(*(::std::ptr::null::<nsStyleBorder>())).mBoxDecorationBreak as *const _ as usize
             },
-            228usize,
+            236usize,
             concat!(
                 "Offset of field: ",
                 stringify!(nsStyleBorder),
@@ -32804,7 +32851,7 @@ pub mod root {
         );
         assert_eq!(
             unsafe { &(*(::std::ptr::null::<nsStyleBorder>())).mBorderStyle as *const _ as usize },
-            229usize,
+            237usize,
             concat!(
                 "Offset of field: ",
                 stringify!(nsStyleBorder),
@@ -32816,7 +32863,7 @@ pub mod root {
             unsafe {
                 &(*(::std::ptr::null::<nsStyleBorder>())).mComputedBorder as *const _ as usize
             },
-            268usize,
+            276usize,
             concat!(
                 "Offset of field: ",
                 stringify!(nsStyleBorder),
@@ -32826,7 +32873,7 @@ pub mod root {
         );
         assert_eq!(
             unsafe { &(*(::std::ptr::null::<nsStyleBorder>())).mBorder as *const _ as usize },
-            284usize,
+            292usize,
             concat!(
                 "Offset of field: ",
                 stringify!(nsStyleBorder),
@@ -32838,7 +32885,7 @@ pub mod root {
             unsafe {
                 &(*(::std::ptr::null::<nsStyleBorder>())).mTwipsPerPixel as *const _ as usize
             },
-            300usize,
+            308usize,
             concat!(
                 "Offset of field: ",
                 stringify!(nsStyleBorder),
@@ -45281,6 +45328,64 @@ pub mod root {
             concat!(
                 "Alignment of template specialization: ",
                 stringify!(root::nsStyleAutoArray<root::nsStyleImageLayers_Layer>)
+            )
+        );
+    }
+    #[test]
+    fn __bindgen_test_layout_nsTArray_open0_nscolor_close0_instantiation() {
+        assert_eq!(
+            ::std::mem::size_of::<root::nsTArray<root::nscolor>>(),
+            8usize,
+            concat!(
+                "Size of template specialization: ",
+                stringify!(root::nsTArray<root::nscolor>)
+            )
+        );
+        assert_eq!(
+            ::std::mem::align_of::<root::nsTArray<root::nscolor>>(),
+            8usize,
+            concat!(
+                "Alignment of template specialization: ",
+                stringify!(root::nsTArray<root::nscolor>)
+            )
+        );
+    }
+    #[test]
+    fn __bindgen_test_layout_UniquePtr_open0_nsBorderColors_DefaultDelete_open1_nsBorderColors_close1_close0_instantiation(
+) {
+        assert_eq!(
+            ::std::mem::size_of::<root::mozilla::UniquePtr<root::nsBorderColors>>(),
+            8usize,
+            concat!(
+                "Size of template specialization: ",
+                stringify!(root::mozilla::UniquePtr<root::nsBorderColors>)
+            )
+        );
+        assert_eq!(
+            ::std::mem::align_of::<root::mozilla::UniquePtr<root::nsBorderColors>>(),
+            8usize,
+            concat!(
+                "Alignment of template specialization: ",
+                stringify!(root::mozilla::UniquePtr<root::nsBorderColors>)
+            )
+        );
+    }
+    #[test]
+    fn __bindgen_test_layout_DefaultDelete_open0_nsBorderColors_close0_instantiation() {
+        assert_eq!(
+            ::std::mem::size_of::<root::mozilla::DefaultDelete>(),
+            1usize,
+            concat!(
+                "Size of template specialization: ",
+                stringify!(root::mozilla::DefaultDelete)
+            )
+        );
+        assert_eq!(
+            ::std::mem::align_of::<root::mozilla::DefaultDelete>(),
+            1usize,
+            concat!(
+                "Alignment of template specialization: ",
+                stringify!(root::mozilla::DefaultDelete)
             )
         );
     }

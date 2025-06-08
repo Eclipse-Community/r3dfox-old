@@ -1242,6 +1242,10 @@ impl LonghandId {
             LonghandId::BorderImageSource |
             LonghandId::BoxShadow |
             LonghandId::MaskImage |
+            LonghandId::MozBorderBottomColors |
+            LonghandId::MozBorderLeftColors |
+            LonghandId::MozBorderRightColors |
+            LonghandId::MozBorderTopColors |
             LonghandId::TextShadow
         )
         % else:

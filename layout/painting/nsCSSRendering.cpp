@@ -779,6 +779,9 @@ nsCSSRendering::CreateWebRenderCommandsForBorder(
     }
 
     if (br) {
+      if (!br->CanCreateWebRenderCommands()) {
+        return false;
+      }
       br->CreateWebRenderCommands(aItem, aBuilder, aResources, aSc);
       return ImgDrawResult::SUCCESS;
     }
@@ -926,6 +929,7 @@ ConstructBorderRenderer(nsPresContext* aPresContext,
     borderWidths,
     bgRadii,
     borderColors,
+    aStyleBorder.mBorderColors.get(),
     !aForFrame->BackfaceIsHidden(),
     *aNeedsClip ? Some(NSRectToRect(aBorderArea, oneDevPixel)) : Nothing());
 }
@@ -1211,6 +1215,7 @@ nsCSSRendering::CreateBorderRendererForOutline(nsPresContext* aPresContext,
                          outlineWidths,
                          outlineRadii,
                          outlineColors,
+                         nullptr,
                          !aForFrame->BackfaceIsHidden(),
                          Nothing());
 
@@ -1287,6 +1292,7 @@ nsCSSRendering::PaintFocus(nsPresContext* aPresContext,
                          focusWidths,
                          focusRadii,
                          focusColors,
+                         nullptr,
                          true,
                          Nothing());
   br.DrawBorders();
@@ -2256,11 +2262,10 @@ IsOpaqueBorderEdge(const nsStyleBorder& aBorder, mozilla::Side aSide)
 /**
  * Returns true if all border edges are either missing or opaque.
  */
-static bool
-IsOpaqueBorder(const nsStyleBorder& aBorder)
-{
-  NS_FOR_CSS_SIDES(i)
-  {
+static bool IsOpaqueBorder(const nsStyleBorder& aBorder) {
+  if (aBorder.mBorderColors)
+    return false;
+  NS_FOR_CSS_SIDES(i) {
     if (!IsOpaqueBorderEdge(aBorder, i))
       return false;
   }

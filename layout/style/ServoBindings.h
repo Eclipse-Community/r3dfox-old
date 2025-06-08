@@ -150,6 +150,9 @@ mozilla::MediumFeaturesChangedResult Servo_StyleSet_MediumFeaturesChanged(
   nsTArray<RawServoAuthorStylesBorrowedMut>* non_document_sets,
   bool may_affect_default_style);
 
+// Border style
+void Gecko_EnsureMozBorderColors(nsStyleBorder* aBorder);
+
 void Servo_StyleSet_Drop(RawServoStyleSetOwned set);
 void Servo_StyleSet_CompatModeChanged(RawServoStyleSetBorrowed raw_data);
 

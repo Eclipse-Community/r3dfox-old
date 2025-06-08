@@ -5285,7 +5285,8 @@ nsDisplayBorder::GetLayerState(nsDisplayListBuilder* aBuilder,
     return LAYER_NONE;
   }
 
-  if (!br->AllBordersSolid()) {
+  bool hasCompositeColors;
+  if (!br->AllBordersSolid(&hasCompositeColors) || hasCompositeColors) {
     return LAYER_NONE;
   }
 

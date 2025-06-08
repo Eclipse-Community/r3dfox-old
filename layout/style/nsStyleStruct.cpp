@@ -352,6 +352,10 @@ nsStyleBorder::nsStyleBorder(const nsStyleBorder& aSrc)
   , mTwipsPerPixel(aSrc.mTwipsPerPixel)
 {
   MOZ_COUNT_CTOR(nsStyleBorder);
+  if (aSrc.mBorderColors) {
+    mBorderColors.reset(new nsBorderColors(*aSrc.mBorderColors));
+  }
+
   NS_FOR_CSS_SIDES(side) {
     mBorderStyle[side] = aSrc.mBorderStyle[side];
   }
@@ -440,7 +444,8 @@ nsStyleBorder::CalcDifference(const nsStyleBorder& aNewData) const
     }
   }
 
-  if (mBorderRadius != aNewData.mBorderRadius) {
+  if (mBorderRadius != aNewData.mBorderRadius ||
+      !mBorderColors != !aNewData.mBorderColors) {
     return nsChangeHint_RepaintFrame;
   }
 
@@ -456,6 +461,16 @@ nsStyleBorder::CalcDifference(const nsStyleBorder& aNewData) const
         mBorderImageFill    != aNewData.mBorderImageFill    ||
         mBorderImageWidth   != aNewData.mBorderImageWidth) {
       return nsChangeHint_RepaintFrame;
+    }
+  }
+
+  // Note that at this point if mBorderColors is non-null so is
+  // aNewData.mBorderColors
+  if (mBorderColors) {
+    NS_FOR_CSS_SIDES(side) {
+      if ((*mBorderColors)[side] != (*aNewData.mBorderColors)[side]) {
+        return nsChangeHint_RepaintFrame;
+      }
     }
   }
 

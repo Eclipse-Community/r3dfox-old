@@ -1,18 +1,18 @@
 /* Color overrides */
 
 @media -moz-pref("r3dfox.colors", 0) {
-  @media (-moz-content-prefers-color-scheme: dark) {
-    :root {
+  :root {
+    --color-blue-05: #deeafc;
+    --color-blue-30: #73a7f3;
+    --color-blue-50: #0060df;
+    --color-blue-60: #0250bb;
+    --color-blue-70: #054096;
+    --color-blue-80: #003070;
+    --color-cyan-20: #aaf2ff;
+    --color-cyan-30: #80ebff;
+    --color-cyan-50: #00ddff;
+    @media (-moz-content-prefers-color-scheme: dark), (prefers-color-scheme: dark) {
       --color-accent-primary: var(--color-cyan-30) !important;
-      --color-blue-05: #deeafc;
-      --color-blue-30: #73a7f3;
-      --color-blue-50: #0060df;
-      --color-blue-60: #0250bb;
-      --color-blue-70: #054096;
-      --color-blue-80: #003070;
-      --color-cyan-20: #aaf2ff;
-      --color-cyan-30: #80ebff;
-      --color-cyan-50: #00ddff;
     }
   }
 }
@@ -26,11 +26,8 @@
     --newtab-primary-action-background: light-dark(rgb(255, 20, 20), rgb(255, 80, 80)) !important;
     --newtab-primary-action-background-hover: light-dark(rgb(255, 40, 40), rgb(255, 60, 60)) !important;
     --newtab-primary-action-background-active: light-dark(rgb(255, 40, 40), rgb(255, 40, 40)) !important;
-    --in-content-primary-button-background: light-dark(rgb(255, 20, 20), rgb(255, 80, 80)) !important;
-    --in-content-primary-button-background-hover: light-dark(rgb(255, 40, 40), rgb(255, 60, 60)) !important;
-    --in-content-primary-button-background-active: light-dark(rgb(255, 40, 40), rgb(255, 40, 40)) !important;
-    --color-accent-primary: light-dark(rgb(255, 20, 20), rgb(255, 100, 100)) !important;
-    --color-accent-primary-hover: light-dark(rgb(255, 60, 60), rgb(255, 80, 80)) !important;
+    --color-accent-primary: light-dark(rgb(255, 20, 20), rgb(255, 40, 40)) !important;
+    --color-accent-primary-hover: light-dark(rgb(255, 60, 60), rgb(255, 60, 60)) !important;
     --color-accent-primary-active: light-dark(rgb(255, 60, 60), rgb(255, 60, 60)) !important;
     --link-color: light-dark(rgb(255, 20, 20), rgb(255, 80, 80)) !important;
     --link-color-hover: light-dark(rgb(255, 20, 20), rgb(255, 80, 80)) !important;
@@ -42,6 +39,11 @@
     --toolbarbutton-icon-fill-attention: light-dark(rgb(255, 20, 20), rgb(255, 80, 80)) !important;
     --download-progress-fill-color: light-dark(rgb(255, 40, 40), rgb(255, 80, 80)) !important;
     --lwt-tab-line-color: light-dark(rgb(255, 40, 40), rgb(255, 80, 80)) !important;
+    @media (-moz-content-prefers-color-scheme: dark), (prefers-color-scheme: dark) {
+      --color-accent-primary: rgb(255, 40, 40) !important;
+      --color-accent-primary-hover: rgb(255, 60, 60) !important;
+      --color-accent-primary-active: rgb(255, 60, 60) !important;
+    }
     &[privatebrowsingmode=temporary] {
         --tabpanel-background-color: linear-gradient(to bottom, #480808 0%,#240103 93%,#200000 97%,#1E0000 100%) !important;
     }
@@ -81,11 +83,8 @@
     --newtab-primary-action-background: light-dark(rgb(255, 71, 9), rgb(255, 118, 72)) !important;
     --newtab-primary-action-background-hover: light-dark(rgb(255, 86, 30), rgb(255, 102, 51)) !important;
     --newtab-primary-action-background-active: light-dark(rgb(255, 86, 30), rgb(255, 86, 30)) !important;
-    --in-content-primary-button-background: light-dark(rgb(255, 71, 9), rgb(255, 118, 72)) !important;
-    --in-content-primary-button-background-hover: light-dark(rgb(255, 86, 30), rgb(255, 102, 51)) !important;
-    --in-content-primary-button-background-active: light-dark(rgb(255, 86, 30), rgb(255, 86, 30)) !important;
     --color-accent-primary: light-dark(rgb(255, 71, 9), rgb(255, 118, 72)) !important;
-    --color-accent-primary-hover: light-dark(rgb(255, 102, 51), rgb(255, 118, 72)) !important;
+    --color-accent-primary-hover: light-dark(rgb(255, 102, 51), rgb(255, 102, 51)) !important;
     --color-accent-primary-active: light-dark(rgb(255, 102, 51), rgb(255, 102, 51)) !important;
     --link-color: light-dark(rgb(255, 71, 9), rgb(255, 118, 72)) !important;
     --link-color-hover: light-dark(rgb(255, 71, 9), rgb(255, 118, 72)) !important;
@@ -97,6 +96,14 @@
     --toolbarbutton-icon-fill-attention: light-dark(rgb(255, 71, 9), rgb(255, 118, 72)) !important;
     --download-progress-fill-color: light-dark(rgb(255, 86, 30), rgb(255, 118, 72)) !important;
     --lwt-tab-line-color: light-dark(rgb(255, 86, 30), rgb(255, 118, 72)) !important;
+    @media (-moz-content-prefers-color-scheme: dark), (prefers-color-scheme: dark) {
+    --color-accent-primary: rgb(255, 86, 30) !important;
+    --color-accent-primary-hover: rgb(255, 102, 51) !important;
+    --color-accent-primary-active: rgb(255, 102, 51) !important;
+    }
+    &[privatebrowsingmode=temporary] {
+        --tabpanel-background-color: linear-gradient(to bottom, #480808 0%,#240103 93%,#200000 97%,#1E0000 100%) !important;
+    }
 
     .urlbar-input::selection, .searchbar-textbox::selection {
       background: light-dark(rgb(255, 118, 72), rgb(183, 98, 69)) !important;
@@ -133,11 +140,8 @@
     --newtab-primary-action-background: light-dark(rgb(255, 20, 196), rgb(255, 80, 211)) !important;
     --newtab-primary-action-background-hover: light-dark(rgb(255, 40, 201), rgb(255, 60, 206)) !important;
     --newtab-primary-action-background-active: light-dark(rgb(255, 40, 201), rgb(255, 40, 201)) !important;
-    --in-content-primary-button-background: light-dark(rgb(255, 20, 196), rgb(255, 80, 211)) !important;
-    --in-content-primary-button-background-hover: light-dark(rgb(255, 40, 201), rgb(255, 60, 206)) !important;
-    --in-content-primary-button-background-active: light-dark(rgb(255, 40, 201), rgb(255, 40, 201)) !important;
-    --color-accent-primary: light-dark(rgb(255, 20, 196), rgb(255, 100, 216)) !important;
-    --color-accent-primary-hover: light-dark(rgb(255, 60, 206), rgb(255, 80, 211)) !important;
+    --color-accent-primary: light-dark(rgb(255, 20, 196), rgb(255, 40, 201)) !important;
+    --color-accent-primary-hover: light-dark(rgb(255, 60, 206), rgb(255, 60, 206)) !important;
     --color-accent-primary-active: light-dark(rgb(255, 60, 206), rgb(255, 60, 206)) !important;
     --link-color: light-dark(rgb(255, 20, 196), rgb(255, 80, 211)) !important;
     --link-color-hover: light-dark(rgb(255, 20, 196), rgb(255, 80, 211)) !important;
@@ -149,6 +153,14 @@
     --toolbarbutton-icon-fill-attention: light-dark(rgb(255, 20, 196), rgb(255, 80, 211)) !important;
     --download-progress-fill-color: light-dark(rgb(255, 40, 201), rgb(255, 80, 211)) !important;
     --lwt-tab-line-color: light-dark(rgb(255, 40, 201), rgb(255, 80, 211)) !important;
+    @media (-moz-content-prefers-color-scheme: dark), (prefers-color-scheme: dark) {
+      --color-accent-primary: rgb(255, 40, 201) !important;
+      --color-accent-primary-hover: rgb(255, 60, 206) !important;
+      --color-accent-primary-active: rgb(255, 60, 206) !important;
+    }
+    &[privatebrowsingmode=temporary] {
+        --tabpanel-background-color: linear-gradient(to bottom, #480808 0%,#240103 93%,#200000 97%,#1E0000 100%) !important;
+    }
 
     .urlbar-input::selection, .searchbar-textbox::selection {
       background: light-dark(rgb(255, 80, 211), rgb(160, 60, 135)) !important;
@@ -173,6 +185,95 @@
 
   #main-window[privatebrowsingmode="temporary"] #TabsToolbar {
     background-color: #CC190032 !important;
+  }
+}
+
+@media -moz-pref("r3dfox.colors", 4) {
+  :root {
+    --arrowpanel-border-color: light-dark(rgb(165, 0, 255), rgb(114, 63, 140)) !important;
+    --toolbar-field-focus-border-color: light-dark(rgb(165, 0, 255), rgb(114, 63, 140)) !important;
+    --sidebar-border-color: light-dark(rgb(165, 0, 255), rgb(114, 63, 140)) !important;
+    --lwt-toolbar-field-highlight: light-dark(rgb(165, 0, 255), rgb(114, 63, 140)) !important;
+    --newtab-primary-action-background: light-dark(rgb(165, 0, 255), rgb(185, 103, 229)) !important;
+    --newtab-primary-action-background-hover: light-dark(rgb(185, 103, 229), rgb(156, 87, 193)) !important;
+    --newtab-primary-action-background-active: light-dark(rgb(185, 103, 229), rgb(156, 87, 193)) !important;
+    --color-accent-primary: light-dark(rgb(165, 0, 255), rgb(156, 87, 193)) !important;
+    --color-accent-primary-hover: light-dark(rgb(156, 87, 193), rgb(185, 103, 229)) !important;
+    --color-accent-primary-active: light-dark(rgb(156, 87, 193), rgb(156, 87, 193)) !important;
+    --link-color: light-dark(rgb(165, 0, 255), rgb(185, 103, 229)) !important;
+    --link-color-hover: light-dark(rgb(169, 57, 229), rgb(169, 57, 229)) !important;
+    --link-color-active: light-dark(rgb(185, 103, 229), rgb(165, 0, 255)) !important;
+    --link-color-visited: light-dark(rgb(114, 63, 140), rgb(114, 63, 140)) !important;
+    --button-primary-bgcolor: light-dark(rgb(156, 87, 193), rgb(156, 87, 193)) !important;
+    --button-primary-hover-bgcolor: light-dark(rgb(185, 103, 229), rgb(185, 103, 229)) !important;
+    --button-primary-active-bgcolor: light-dark(rgb(156, 87, 193), rgb(156, 87, 193)) !important;
+    --toolbarbutton-icon-fill-attention: light-dark(rgb(185, 103, 229), rgb(185, 103, 229)) !important;
+    --download-progress-fill-color: light-dark(rgb(165, 0, 255), rgb(185, 103, 229)) !important;
+    --lwt-tab-line-color: light-dark(rgb(165, 0, 255), rgb(156, 87, 193)) !important;
+
+    --tabpanel-background-color: light-dark(rgb(229, 227, 234), rgb(11, 10, 13)) !important;
+    --in-content-page-background: light-dark(rgb(229, 227, 234), rgb(11, 10, 13)) !important;
+    --newtab-background-color: light-dark(rgb(229, 227, 234), rgb(11, 10, 13)) !important;
+    --newtab-background-color-secondary: light-dark(rgba(243, 242, 245, 0.95), rgba(23, 21, 28, 0.95)) !important;
+    --newtab-background-card: light-dark(rgba(243, 242, 245, 0.95), rgba(23, 21, 28, 0.95)) !important;
+    --lwt-sidebar-background-color: light-dark(rgba(243, 242, 245, 0.95), rgba(23, 21, 28, 0.95)) !important;
+
+    --arrowpanel-background: light-dark(rgba(243, 242, 245, 0.95), rgba(11, 10, 13, 0.95)) !important;
+    --toolbar-field-focus-background-color: light-dark(rgba(243, 242, 245, 0.95), rgba(11, 10, 13, 0.95)) !important;
+    --chrome-content-separator-color: light-dark(rgb(243, 242, 245), rgb(11, 10, 13)) !important;
+    @media (-moz-content-prefers-color-scheme: dark), (prefers-color-scheme: dark) {
+      --color-accent-primary: rgb(156, 87, 193) !important;
+      --color-accent-primary-hover: rgb(185, 103, 229) !important;
+      --color-accent-primary-active: rgb(156, 87, 193) !important;
+    }
+
+    @media not -moz-pref("r3dfox.translucent.navbar") {
+      @media (-moz-toolbar-prefers-color-scheme: dark), (prefers-color-scheme: dark) {
+        --toolbar-bgcolor: rgb(23, 21, 28) !important;
+        --toolbar-field-background-color: rgb(11, 10, 13) !important;
+      }
+
+      @media (-moz-toolbar-prefers-color-scheme: light), (prefers-color-scheme: light) {
+        --toolbar-bgcolor: rgb(243, 242, 245) !important;
+        --toolbar-field-background-color: rgb(229, 227, 234) !important;
+      }
+    }
+
+    @-moz-document url("about:home"),url("about:blank"),url("about:newtab") {
+      body { background-color: light-dark(rgb(229, 227, 234), rgb(11, 10, 13)) !important }
+    }
+
+    &[privatebrowsingmode=temporary] {
+        --tabpanel-background-color: linear-gradient(to bottom, #480808 0%,#240103 93%,#200000 97%,#1E0000 100%) !important;
+    }
+
+    .urlbar-input::selection, .searchbar-textbox::selection {
+      background: light-dark(rgb(185, 103, 229), rgb(114, 63, 140)) !important;
+    }
+
+    .bookmark-item:is(toolbarbutton)[dragover="true"][open="true"] {
+      background: light-dark(rgb(185, 103, 229), rgb(114, 63, 140)) !important;
+    }
+
+    .tab-drop-indicator {
+      background: url(chrome://browser/skin/tabbrowser/ecl-tab-drag-indicator.svg) no-repeat center !important;
+    }
+
+    #PlacesToolbarDropIndicator {
+      list-style-image: url(chrome://browser/skin/ecl-toolbar-drag-indicator.svg) !important;
+    }
+  }
+
+  html.private {
+      --in-content-page-background: linear-gradient(to bottom, #480808 0%,#240103 93%,#200000 97%,#1E0000 100%) !important;
+  }
+
+  #main-window[privatebrowsingmode="temporary"] #TabsToolbar {
+    background-color: #CC190032 !important;
+  }
+
+  #identity-box[pageproxystate="valid"]:is(.notSecureText, .chromeUI, .extensionPage) > .identity-box-button, #urlbar-label-box {
+    background-color: light-dark(rgb(243, 242, 245), rgb(30, 26, 39)) !important;
   }
 }
 
@@ -282,8 +383,11 @@
       --tab-bg-block-margin: 0px;
       --my-tab-inline-padding: 0px;
       --tab-separator-offset: 0px;
-      --arrowpanel-background: light-dark(rgba(255, 255, 255, 0.975), rgba(66, 65, 77, 0.975)) !important;
-      --toolbar-field-focus-background-color: light-dark(rgba(255, 255, 255, 0.975), rgba(66, 65, 77, 0.975)) !important;
+      @media not -moz-pref("r3dfox.colors", 4) {
+        --arrowpanel-background: light-dark(rgba(255, 255, 255, 0.95), rgba(66, 65, 77, 0.95)) !important;
+        --toolbar-field-focus-background-color: light-dark(rgba(255, 255, 255, 0.95), rgba(66, 65, 77, 0.95)) !important;
+        /*--chrome-content-separator-color: light-dark(rgb(204, 204, 204), rgb(12, 12, 13)) !important;*/
+      }
     }
 
     /* Tab counter at top because it's funny */
@@ -298,10 +402,6 @@
 
     #tabbrowser-tabs ~ #alltabs-button::after {
         content: counter(TabCounter);
-    }
-
-    #navigator-toolbox {
-      border-bottom: 0px !important;
     }
 
     /* ---------------------------------------- Indents ---------------------------------------- */
@@ -601,7 +701,7 @@
     background-clip: padding-box !important;
   }
 
-  @media (-moz-content-prefers-color-scheme: dark),(-moz-toolbar-prefers-color-scheme: dark), (prefers-color-scheme: dark) {
+  @media (-moz-toolbar-prefers-color-scheme: dark), (prefers-color-scheme: dark) {
     #TabsToolbar {
       color: white !important;
       --toolbarbutton-icon-fill: currentColor !important;
@@ -613,7 +713,7 @@
 
     @media (not -moz-pref("r3dfox.transparent.menubar")) {
       #main-window #main-menubar {
-        background-color: rgba(0, 0, 0, 0.33) !Important;
+        background-color: rgba(23, 21, 28, 0.33) !Important;
       }
 
       #toolbar-menubar {
@@ -631,24 +731,32 @@
       }
     }
 
-    #TabsToolbar .toolbarbutton-1 > :is(.toolbarbutton-icon, .toolbarbutton-text, .toolbarbutton-badge-stack) {
-     background-color: rgba(0, 0, 0, 0.33);
+    #TabsToolbar .toolbarbutton-1 {
+      > :is(.toolbarbutton-icon, .toolbarbutton-text, .toolbarbutton-badge-stack) {
+        background-color: rgba(23, 21, 28, 0.33);
+      }
+      &:hover > :is(.toolbarbutton-icon, .toolbarbutton-text, .toolbarbutton-badge-stack) {
+        background-color: rgba(23, 21, 28, 0.33);
+        box-shadow: inset 0 0 0 99999px hsla(60,15%,38%,.22);
+      }
     }
 
     #alltabs-button::after {
-      background-color: rgba(0, 0, 0, 0.33);
+      background-color: rgba(23, 21, 28, 0.33);
     }
 
     .tabbrowser-tab { 
       &:not([visuallyselected]) {
-        .tab-background { background-color: rgba(0, 0, 0, 0.33) !important; }
-        &:hover .tab-background { background-color: rgba(0, 0, 0, 0.66) !important; }
-        &[multiselected] .tab-background { background-color: rgba(0, 0, 0, 0.5) !important; }
+        .tab-background { background-color: rgba(23, 21, 28, 0.33) !important; }
+        &:hover .tab-background { background-color: rgba(23, 21, 28, 0.66) !important; }
+        &[multiselected] .tab-background { background-color: rgba(23, 21, 28, 0.5) !important; }
+        /*&:hover .tab-background { box-shadow: inset 0 0 0 99999px hsla(60,15%,38%,.22) !important; }
+        &[multiselected] .tab-background { box-shadow: box-shadow: inset 0 0 0 99999px hsla(0,0%,38%,.11) !important; }*/
       }
     }
   }
 
-  @media (-moz-content-prefers-color-scheme: light),(-moz-toolbar-prefers-color-scheme: light), (prefers-color-scheme: light) {
+  @media (-moz-toolbar-prefers-color-scheme: light), (prefers-color-scheme: light) {
     #TabsToolbar {
       color: black !important;
       --toolbarbutton-icon-fill: currentColor !important;
@@ -660,7 +768,7 @@
 
     @media (not -moz-pref("r3dfox.transparent.menubar")) {
       #main-window #main-menubar {
-        background-color: rgba(249, 249, 251, 0.33) !Important;
+        background-color: rgba(243, 242, 245, 0.33) !Important;
       }
 
       #toolbar-menubar {
@@ -673,24 +781,32 @@
 
       #main-menubar > menu {
         &[_moz-menuactive] {
-          background-color: hsla(0,0%,0%,.12) !important;
+          background-color: hsla(0,0%,0%,.22) !important;
         }
       }
     }
 
-    #TabsToolbar .toolbarbutton-1 > :is(.toolbarbutton-icon, .toolbarbutton-text, .toolbarbutton-badge-stack) {
-      background-color: rgba(249, 249, 251, 0.33);
+    #TabsToolbar .toolbarbutton-1 {
+      > :is(.toolbarbutton-icon, .toolbarbutton-text, .toolbarbutton-badge-stack) {
+        background-color: rgba(243, 242, 245, 0.33);
+      }
+      &:hover > :is(.toolbarbutton-icon, .toolbarbutton-text, .toolbarbutton-badge-stack) {
+        background-color: rgba(243, 242, 245, 0.33);
+        box-shadow: inset 0 0 0 99999px hsla(60,60%,92%,.24);
+      }
     }
 
     #alltabs-button::after {
-      background-color: rgba(249, 249, 251, 0.33);
+      background-color: rgba(243, 242, 245, 0.33);
     }
 
     .tabbrowser-tab { 
       &:not([visuallyselected]) {
-        .tab-background { background-color: rgba(249, 249, 251, 0.33) !important; }
-        &:hover .tab-background { background-color: rgba(249, 249, 251, 0.66) !important; }
-        &[multiselected] .tab-background { background-color: rgba(249, 249, 251, 0.5) !important; }
+        .tab-background { background-color: rgba(243, 242, 245, 0.33) !important; }
+        &:hover .tab-background { background-color: rgba(243, 242, 245, 0.66) !important; }
+        &[multiselected] .tab-background { background-color: rgba(243, 242, 245, 0.5) !important; }
+        /*&:hover .tab-background { box-shadow: inset 0 0 0 99999px hsla(60,60%,92%,.24) !important; }
+        &[multiselected] .tab-background { box-shadow: inset 0 0 0 99999px hsla(0,0%,100%,.48) !important; }*/
       }
     }
   }

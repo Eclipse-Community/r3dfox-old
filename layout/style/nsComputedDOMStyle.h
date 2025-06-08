@@ -180,6 +180,8 @@ class nsComputedDOMStyle final : public nsDOMCSSDeclaration,
 
   already_AddRefed<CSSValue> GetPaddingWidthFor(mozilla::Side aSide);
 
+  already_AddRefed<CSSValue> GetBorderColorsFor(mozilla::Side aSide);
+
   already_AddRefed<CSSValue> GetBorderStyleFor(mozilla::Side aSide);
 
   already_AddRefed<CSSValue> GetBorderWidthFor(mozilla::Side aSide);
@@ -261,6 +263,10 @@ class nsComputedDOMStyle final : public nsDOMCSSDeclaration,
   already_AddRefed<CSSValue> DoGetBorderBottomWidth();
   already_AddRefed<CSSValue> DoGetBorderLeftWidth();
   already_AddRefed<CSSValue> DoGetBorderRightWidth();
+  already_AddRefed<CSSValue> DoGetBorderBottomColors();
+  already_AddRefed<CSSValue> DoGetBorderLeftColors();
+  already_AddRefed<CSSValue> DoGetBorderRightColors();
+  already_AddRefed<CSSValue> DoGetBorderTopColors();
 
   /* Margin Properties */
   already_AddRefed<CSSValue> DoGetMarginTopWidth();

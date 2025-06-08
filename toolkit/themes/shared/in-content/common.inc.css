@@ -170,6 +170,10 @@ html|*.numberbox-input::-moz-number-spin-down {
   /* !important overrides button.css for disabled and default XUL buttons: */
   color: var(--in-content-text-color) !important;
   border: none;
+  -moz-border-top-colors: none !important;
+  -moz-border-right-colors: none !important;
+  -moz-border-bottom-colors: none !important;
+  -moz-border-left-colors: none !important;
   border-radius: 2px;
   background-color: var(--in-content-button-background);
   font-weight: 400;
@@ -400,6 +404,10 @@ html|textarea,
 xul|textbox {
   -moz-appearance: none;
   border: 1px solid var(--in-content-box-border-color);
+  -moz-border-top-colors: none !important;
+  -moz-border-right-colors: none !important;
+  -moz-border-bottom-colors: none !important;
+  -moz-border-left-colors: none !important;
   border-radius: 2px;
   /* !important to override disabled styling from textbox.css. We reduce the
      opacity instead of changing colors. */

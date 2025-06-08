@@ -303,6 +303,9 @@ nsAtom* Gecko_Atomize16(const nsAString* aString);
 void Gecko_AddRefAtom(nsAtom* aAtom);
 void Gecko_ReleaseAtom(nsAtom* aAtom);
 
+// Border style
+void Gecko_EnsureMozBorderColors(nsStyleBorder* aBorder);
+
 // Font style
 void Gecko_CopyFontFamilyFrom(nsFont* dst, const nsFont* src);
 void Gecko_nsTArray_FontFamilyName_AppendNamed(nsTArray<FontFamilyName>* aNames,

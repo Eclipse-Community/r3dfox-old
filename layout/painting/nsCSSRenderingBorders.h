@@ -51,6 +51,8 @@ class StackingContextHelper;
  * borderRadii -- a RectCornerRadii struct describing the w/h for each rounded
  * corner. If the corner doesn't have a border radius, 0,0 should be given for
  * it. borderColors -- one nscolor per side
+ * compositeColors -- a pointer to an array of composite color structs, or
+ *    nullptr if none.
  *
  * skipSides -- a bit mask specifying which sides, if any, to skip
  * backgroundColor -- the background color of the element.
@@ -90,13 +92,14 @@ class nsCSSBorderRenderer final {
                       DrawTarget* aDrawTarget, const Rect& aDirtyRect,
                       Rect& aOuterRect, const uint8_t* aBorderStyles,
                       const Float* aBorderWidths, RectCornerRadii& aBorderRadii,
-                      const nscolor* aBorderColors, nscolor aBackgroundColor,
-                      bool aBackfaceIsVisible,
+                      const nscolor* aBorderColors, const nsBorderColors* aCompositeColors,
+                      nscolor aBackgroundColor, bool aBackfaceIsVisible,
                       const mozilla::Maybe<Rect>& aClipRect);
 
   // draw the entire border
   void DrawBorders();
 
+  bool CanCreateWebRenderCommands();
   void CreateWebRenderCommands(
       nsDisplayItem* aItem, mozilla::wr::DisplayListBuilder& aBuilder,
       mozilla::wr::IpcResourceUpdateQueue& aResources,
@@ -139,6 +142,11 @@ class nsCSSBorderRenderer final {
 
   // the colors for 'border-top-color' et. al.
   nscolor mBorderColors[4];
+
+  // the lists of colors for '-moz-border-top-colors' et. al.
+  // the pointers here are either nullptr, or referring to a non-empty
+  // nsTArray, so no additional empty check is needed.
+  const nsTArray<nscolor>* mCompositeColors[4];
 
   // the background color
   nscolor mBackgroundColor;
@@ -220,6 +228,10 @@ class nsCSSBorderRenderer final {
   // present in the bitmask
   void DrawBorderSides(int aSides);
 
+  // function used by the above to handle -moz-border-colors
+  void DrawBorderSidesCompositeColors(
+    int aSides, const nsTArray<nscolor>& compositeColors);
+
   // Setup the stroke options for the given dashed/dotted side
   void SetupDashedOptions(StrokeOptions* aStrokeOptions, Float aDash[2],
                           mozilla::Side aSide, Float aBorderLength,
@@ -249,13 +261,18 @@ class nsCSSBorderRenderer final {
   // Analyze if all borders are 'solid' this also considers hidden or 'none'
   // borders because they can be considered 'solid' borders of 0 width and
   // with no color effect.
-  bool AllBordersSolid();
+  bool AllBordersSolid(bool *aHasCompositeColors);
 
   // Draw a solid color border that is uniformly the same width.
   void DrawSingleWidthSolidBorder();
 
-  // Draw any border which is solid on all sides.
-  void DrawSolidBorder();
+  // Draw any border which is solid on all sides and does not use
+  // CompositeColors.
+  void DrawNoCompositeColorSolidBorder();
+
+  // Draw a solid border that has no border radius (i.e. is rectangular) and
+  // uses CompositeColors.
+  void DrawRectangularCompositeColors();
 };
 
 class nsCSSBorderImageRenderer final {

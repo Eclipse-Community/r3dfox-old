@@ -727,6 +727,7 @@ class CSSParserImpl {
   bool ParseImageLayerSize(nsCSSPropertyID aPropID);
   bool ParseImageLayerSizeValues(nsCSSValuePair& aOut);
   bool ParseBorderColor();
+  bool ParseBorderColors(nsCSSPropertyID aProperty);
   void SetBorderImageInitialValues();
   bool ParseBorderImageRepeat(bool aAcceptsInherit);
   // If ParseBorderImageSlice returns false, aConsumedTokens indicates
@@ -10931,6 +10932,11 @@ bool CSSParserImpl::ParsePropertyByFunction(nsCSSPropertyID aPropID) {
       return ParseBorderSide(kBorderRightIDs, false);
     case eCSSProperty_border_top:
       return ParseBorderSide(kBorderTopIDs, false);
+    case eCSSProperty__moz_border_bottom_colors:
+    case eCSSProperty__moz_border_left_colors:
+    case eCSSProperty__moz_border_right_colors:
+    case eCSSProperty__moz_border_top_colors:
+    return ParseBorderColors(aPropID);
     case eCSSProperty_border_image_slice:
       return ParseBorderImageSlice(true, nullptr);
     case eCSSProperty_border_image_width:
@@ -12678,6 +12684,30 @@ bool CSSParserImpl::ParseBorderStyle() {
 
 bool CSSParserImpl::ParseBorderWidth() {
   return ParseBoxProperties(kBorderWidthIDs);
+}
+
+bool
+CSSParserImpl::ParseBorderColors(nsCSSPropertyID aProperty)
+{
+  nsCSSValue value;
+  // 'inherit', 'initial', 'unset' and 'none' are only allowed on their own
+  if (!ParseSingleTokenVariant(value, VARIANT_INHERIT | VARIANT_NONE,
+                               nullptr)) {
+    nsCSSValueList *cur = value.SetListValue();
+    for (;;) {
+      if (ParseVariant(cur->mValue, VARIANT_COLOR, nullptr) !=
+          CSSParseResult::Ok) {
+        return false;
+      }
+      if (CheckEndProperty()) {
+        break;
+      }
+      cur->mNext = new nsCSSValueList;
+      cur = cur->mNext;
+    }
+  }
+  AppendValue(aProperty, value);
+  return true;
 }
 
 // Parse the top level of a calc() expression.

@@ -140,6 +140,8 @@ interface nsIToolkitProfileService : nsISupports
      * profiles were loaded.
      */
     void flush();
+
+    uint32_t portable();
 };
 
 %{C++

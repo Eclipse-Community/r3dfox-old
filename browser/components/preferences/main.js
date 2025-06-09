@@ -1295,6 +1295,10 @@ var gMainPane = {
         defaultBrowserBox.hidden = true;
         return;
       }
+      let pService = Cc["@mozilla.org/toolkit/profile-service;1"].getService(
+        Ci.nsIToolkitProfileService
+      );
+      if (pService.portable() == 1) return;
       let isDefault = shellSvc.isDefaultBrowser(false, true);
       let setDefaultPane = document.getElementById("setDefaultPane");
       setDefaultPane.classList.toggle("is-default", isDefault);
@@ -1323,7 +1327,14 @@ var gMainPane = {
       if (!shellSvc) {
         return;
       }
+
+      let pService = Cc["@mozilla.org/toolkit/profile-service;1"].getService(
+        Ci.nsIToolkitProfileService
+      );
+      let isPortable;
+
       try {
+        isPortable = pService.portable();
         shellSvc.setDefaultBrowser(true, false);
       } catch (ex) {
         Cu.reportError(ex);

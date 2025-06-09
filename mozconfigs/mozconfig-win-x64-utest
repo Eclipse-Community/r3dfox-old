@@ -20,6 +20,11 @@ ac_add_options --disable-artifact-builds
 export MOZ_INCLUDE_SOURCE_INFO=1
 export MOZ_SOURCE_CHANGESET=iloveneedingtobodgechangesetfornoreason
 
+# Package VC++ DLLs
+export WIN32_REDIST_DIR="C:/VC++/x64"
+export WIN_UCRT_REDIST_DIR="C:/VC++/x64"
+export MOZ_D3DCOMPILER_VISTA_DLL_PATH_OVERRIDE="C:/VC++/x64"
+
 # Optimization settings
 ac_add_options --disable-debug
 ac_add_options --disable-debug-js-modules

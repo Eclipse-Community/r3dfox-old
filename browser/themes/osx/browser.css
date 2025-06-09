@@ -4,14 +4,14 @@
 
 @import url("chrome://browser/skin/browser-shared.css");
 /* stylelint-disable-next-line media-query-no-invalid */
-@import url("chrome://browser/skin/browser-custom-colors.css") not (-moz-bool-pref: "browser.theme.macos.native-theme");
+@import url("chrome://browser/skin/browser-custom-colors.css") not -moz-pref("browser.theme.macos.native-theme");
 
 :root {
   --arrowpanel-field-background: light-dark(rgba(249, 249, 250, .3), rgba(12, 12, 13, .3));
 }
 
 /* stylelint-disable-next-line media-query-no-invalid */
-@media (-moz-bool-pref: "browser.theme.macos.native-theme") {
+@media -moz-pref("browser.theme.macos.native-theme") {
   /* TODO: Share this with Linux, which effectively does ~the same */
   @media not (prefers-contrast) {
     :root:not([lwtheme]) {
@@ -162,7 +162,7 @@
 }
 
 /* stylelint-disable-next-line media-query-no-invalid */
-@media (-moz-bool-pref: "browser.urlbar.experimental.expandTextOnFocus") {
+@media -moz-pref("browser.urlbar.experimental.expandTextOnFocus") {
   #urlbar[breakout-extend] {
     font-size: 1.36em;
   }

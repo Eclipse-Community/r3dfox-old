@@ -75,7 +75,7 @@
   }
 
   /* stylelint-disable-next-line media-query-no-invalid */
-  @media (-moz-bool-pref: "browser.urlbar.richSuggestions.featureGate") {
+  @media -moz-pref("browser.urlbar.richSuggestions.featureGate") {
     --urlbarView-favicon-margin-start: calc((var(--urlbarView-rich-suggestion-default-icon-size) - var(--urlbarView-favicon-width)) / 2);
     --urlbarView-favicon-margin-end: calc(var(--urlbar-icon-padding) + var(--identity-box-margin-inline) + ((var(--urlbarView-rich-suggestion-default-icon-size) - var(--urlbarView-favicon-width)) / 2));
     }
@@ -119,7 +119,7 @@
   /* Align icons that are smaller than the default rich suggestion icon size
     (28px) with default-size rich suggestion icons. */
   /* stylelint-disable-next-line media-query-no-invalid */
-  @media (-moz-bool-pref: "browser.urlbar.richSuggestions.featureGate") {
+  @media -moz-pref("browser.urlbar.richSuggestions.featureGate") {
     &:not([rich-suggestion]),
     &[rich-suggestion][icon-size="16"] {
       --urlbarView-icon-margin-start: var(--urlbarView-favicon-margin-start);

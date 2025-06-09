@@ -72,11 +72,7 @@ pref("extensions.langpacks.signatures.required", false);
 pref("xpinstall.signatures.required", false);
 
 // Enable data collection permissions.
-#ifdef NIGHTLY_BUILD
-  pref("extensions.dataCollectionPermissions.enabled", true);
-#else
-  pref("extensions.dataCollectionPermissions.enabled", false);
-#endif
+pref("extensions.dataCollectionPermissions.enabled", false);
 
 // Dictionary download preference
 pref("browser.dictionaries.download.url", "https://addons.mozilla.org/%LOCALE%/firefox/language-tools/");
@@ -2089,11 +2085,7 @@ pref("nimbus.validation.enabled", false);
 // disabled, e.g., for artifact builds.
 // See-also: https://bugzilla.mozilla.org/show_bug.cgi?id=1936317
 // See-also: https://bugzilla.mozilla.org/show_bug.cgi?id=1936319
-#if defined(MOZ_ARTIFACT_BUILDS)
-  pref("nimbus.telemetry.targetingContextEnabled", false);
-#else
-  pref("nimbus.telemetry.targetingContextEnabled", true);
-#endif
+pref("nimbus.telemetry.targetingContextEnabled", false);
 
 // Nimbus QA prefs. Used to monitor pref-setting test experiments.
 pref("nimbus.qa.pref-1", "default");

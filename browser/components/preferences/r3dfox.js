@@ -29,4 +29,6 @@ Preferences.addAll([
   { id: "accessibility.force_disabled", type: "int" },
   { id: "browser.urlbar.secondaryActions.switchToTab", type: "bool" },
   { id: "gfx.dwrite.enabled", type: "bool",  inverted: true },
+  { id: "cookiebanners.service.mode", type: "int" },
+  { id: "cookiebanners.service.mode.privateBrowsing", type: "int" },
 ]);

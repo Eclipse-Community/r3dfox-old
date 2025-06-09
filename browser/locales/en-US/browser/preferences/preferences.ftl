@@ -194,6 +194,12 @@ r3dfox-accessibility = Accessibility services
 
 r3dfox-accessibility-desc = Recommended to disable if you do not need them for enhanced security and performance.
 
+r3dfox-cookiebanners = Cookie banner handling mode in normal browsing
+
+r3dfox-cookiebanners-desc = Recommended to leave enabled for a less annoying browsing experience. Currently this will set cookies even when set to block all cookies.
+
+r3dfox-cookiebanners-private = Cookie banner handling mode in private browsing
+
 r3dfox-csp =
     .label = Disable Content Security Policy (CSP)
 
@@ -1301,14 +1307,6 @@ sitedata-settings =
 sitedata-cookies-exceptions =
     .label = Manage Exceptions…
     .accesskey = x
-
-## Privacy Section - Cookie Banner Blocking
-
-cookie-banner-blocker-header = Cookie Banner Blocker
-cookie-banner-blocker-description = When a site asks if they can use cookies in private browsing mode, { -brand-short-name } automatically refuses for you. Only on supported sites.
-cookie-banner-learn-more = Learn more
-cookie-banner-blocker-checkbox-label =
-    .label = Automatically refuse cookie banners
 
 ## Privacy Section - Address Bar
 

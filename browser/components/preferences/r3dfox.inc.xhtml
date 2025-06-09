@@ -184,6 +184,28 @@
   <description id="r3dfoxAccessibilityDescription" class="tip-caption" data-l10n-id="r3dfox-accessibility-desc"/>
 
   <hbox align="center">
+    <label id="r3dfoxCookieBanners" data-l10n-id="r3dfox-cookiebanners" control="r3dfoxCookieBannersType"/>
+    <menulist id="r3dfoxCookieBannersType" preference="cookiebanners.service.mode">
+      <menupopup>
+        <menuitem label="Auto reject all cookies where possible" value="1"/>
+        <menuitem label="Disable all cookie banner handling" value="0"/>
+      </menupopup>
+    </menulist>
+  </hbox>
+  <description id="r3dfoxCookieBannersDescription" class="tip-caption" data-l10n-id="r3dfox-cookiebanners-desc"/>
+
+  <hbox align="center">
+    <label id="r3dfoxCookieBannersPrivate" data-l10n-id="r3dfox-cookiebanners-private" control="r3dfoxCookieBannersPrivateType"/>
+    <menulist id="r3dfoxCookieBannersPrivateType" preference="cookiebanners.service.mode.privateBrowsing">
+      <menupopup>
+        <menuitem label="Auto reject all cookies where possible" value="1"/>
+        <menuitem label="Disable all cookie banner handling" value="0"/>
+      </menupopup>
+    </menulist>
+  </hbox>
+  <description id="r3dfoxCookieBannersPrivateDescription" class="tip-caption" data-l10n-id="r3dfox-cookiebanners-desc"/>
+
+  <hbox align="center">
     <checkbox id="r3dfoxcsp"
               data-l10n-id="r3dfox-csp"
               preference="security.csp.enable"/>

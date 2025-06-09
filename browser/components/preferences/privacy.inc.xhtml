@@ -442,25 +442,6 @@
   </hbox>
 </groupbox>
 
-<!-- Cookie Banner Handling -->
-<groupbox id="cookieBannerHandlingGroup" data-category="panePrivacy" data-subcategory="cookiebanner" hidden="true">
-  <label><html:h2 data-l10n-id="cookie-banner-blocker-header" /></label>
-  <vbox flex="1">
-    <hbox>
-      <description class="description-deemphasized">
-        <html:span id="cookieBannerReductionExplanation" data-l10n-id="cookie-banner-blocker-description" ></html:span>
-        <html:a is="moz-support-link" id="cookieBannerHandlingLearnMore" class="learnMore"  data-l10n-id="cookie-banner-learn-more" support-page="cookie-banner-reduction"/>
-      </description>
-    </hbox>
-    <hbox>
-      <checkbox id="handleCookieBanners"
-                preference="cookiebanners.service.mode.privateBrowsing"
-                data-l10n-id="cookie-banner-blocker-checkbox-label"
-                flex="1" />
-    </hbox>
-  </vbox>
-</groupbox>
-
 <!-- Passwords -->
 <groupbox id="passwordsGroup" orient="vertical" data-category="panePrivacy" data-subcategory="logins" hidden="true">
   <label><html:h2 data-l10n-id="pane-privacy-passwords-header" data-l10n-attrs="searchkeywords"/></label>

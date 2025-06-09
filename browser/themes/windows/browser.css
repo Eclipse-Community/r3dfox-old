@@ -16,7 +16,7 @@
 @media (-moz-windows-accent-color-in-titlebar) {
   :root[tabsintitlebar] {
     /* stylelint-disable-next-line media-query-no-invalid */
-    @media (-moz-bool-pref: "browser.theme.windows.accent-color-in-tabs.enabled") {
+    @media -moz-pref("browser.theme.windows.accent-color-in-tabs.enabled") {
       --toolbox-non-lwt-bgcolor: ActiveCaption;
       --toolbox-non-lwt-textcolor: CaptionText;
       --toolbox-non-lwt-bgcolor-inactive: InactiveCaption;
@@ -250,7 +250,7 @@
 }
 
 /* stylelint-disable-next-line media-query-no-invalid */
-@media (-moz-bool-pref: "browser.urlbar.experimental.expandTextOnFocus") {
+@media -moz-pref("browser.urlbar.experimental.expandTextOnFocus") {
   #urlbar[breakout-extend] {
     font-size: 1.25em;
   }

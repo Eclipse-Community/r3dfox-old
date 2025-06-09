@@ -19,7 +19,7 @@
     --tabpanel-background-color: #25003e !important;
 
     /* stylelint-disable-next-line media-query-no-invalid */
-    @media (-moz-bool-pref: "browser.privatebrowsing.felt-privacy-v1") {
+    @media -moz-pref("browser.privatebrowsing.felt-privacy-v1") {
       --tabpanel-background-color: linear-gradient(45deg, #722291 0%, #45278D 50%, #393473 100%) !important;
     }
   }
@@ -135,7 +135,7 @@
   }
 
   /* stylelint-disable-next-line media-query-no-invalid */
-  @media (-moz-bool-pref: "browser.tabs.hideStatusPanel") {
+  @media -moz-pref("browser.tabs.hideStatusPanel") {
     visibility: hidden;
   }
 }

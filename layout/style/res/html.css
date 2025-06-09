@@ -901,7 +901,7 @@ slot {
 
 /* Popover UA style, https://html.spec.whatwg.org/#flow-content-3 */
 /* stylelint-disable-next-line media-query-no-invalid */
-@media (-moz-bool-pref: "dom.element.popover.enabled") {
+@media -moz-pref("dom.element.popover.enabled") {
   [popover]:not(:popover-open):not(dialog[open]) {
     display:none;
   }

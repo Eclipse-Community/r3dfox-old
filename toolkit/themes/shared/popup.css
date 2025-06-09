@@ -129,9 +129,10 @@ menupopup {
 
     /* We set the background-color / border here so that it doesn't interfere with native styling. */
     background-color: Menu;
-    border: 1px solid ThreeDShadow;
     --panel-background: transparent;
-    --panel-border-color: transparent;
+    @media (-moz-windows-classic) {
+      --panel-border-color: ThreeDShadow;
+    }
     --nested-margin: -3px;
     --panel-shadow-margin: 0px;
   }

@@ -260,10 +260,6 @@ Preferences.addAll([
   { id: "browser.urlbar.quickactions.showPrefs", type: "bool" },
   { id: "browser.urlbar.suggest.quickactions", type: "bool" },
 
-  // Cookie Banner Handling
-  { id: "cookiebanners.ui.desktop.enabled", type: "bool" },
-  { id: "cookiebanners.service.mode.privateBrowsing", type: "int" },
-
   // DoH
   { id: "network.trr.mode", type: "int" },
   { id: "network.trr.uri", type: "string" },
@@ -1183,8 +1179,6 @@ var gPrivacyPane = {
       "command",
       gPrivacyPane.showSiteDataSettings
     );
-
-    this.initCookieBannerHandling();
 
     this.initDataCollection();
 
@@ -2577,86 +2571,6 @@ var gPrivacyPane = {
         mode: "clearSiteData",
       }
     );
-  },
-
-  /**
-   * Initializes the cookie banner handling subgroup on the privacy pane.
-   *
-   * This UI is shown if the "cookiebanners.ui.desktop.enabled" pref is true.
-   *
-   * The cookie banner handling checkbox reflects the cookie banner feature
-   * state. It is enabled when the service enabled via the
-   * cookiebanners.service.mode pref. If detection-only mode is enabled the
-   * checkbox is unchecked, since in this mode no banners are handled. It is
-   * only used for detection for banners which means we may prompt the user to
-   * enable the feature via other UI surfaces such as the onboarding doorhanger.
-   *
-   * If the user checks the checkbox, the pref value is set to
-   * nsICookieBannerService.MODE_REJECT_OR_ACCEPT.
-   *
-   * If the user unchecks the checkbox, the mode pref value is set to
-   * nsICookieBannerService.MODE_DISABLED.
-   *
-   * Advanced users can choose other int-valued modes via about:config.
-   */
-  initCookieBannerHandling() {
-    setSyncFromPrefListener("handleCookieBanners", () =>
-      this.readCookieBannerMode()
-    );
-    setSyncToPrefListener("handleCookieBanners", () =>
-      this.writeCookieBannerMode()
-    );
-
-    let preference = Preferences.get("cookiebanners.ui.desktop.enabled");
-    preference.on("change", () => this.updateCookieBannerHandlingVisibility());
-
-    this.updateCookieBannerHandlingVisibility();
-  },
-
-  /**
-   * Reads the cookiebanners.service.mode.privateBrowsing pref,
-   * interpreting the multiple modes as a true/false value
-   */
-  readCookieBannerMode() {
-    return (
-      Preferences.get("cookiebanners.service.mode.privateBrowsing").value !=
-      Ci.nsICookieBannerService.MODE_DISABLED
-    );
-  },
-
-  /**
-   * Translates user clicks on the cookie banner handling checkbox to the
-   * corresponding integer-valued cookie banner mode preference.
-   */
-  writeCookieBannerMode() {
-    let checkbox = document.getElementById("handleCookieBanners");
-    if (!checkbox.checked) {
-      /* because we removed UI control for the non-PBM pref, disabling it here
-         provides an off-ramp for profiles where it had previously been enabled from the UI */
-      Services.prefs.setIntPref(
-        "cookiebanners.service.mode",
-        Ci.nsICookieBannerService.MODE_DISABLED
-      );
-      return Ci.nsICookieBannerService.MODE_DISABLED;
-    }
-    return Ci.nsICookieBannerService.MODE_REJECT;
-  },
-
-  /**
-   * Shows or hides the cookie banner handling section based on the value of
-   * the "cookiebanners.ui.desktop.enabled" pref.
-   */
-  updateCookieBannerHandlingVisibility() {
-    let groupbox = document.getElementById("cookieBannerHandlingGroup");
-    let isEnabled = Preferences.get("cookiebanners.ui.desktop.enabled").value;
-
-    // Because the top-level pane showing code unsets the hidden attribute, we
-    // manually hide the section when cookie banner handling is preffed off.
-    if (isEnabled) {
-      groupbox.removeAttribute("style");
-    } else {
-      groupbox.setAttribute("style", "display: none !important");
-    }
   },
 
   /**

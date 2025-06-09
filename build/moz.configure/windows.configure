@@ -527,6 +527,15 @@ def win32_redist_dir(redist, automation, c_compiler, vc_path, target):
 set_config("WIN32_REDIST_DIR", win32_redist_dir)
 
 
+@depends("--with-redist", "MOZ_AUTOMATION", c_compiler, vc_path, target)
+@imports("os")
+def win_ucrt_redist_dir(redist, automation, c_compiler, vc_path, target):
+    return os.environ.get("WIN_UCRT_REDIST_DIR")
+
+
+set_config("WIN_UCRT_REDIST_DIR", win_ucrt_redist_dir)
+
+
 @template
 def check_w32API_version():
     # minimum version of toolkit libs used by mozilla

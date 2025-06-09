@@ -2735,6 +2735,19 @@ with only_when(compile_environment & target_is_windows):
     @checking("for D3D compiler DLL", d3d_compiler_dll_result)
     @imports("os.path")
     def d3d_compiler_dll(target, windows_sdk_dir, fxc):
+        # 1) Check for a manual override first
+        override = os.environ.get("MOZ_D3DCOMPILER_VISTA_DLL_PATH_OVERRIDE")
+        if override:
+            # if they gave us a folder, tack on the DLL name
+            if os.path.isdir(override):
+                override = os.path.join(override, "d3dcompiler_47.dll")
+
+            if os.path.exists(override):
+                return namespace(name=os.path.basename(override), path=override)
+            die(f"MOZ_D3DCOMPILER_VISTA_DLL_PATH_OVERRIDE is set to "
+                f"{override!r} but that file does not exist")
+
+        # 2) Fallback to auto‐detect logic
         suffix = {
             "x86_64": "x64",
         }.get(target.cpu, target.cpu)
@@ -2757,9 +2770,13 @@ with only_when(compile_environment & target_is_windows):
         die("Could not find {} {}".format(name, error_extra))
 
     set_config("MOZ_ANGLE_RENDERER", True)
+
+    # only set the DLL name when we actually have a path
     set_config(
         "MOZ_D3DCOMPILER_VISTA_DLL", d3d_compiler_dll.name, when=d3d_compiler_dll.path
     )
+
+    # This will be either your override path or the auto‐detected one (or None on aarch64)
     set_config("MOZ_D3DCOMPILER_VISTA_DLL_PATH", d3d_compiler_dll.path)
 
 with only_when(target_is_windows):

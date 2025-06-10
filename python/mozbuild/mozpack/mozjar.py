@@ -852,7 +852,7 @@ class Brotli:
 
     @staticmethod
     def compress(data):
-        return Brotli.run_brotli_tool(["--lgwin=17"], data)
+        return Brotli.run_brotli_tool(["--lgwin=0"], data)
 
     @staticmethod
     def decompress(data):

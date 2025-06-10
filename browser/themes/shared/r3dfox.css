@@ -243,9 +243,9 @@
       body { background-color: light-dark(rgb(229, 227, 234), rgb(11, 10, 13)) !important }
     }
 
-    &[privatebrowsingmode=temporary] {
+    /*&[privatebrowsingmode=temporary] {
         --tabpanel-background-color: linear-gradient(to bottom, #480808 0%,#240103 93%,#200000 97%,#1E0000 100%) !important;
-    }
+    }*/
 
     .urlbar-input::selection, .searchbar-textbox::selection {
       background: light-dark(rgb(185, 103, 229), rgb(114, 63, 140)) !important;
@@ -264,9 +264,9 @@
     }
   }
 
-  html.private {
+  /*html.private {
       --in-content-page-background: linear-gradient(to bottom, #480808 0%,#240103 93%,#200000 97%,#1E0000 100%) !important;
-  }
+  }*/
 
   #main-window[privatebrowsingmode="temporary"] #TabsToolbar {
     background-color: #CC190032 !important;

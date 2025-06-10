@@ -100,5 +100,7 @@ typedef struct ZipEnd_ {
 #define TOKENIZED 7
 #define DEFLATED 8
 #define UNSUPPORTED 0xFF
+/* non-standard extension */
+#define MOZ_JAR_BROTLI 0x81
 
 #endif /* _zipstruct_h */

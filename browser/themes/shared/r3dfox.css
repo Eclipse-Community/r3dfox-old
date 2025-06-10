@@ -90,9 +90,9 @@
     --link-color-hover: light-dark(rgb(255, 71, 9), rgb(255, 118, 72)) !important;
     --link-color-active: light-dark(rgb(255, 102, 51), rgb(255, 102, 51)) !important;
     --link-color-visited: light-dark(rgb(255, 71, 9), rgb(255, 118, 72)) !important;
-    --button-primary-bgcolor: light-dark(rgb(255, 71, 9), rgb(255, 100, 100)) !important;
-    --button-primary-hover-bgcolor: light-dark(rgb(255, 102, 51), rgb(255, 118, 72)) !important;
-    --button-primary-active-bgcolor: light-dark(rgb(255, 102, 51), rgb(255, 102, 51)) !important;
+    --button-primary-bgcolor: light-dark(rgb(255, 71, 9), rgb(255, 118, 72)) !important;
+    --button-primary-hover-bgcolor: light-dark(rgb(255, 102, 51), rgb(255, 102, 51)) !important;
+    --button-primary-active-bgcolor: light-dark(rgb(255, 102, 51), rgb(255, 86, 30)) !important;
     --toolbarbutton-icon-fill-attention: light-dark(rgb(255, 71, 9), rgb(255, 118, 72)) !important;
     --download-progress-fill-color: light-dark(rgb(255, 86, 30), rgb(255, 118, 72)) !important;
     --lwt-tab-line-color: light-dark(rgb(255, 86, 30), rgb(255, 118, 72)) !important;

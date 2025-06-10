@@ -3,7 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #aboutDialogContainer {
-  background: linear-gradient(to bottom, #540841 0%,#330128 93%,#28001e 97%,#1e0016 100%);
+  background-image: url("chrome://branding/content/about-background.jpg");
   color: #fff;
   color-scheme: dark;
 }

@@ -33,4 +33,5 @@ Preferences.addAll([
   { id: "cookiebanners.service.mode.privateBrowsing", type: "int" },
   { id: "widget.native-controls.override-aero-caption-buttons-mask-height", type: "int" },
   { id: "widget.native-controls.override-aero-caption-buttons-mask-width", type: "int" },
+  { id: "browser.tabs.groups.enabled", type: "bool" },
 ]);

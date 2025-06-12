@@ -180,6 +180,9 @@ r3dfox-one-offs =
 r3dfox-view-image =
     .label = Restore classic View Image context menu option
 
+r3dfox-tab-groups =
+    .label = Enable tab groups
+
 r3dfox-hover-preview =
     .label = Tab hover preview
 

@@ -24,6 +24,7 @@ export MOZ_SOURCE_CHANGESET=iloveneedingtobodgechangesetfornoreason
 # Package VC++ DLLs
 export WIN32_REDIST_DIR="C:/VC++/x86"
 export WIN_UCRT_REDIST_DIR="C:/VC++/x86"
+export MOZ_D3DCOMPILER_VISTA_DLL_PATH_OVERRIDE="C:/VC++/x86"
 
 # Optimization settings
 ac_add_options --disable-debug

@@ -1891,6 +1891,10 @@ pref("pdfjs.handleOctetStream", true);
 // Is the sidebar positioned ahead of the content browser
 pref("sidebar.position_start", true);
 pref("sidebar.revamp", false);
+// Sidebar UI state is stored per-window via session restore. Use this pref
+// as a backup to restore the sidebar UI state when a user has PPB mode on
+// or has history cleared on browser close.
+pref("sidebar.backupState", "{}");
 
 pref("browser.ml.chat.enabled", false);
 pref("browser.ml.chat.prompt.prefix", 'I’m on page "%currentTabTitle%" with "%selection|12000%" selected. ');

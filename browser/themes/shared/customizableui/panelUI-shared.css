@@ -414,10 +414,6 @@ menupopup[emptyplacesresult] > .hide-if-empty-places-result {
   display: none;
 }
 
-:is(.toolbar-menupopup, .toolbar-menupopup menupopup)[emptyplacesresult] > menuitem > .menu-accel-container > .menu-accel {
-  margin: 0;
-}
-
 #confirmation-hint {
   --arrowpanel-background: #0060df;
   --arrowpanel-border-color: #0060df;

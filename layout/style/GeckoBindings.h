@@ -267,6 +267,9 @@ nsAtom* Gecko_Atomize16(const nsAString* aString);
 void Gecko_AddRefAtom(nsAtom* aAtom);
 void Gecko_ReleaseAtom(nsAtom* aAtom);
 
+// Border style
+void Gecko_EnsureMozBorderColors(nsStyleBorder* aBorder);
+
 // will not run destructors on dst, give it uninitialized memory
 // font_id is LookAndFeel::FontID
 void Gecko_nsFont_InitSystem(nsFont* dst, mozilla::StyleSystemFont font_id,

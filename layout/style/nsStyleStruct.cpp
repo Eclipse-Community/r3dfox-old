@@ -430,6 +430,10 @@ nsStyleBorder::nsStyleBorder(const nsStyleBorder& aSrc)
       mComputedBorder(aSrc.mComputedBorder),
       mBorder(aSrc.mBorder) {
   MOZ_COUNT_CTOR(nsStyleBorder);
+  if (aSrc.mBorderColors) {
+    mBorderColors.reset(new nsBorderColors(*aSrc.mBorderColors));
+  }
+
   for (const auto side : mozilla::AllPhysicalSides()) {
     mBorderStyle[side] = aSrc.mBorderStyle[side];
   }
@@ -504,7 +508,8 @@ nsChangeHint nsStyleBorder::CalcDifference(
   // Note that border radius also controls the outline radius if the
   // layout.css.outline-follows-border-radius.enabled pref is set. Any
   // optimizations here should apply to both.
-  if (mBorderRadius != aNewData.mBorderRadius) {
+  if (mBorderRadius != aNewData.mBorderRadius ||
+      !mBorderColors != !aNewData.mBorderColors) {
     return nsChangeHint_RepaintFrame;
   }
 
@@ -519,6 +524,16 @@ nsChangeHint nsStyleBorder::CalcDifference(
         mBorderImageSlice != aNewData.mBorderImageSlice ||
         mBorderImageWidth != aNewData.mBorderImageWidth) {
       return nsChangeHint_RepaintFrame;
+    }
+  }
+
+  // Note that at this point if mBorderColors is non-null so is
+  // aNewData.mBorderColors
+  if (mBorderColors) {
+    for (const auto side : mozilla::AllPhysicalSides()) {
+      if ((*mBorderColors)[side] != (*aNewData.mBorderColors)[side]) {
+        return nsChangeHint_RepaintFrame;
+      }
     }
   }
 

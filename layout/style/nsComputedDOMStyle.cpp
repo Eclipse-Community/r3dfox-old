@@ -1783,6 +1783,22 @@ already_AddRefed<CSSValue> nsComputedDOMStyle::DoGetBorderSpacing() {
   return valueList.forget();
 }
 
+already_AddRefed<CSSValue> nsComputedDOMStyle::DoGetBorderBottomColors() {
+  return GetBorderColorsFor(eSideBottom);
+}
+
+already_AddRefed<CSSValue> nsComputedDOMStyle::DoGetBorderLeftColors() {
+  return GetBorderColorsFor(eSideLeft);
+}
+
+already_AddRefed<CSSValue> nsComputedDOMStyle::DoGetBorderRightColors() {
+  return GetBorderColorsFor(eSideRight);
+}
+
+already_AddRefed<CSSValue> nsComputedDOMStyle::DoGetBorderTopColors() {
+  return GetBorderColorsFor(eSideTop);
+}
+
 already_AddRefed<CSSValue> nsComputedDOMStyle::DoGetBorderTopWidth() {
   return GetBorderWidthFor(eSideTop);
 }
@@ -2076,6 +2092,36 @@ already_AddRefed<CSSValue> nsComputedDOMStyle::GetPaddingWidthFor(
   }
   AssertFlushedPendingReflows();
   return AppUnitsToCSSValue(mInnerFrame->GetUsedPadding().Side(aSide));
+}
+
+already_AddRefed<CSSValue> nsComputedDOMStyle::GetBorderColorsFor(mozilla::Side aSide){
+  const nsStyleBorder *border = StyleBorder();
+
+  if (border->mBorderColors) {
+    const nsTArray<nscolor>& borderColors = (*border->mBorderColors)[aSide];
+    if (!borderColors.IsEmpty()) {
+      RefPtr<nsDOMCSSValueList> valueList = GetROCSSValueList(false);
+      for (nscolor color : borderColors) {
+        // 1) Create your primitive
+        RefPtr<nsROCSSPrimitiveValue> primitive = new nsROCSSPrimitiveValue;
+  
+        // 2) Serialize the nscolor into an nsAString
+        nsAutoString serialized;
+        nsStyleUtil::GetSerializedColorValue(color, serialized);
+  
+        // 3) Stick that string into the primitive as a CSS string token
+        primitive->SetString(serialized);
+  
+        // 4) Hand it back to the caller
+        valueList->AppendCSSValue(primitive.forget());
+      }
+      return valueList.forget();
+    }
+  }
+
+  RefPtr<nsROCSSPrimitiveValue> val = new nsROCSSPrimitiveValue;
+  val->SetString("none");
+  return val.forget();
 }
 
 already_AddRefed<CSSValue> nsComputedDOMStyle::GetBorderWidthFor(

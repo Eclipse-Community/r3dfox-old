@@ -299,8 +299,7 @@
       <menuseparator id="context-sep-viewbgimage"/>
       <menuitem id="context-viewbgimage"
                 data-l10n-id="main-context-menu-image-view-background"
-                oncommand="gContextMenu.viewBGImage(event);"
-                onclick="checkForMiddleClick(this, event);"/>
+                />
       <menuitem id="context-copy-link-to-highlight"
                 data-l10n-id="text-action-copy-link-to-highlight"
                 />

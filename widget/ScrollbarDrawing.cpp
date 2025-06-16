@@ -379,7 +379,18 @@ bool ScrollbarDrawing::PaintScrollbarButton(
     const Colors& aColors, const DPIRatio&) {
   auto [buttonColor, arrowColor] = ComputeScrollbarButtonColors(
       aFrame, aAppearance, aStyle, aElementState, aDocumentState, aColors);
-  aDrawTarget.FillRect(aRect.ToUnknownRect(),
+  // Scrollbar thumb and button are two CSS pixels thinner than the track.
+  LayoutDeviceRect buttonRect(aRect);
+  gfxFloat p2a = gfxFloat(aFrame->PresContext()->AppUnitsPerDevPixel());
+  gfxFloat dev2css = round(AppUnitsPerCSSPixel() / p2a);
+  const bool horizontal = aScrollbarKind == ScrollbarKind::Horizontal;
+  if (horizontal) {
+    buttonRect.Deflate(0, dev2css);
+  } else {
+    buttonRect.Deflate(dev2css, 0);
+  }
+
+  aDrawTarget.FillRect(buttonRect.ToUnknownRect(),
                        ColorPattern(ToDeviceColor(buttonColor)));
 
   // Start with Up arrow.

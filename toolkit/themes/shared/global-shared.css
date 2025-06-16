@@ -102,6 +102,10 @@
   --panel-padding: var(--arrowpanel-padding);
 }
 
+xul|window {
+  color-scheme: light;
+}
+
 /* Lightweight theme roots */
 
 :root[lwtheme] {

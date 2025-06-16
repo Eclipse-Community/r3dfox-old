@@ -5,7 +5,7 @@
 // This file contains branding-specific prefs.
 
 pref("startup.homepage_override_url", "");
-pref("startup.homepage_welcome_url", "");
+pref("startup.homepage_welcome_url", "https://eclipse.cx/");
 pref("startup.homepage_welcome_url.additional", "");
 // Interval: Time between checks for a new version (in seconds)
 pref("app.update.interval", 86400); // 24 hours
@@ -16,22 +16,10 @@ pref("app.update.promptWaitTime", 691200);
 // app.update.url.details: a default value for the "More information about this
 // update" link supplied in the "An update is available" page of the update
 // wizard.
-#if MOZ_UPDATE_CHANNEL == beta
-  pref("app.update.url.manual", "https://github.com/Eclipse-Community/r3dfox/releases");
-  pref("app.update.url.details", "https://github.com/Eclipse-Community/r3dfox/releases");
-  pref("app.releaseNotesURL", "https://github.com/Eclipse-Community/r3dfox/releases");
-  pref("app.releaseNotesURL.aboutDialog", "https://github.com/Eclipse-Community/r3dfox/releases");
-#elifdef MOZ_ESR
-  pref("app.update.url.manual", "https://github.com/Eclipse-Community/r3dfox/releases");
-  pref("app.update.url.details", "https://github.com/Eclipse-Community/r3dfox/releases");
-  pref("app.releaseNotesURL", "https://github.com/Eclipse-Community/r3dfox/releases");
-  pref("app.releaseNotesURL.aboutDialog", "https://github.com/Eclipse-Community/r3dfox/releases");
-#else
-  pref("app.update.url.manual", "https://github.com/Eclipse-Community/r3dfox/releases");
-  pref("app.update.url.details", "https://github.com/Eclipse-Community/r3dfox/releases");
-  pref("app.releaseNotesURL", "https://github.com/Eclipse-Community/r3dfox/releases");
-  pref("app.releaseNotesURL.aboutDialog", "https://github.com/Eclipse-Community/r3dfox/releases");
-#endif
+pref("app.update.url.manual", "https://github.com/Eclipse-Community/r3dfox/releases");
+pref("app.update.url.details", "https://github.com/Eclipse-Community/r3dfox/releases");
+pref("app.releaseNotesURL", "https://github.com/Eclipse-Community/r3dfox/releases");
+pref("app.releaseNotesURL.aboutDialog", "https://github.com/Eclipse-Community/r3dfox/releases");
 // The number of days a binary is permitted to be old
 // without checking for an update.  This assumes that
 // app.update.checkInstallTime is true.

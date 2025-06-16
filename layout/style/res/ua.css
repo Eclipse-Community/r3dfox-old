@@ -177,7 +177,7 @@
 }
 
 :focus-visible {
-  outline: 1px auto;
+  outline: 1px dotted;
 }
 
 /* Inert subtrees */

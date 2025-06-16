@@ -5,22 +5,6 @@
 
 <script src="chrome://browser/content/browser-context.js" hidden="true" />
 
-#ifdef XP_MACOSX
-      <menuitem id="context-back"
-                data-l10n-id="main-context-menu-back-mac"
-                command="Browser:BackOrBackDuplicate"/>
-      <menuitem id="context-forward"
-                data-l10n-id="main-context-menu-forward-mac"
-                command="Browser:ForwardOrForwardDuplicate"/>
-      <menuitem id="context-reload"
-                tooltip="dynamic-shortcut-tooltip"
-                data-l10n-id="main-context-menu-reload-mac"
-                command="Browser:ReloadOrDuplicate"/>
-      <menuitem id="context-stop"
-                tooltip="dynamic-shortcut-tooltip"
-                data-l10n-id="main-context-menu-stop-mac"
-                command="Browser:Stop"/>
-#else
       <menugroup id="context-navigation">
         <menuitem id="context-back"
                   data-l10n-id="main-context-menu-back-2"
@@ -47,8 +31,27 @@
                   data-l10n-id="main-context-menu-bookmark-page"
                   />
       </menugroup>
-#endif
       <menuseparator id="context-sep-navigation"/>
+      <menuitem id="context-back-old"
+                data-l10n-id="main-context-menu-back-old"
+                data-l10n-args='{"shortcut":""}'
+                class="menuitem-iconic"
+                command="Browser:BackOrBackDuplicate"/>
+      <menuitem id="context-forward-old"
+                data-l10n-id="main-context-menu-forward-old"
+                data-l10n-args='{"shortcut":""}'
+                class="menuitem-iconic"
+                command="Browser:ForwardOrForwardDuplicate"/>
+      <menuitem id="context-reload-old"
+                class="menuitem-iconic"
+                tooltip="dynamic-shortcut-tooltip"
+                data-l10n-id="main-context-menu-reload-old"
+                command="Browser:ReloadOrDuplicate"/>
+      <menuitem id="context-stop-old"
+                class="menuitem-iconic"
+                tooltip="dynamic-shortcut-tooltip"
+                data-l10n-id="main-context-menu-stop-old"
+                command="Browser:Stop"/>
       <menuitem id="context-viewsource-goToLine"
                 />
       <menuitem id="context-viewsource-wrapLongLines"
@@ -261,13 +264,15 @@
                 data-l10n-id="main-context-menu-image-set-image-as-background"
                 />
       <menuseparator id="context-sep-sharing"/>
-#ifdef XP_MACOSX
-      <menuitem id="context-bookmarkpage"
-                data-l10n-id="main-context-menu-bookmark-page-mac"
+      <menuitem id="context-bookmarkpage-old"
+                class="menuitem-iconic"
+                data-l10n-id="main-context-menu-bookmark-page-old"
                 />
-#endif
       <menuitem id="context-savepage"
                 data-l10n-id="main-context-menu-page-save"
+                />
+      <menuitem id="context-sendpage"
+                data-l10n-id="main-context-menu-page-send"
                 />
       <menuitem id="context-pocket"
                 data-l10n-id="main-context-menu-save-to-pocket"
@@ -297,7 +302,8 @@
       <menuseparator id="context-sep-viewbgimage"/>
       <menuitem id="context-viewbgimage"
                 data-l10n-id="main-context-menu-image-view-background"
-                />
+                oncommand="gContextMenu.viewBGImage(event);"
+                onclick="checkForMiddleClick(this, event);"/>
       <menuitem id="context-copy-link-to-highlight"
                 data-l10n-id="text-action-copy-link-to-highlight"
                 />
@@ -441,13 +447,16 @@
       <menuitem hidden="true" id="context-bidi-page-direction-toggle"
                 data-l10n-id="main-context-menu-bidi-switch-page"
                 />
-      <menuseparator id="inspect-separator" hidden="true"/>
       <menuitem id="context-viewpartialsource-selection"
                 data-l10n-id="main-context-menu-view-selection-source"
                 />
       <menuitem id="context-viewsource"
                 data-l10n-id="main-context-menu-view-page-source"
                 />
+      <menuitem id="context-viewinfo"
+                data-l10n-id="main-context-menu-view-page-info"
+                />
+      <menuseparator id="inspect-separator" hidden="true"/>
       <menuitem id="context-inspect-a11y"
                 hidden="true"
                 data-l10n-id="main-context-menu-inspect-a11y-properties"

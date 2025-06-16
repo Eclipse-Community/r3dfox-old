@@ -572,6 +572,7 @@ export class nsContextMenu {
   }
 
   initNavigationItems() {
+    var navigationIcons = Services.prefs.getBoolPref("browser.menu.navigationIcons");
     var shouldShow =
       !(
         this.isContentSelected ||
@@ -582,19 +583,14 @@ export class nsContextMenu {
         this.onAudio ||
         this.onTextInput
       ) && this.inTabBrowser;
-    if (AppConstants.platform == "macosx") {
-      for (let id of [
-        "context-back",
-        "context-forward",
-        "context-reload",
-        "context-stop",
-        "context-sep-navigation",
-      ]) {
-        this.showItem(id, shouldShow);
-      }
-    } else {
-      this.showItem("context-navigation", shouldShow);
-    }
+
+    var showIcons = navigationIcons ? shouldShow : false;
+    var showItems = navigationIcons ? false : shouldShow;
+    this.showItem("context-navigation", showIcons);
+    this.showItem("context-sep-navigation", showIcons);
+    this.showItem("context-back-old", showItems);
+    this.showItem("context-forward-old", showItems);
+    this.showItem("context-bookmarkpage-old", showItems);
 
     let stopped =
       this.window.XULBrowserWindow.stopCommand.getAttribute("disabled") ==
@@ -606,7 +602,9 @@ export class nsContextMenu {
     }
 
     this.showItem("context-reload", stopReloadItem == "reload");
+    this.showItem("context-reload-old", showItems && stopReloadItem == "reload");
     this.showItem("context-stop", stopReloadItem == "stop");
+    this.showItem("context-stop-old", showItems && stopReloadItem == "stop");
 
     let { document } = this;
     let initBackForwardMenuItemTooltip = (menuItemId, l10nId, shortcutId) => {
@@ -2211,6 +2209,10 @@ export class nsContextMenu {
       this.linkDownload,
       isPrivate
     );
+  }
+
+  sendPage() {
+    this.window.MailIntegration.sendLinkForBrowser(this.browser);
   }
 
   // Backwards-compatibility wrapper

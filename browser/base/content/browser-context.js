@@ -163,10 +163,14 @@ document.addEventListener(
           gContextMenu.setDesktopBackground();
           break;
         case "context-bookmarkpage":
+        case "context-bookmarkpage-old":
           gContextMenu.bookmarkThisPage();
           break;
         case "context-savepage":
           gContextMenu.savePageAs();
+          break;
+        case "context-sendpage":
+          gContextMenu.sendPage();
           break;
         case "context-pocket":
           Pocket.savePage(
@@ -301,6 +305,9 @@ document.addEventListener(
           break;
         case "context-viewsource":
           BrowserCommands.viewSource(gContextMenu.browser);
+          break;
+        case "context-viewinfo":
+          gContextMenu.viewInfo();
           break;
         case "context-inspect-a11y":
           gContextMenu.inspectA11Y();

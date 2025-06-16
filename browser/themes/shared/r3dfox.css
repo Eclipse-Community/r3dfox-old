@@ -228,6 +228,10 @@
       --color-accent-primary-active: rgb(156, 87, 193) !important;
     }
 
+    @media (-moz-toolbar-prefers-color-scheme: dark), (-moz-content-prefers-color-scheme: dark), (prefers-color-scheme: dark) {
+      --in-content-page-background: rgb(11, 10, 13) !important;
+    }
+
     @media not -moz-pref("r3dfox.translucent.navbar") {
       @media (-moz-toolbar-prefers-color-scheme: dark), (prefers-color-scheme: dark) {
         --toolbar-bgcolor: rgb(23, 21, 28) !important;

@@ -119,6 +119,7 @@ document.addEventListener(
           break;
         case "context-viewimagetab":
         case "context-viewvideotab":
+        case "context-viewbgimage":
         case "context-viewimage":
         case "context-viewvideo":
           gContextMenu.viewMedia(event);

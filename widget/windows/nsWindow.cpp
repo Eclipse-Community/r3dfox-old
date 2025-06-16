@@ -1872,6 +1872,30 @@ void nsWindow::ClearThemeRegion() {
   }
 }
 
+void nsWindow::SetThemeRegion() {
+  // Popup types that have a visual styles region applied (bug 376408). This can
+  // be expanded for other window types as needed. The regions are applied
+  // generically to the base window so default constants are used for part and
+  // state. At some point we might need part and state values fromMore actions
+  // nsNativeThemeWin's GetThemePartAndState, but currently windows that change
+  // shape based on state haven't come up.
+  if ((mWindowType == WindowType::Popup && !IsPopupWithTitleBar() &&
+            (mPopupType == PopupType::Tooltip ||
+             mPopupType == PopupType::Panel))) {
+    HRGN hRgn = nullptr;
+    RECT rect = {0, 0, mBounds.Width(), mBounds.Height()};
+    HDC dc = ::GetDC(mWnd);
+    GetThemeBackgroundRegion(nsUXThemeData::GetTheme(eUXTooltip), dc,
+                             TTP_STANDARD, TS_NORMAL, &rect, &hRgn);
+    if (hRgn) {
+      if (!SetWindowRgn(mWnd, hRgn,
+                        false))  // do not delete or alter hRgn if accepted.
+        DeleteObject(hRgn);
+    }
+    ::ReleaseDC(mWnd, dc);
+  }
+}
+
 /**************************************************************
  *
  * SECTION: Touch and APZ-related functions
@@ -1991,7 +2015,9 @@ void nsWindow::Move(double aX, double aY) {
     return;
   }
 
+  ClearThemeRegion();
   mBounds.MoveTo(x, y);
+  SetThemeRegion();
 
   if (mWnd) {
 #ifdef DEBUG
@@ -2123,6 +2149,7 @@ void nsWindow::Resize(double aWidth, double aHeight, bool aRepaint) {
         ChangedDPI();
       }
     }
+    SetThemeRegion();
 
     ResizeDirectManipulationViewport();
   }
@@ -2210,6 +2237,7 @@ void nsWindow::Resize(double aX, double aY, double aWidth, double aHeight,
                        SWP_NOMOVE | SWP_NOSIZE | SWP_NOACTIVATE);
       }
     }
+    SetThemeRegion();
 
     ResizeDirectManipulationViewport();
   }

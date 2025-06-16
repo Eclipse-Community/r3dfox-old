@@ -511,6 +511,7 @@ class nsContextMenu {
   }
 
   initNavigationItems() {
+    var navigationIcons = Services.prefs.getBoolPref("browser.menu.navigationIcons");
     var shouldShow =
       !(
         this.isContentSelected ||
@@ -521,19 +522,14 @@ class nsContextMenu {
         this.onAudio ||
         this.onTextInput
       ) && this.inTabBrowser;
-    if (AppConstants.platform == "macosx") {
-      for (let id of [
-        "context-back",
-        "context-forward",
-        "context-reload",
-        "context-stop",
-        "context-sep-navigation",
-      ]) {
-        this.showItem(id, shouldShow);
-      }
-    } else {
-      this.showItem("context-navigation", shouldShow);
-    }
+
+    var showIcons = navigationIcons ? shouldShow : false;
+    var showItems = navigationIcons ? false : shouldShow;
+    this.showItem("context-navigation", showIcons);
+    this.showItem("context-sep-navigation", showIcons);
+    this.showItem("context-back-old", showItems);
+    this.showItem("context-forward-old", showItems);
+    this.showItem("context-bookmarkpage-old", showItems);
 
     let stopped =
       XULBrowserWindow.stopCommand.getAttribute("disabled") == "true";
@@ -544,7 +540,9 @@ class nsContextMenu {
     }
 
     this.showItem("context-reload", stopReloadItem == "reload");
+    this.showItem("context-reload-old", showItems && stopReloadItem == "reload");
     this.showItem("context-stop", stopReloadItem == "stop");
+    this.showItem("context-stop-old", showItems && stopReloadItem == "stop");
 
     function initBackForwardMenuItemTooltip(menuItemId, l10nId, shortcutId) {
       // On macOS regular menuitems are used and the shortcut isn't added
@@ -2108,6 +2106,10 @@ class nsContextMenu {
       this.linkDownload,
       isPrivate
     );
+  }
+
+  sendPage() {
+    this.window.MailIntegration.sendLinkForBrowser(this.browser);
   }
 
   // Backwards-compatibility wrapper

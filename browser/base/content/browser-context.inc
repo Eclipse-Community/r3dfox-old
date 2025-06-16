@@ -3,22 +3,8 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-#ifdef XP_MACOSX
-      <menuitem id="context-back"
-                data-l10n-id="main-context-menu-back-mac"
-                command="Browser:BackOrBackDuplicate"/>
-      <menuitem id="context-forward"
-                data-l10n-id="main-context-menu-forward-mac"
-                command="Browser:ForwardOrForwardDuplicate"/>
-      <menuitem id="context-reload"
-                tooltip="dynamic-shortcut-tooltip"
-                data-l10n-id="main-context-menu-reload-mac"
-                command="Browser:ReloadOrDuplicate"/>
-      <menuitem id="context-stop"
-                tooltip="dynamic-shortcut-tooltip"
-                data-l10n-id="main-context-menu-stop-mac"
-                command="Browser:Stop"/>
-#else
+<script src="chrome://browser/content/browser-context.js" hidden="true" />
+
       <menugroup id="context-navigation">
         <menuitem id="context-back"
                   data-l10n-id="main-context-menu-back-2"
@@ -45,8 +31,27 @@
                   data-l10n-id="main-context-menu-bookmark-page"
                   oncommand="gContextMenu.bookmarkThisPage();"/>
       </menugroup>
-#endif
       <menuseparator id="context-sep-navigation"/>
+      <menuitem id="context-back-old"
+                data-l10n-id="main-context-menu-back-old"
+                data-l10n-args='{"shortcut":""}'
+                class="menuitem-iconic"
+                command="Browser:BackOrBackDuplicate"/>
+      <menuitem id="context-forward-old"
+                data-l10n-id="main-context-menu-forward-old"
+                data-l10n-args='{"shortcut":""}'
+                class="menuitem-iconic"
+                command="Browser:ForwardOrForwardDuplicate"/>
+      <menuitem id="context-reload-old"
+                class="menuitem-iconic"
+                tooltip="dynamic-shortcut-tooltip"
+                data-l10n-id="main-context-menu-reload-old"
+                command="Browser:ReloadOrDuplicate"/>
+      <menuitem id="context-stop-old"
+                class="menuitem-iconic"
+                tooltip="dynamic-shortcut-tooltip"
+                data-l10n-id="main-context-menu-stop-old"
+                command="Browser:Stop"/>
       <menuitem id="context-viewsource-goToLine"
                 oncommand="gViewSourceUtils.getPageActor(gContextMenu.browser).promptAndGoToLine()"/>
       <menuitem id="context-viewsource-wrapLongLines"
@@ -260,14 +265,16 @@
                 data-l10n-id="main-context-menu-image-set-image-as-background"
                 oncommand="gContextMenu.setDesktopBackground();"/>
       <menuseparator id="context-sep-sharing"/>
-#ifdef XP_MACOSX
-      <menuitem id="context-bookmarkpage"
-                data-l10n-id="main-context-menu-bookmark-page-mac"
+      <menuitem id="context-bookmarkpage-old"
+                class="menuitem-iconic"
+                data-l10n-id="main-context-menu-bookmark-page-old"
                 oncommand="gContextMenu.bookmarkThisPage();"/>
-#endif
       <menuitem id="context-savepage"
                 data-l10n-id="main-context-menu-page-save"
                 oncommand="gContextMenu.savePageAs();"/>
+      <menuitem id="context-sendpage"
+                data-l10n-id="main-context-menu-page-send"
+                oncommand="gContextMenu.sendPage();"/>
       <menuitem id="context-pocket"
                 data-l10n-id="main-context-menu-save-to-pocket"
                 oncommand="Pocket.savePage(gContextMenu.browser, gContextMenu.browser.currentURI.spec, gContextMenu.browser.contentTitle);"/>
@@ -297,7 +304,8 @@
       <menuseparator id="context-sep-viewbgimage"/>
       <menuitem id="context-viewbgimage"
                 data-l10n-id="main-context-menu-image-view-background"
-                oncommand="gContextMenu.viewMedia(event);"/>
+                oncommand="gContextMenu.viewBGImage(event);"
+                onclick="checkForMiddleClick(this, event);"/>
       <menuitem id="context-undo"
                 data-l10n-id="text-action-undo"
                 command="cmd_undo"/>
@@ -445,13 +453,16 @@
       <menuitem hidden="true" id="context-bidi-page-direction-toggle"
                 data-l10n-id="main-context-menu-bidi-switch-page"
                 oncommand="gContextMenu.switchPageDirection();"/>
-      <menuseparator id="inspect-separator" hidden="true"/>
       <menuitem id="context-viewpartialsource-selection"
                 data-l10n-id="main-context-menu-view-selection-source"
                 oncommand="gContextMenu.viewPartialSource();"/>
       <menuitem id="context-viewsource"
                 data-l10n-id="main-context-menu-view-page-source"
                 oncommand="BrowserCommands.viewSource(gContextMenu.browser);"/>
+      <menuitem id="context-viewinfo"
+                data-l10n-id="main-context-menu-view-page-info"
+                oncommand="gContextMenu.viewInfo();"/>
+      <menuseparator id="inspect-separator" hidden="true"/>
       <menuitem id="context-inspect-a11y"
                 hidden="true"
                 data-l10n-id="main-context-menu-inspect-a11y-properties"

@@ -3028,7 +3028,7 @@ pref("devtools.screenshot.audio.enabled", true);
 pref("devtools.dom.enabled", false);
 
 // Enable the Accessibility panel.
-pref("devtools.accessibility.enabled", true);
+pref("devtools.accessibility.enabled", false);
 
 // Web console filters
 pref("devtools.webconsole.filter.error", true);

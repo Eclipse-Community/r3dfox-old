@@ -1731,6 +1731,10 @@ pref("services.sync.syncedTabs.syncDelayAfterTabChange", 5000);
 // preference is a string so that localizers can alter it.
 pref("browser.menu.showCharacterEncoding", "chrome://browser/locale/browser.properties");
 
+// Whether the context menu should show the navigation items (Back, Forward,
+// Reload, Bookmark) as icons.
+pref("browser.menu.navigationIcons", true);
+
 // Whether prompts should be content modal (1) tab modal (2) or window modal(3) by default
 // This is a fallback value for when prompt callers do not specify a modalType.
 pref("prompts.defaultModalType", 3);

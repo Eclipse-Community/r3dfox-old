@@ -17,8 +17,7 @@ main-context-menu-back-2 =
     .aria-label = Back
     .accesskey = B
 
-# This menuitem is only visible on macOS
-main-context-menu-back-mac =
+main-context-menu-back-old =
     .label = Back
     .accesskey = B
 
@@ -37,8 +36,7 @@ main-context-menu-forward-2 =
     .aria-label = Forward
     .accesskey = F
 
-# This menuitem is only visible on macOS
-main-context-menu-forward-mac =
+main-context-menu-forward-old =
     .label = Forward
     .accesskey = F
 
@@ -54,8 +52,7 @@ main-context-menu-reload =
     .aria-label = Reload
     .accesskey = R
 
-# This menuitem is only visible on macOS
-main-context-menu-reload-mac =
+main-context-menu-reload-old =
     .label = Reload
     .accesskey = R
 
@@ -68,8 +65,7 @@ main-context-menu-stop =
     .aria-label = Stop
     .accesskey = S
 
-# This menuitem is only visible on macOS
-main-context-menu-stop-mac =
+main-context-menu-stop-old =
     .label = Stop
     .accesskey = S
 
@@ -93,6 +89,12 @@ main-context-menu-page-save =
     .label = Save Page As…
     .accesskey = P
 
+## Send Page
+
+main-context-menu-page-send =
+    .label = Send Page Link…
+    .accesskey = e
+
 ## Simple menu items
 
 main-context-menu-bookmark-page =
@@ -100,11 +102,8 @@ main-context-menu-bookmark-page =
     .accesskey = m
     .tooltiptext = Bookmark page
 
-# This menuitem is only visible on macOS
-# Cannot be shown at the same time as main-context-menu-edit-bookmark-mac,
-# so should probably have the same access key if possible.
-main-context-menu-bookmark-page-mac =
-    .label = Bookmark Page…
+main-context-menu-bookmark-page-old =
+    .label = Bookmark this Page
     .accesskey = m
 
 # This menuitem is only visible on macOS
@@ -154,7 +153,7 @@ main-context-menu-open-link-new-private-window =
     .accesskey = P
 
 main-context-menu-bookmark-link-2 =
-    .label = Bookmark Link…
+    .label = Bookmark This Link
     .accesskey = B
 
 main-context-menu-save-link =
@@ -174,7 +173,7 @@ main-context-menu-copy-email =
     .accesskey = l
 
 main-context-menu-copy-link-simple =
-    .label = Copy Link
+    .label = Copy Link Location
     .accesskey = L
 
 ##
@@ -449,6 +448,10 @@ main-context-menu-view-page-source =
     .label = View Page Source
     .accesskey = V
 
+main-context-menu-view-page-info =
+    .label = View Page Info
+    .accesskey = I
+
 main-context-menu-bidi-switch-text =
     .label = Switch Text Direction
     .accesskey = w
@@ -458,7 +461,7 @@ main-context-menu-bidi-switch-page =
     .accesskey = D
 
 main-context-menu-inspect =
-    .label = Inspect
+    .label = Inspect Element
     .accesskey = Q
 
 main-context-menu-inspect-a11y-properties =

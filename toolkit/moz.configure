@@ -2061,7 +2061,7 @@ set_define("A11Y_LOG", True, when=a11y_log)
 # ==============================================================
 @depends(milestone)
 def require_signing(milestone):
-    return milestone.is_release_or_beta and not milestone.is_esr
+    return False
 
 
 option(

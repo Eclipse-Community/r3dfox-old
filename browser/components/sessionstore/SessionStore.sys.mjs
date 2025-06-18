@@ -5616,7 +5616,6 @@ var SessionStoreInternal = {
         aWindow.SidebarController.showInitially(aSidebar.command);
         sidebarBox.setAttribute("positionend", !!aSidebar?.positionEnd);
       }
-      aWindow.SidebarController.uiStateInitialized = true;
     }
   },
 

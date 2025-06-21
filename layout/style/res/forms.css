@@ -899,6 +899,14 @@ input[type=number]::-moz-number-spin-box {
   overflow: clip;
 }
 
+@media (-moz-platform: windows) {
+  input[type=number]::-moz-number-spin-box {
+    /* The Windows Theme's spin buttons have a very narrow minimum width, so
+     * make it something reasonable. */
+    width: 16px;
+  }
+}
+
 input[type=number]::-moz-number-spin-up,
 input[type=number]::-moz-number-spin-down {
   writing-mode: horizontal-tb;

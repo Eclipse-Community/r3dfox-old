@@ -304,8 +304,7 @@
       <menuseparator id="context-sep-viewbgimage"/>
       <menuitem id="context-viewbgimage"
                 data-l10n-id="main-context-menu-image-view-background"
-                oncommand="gContextMenu.viewBGImage(event);"
-                onclick="checkForMiddleClick(this, event);"/>
+                oncommand="gContextMenu.viewMedia(event);"/>
       <menuitem id="context-undo"
                 data-l10n-id="text-action-undo"
                 command="cmd_undo"/>

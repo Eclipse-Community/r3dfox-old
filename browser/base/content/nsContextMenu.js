@@ -2109,7 +2109,7 @@ class nsContextMenu {
   }
 
   sendPage() {
-    this.window.MailIntegration.sendLinkForBrowser(this.browser);
+    MailIntegration.sendLinkForBrowser(this.browser);
   }
 
   // Backwards-compatibility wrapper

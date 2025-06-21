@@ -184,7 +184,7 @@ r3dfox-tab-groups =
     .label = Enable tab groups
 
 r3dfox-hover-preview =
-    .label = Tab hover preview
+    .label = Modern style tab hover preview
 
 r3dfox-switch-to-tab =
     .label = Reverse urlbar switch to tab behavior

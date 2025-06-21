@@ -97,6 +97,9 @@
     --toolbarbutton-icon-fill-attention: light-dark(rgb(255, 71, 9), rgb(255, 118, 72)) !important;
     --download-progress-fill-color: light-dark(rgb(255, 86, 30), rgb(255, 118, 72)) !important;
     --lwt-tab-line-color: light-dark(rgb(255, 86, 30), rgb(255, 118, 72)) !important;
+    &[privatebrowsingmode=temporary] {
+      --lwt-tab-line-color: light-dark(rgb(255, 40, 40), rgb(255, 80, 80)) !important;
+    }
     @media (-moz-content-prefers-color-scheme: dark), (prefers-color-scheme: dark) {
     --color-accent-primary: rgb(255, 102, 51) !important;
     --color-accent-primary-hover: rgb(255, 118, 72) !important;
@@ -154,6 +157,9 @@
     --toolbarbutton-icon-fill-attention: light-dark(rgb(255, 20, 196), rgb(255, 80, 211)) !important;
     --download-progress-fill-color: light-dark(rgb(255, 40, 201), rgb(255, 80, 211)) !important;
     --lwt-tab-line-color: light-dark(rgb(255, 40, 201), rgb(255, 80, 211)) !important;
+    &[privatebrowsingmode=temporary] {
+      --lwt-tab-line-color: light-dark(rgb(255, 40, 40), rgb(255, 80, 80)) !important;
+    }
     @media (-moz-content-prefers-color-scheme: dark), (prefers-color-scheme: dark) {
       --color-accent-primary: rgb(255, 60, 206) !important;
       --color-accent-primary-hover: rgb(255, 80, 211) !important;
@@ -211,6 +217,9 @@
     --toolbarbutton-icon-fill-attention: light-dark(rgb(185, 103, 229), rgb(185, 103, 229)) !important;
     --download-progress-fill-color: light-dark(rgb(165, 0, 255), rgb(185, 103, 229)) !important;
     --lwt-tab-line-color: light-dark(rgb(165, 0, 255), rgb(156, 87, 193)) !important;
+    &[privatebrowsingmode=temporary] {
+      --lwt-tab-line-color: light-dark(rgb(255, 40, 40), rgb(255, 80, 80)) !important;
+    }
 
     --tabpanel-background-color: light-dark(rgb(229, 227, 234), rgb(11, 10, 13)) !important;
     --in-content-page-background: light-dark(rgb(229, 227, 234), rgb(11, 10, 13)) !important;

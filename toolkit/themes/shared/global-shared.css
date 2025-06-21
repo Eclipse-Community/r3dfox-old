@@ -272,54 +272,6 @@ xul|iframe {
   min-height: 10px;
 }
 
-/* statusbar */
-
-xul|statusbar {
-  -moz-default-appearance: statusbar;
-  appearance: auto;
-  border-top: 1px solid ThreeDLightShadow;
-  border-left: 1px solid ThreeDShadow;
-  border-right: 1px solid ThreeDHighlight;
-  border-bottom: 1px solid ThreeDHighlight;
-  background-color: -moz-Dialog;
-  min-height: 22px;
-}
-
-xul|statusbarpanel {
-  -moz-default-appearance: statusbarpanel;
-  appearance: auto;
-  align-items: center;
-  justify-content: center;
-  border-left: 1px solid ThreeDHighlight;
-  border-top: 1px solid ThreeDHighlight;
-  border-right: 1px solid ThreeDShadow;
-  border-bottom: 1px solid ThreeDShadow;
-  padding: 0 4px;
-}
-
-xul|statusbarpanel:not(.statusbar-resizerpanel):-moz-lwtheme {
-  -moz-default-appearance: none;
-  appearance: auto;
-  border-top-style: none;
-  border-bottom-style: none;
-  border-inline-start-style: none;
-}
-
-xul|statusbarpanel.statusbar-resizerpanel {
-  align-items: flex-end;
-  justify-content: flex-end;
-  -moz-default-appearance: resizerpanel;
-  appearance: auto;
-  padding: 0;
-  border: none;
-}
-
-xul|statusbarpanel.statusbarpanel-iconic,
-xul|statusbarpanel.statusbarpanel-iconic-text,
-xul|statusbarpanel.statusbarpanel-menu-iconic {
-  padding: 0 1px;
-}
-
 /* Label/description formatting */
 
 xul|description,

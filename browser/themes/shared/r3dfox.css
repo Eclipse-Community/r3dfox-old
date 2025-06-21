@@ -212,16 +212,16 @@
     --download-progress-fill-color: light-dark(rgb(165, 0, 255), rgb(185, 103, 229)) !important;
     --lwt-tab-line-color: light-dark(rgb(165, 0, 255), rgb(156, 87, 193)) !important;
 
-    --tabpanel-background-color: light-dark(rgb(243, 242, 245), rgb(23, 21, 28)) !important;
-    --in-content-page-background: light-dark(rgb(243, 242, 245), rgb(23, 21, 28)) !important;
-    --newtab-background-color: light-dark(rgb(243, 242, 245), rgb(23, 21, 28)) !important;
-    --newtab-background-color-secondary: light-dark(rgba(229, 227, 234, 0.95), rgba(11, 10, 13, 0.95)) !important;
-    --newtab-background-card: light-dark(rgba(229, 227, 234, 0.95), rgba(11, 10, 13, 0.95)) !important;
-    --lwt-sidebar-background-color: light-dark(rgba(229, 227, 234, 0.95), rgba(11, 10, 13, 0.95)) !important;
+    --tabpanel-background-color: light-dark(rgb(229, 227, 234), rgb(11, 10, 13)) !important;
+    --in-content-page-background: light-dark(rgb(229, 227, 234), rgb(11, 10, 13)) !important;
+    --newtab-background-color: light-dark(rgb(229, 227, 234), rgb(11, 10, 13)) !important;
+    --newtab-background-color-secondary: light-dark(rgba(243, 242, 245, 0.95), rgba(23, 21, 28, 0.95)) !important;
+    --newtab-background-card: light-dark(rgba(243, 242, 245, 0.95), rgba(23, 21, 28, 0.95)) !important;
+    --lwt-sidebar-background-color: light-dark(rgba(243, 242, 245, 0.95), rgba(23, 21, 28, 0.95)) !important;
 
-    --arrowpanel-background: light-dark(rgba(243, 242, 245, 0.95), rgba(23, 21, 28, 0.95)) !important;
-    --toolbar-field-focus-background-color: light-dark(rgba(243, 242, 245, 0.95), rgba(23, 21, 28, 0.95)) !important;
-    --chrome-content-separator-color: light-dark(rgb(243, 242, 245), rgb(23, 21, 28)) !important;
+    --arrowpanel-background: light-dark(rgba(229, 227, 234, 0.95), rgba(11, 10, 13, 0.95)) !important;
+    --toolbar-field-focus-background-color: light-dark(rgba(229, 227, 234, 0.95), rgba(11, 10, 13, 0.95)) !important;
+    --chrome-content-separator-color: light-dark(rgb(229, 227, 234), rgb(11, 10, 13)) !important;
     @media (-moz-content-prefers-color-scheme: dark), (prefers-color-scheme: dark) {
       --color-accent-primary: rgb(156, 87, 193) !important;
       --color-accent-primary-hover: rgb(185, 103, 229) !important;
@@ -229,7 +229,7 @@
     }
 
     @media (-moz-toolbar-prefers-color-scheme: dark), (-moz-content-prefers-color-scheme: dark), (prefers-color-scheme: dark) {
-      --in-content-page-background: rgb(23, 21, 28) !important;
+      --in-content-page-background: rgb(11, 10, 13) !important;
     }
 
     @media not -moz-pref("r3dfox.translucent.navbar") {

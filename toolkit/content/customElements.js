@@ -881,6 +881,7 @@
       "chrome://global/content/elements/text.js",
       "chrome://global/content/elements/toolbarbutton.js",
       "chrome://global/content/elements/tree.js",
+      "chrome://global/content/elements/statusbar.js",
       "chrome://global/content/elements/wizard.js",
     ]) {
       Services.scriptloader.loadSubScript(script, window);

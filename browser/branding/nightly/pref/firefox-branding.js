@@ -4,9 +4,9 @@
 
 // This file contains branding-specific prefs.
 
-pref("startup.homepage_override_url", "");
-pref("startup.homepage_welcome_url", "");
-pref("startup.homepage_welcome_url.additional", "");
+pref("startup.homepage_override_url", "about:preferences#r3dfox");
+pref("startup.homepage_welcome_url", "about:preferences#r3dfox");
+pref("startup.homepage_welcome_url.additional", "https://eclipse.cx/");
 // Interval: Time between checks for a new version (in seconds)
 pref("app.update.interval", 86400); // 24 hours
 // Give the user x seconds to react before showing the big UI. default=192 hours

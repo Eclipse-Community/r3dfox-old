@@ -178,7 +178,10 @@ r3dfox-one-offs =
     .label = Instant one off searches
 
 r3dfox-view-image =
-    .label = Restore classic View Image context menu option
+    .label = Restore classic View Image context menu options
+
+r3dfox-nav-text =
+    .label = Replace context menu navigation icons with text options
 
 r3dfox-tab-groups =
     .label = Enable tab groups

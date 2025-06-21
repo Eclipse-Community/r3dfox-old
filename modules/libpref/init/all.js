@@ -144,9 +144,6 @@ pref("dom.serviceWorkers.update_delay", 1000);
 // Enable test for 24 hours update, service workers will always treat last update check time is over 24 hours
 pref("dom.serviceWorkers.testUpdateOverOneDay", false);
 
-// Disable whatever this i forgor
-pref("browser.startup.homepage_override.mstone", "ignore");
-
 // Blacklist of domains of web apps which are not aware of strict keypress
 // dispatching behavior.  This is comma separated list.  If you need to match
 // all sub-domains, you can specify it as "*.example.com".  Additionally, you

@@ -191,7 +191,7 @@ r3dfox-view-image =
     .label = Restore classic View Image context menu option
 
 r3dfox-hover-preview =
-    .label = Tab hover preview
+    .label = Modern style tab hover preview
 
 r3dfox-switch-to-tab =
     .label = Reverse urlbar switch to tab behavior

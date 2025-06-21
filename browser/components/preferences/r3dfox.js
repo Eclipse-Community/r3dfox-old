@@ -23,6 +23,7 @@ Preferences.addAll([
   { id: "r3dfox.caption.text.color", type: "int" },
   { id: "browser.urlbar.oneOffsInstant", type: "bool" },
   { id: "r3dfox.view.image", type: "bool" },
+  { id: "browser.menu.navigationIcons", type: "bool",  inverted: true },
   { id: "browser.e10s.disabled", type: "bool" },
   { id: "security.csp.enable", type: "bool",  inverted: true },
   { id: "network.stricttransportsecurity.enabled", type: "bool",  inverted: true },

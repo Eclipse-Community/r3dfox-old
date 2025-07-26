@@ -837,6 +837,9 @@ nsresult nsLookAndFeel::PerThemeData::GetColor(ColorID aID,
     case ColorID::Fieldtext:
       aColor = mField.mFg;
       break;
+    case ColorID::MozButtondefault:
+      aColor = mButton.mBg;
+      break;
     case ColorID::MozSidebar:
       aColor = mSidebar.mBg;
       break;

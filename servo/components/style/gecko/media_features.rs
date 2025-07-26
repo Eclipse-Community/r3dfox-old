@@ -677,7 +677,7 @@ macro_rules! lnf_int_feature {
 /// to support new types in these entries and (2) ensuring that either
 /// nsPresContext::MediaFeatureValuesChanged is called when the value that
 /// would be returned by the evaluator function could change.
-pub static MEDIA_FEATURES: [QueryFeatureDescription; 69] = [
+pub static MEDIA_FEATURES: [QueryFeatureDescription; 70] = [
     feature!(
         atom!("width"),
         AllowsRanges::Yes,

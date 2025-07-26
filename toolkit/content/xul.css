@@ -390,9 +390,7 @@ tooltip {
     appearance: none;
     border: 1px solid;
 
-    /* TODO(emilio): Probably make InfoText/InfoBackground do the right thing and
-     * remove this? */
-    @media not (prefers-contrast) {
+  @media (-moz-windows-default-theme) {
       background-color: light-dark(#f9f9fb, #2b2a33);
       color: light-dark(black, white);
       border-color: light-dark(#67676c, #f9f9fb);

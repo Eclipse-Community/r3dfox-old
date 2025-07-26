@@ -1924,16 +1924,14 @@ gfxFontEntry* gfxPlatform::MakePlatformFont(const nsACString& aFontName,
 BackendPrefsData gfxPlatform::GetBackendPrefs() const {
   BackendPrefsData data;
 
-  data.mCanvasBitmask = BackendTypeBit(BackendType::SKIA);
-  data.mContentBitmask = BackendTypeBit(BackendType::SKIA);
-
-#ifdef MOZ_WIDGET_GTK
-  data.mCanvasBitmask |= BackendTypeBit(BackendType::CAIRO);
-  data.mContentBitmask |= BackendTypeBit(BackendType::CAIRO);
+  data.mCanvasBitmask = BackendTypeBit(BackendType::CAIRO);
+  data.mContentBitmask = BackendTypeBit(BackendType::CAIRO);
+#ifdef USE_SKIA
+  data.mCanvasBitmask |= BackendTypeBit(BackendType::SKIA);
+  data.mContentBitmask |= BackendTypeBit(BackendType::SKIA);
 #endif
-
-  data.mCanvasDefault = BackendType::SKIA;
-  data.mContentDefault = BackendType::SKIA;
+  data.mCanvasDefault = BackendType::CAIRO;
+  data.mContentDefault = BackendType::CAIRO;
 
   return data;
 }
@@ -1966,10 +1964,8 @@ void gfxPlatform::InitBackendPrefs(BackendPrefsData&& aPrefsData) {
     mContentBackendBitmask |= BackendTypeBit(aPrefsData.mContentDefault);
   }
 
-  uint32_t swBackendBits = BackendTypeBit(BackendType::SKIA);
-#ifdef MOZ_WIDGET_GTK
-  swBackendBits |= BackendTypeBit(BackendType::CAIRO);
-#endif
+  uint32_t swBackendBits =
+      BackendTypeBit(BackendType::SKIA) | BackendTypeBit(BackendType::CAIRO);
   mSoftwareBackend = GetContentBackendPref(swBackendBits);
   if (mSoftwareBackend == BackendType::NONE) {
     mSoftwareBackend = BackendType::SKIA;

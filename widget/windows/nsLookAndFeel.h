@@ -117,6 +117,8 @@ class nsLookAndFeel final : public nsXPLookAndFeel {
 
   // Cached colors and flags indicating success in their retrieval.
   mozilla::Maybe<nscolor> mColorMenuHoverText;
+  mozilla::Maybe<nscolor> mColorMediaText;
+  mozilla::Maybe<nscolor> mColorCommunicationsText;
 
   mozilla::Maybe<nscolor> mDarkHighlight;
   mozilla::Maybe<nscolor> mDarkHighlightText;

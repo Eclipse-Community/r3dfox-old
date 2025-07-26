@@ -1632,6 +1632,14 @@ pub enum Appearance {
     #[parse(condition = "ParserContext::chrome_rules_enabled")]
     Treeview,
 
+    /// Vista Rebars.
+    #[parse(condition = "ParserContext::chrome_rules_enabled")]
+    MozWinCommunicationsToolbox,
+    #[parse(condition = "ParserContext::chrome_rules_enabled")]
+    MozWinMediaToolbox,
+    #[parse(condition = "ParserContext::chrome_rules_enabled")]
+    MozWinBrowsertabbarToolbox,
+
     /// Mac help button.
     #[parse(condition = "ParserContext::chrome_rules_enabled")]
     MozMacHelpButton,

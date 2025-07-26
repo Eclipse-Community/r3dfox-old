@@ -831,7 +831,7 @@ class nsWindow final : public nsBaseWidget,
     }
   } mCustomNonClientMetrics;
   // Margins set by the owner
-  LayoutDeviceIntMargin mNonClientMargins{-1, -1, -1, -1};
+  LayoutDeviceIntMargin mNonClientMargins;
   // Margins we'd like to set once chrome is reshown:
   LayoutDeviceIntMargin mFutureMarginsOnceChromeShows;
   // Indicates we need to apply margins once toggling chrome into showing:

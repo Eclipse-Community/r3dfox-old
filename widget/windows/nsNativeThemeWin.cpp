@@ -496,7 +496,12 @@ mozilla::Maybe<nsUXThemeClass> nsNativeThemeWin::GetThemeClass(
       return Some(eUXTrackbar);
     case StyleAppearance::Menulist:
       return Some(eUXCombobox);
+    case StyleAppearance::Treeheadercell:
+      return Some(eUXHeader);
     case StyleAppearance::Listbox:
+    case StyleAppearance::Treeview:
+    case StyleAppearance::Treetwistyopen:
+    case StyleAppearance::Treeitem:
       return Some(eUXListview);
     default:
       return Nothing();
@@ -708,9 +713,21 @@ nsresult nsNativeThemeWin::GetThemePartAndState(nsIFrame* aFrame,
       }
       return NS_OK;
     }
+    case StyleAppearance::Treeview:
     case StyleAppearance::Listbox: {
       aPart = TREEVIEW_BODY;
       aState = TS_NORMAL;
+      return NS_OK;
+    }
+    case StyleAppearance::Treeheadercell: {
+      aPart = 1;
+      if (!aFrame) {
+        aState = TS_NORMAL;
+        return NS_OK;
+      }
+
+      aState = StandardGetState(aFrame, aAppearance, true);
+
       return NS_OK;
     }
     case StyleAppearance::Menulist: {
@@ -1124,6 +1141,7 @@ LayoutDeviceIntSize nsNativeThemeWin::GetMinimumWidgetSize(
     case StyleAppearance::Textfield:
     case StyleAppearance::Progresschunk:
     case StyleAppearance::Listbox:
+    case StyleAppearance::Treeview:
       return {};  // Don't worry about it.
     default:
       break;
@@ -1289,6 +1307,7 @@ bool nsNativeThemeWin::ClassicThemeSupportsWidget(nsIFrame* aFrame,
     case StyleAppearance::RangeThumb:
     case StyleAppearance::Menulist:
     case StyleAppearance::Listbox:
+    case StyleAppearance::Treeview:
     case StyleAppearance::ProgressBar:
     case StyleAppearance::Progresschunk:
       return true;
@@ -1305,6 +1324,7 @@ LayoutDeviceIntMargin nsNativeThemeWin::ClassicGetWidgetBorder(
       result.top = result.left = result.bottom = result.right = 2;
       break;
     case StyleAppearance::Listbox:
+    case StyleAppearance::Treeview:
     case StyleAppearance::Menulist:
     case StyleAppearance::NumberInput:
     case StyleAppearance::PasswordInput:
@@ -1353,6 +1373,7 @@ LayoutDeviceIntSize nsNativeThemeWin::ClassicGetMinimumWidgetSize(
     case StyleAppearance::Menulist:
     case StyleAppearance::Button:
     case StyleAppearance::Listbox:
+    case StyleAppearance::Treeview:
     case StyleAppearance::NumberInput:
     case StyleAppearance::PasswordInput:
     case StyleAppearance::Textfield:
@@ -1408,6 +1429,7 @@ nsresult nsNativeThemeWin::ClassicGetThemePartAndState(
       return NS_OK;
     }
     case StyleAppearance::Listbox:
+    case StyleAppearance::Treeview:
     case StyleAppearance::NumberInput:
     case StyleAppearance::PasswordInput:
     case StyleAppearance::Textfield:
@@ -1520,6 +1542,15 @@ RENDER_AGAIN:
         ::FillRect(hdc, &widgetRect, (HBRUSH)(COLOR_BTNFACE + 1));
       else
         ::FillRect(hdc, &widgetRect, (HBRUSH)(COLOR_WINDOW + 1));
+
+      break;
+    }
+    case StyleAppearance::Treeview: {
+      // Draw inset edge
+      ::DrawEdge(hdc, &widgetRect, EDGE_SUNKEN, BF_RECT | BF_ADJUST);
+
+      // Fill in window color background
+      ::FillRect(hdc, &widgetRect, (HBRUSH)(COLOR_WINDOW + 1));
 
       break;
     }

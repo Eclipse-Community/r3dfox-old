@@ -72,6 +72,8 @@ const wchar_t* nsUXThemeData::GetClassName(nsUXThemeClass cls) {
       return L"Trackbar";
     case eUXCombobox:
       return L"Combobox";
+    case eUXHeader:
+      return L"Header";
     case eUXListview:
       return L"Listview";
     case eUXMenu:

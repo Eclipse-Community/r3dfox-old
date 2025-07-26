@@ -1477,7 +1477,7 @@ pref("browser.bookmarks.editDialog.maxRecentFolders", 7);
   // See - security/sandbox/win/src/sandboxbroker/sandboxBroker.cpp
   // SetSecurityLevelForContentProcess() for what the different settings mean.
   #if defined(EARLY_BETA_OR_EARLIER)
-    pref("security.sandbox.content.level", 8);
+    pref("security.sandbox.content.level", 7);
   #else
     pref("security.sandbox.content.level", 7);
   #endif

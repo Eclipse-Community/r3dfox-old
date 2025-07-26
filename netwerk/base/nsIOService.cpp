@@ -1531,6 +1531,11 @@ nsresult nsIOService::SetConnectivityInternal(bool aConnectivity) {
 NS_IMETHODIMP
 nsIOService::AllowPort(int32_t inPort, const char* scheme, bool* _retval) {
   int32_t port = inPort;
+  if (!StaticPrefs::security_port_blocking_enabled()) {
+    *_retval = true;
+    return NS_OK;
+  }
+
   if (port == -1) {
     *_retval = true;
     return NS_OK;

@@ -7,7 +7,7 @@
 menupopup,
 panel {
   --menu-icon-opacity: 1;
-  --menu-arrow-size: 1em;
+  --menu-arrow-width: 1em;
   --menuitem-border-radius: 3px;
   --menuitem-margin: 0px;
   --menuitem-padding: 0.5em 1em;
@@ -20,7 +20,7 @@ panel {
   }
 
   @media (-moz-platform: windows) {
-    --menu-arrow-size: max(1em, 16px);
+    --menu-arrow-width: max(1em, 16px);
 
     @media (prefers-color-scheme: light) {
       --menu-icon-opacity: 0.7;
@@ -113,6 +113,14 @@ menuseparator {
   }
 }
 
+/* Accel text */
+
+@media not (prefers-contrast) {
+  menuitem:not([disabled]) > .menu-accel-container > :is(.menu-accel, .menu-iconic-accel) {
+    color: var(--text-color-disabled);
+  }
+}
+
 /* Scroll buttons */
 
 /* Hide arrow buttons when there's nothing to scroll in that direction */
@@ -198,14 +206,10 @@ menubar > menu {
       }
     }
   }
+}
 
-  > .menu-icon {
-    display: none;
-  }
-
-  > .menu-text {
-    margin: 0;
-  }
+.menubar-text {
+  margin: 0;
 }
 
 menu,
@@ -242,42 +246,36 @@ menucaption {
   font-weight: bold;
 }
 
-.menu-icon,
-.menu-text,
-.menu-highlightable-text,
-.menu-accel {
-  pointer-events: none;
-}
-
 /* ..... menu arrow box ..... */
 
-menupopup > menu::after {
-  content: "";
-  display: block;
-  width: var(--menu-arrow-size);
-  height: var(--menu-arrow-size);
-  background-image: url("chrome://global/skin/icons/arrow-right.svg");
-  background-size: var(--menu-arrow-size);
-
+.menu-right {
+  list-style-image: url("chrome://global/skin/icons/arrow-right.svg");
   -moz-context-properties: fill, fill-opacity;
   fill: currentColor;
   fill-opacity: var(--menu-icon-opacity);
 
-  margin-inline: 1em 0;
+  &:-moz-locale-dir(rtl) {
+    list-style-image: url("chrome://global/skin/icons/arrow-left.svg");
+  }
+
+  > image {
+    width: var(--menu-arrow-width);
+  }
+
   @media (-moz-platform: linux) {
+    margin-block: 0;
     margin-inline: .5em 0;
   }
+
   @media (-moz-platform: macos) {
     margin-inline: 22px -3px;
   }
 }
 
-menupopup > menu:-moz-locale-dir(rtl)::after {
-  background-image: url("chrome://global/skin/icons/arrow-left.svg");
-}
-
 .menu-text,
-.menu-accel {
+.menu-iconic-text,
+.menu-accel,
+.menu-iconic-accel {
   margin: 0;
   @media (-moz-platform: windows) {
     padding: 1px 0;
@@ -287,9 +285,8 @@ menupopup > menu:-moz-locale-dir(rtl)::after {
   }
 }
 
-/* Accel text */
-
-.menu-accel {
+.menu-accel,
+.menu-iconic-accel {
   margin-inline: 0.74em 0.35em;
   @media (-moz-platform: macos) {
     margin-inline: 25px 0;
@@ -298,48 +295,38 @@ menupopup > menu:-moz-locale-dir(rtl)::after {
     /* Matches the margin-inline-end on iconic-left */
     margin-inline: 0.5em 0;
   }
+}
 
-  @media not (prefers-contrast) {
-    menuitem:not([disabled]) > & {
-      color: var(--text-color-disabled);
-    }
-  }
-
-  :is(menu, menuitem):not([acceltext]) > & {
+@media (-moz-platform: macos) {
+  /* On macOS, empty acceltext shouldn't take up any space */
+  :is(menu, menuitem):not([acceltext]) > .menu-accel-container {
     display: none;
   }
 }
 
-menuitem:not([highlightable]) > .menu-highlightable-text,
-menuitem[highlightable] > .menu-text {
-  display: none;
-}
-
-.menu-highlightable-text,
-.menu-text {
-  flex: 1;
-}
-
-.menu-icon {
+.menu-iconic-icon {
   width: 16px;
   height: 16px;
+}
 
+@media (-moz-platform: linux) {
+  .menu-text {
+    /* This is 16px (of icons / checkbox) + the size of end-margin on .menu-iconic-left */
+    margin-inline-start: calc(16px + .5em);
+  }
+}
+
+.menu-iconic-left {
   @media (-moz-platform: linux) {
-    /* Matches inline menuitem padding */
     margin-inline-end: .5em;
   }
   @media (-moz-platform: windows) {
-    margin-top: 2px;
+    padding-top: 2px;
     margin-inline-end: 8px;
   }
   @media (-moz-platform: macos) {
     margin-block: -2px;
     margin-inline-end: 6px;
-  }
-  /* Empty icons shouldn't take up any space */
-  menuitem:not(.menuitem-iconic, [image]) > &,
-  menu:not(.menu-iconic) > & {
-    display: none;
   }
 }
 
@@ -347,12 +334,12 @@ menuitem[highlightable] > .menu-text {
 
 /* On linux, we use regular checkboxes and radio buttons */
 @media (-moz-platform: linux) {
-  menuitem:is([type="checkbox"], [checked="true"]) .menu-icon {
+  menuitem:is([type="checkbox"], [checked="true"]) .menu-iconic-icon {
     appearance: auto;
     -moz-default-appearance: checkbox;
   }
 
-  menuitem[type="radio"] .menu-icon {
+  menuitem[type="radio"] .menu-iconic-icon {
     appearance: auto;
     -moz-default-appearance: radio;
   }
@@ -360,15 +347,20 @@ menuitem[highlightable] > .menu-text {
 
 /* On windows we use a checkmark */
 @media (-moz-platform: windows) {
+  menuitem:is([type="checkbox"], [type="radio"]):not([checked="true"]) > .menu-iconic-left > .menu-iconic-icon {
+    display: none;
+  }
+
   /* We need to do something to override the default style for selected
      checkboxes and radio buttons because the native drawing we use on other
      Windows versions looks pretty bad with the Win10 styles, so for now we'll
      insert a generic checkmark icon for both types. */
-  menuitem[checked="true"] > .menu-icon {
+  menuitem[checked="true"] > .menu-iconic-left {
     -moz-context-properties: fill, fill-opacity;
     fill: currentColor;
     fill-opacity: var(--menu-icon-opacity);
     list-style-image: url("chrome://global/skin/icons/menu-check.svg");
+    width: 16px;
   }
 }
 

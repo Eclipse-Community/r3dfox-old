@@ -679,7 +679,7 @@ D3D11TextureData* D3D11TextureData::Create(IntSize aSize, SurfaceFormat aFormat,
   }
 
   D3D11TextureData* data =
-      new D3D11TextureData(device, texture11, 0, handle, aSize, aFormat,
+      new D3D11TextureData(device, texture11, 0, std::move(handle), aSize, aFormat,
                            fencesHolderId, fence, aFlags);
 
   texture11->GetDevice(getter_AddRefs(device));

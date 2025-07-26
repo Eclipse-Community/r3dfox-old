@@ -2290,7 +2290,7 @@ export class CustomizeMode {
    * @returns {boolean}
    */
   #canDrawInTitlebar() {
-    return this.#window.CustomTitlebar.systemSupported;
+    return this.#window.TabsInTitlebar.systemSupported;
   }
 
   /**

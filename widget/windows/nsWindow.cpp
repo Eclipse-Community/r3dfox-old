@@ -1217,17 +1217,16 @@ static LPWSTR const gStockApplicationIcon = MAKEINTRESOURCEW(32512);
 
 /* static */
 const wchar_t* nsWindow::ChooseWindowClass(WindowType aWindowType) {
-  const wchar_t* className = [aWindowType] {
-    switch (aWindowType) {
-      case WindowType::Dialog:
-        return kClassNameDialog;
-      case WindowType::Popup:
-        return kClassNameDropShadow;
-      default:
-        return GetMainWindowClass();
-    }
-  }();
-  return RegisterWindowClass(className, 0, gStockApplicationIcon);
+  switch (aWindowType) {
+    case WindowType::Dialog:
+      return RegisterWindowClass(kClassNameDialog, 0, nullptr);
+    case WindowType::Popup:
+      return RegisterWindowClass(kClassNameDropShadow, 0,
+                                 gStockApplicationIcon);
+    default:
+      return RegisterWindowClass(GetMainWindowClass(), 0,
+                                 gStockApplicationIcon);
+  }
 }
 
 /**************************************************************
@@ -1335,15 +1334,15 @@ DWORD nsWindow::WindowExStyle() {
       }
       return extendedStyle;
     }
-    case WindowType::Dialog:
+    case WindowType::Dialog: {
+      if (mIsAlert) {
+        return WS_EX_TOOLWINDOW;
+      }
+      return WS_EX_WINDOWEDGE | WS_EX_DLGMODALFRAME;
+    }
     case WindowType::TopLevel:
     case WindowType::Invisible:
       break;
-  }
-  if (mIsAlert) {
-    MOZ_ASSERT(mWindowType == WindowType::Dialog,
-               "Expect alert windows to have type=dialog");
-    return WS_EX_TOOLWINDOW | WS_EX_TOPMOST;
   }
   return WS_EX_WINDOWEDGE;
 }

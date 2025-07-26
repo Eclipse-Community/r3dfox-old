@@ -442,7 +442,6 @@
 #include "nsStringIterator.h"
 #include "nsStyleSheetService.h"
 #include "nsStyleStruct.h"
-#include "nsTextControlFrame.h"
 #include "nsSubDocumentFrame.h"
 #include "nsTextNode.h"
 #include "nsURLHelper.h"
@@ -14418,8 +14417,9 @@ already_AddRefed<nsDOMCaretPosition> Document::CaretPositionFromPoint(
     nsINode* nonChrome =
         node->AsContent()->FindFirstNonChromeOnlyAccessContent();
     HTMLTextAreaElement* textArea = HTMLTextAreaElement::FromNode(nonChrome);
-    nsTextControlFrame* textFrame =
+    nsITextControlFrame* textFrame =
         do_QueryFrame(nonChrome->AsContent()->GetPrimaryFrame());
+
     if (!textFrame) {
       return nullptr;
     }

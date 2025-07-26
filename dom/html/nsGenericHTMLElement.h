@@ -24,6 +24,7 @@
 #include <cstdint>
 
 class nsDOMTokenList;
+class nsIFormControlFrame;
 class nsIFrame;
 class nsILayoutHistoryState;
 class nsIURI;
@@ -434,6 +435,17 @@ class nsGenericHTMLElement : public nsGenericHTMLElementBase {
    * @param aBaseTarget the base target [OUT]
    */
   void GetBaseTarget(nsAString& aBaseTarget) const;
+
+  /**
+   * Get the primary form control frame for this element.  Same as
+   * GetPrimaryFrame(), except it QI's to nsIFormControlFrame.
+   *
+   * @param aFlush whether to flush out frames so that they're up to date.
+   * @return the primary frame as nsIFormControlFrame
+   */
+  nsIFormControlFrame* GetFormControlFrame(bool aFlushFrames);
+
+  //----------------------------------------
 
   /**
    * Parse an alignment attribute (top/middle/bottom/baseline)
@@ -1223,6 +1235,10 @@ class nsGenericHTMLFormControlElement : public nsGenericHTMLFormElement,
   bool Autocorrect() const override;
   bool IsHTMLFocusable(mozilla::IsFocusableFlags, bool* aIsFocusable,
                        int32_t* aTabIndex) override;
+
+  // EventTarget
+  void GetEventTargetParent(mozilla::EventChainPreVisitor& aVisitor) override;
+  nsresult PreHandleEvent(mozilla::EventChainVisitor& aVisitor) override;
 
   // nsIFormControl
   mozilla::dom::HTMLFieldSetElement* GetFieldSet() override;

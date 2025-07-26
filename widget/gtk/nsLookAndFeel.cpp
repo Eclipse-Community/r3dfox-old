@@ -353,10 +353,6 @@ nsLookAndFeel::nsLookAndFeel() {
   };
 
   GtkSettings* settings = gtk_settings_get_default();
-  if (MOZ_UNLIKELY(!settings)) {
-    return;
-  }
-
   for (const auto& setting : kObservedSettings) {
     g_signal_connect_after(settings, setting.get(),
                            G_CALLBACK(settings_changed_cb), nullptr);
@@ -400,10 +396,8 @@ nsLookAndFeel::~nsLookAndFeel() {
     mDBusID = 0;
   }
   UnwatchDBus();
-  if (GtkSettings* settings = gtk_settings_get_default()) {
-    g_signal_handlers_disconnect_by_func(
-        settings, FuncToGpointer(settings_changed_cb), nullptr);
-  }
+  g_signal_handlers_disconnect_by_func(
+      gtk_settings_get_default(), FuncToGpointer(settings_changed_cb), nullptr);
 }
 
 #if 0
@@ -926,9 +920,8 @@ static int32_t CheckWidgetStyle(GtkWidget* aWidget, const char* aStyle,
 
 static int32_t ConvertGTKStepperStyleToMozillaScrollArrowStyle(
     GtkWidget* aWidget) {
-  if (!aWidget) {
-    return mozilla::LookAndFeel::eScrollArrowStyle_Single;
-  }
+  if (!aWidget) return mozilla::LookAndFeel::eScrollArrowStyle_Single;
+
   return CheckWidgetStyle(aWidget, "has-backward-stepper",
                           mozilla::LookAndFeel::eScrollArrow_StartBackward) |
          CheckWidgetStyle(aWidget, "has-forward-stepper",
@@ -969,32 +962,42 @@ nsresult nsLookAndFeel::NativeGetInt(IntID aID, int32_t& aResult) {
       aResult = 1;
       break;
     case IntID::SelectTextfieldsOnKeyFocus: {
-      GtkSettings* settings = gtk_settings_get_default();
-      gboolean select_on_focus = FALSE;
-      if (MOZ_LIKELY(settings)) {
-        g_object_get(settings, "gtk-entry-select-on-focus", &select_on_focus,
-                     nullptr);
-      }
-      aResult = select_on_focus;
+      GtkSettings* settings;
+      gboolean select_on_focus;
+
+      settings = gtk_settings_get_default();
+      g_object_get(settings, "gtk-entry-select-on-focus", &select_on_focus,
+                   nullptr);
+
+      if (select_on_focus)
+        aResult = 1;
+      else
+        aResult = 0;
+
     } break;
     case IntID::ScrollToClick: {
-      GtkSettings* settings = gtk_settings_get_default();
+      GtkSettings* settings;
       gboolean warps_slider = FALSE;
-      if (MOZ_LIKELY(settings) &&
-          g_object_class_find_property(G_OBJECT_GET_CLASS(settings),
+
+      settings = gtk_settings_get_default();
+      if (g_object_class_find_property(G_OBJECT_GET_CLASS(settings),
                                        "gtk-primary-button-warps-slider")) {
         g_object_get(settings, "gtk-primary-button-warps-slider", &warps_slider,
                      nullptr);
       }
-      aResult = warps_slider;
+
+      if (warps_slider)
+        aResult = 1;
+      else
+        aResult = 0;
     } break;
     case IntID::SubmenuDelay: {
-      GtkSettings* settings = gtk_settings_get_default();
-      gint delay = 0;
-      if (MOZ_LIKELY(settings)) {
-        g_object_get(settings, "gtk-menu-popup-delay", &delay, nullptr);
-      }
-      aResult = int32_t(delay);
+      GtkSettings* settings;
+      gint delay;
+
+      settings = gtk_settings_get_default();
+      g_object_get(settings, "gtk-menu-popup-delay", &delay, nullptr);
+      aResult = (int32_t)delay;
       break;
     }
     case IntID::MenusCanOverlapOSBar:
@@ -1006,19 +1009,14 @@ nsresult nsLookAndFeel::NativeGetInt(IntID aID, int32_t& aResult) {
     case IntID::DragThresholdX:
     case IntID::DragThresholdY: {
       gint threshold = 0;
-      GtkSettings* settings = gtk_settings_get_default();
-      if (MOZ_LIKELY(settings)) {
-        g_object_get(settings, "gtk-dnd-drag-threshold", &threshold, nullptr);
-      }
+      g_object_get(gtk_settings_get_default(), "gtk-dnd-drag-threshold",
+                   &threshold, nullptr);
+
       aResult = threshold;
     } break;
     case IntID::ScrollArrowStyle: {
-      aResult = eScrollArrowStyle_Single;
-      GtkSettings* settings = gtk_settings_get_default();
-      if (MOZ_LIKELY(settings)) {
-        GtkWidget* scrollbar = GetWidget(MOZ_GTK_SCROLLBAR_VERTICAL);
-        aResult = ConvertGTKStepperStyleToMozillaScrollArrowStyle(scrollbar);
-      }
+      GtkWidget* scrollbar = GetWidget(MOZ_GTK_SCROLLBAR_VERTICAL);
+      aResult = ConvertGTKStepperStyleToMozillaScrollArrowStyle(scrollbar);
       break;
     }
     case IntID::TreeOpenDelay:
@@ -1069,7 +1067,7 @@ nsresult nsLookAndFeel::NativeGetInt(IntID aID, int32_t& aResult) {
       break;
     case IntID::GTKCSDTransparencyAvailable: {
       auto* screen = gdk_screen_get_default();
-      aResult = MOZ_LIKELY(screen) && gdk_screen_get_rgba_visual(screen) &&
+      aResult = gdk_screen_get_rgba_visual(screen) &&
                 gdk_screen_is_composited(screen);
       break;
     }

@@ -149,12 +149,11 @@ menubar {
   font: menu;
 }
 
-menubar > menu {
+menubar  > menu {
   @media (-moz-platform: linux) {
     color: inherit;
     background-color: transparent;
     border-radius: 0;
-    padding: .25em .5em;
     padding-bottom: 1px;
     border-bottom: 3px solid transparent;
 
@@ -179,7 +178,7 @@ menubar > menu {
     }
   }
   @media (-moz-platform: windows) {
-    padding: 1px 6px 2px;
+    padding: 0;
 
     &:-moz-window-inactive {
       color: ThreeDShadow;
@@ -200,10 +199,6 @@ menubar > menu {
       }
     }
   }
-}
-
-.menubar-text {
-  margin: 0;
 }
 
 menu,
@@ -270,31 +265,10 @@ menucaption {
   }
 }
 
-.menu-text,
-.menu-iconic-text,
-.menu-accel,
-.menu-iconic-accel {
-  margin: 0;
-  @media (-moz-platform: windows) {
-    padding: 1px 0;
+@media (-moz-platform: macos) {
+  :is(.menu-accel, .menu-iconic-accel)[value] {
+    margin-inline-start: 25px;
   }
-  @media (-moz-platform: linux) {
-    margin-inline: 0 2px;
-  }
-}
-
-.menu-accel,
-.menu-iconic-accel {
-  margin-inline: 0.74em 1.35em;
-  @media (-moz-platform: macos) {
-    margin-inline: 25px 0;
-  }
-  @media (-moz-platform: linux) {
-    /* Matches the margin-inline-end on iconic-left */
-    margin-inline: 0.5em 0;
-  }
-}
-
 @media (-moz-platform: macos) {
   /* On macOS, empty acceltext shouldn't take up any space */
   :is(menu, menuitem):not([acceltext]) > .menu-accel-container {
@@ -302,7 +276,4 @@ menucaption {
   }
 }
 
-.menu-iconic-icon {
-  width: 16px;
-  height: 16px;
 }

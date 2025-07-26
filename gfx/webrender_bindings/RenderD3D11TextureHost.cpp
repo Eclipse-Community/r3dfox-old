@@ -49,7 +49,8 @@ RenderDXGITextureHost::RenderDXGITextureHost(
               mFormat != gfx::SurfaceFormat::P010 &&
               mFormat != gfx::SurfaceFormat::P016) ||
              (mSize.width % 2 == 0 && mSize.height % 2 == 0));
-  MOZ_ASSERT(!(!aHandle && aGpuProcessTextureId.isNothing()));
+  MOZ_ASSERT((aHandle && aGpuProcessTextureId.isNothing()) ||
+             (!aHandle && aGpuProcessTextureId.isSome()));
 }
 
 RenderDXGITextureHost::~RenderDXGITextureHost() {

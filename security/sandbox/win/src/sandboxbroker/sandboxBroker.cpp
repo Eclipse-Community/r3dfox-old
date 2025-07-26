@@ -52,6 +52,11 @@
     MOZ_RELEASE_ASSERT(result == sandbox::SBOX_ALL_OK, #x " failed"); \
   } while (0)
 
+namespace TelemetryScalar {
+void Set(mozilla::Telemetry::ScalarID aId, const nsAString& aKey,
+         uint32_t aValue);
+}
+
 namespace mozilla {
 
 constexpr wchar_t kLpacFirefoxInstallFiles[] = L"lpacFirefoxInstallFiles";
@@ -88,6 +93,12 @@ static StaticAutoPtr<nsTHashtable<nsCStringHashKey>> sLaunchErrors;
 // PolicyBase::AddRuleInternal.
 static sandbox::ResultCode AddWin32kLockdownPolicy(
     sandbox::TargetPolicy* aPolicy, bool aEnableOpm) {
+  // On Windows 7, where Win32k lockdown is not supported, the Chromium
+  // sandbox does something weird that breaks COM instantiation.
+  if (!IsWin8OrLater()) {
+    return sandbox::SBOX_ALL_OK;
+  }
+
   sandbox::MitigationFlags flags = aPolicy->GetProcessMitigations();
   MOZ_ASSERT(flags,
              "Mitigations should be set before AddWin32kLockdownPolicy.");
@@ -624,6 +635,55 @@ static sandbox::ResultCode AddCigToPolicy(
   return result;
 }
 
+// Checks whether we can use a job object as part of the sandbox.
+static bool CanUseJob() {
+  // Windows 8 and later allows nested jobs, no need for further checks.
+  if (IsWin8OrLater()) {
+    return true;
+  }
+
+  BOOL inJob = true;
+  // If we can't determine if we are in a job then assume we can use one.
+  if (!::IsProcessInJob(::GetCurrentProcess(), nullptr, &inJob)) {
+    return true;
+  }
+
+  // If there is no job then we are fine to use one.
+  if (!inJob) {
+    return true;
+  }
+
+  JOBOBJECT_EXTENDED_LIMIT_INFORMATION job_info = {};
+  // If we can't get the job object flags then again assume we can use a job.
+  if (!::QueryInformationJobObject(nullptr, JobObjectExtendedLimitInformation,
+                                   &job_info, sizeof(job_info), nullptr)) {
+    return true;
+  }
+
+  // If we can break away from the current job then we are free to set our own.
+  if (job_info.BasicLimitInformation.LimitFlags &
+      JOB_OBJECT_LIMIT_BREAKAWAY_OK) {
+    return true;
+  }
+
+  // Chromium added a command line flag to allow no job to be used, which was
+  // originally supposed to only be used for remote sessions. If you use runas
+  // to start Firefox then this also uses a separate job and we would fail to
+  // start on Windows 7. An unknown number of people use (or used to use) runas
+  // with Firefox for some security benefits (see bug 1228880). This is now a
+  // counterproductive technique, but allowing both the remote and local case
+  // for now and adding telemetry to see if we can restrict this to just remote.
+  nsAutoString localRemote(::GetSystemMetrics(SM_REMOTESESSION) ? u"remote"
+                                                                : u"local");
+  TelemetryScalar::Set(Telemetry::ScalarID::SANDBOX_NO_JOB, localRemote, true);
+
+  // Allow running without the job object in this case. This slightly reduces
+  // the ability of the sandbox to protect its children from spawning new
+  // processes or preventing them from shutting down Windows or accessing the
+  // clipboard.
+  return false;
+}
+
 // Returns the most strict dynamic code mitigation flag that is compatible with
 // system libraries MSAudDecMFT.dll and msmpeg2vdec.dll. This depends on the
 // Windows version and the architecture. See bug 1783223 comment 27.
@@ -647,6 +707,17 @@ static sandbox::MitigationFlags DynamicCodeFlagForSystemMediaLibraries() {
     return sandbox::MitigationFlags{};
   }();
   return dynamicCodeFlag;
+}
+
+static sandbox::ResultCode SetJobLevel(sandbox::TargetPolicy* aPolicy,
+                                       sandbox::JobLevel aJobLevel,
+                                       uint32_t aUiExceptions) {
+  static bool sCanUseJob = CanUseJob();
+  if (sCanUseJob) {
+    return aPolicy->SetJobLevel(aJobLevel, aUiExceptions);
+  }
+
+  return aPolicy->SetJobLevel(sandbox::JOB_NONE, 0);
 }
 
 // Process fails to start in LPAC with ASan build
@@ -923,7 +994,7 @@ void SandboxBroker::SetSecurityLevelForContentProcess(int32_t aSandboxLevel,
 #else
   DWORD uiExceptions = 0;
 #endif
-  sandbox::ResultCode result = mPolicy->SetJobLevel(jobLevel, uiExceptions);
+  sandbox::ResultCode result = SetJobLevel(mPolicy, jobLevel, uiExceptions);
   MOZ_RELEASE_ASSERT(sandbox::SBOX_ALL_OK == result,
                      "Setting job level failed, have you set memory limit when "
                      "jobLevel == JOB_NONE?");
@@ -1213,7 +1284,7 @@ void SandboxBroker::SetSecurityLevelForGPUProcess(int32_t aSandboxLevel) {
       sandbox::MITIGATION_STRICT_HANDLE_CHECKS |
       sandbox::MITIGATION_DLL_SEARCH_ORDER;
 
-  SANDBOX_SUCCEED_OR_CRASH(mPolicy->SetJobLevel(jobLevel, uiExceptions));
+  SANDBOX_SUCCEED_OR_CRASH(SetJobLevel(mPolicy, jobLevel, uiExceptions));
   SANDBOX_SUCCEED_OR_CRASH(
       mPolicy->SetTokenLevel(initialTokenLevel, lockdownTokenLevel));
   SANDBOX_SUCCEED_OR_CRASH(mPolicy->SetIntegrityLevel(initialIntegrityLevel));
@@ -1272,7 +1343,7 @@ bool SandboxBroker::SetSecurityLevelForRDDProcess() {
   }
 
   auto result =
-      mPolicy->SetJobLevel(sandbox::JOB_LOCKDOWN, 0 /* ui_exceptions */);
+      SetJobLevel(mPolicy, sandbox::JOB_LOCKDOWN, 0 /* ui_exceptions */);
   SANDBOX_ENSURE_SUCCESS(
       result,
       "SetJobLevel should never fail with these arguments, what happened?");
@@ -1360,7 +1431,7 @@ bool SandboxBroker::SetSecurityLevelForSocketProcess() {
   }
 
   auto result =
-      mPolicy->SetJobLevel(sandbox::JOB_LOCKDOWN, 0 /* ui_exceptions */);
+      SetJobLevel(mPolicy, sandbox::JOB_LOCKDOWN, 0 /* ui_exceptions */);
   SANDBOX_ENSURE_SUCCESS(
       result,
       "SetJobLevel should never fail with these arguments, what happened?");
@@ -1637,7 +1708,7 @@ bool BuildUtilitySandbox(sandbox::TargetPolicy* policy,
                          const UtilitySandboxProps& us) {
   LogUtilitySandboxProps(us);
 
-  auto result = policy->SetJobLevel(us.mJobLevel, 0 /* ui_exceptions */);
+  auto result = SetJobLevel(policy, us.mJobLevel, 0 /* ui_exceptions */);
   SANDBOX_ENSURE_SUCCESS(
       result,
       "SetJobLevel should never fail with these arguments, what happened?");
@@ -1767,7 +1838,7 @@ bool SandboxBroker::SetSecurityLevelForGMPlugin(
   }
 
   auto result =
-      mPolicy->SetJobLevel(sandbox::JOB_LOCKDOWN, 0 /* ui_exceptions */);
+      SetJobLevel(mPolicy, sandbox::JOB_LOCKDOWN, 0 /* ui_exceptions */);
   SANDBOX_ENSURE_SUCCESS(
       result,
       "SetJobLevel should never fail with these arguments, what happened?");
@@ -1818,7 +1889,9 @@ bool SandboxBroker::SetSecurityLevelForGMPlugin(
   // win32k is currently not disabled for clearkey due to WMF decoding or
   // widevine due to intermittent test failures, where the GMP process fails
   // very early. See bug 1449348.
-  if (StaticPrefs::security_sandbox_gmp_win32k_disable() &&
+  // Chromium only implements win32k disable for PPAPI on Win10 or later,
+  // believed to be due to the interceptions required for OPM.
+  if (StaticPrefs::security_sandbox_gmp_win32k_disable() && IsWin10OrLater() &&
       aGMPSandboxKind != Widevine && aGMPSandboxKind != Clearkey) {
     result = AddWin32kLockdownPolicy(mPolicy, true);
     SANDBOX_ENSURE_SUCCESS(result, "Failed to add the win32k lockdown policy");

@@ -10,6 +10,7 @@
 #include "nscore.h"
 
 #include "mozilla/intl/AppDateTimeFormat.h"
+#include "MediaManager.h"
 #include "mozilla/dom/ServiceWorkerRegistrar.h"
 #include "nsAttrValue.h"
 #include "nsComputedDOMStyle.h"
@@ -218,6 +219,7 @@ nsresult nsLayoutStatics::Initialize() {
   }
 
   DecoderDoctorLogger::Init();
+  MediaManager::StartupInit();
   CubebUtils::InitLibrary();
 
   nsHtml5Module::InitializeStatics();

@@ -726,7 +726,7 @@ STDMETHODIMP TSFTextStore::QueryInsert(LONG acpTestStart, LONG acpTestEnd,
 
   // XXX need to adjust to cluster boundary
   // Assume we are given good offsets for now
-  if (mComposition.isNothing() &&
+  if (IsWin8OrLater() && mComposition.isNothing() &&
       ((StaticPrefs::
             intl_tsf_hack_ms_traditional_chinese_query_insert_result() &&
         TSFStaticSink::IsMSChangJieOrMSQuickActive()) ||
@@ -2301,7 +2301,8 @@ bool TSFTextStore::MaybeHackNoErrorLayoutBugs(LONG& aACPStart, LONG& aACPEnd) {
       }
       [[fallthrough]];
     case TextInputProcessorID::MicrosoftChangJie:
-      if (!StaticPrefs::
+      if (!IsWin8OrLater() ||
+          !StaticPrefs::
               intl_tsf_hack_ms_traditional_chinese_do_not_return_no_layout_error()) {
         return false;
       }
@@ -2318,7 +2319,8 @@ bool TSFTextStore::MaybeHackNoErrorLayoutBugs(LONG& aACPStart, LONG& aACPEnd) {
     //      there is stateful cause or race in them.
     case TextInputProcessorID::MicrosoftPinyin:
     case TextInputProcessorID::MicrosoftWubi:
-      if (!StaticPrefs::
+      if (!IsWin8OrLater() ||
+          !StaticPrefs::
               intl_tsf_hack_ms_simplified_chinese_do_not_return_no_layout_error()) {
         return false;
       }

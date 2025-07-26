@@ -635,12 +635,7 @@ add_task(async function testFullDetails() {
   row = rows.shift();
   await checkLabel(row, "last-updated");
   text = row.lastChild;
-  let expectedDate = new Date(2019, 2, 7).toLocaleDateString(undefined, {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  });
-  is(text.textContent, expectedDate, "The last updated date is set.");
+  is(text.textContent, "March 7, 2019", "The last updated date is set");
 
   // Homepage.
   row = rows.shift();
@@ -824,21 +819,16 @@ add_task(async function testDefaultTheme() {
 
   let rows = getDetailRows(card);
 
-  let addonInfo = await AddonManager.getAddonByID(DEFAULT_THEME_ID);
   // Author.
   let author = rows.shift();
   await checkLabel(author, "author");
   let text = author.lastChild;
-  is(text.textContent, addonInfo.creator.name, "The author is set");
+  is(text.textContent, "Mozilla", "The author is set");
 
   // Version.
   let version = rows.shift();
   await checkLabel(version, "version");
-  is(
-    version.lastChild.textContent,
-    addonInfo.version,
-    "Default theme version matches."
-  );
+  is(version.lastChild.textContent, "1.4", "It's always version 1.4");
 
   // Last updated.
   let lastUpdated = rows.shift();

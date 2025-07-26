@@ -2188,8 +2188,22 @@ static bool PollAppsFolderForShortcut(const nsAString& aAppUserModelId,
   TimeStamp start = TimeStamp::Now();
 
   ComPtr<IShellItem> appsFolder;
-  HRESULT hr = SHGetKnownFolderItem(FOLDERID_AppsFolder, KF_FLAG_DEFAULT,
+  typedef HRESULT (WINAPI * MYPROC)
+                    (REFKNOWNFOLDERID rfid,KNOWN_FOLDER_FLAG flags,HANDLE hToken,REFIID riid,void **ppv);
+  MYPROC ProcAdd = nullptr;
+
+  HMODULE hDLL = ::LoadLibraryW(L"shell32.dll");
+  ProcAdd = (MYPROC)
+    GetProcAddress(hDLL, "SHGetKnownFolderItem");
+
+  if (!ProcAdd) {
+    FreeLibrary(hDLL);
+    return false;
+  }
+
+  HRESULT hr = ProcAdd(FOLDERID_AppsFolder, KF_FLAG_DEFAULT,
                                     nullptr, IID_PPV_ARGS(&appsFolder));
+    FreeLibrary(hDLL);
   if (FAILED(hr)) {
     return false;
   }

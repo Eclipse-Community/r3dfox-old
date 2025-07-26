@@ -2994,7 +2994,8 @@ void nsWindow::SetCursor(const Cursor& aCursor) {
  * SECTION: nsIWidget::Get/SetTransparencyMode
  *
  * Manage the transparency mode of the window containing this
- * widget.
+ * widget. Only works for popup and dialog windows when the
+ * Desktop Window Manager compositor is not enabled.
  *
  **************************************************************/
 
@@ -7288,14 +7289,51 @@ void nsWindow::SetWindowTranslucencyInner(TransparencyMode aMode) {
     return;
   }
 
-  MOZ_ASSERT(WinUtils::GetTopLevelHWND(mWnd, true) == mWnd);
-  LONG_PTR exStyle = ::GetWindowLongPtr(mWnd, GWL_EXSTYLE);
+  // stop on dialogs and popups!
+  HWND hWnd = WinUtils::GetTopLevelHWND(mWnd, true);
+  nsWindow* parent = WinUtils::GetNSWindowPtr(hWnd);
+
+  if (!parent) {
+    NS_WARNING("Trying to use transparent chrome in an embedded context");
+    return;
+  }
+
+  if (parent != this) {
+    NS_WARNING(
+        "Setting SetWindowTranslucencyInner on a parent this is not us!");
+  }
+
+  if (aMode == TransparencyMode::Transparent) {
+    // If we're switching to the use of a transparent window, hide the chrome
+    // on our parent.
+    HideWindowChrome(true);
+  } else if (mHideChrome &&
+             mTransparencyMode == TransparencyMode::Transparent) {
+    // if we're switching out of transparent, re-enable our parent's chrome.
+    HideWindowChrome(false);
+  }
+
+  LONG_PTR style = ::GetWindowLongPtrW(hWnd, GWL_STYLE),
+           exStyle = ::GetWindowLongPtr(hWnd, GWL_EXSTYLE);
+
+  if (parent->mIsVisible) {
+    style |= WS_VISIBLE;
+    if (parent->mFrameState->GetSizeMode() == nsSizeMode_Maximized) {
+      style |= WS_MAXIMIZE;
+    } else if (parent->mFrameState->GetSizeMode() == nsSizeMode_Minimized) {
+      style |= WS_MINIMIZE;
+    }
+  }
+
   if (aMode == TransparencyMode::Transparent) {
     exStyle |= WS_EX_LAYERED;
   } else {
     exStyle &= ~WS_EX_LAYERED;
   }
-  ::SetWindowLongPtrW(mWnd, GWL_EXSTYLE, exStyle);
+
+  VERIFY_WINDOW_STYLE(style);
+  ::SetWindowLongPtrW(hWnd, GWL_STYLE, style);
+  ::SetWindowLongPtrW(hWnd, GWL_EXSTYLE, exStyle);
 
   mTransparencyMode = aMode;
 

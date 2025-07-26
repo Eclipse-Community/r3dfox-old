@@ -259,6 +259,7 @@ static const char sColorPrefs[][41] = {
     "ui.window",
     "ui.windowframe",
     "ui.windowtext",
+    "ui.-moz-buttondefault",
     "ui.-moz-default-color",
     "ui.-moz-default-background-color",
     "ui.-moz-dialog",
@@ -678,6 +679,7 @@ nscolor nsXPLookAndFeel::GetStandinForNativeColor(ColorID aID,
       // deprecated in CSS Color Level 4, same as Buttonborder:
       COLOR(Windowframe, 0xE3, 0xE3, 0xE3)
       COLOR(Windowtext, 0x00, 0x00, 0x00)
+      COLOR(MozButtondefault, 0x69, 0x69, 0x69)
       COLOR(Field, 0xFF, 0xFF, 0xFF)
       COLORA(MozDisabledfield, 0xFF, 0xFF, 0xFF, 128)
       COLOR(Fieldtext, 0x00, 0x00, 0x00)

@@ -669,7 +669,10 @@ class InitializeVirtualDesktopManagerTask : public Task {
 // Ground-truth query: does Windows claim the window is cloaked right now?
 static bool IsCloaked(HWND hwnd) {
   DWORD cloakedState;
-  HRESULT hr = ::DwmGetWindowAttribute(hwnd, DWMWA_CLOAKED, &cloakedState,
+  if (!WinUtils::dwmGetWindowAttributePtr) {
+    return false;
+  }
+  HRESULT hr = WinUtils::dwmGetWindowAttributePtr(hwnd, DWMWA_CLOAKED, &cloakedState,
                                        sizeof(cloakedState));
 
   if (FAILED(hr)) {
@@ -1118,16 +1121,16 @@ const wchar_t kShellLibraryName[] =  L"shell32.dll";
   // that we have a mWnd.
   mDefaultScale = -1.0;
 
-  if (mIsRTL) {
+  if (mIsRTL && WinUtils::dwmSetWindowAttributePtr) {
     DWORD dwAttribute = TRUE;
-    DwmSetWindowAttribute(mWnd, DWMWA_NONCLIENT_RTL_LAYOUT, &dwAttribute,
+    WinUtils::dwmSetWindowAttributePtr(mWnd, DWMWA_NONCLIENT_RTL_LAYOUT, &dwAttribute,
                           sizeof dwAttribute);
   }
 
   // Default to the system color scheme unless getting told otherwise.
   SetColorScheme(Nothing());
 
-  if (mOpeningAnimationSuppressed) {
+  if (mOpeningAnimationSuppressed && WinUtils::dwmSetWindowAttributePtr) {
     SuppressAnimation(true);
   }
 
@@ -1216,9 +1219,9 @@ const wchar_t kShellLibraryName[] =  L"shell32.dll";
 
 void nsWindow::LocalesChanged() {
   bool isRTL = intl::LocaleService::GetInstance()->IsAppLocaleRTL();
-  if (mIsRTL != isRTL) {
+  if (mIsRTL != isRTL && WinUtils::dwmSetWindowAttributePtr) {
     DWORD dwAttribute = isRTL;
-    DwmSetWindowAttribute(mWnd, DWMWA_NONCLIENT_RTL_LAYOUT, &dwAttribute,
+    WinUtils::dwmSetWindowAttributePtr(mWnd, DWMWA_NONCLIENT_RTL_LAYOUT, &dwAttribute,
                           sizeof dwAttribute);
     mIsRTL = isRTL;
   }
@@ -1754,7 +1757,7 @@ void nsWindow::Show(bool aState) {
     }
   }
 
-  if (mOpeningAnimationSuppressed) {
+  if (mOpeningAnimationSuppressed && WinUtils::dwmSetWindowAttributePtr) {
     SuppressAnimation(false);
   }
 }
@@ -2266,7 +2269,7 @@ void nsWindow::MoveToWorkspace(const nsAString& workspaceID) {
 
 void nsWindow::SuppressAnimation(bool aSuppress) {
   DWORD dwAttribute = aSuppress ? TRUE : FALSE;
-  DwmSetWindowAttribute(mWnd, DWMWA_TRANSITIONS_FORCEDISABLED, &dwAttribute,
+  WinUtils::dwmSetWindowAttributePtr(mWnd, DWMWA_TRANSITIONS_FORCEDISABLED, &dwAttribute,
                         sizeof dwAttribute);
 }
 
@@ -2627,9 +2630,9 @@ void nsWindow::SetColorScheme(const Maybe<ColorScheme>& aScheme) {
   }
   BOOL dark =
       aScheme.valueOrFrom(LookAndFeel::SystemColorScheme) == ColorScheme::Dark;
-  DwmSetWindowAttribute(mWnd, DWMWA_USE_IMMERSIVE_DARK_MODE_BEFORE_20H1, &dark,
+  WinUtils::dwmSetWindowAttributePtr(mWnd, DWMWA_USE_IMMERSIVE_DARK_MODE_BEFORE_20H1, &dark,
                         sizeof dark);
-  DwmSetWindowAttribute(mWnd, DWMWA_USE_IMMERSIVE_DARK_MODE, &dark,
+  WinUtils::dwmSetWindowAttributePtr(mWnd, DWMWA_USE_IMMERSIVE_DARK_MODE, &dark,
                         sizeof dark);
 }
 
@@ -2638,6 +2641,9 @@ void nsWindow::SetMicaBackdrop(bool aEnabled) {
     return;
   }
 
+  if (!WinUtils::dwmSetWindowAttributePtr) {
+    return;
+  }
   mMicaBackdrop = aEnabled;
   UpdateMicaBackdrop();
 }
@@ -2668,7 +2674,7 @@ void nsWindow::UpdateMicaBackdrop(bool aForce) {
         return DWMSBT_TABBEDWINDOW;
     }
   }();
-  ::DwmSetWindowAttribute(mWnd, DWMWA_SYSTEMBACKDROP_TYPE, &backdrop,
+  WinUtils::dwmSetWindowAttributePtr(mWnd, DWMWA_SYSTEMBACKDROP_TYPE, &backdrop,
                           sizeof backdrop);
   if (IsPopup()) {
     // For popups, we need a couple extra tweaks:
@@ -2679,7 +2685,7 @@ void nsWindow::UpdateMicaBackdrop(bool aForce) {
     //    acrylic). See also the WM_NCACTIVATE implementation.
     const DWM_WINDOW_CORNER_PREFERENCE corner =
         useBackdrop ? DWMWCP_ROUND : DWMWCP_DEFAULT;
-    ::DwmSetWindowAttribute(mWnd, DWMWA_WINDOW_CORNER_PREFERENCE, &corner,
+    WinUtils::dwmSetWindowAttributePtr(mWnd, DWMWA_WINDOW_CORNER_PREFERENCE, &corner,
                             sizeof corner);
     ::PostMessageW(mWnd, WM_NCACTIVATE, TRUE, -1);
   }
@@ -3287,8 +3293,8 @@ void nsWindow::UpdateGlass() {
 
   // Extends the window frame behind the client area
   if (gfxWindowsPlatform::GetPlatform()->DwmCompositionEnabled()) {
-    DwmExtendFrameIntoClientArea(mWnd, &margins);
-    DwmSetWindowAttribute(mWnd, DWMWA_NCRENDERING_POLICY, &policy,
+    WinUtils::dwmExtendFrameIntoClientAreaPtr(mWnd, &margins);
+    WinUtils::dwmSetWindowAttributePtr(mWnd, DWMWA_NCRENDERING_POLICY, &policy,
                           sizeof policy);
   }
 }
@@ -5145,7 +5151,7 @@ bool nsWindow::ProcessMessageInternal(UINT msg, WPARAM& wParam, LPARAM& lParam,
       /* We don't do this for win10 glass with a custom titlebar,
        * in order to avoid the caption buttons breaking. */
       !(IsWin10OrLater() && HasGlass()) &&
-      DwmDefWindowProc(mWnd, msg, wParam, lParam, &dwmHitResult)) {
+      WinUtils::dwmDwmDefWindowProcPtr(mWnd, msg, wParam, lParam, &dwmHitResult)) {
     *aRetValue = dwmHitResult;
     return true;
   }
@@ -6255,7 +6261,7 @@ bool nsWindow::ProcessMessageInternal(UINT msg, WPARAM& wParam, LPARAM& lParam,
       // updates when the value actually changes
       if (XRE_IsParentProcess()) {
         BOOL dwmEnabled = FALSE;
-        if (FAILED(::DwmIsCompositionEnabled(&dwmEnabled)) || !dwmEnabled) {
+        if (!WinUtils::dwmIsCompositionEnabledPtr || FAILED(WinUtils::dwmIsCompositionEnabledPtr(&dwmEnabled)) || !dwmEnabled) {
           gfxVars::SetDwmCompositionEnabled(false);
         } else {
           gfxVars::SetDwmCompositionEnabled(true);

@@ -3270,10 +3270,14 @@ void nsLayoutUtils::PaintFrame(gfxContext* aRenderingContext, nsIFrame* aFrame,
   // glass boundaries on Windows. Also set up the window dragging region.
   if ((aFlags & PaintFrameFlags::WidgetLayers) &&
       !(aFlags & PaintFrameFlags::DocumentRelative)) {
-    if (nsIWidget* widget = aFrame->GetNearestWidget()) {
-      const nsRegion& opaqueRegion = builder->GetWindowOpaqueRegion();
+    nsIWidget* widget = aFrame->GetNearestWidget();
+    if (widget) {
+      nsRegion opaqueRegion;
+      opaqueRegion.And(builder->GetWindowExcludeGlassRegion(),
+                       builder->GetWindowOpaqueRegion());
       widget->UpdateOpaqueRegion(LayoutDeviceIntRegion::FromUnknownRegion(
           opaqueRegion.ToNearestPixels(presContext->AppUnitsPerDevPixel())));
+
       widget->UpdateWindowDraggingRegion(builder->GetWindowDraggingRegion());
     }
   }
@@ -6701,6 +6705,13 @@ widget::TransparencyMode nsLayoutUtils::GetFrameTransparency(
 
   if (HasNonZeroCorner(aCSSRootFrame->StyleBorder()->mBorderRadius)) {
     return TransparencyMode::Transparent;
+  }
+
+  StyleAppearance appearance =
+      aCSSRootFrame->StyleDisplay()->EffectiveAppearance();
+
+  if (appearance == StyleAppearance::MozWinBorderlessGlass) {
+    return TransparencyMode::BorderlessGlass;
   }
 
   nsITheme::Transparency transparency;

@@ -15,6 +15,7 @@
 #include "nsCOMPtr.h"
 #include "nsView.h"
 #include "nsCaret.h"
+#include "nsITextControlFrame.h"
 #include "nsFocusManager.h"
 #include "nsContentCreatorFunctions.h"
 #include "nsTextControlFrame.h"
@@ -60,6 +61,7 @@ namespace mozilla {
 using namespace dom;
 using ValueSetterOption = TextControlState::ValueSetterOption;
 using ValueSetterOptions = TextControlState::ValueSetterOptions;
+using SelectionDirection = nsITextControlFrame::SelectionDirection;
 
 /*****************************************************************************
  * TextControlElement
@@ -1269,9 +1271,10 @@ class MOZ_STACK_CLASS AutoTextControlHandlingState {
     }
     // The new value never includes line breaks caused by hard-wrap.
     // So, mCachedValue can always cache the new value.
-    nsTextControlFrame* textControlFrame =
+    nsITextControlFrame* textControlFrame =
         do_QueryFrame(mTextControlFrame.GetFrame());
-    return textControlFrame->CacheValue(mSettingValue, fallible)
+    return static_cast<nsTextControlFrame*>(textControlFrame)
+                   ->CacheValue(mSettingValue, fallible)
                ? NS_OK
                : NS_ERROR_OUT_OF_MEMORY;
   }
@@ -2407,7 +2410,8 @@ void TextControlState::UnbindFromFrame(nsTextControlFrame* aFrame) {
     uint32_t start = 0, end = 0;
     GetSelectionRange(&start, &end, IgnoreErrors());
 
-    SelectionDirection direction = GetSelectionDirection(IgnoreErrors());
+    nsITextControlFrame::SelectionDirection direction =
+        GetSelectionDirection(IgnoreErrors());
 
     SelectionProperties& props = GetSelectionProperties();
     props.SetMaxLength(value.Length());

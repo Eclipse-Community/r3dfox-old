@@ -28,6 +28,14 @@ class SharingUtilsCls {
       return;
     }
 
+    // We only support "share URL" on macOS and on Windows 10:
+    if (
+      AppConstants.platform != "macosx" &&
+      // Windows 10's internal NT version number was initially 6.4
+      !AppConstants.isPlatformAndVersionAtLeast("win", "6.4")
+    ) {
+      return;
+    }
     let shareURL = insertAfterEl.nextElementSibling;
     if (!shareURL?.matches(".share-tab-url-item")) {
       shareURL = this.#createShareURLMenuItem(insertAfterEl);

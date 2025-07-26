@@ -164,7 +164,7 @@ bool nsWindow::OnPaint(uint32_t aNestingLevel) {
       isFallback || renderer->GetBackendType() == LayersBackend::LAYERS_WR,
       "Unknown layers backend");
 
-  const bool didResize = mBounds.Size() != mLastPaintBounds.Size();
+  const bool didResize = !mBounds.IsEqualEdges(mLastPaintBounds);
 
   if (didResize && knowsCompositor && layerManager) {
     // Do an early async composite so that we at least have something on the

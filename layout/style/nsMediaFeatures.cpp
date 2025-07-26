@@ -101,6 +101,10 @@ bool Gecko_MediaFeatures_InAndroidPipMode(const Document* aDocument) {
   return aDocument->InAndroidPipMode();
 }
 
+bool Gecko_MediaFeatures_ShouldAvoidNativeTheme(const Document* aDocument) {
+  return aDocument->ShouldAvoidNativeTheme();
+}
+
 bool Gecko_MediaFeatures_UseOverlayScrollbars(const Document* aDocument) {
   nsPresContext* pc = aDocument->GetPresContext();
   return pc && pc->UseOverlayScrollbars();

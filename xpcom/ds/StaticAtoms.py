@@ -2272,6 +2272,10 @@ STATIC_ATOMS = [
     Atom("forcemessagemanager", "forcemessagemanager"),
     Atom("initialBrowsingContextGroupId", "initialBrowsingContextGroupId"),
     Atom("manualactiveness", "manualactiveness"),
+    # windows media query names
+    Atom("windows_win7", "windows-win7"),
+    Atom("windows_win8", "windows-win8"),
+    Atom("windows_win10", "windows-win10"),
     # Names for system metrics.
     Atom("_moz_bool_pref", "-moz-bool-pref"),
     Atom("_moz_scrollbar_start_backward", "-moz-scrollbar-start-backward"),
@@ -2290,6 +2294,10 @@ STATIC_ATOMS = [
     Atom("_moz_mac_rtl", "-moz-mac-rtl"),
     Atom("_moz_mac_titlebar_height", "-moz-mac-titlebar-height"),
     Atom("_moz_platform", "-moz-platform"),
+    Atom("_moz_windows_compositor", "-moz-windows-compositor"),
+    Atom("_moz_windows_classic", "-moz-windows-classic"),
+    Atom("_moz_windows_glass", "-moz-windows-glass"),
+    Atom("_moz_windows_non_native_menus", "-moz-windows-non-native-menus"),
     Atom("_moz_gtk_theme_family", "-moz-gtk-theme-family"),
     Atom("_moz_menubar_drag", "-moz-menubar-drag"),
     Atom("_moz_device_pixel_ratio", "-moz-device-pixel-ratio"),

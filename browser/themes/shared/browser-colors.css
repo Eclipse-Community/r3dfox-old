@@ -3,17 +3,23 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 :root {
+@media not (-moz-platform: windows-win7) {
+  @media not (-moz-platform: windows-win8) {
   --toolbox-bgcolor: -moz-headerbar;
   --toolbox-textcolor: -moz-headerbartext;
   --toolbox-bgcolor-inactive: -moz-headerbarinactive;
   --toolbox-textcolor-inactive: -moz-headerbarinactivetext;
+  }
+}
 
-@media not (-moz-windows-default-theme) {
+@media not (-moz-platform: windows-win7) {
+  @media not (-moz-platform: windows-win8) {
   &:where([tabsintitlebar]) {
     --toolbox-bgcolor: ActiveCaption;
     --toolbox-textcolor: CaptionText;
     --toolbox-bgcolor-inactive: InactiveCaption;
     --toolbox-textcolor-inactive: InactiveCaptionText;
+  }
   }
 }
 
@@ -57,11 +63,13 @@
     --tabs-navbar-separator-color: light-dark(rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.3));
     --attention-dot-color: light-dark(#2ac3a2, #54ffbd);
 
-@media not (-moz-windows-default-theme) {
+@media not (-moz-platform: windows-win7) {
+  @media not (-moz-platform: windows-win8) {
     --toolbox-bgcolor: var(--lwt-accent-color);
     --toolbox-bgcolor-inactive: var(--lwt-accent-color-inactive, var(--lwt-accent-color));
     --toolbox-textcolor: var(--lwt-text-color, currentColor);
     --toolbox-textcolor-inactive: var(--lwt-text-color, currentColor);
+  }
 }
 
     @media not (prefers-contrast) {
@@ -108,6 +116,8 @@
     --tabs-navbar-separator-style: none;
 
     /* stylelint-disable-next-line media-query-no-invalid */
+@media not (-moz-platform: windows-win7) {
+  @media not (-moz-platform: windows-win8) {
     @media not ((-moz-windows-mica) or ((-moz-windows-accent-color-in-titlebar) and -moz-pref("browser.theme.windows.accent-color-in-tabs.enabled"))) {
       --toolbox-bgcolor: light-dark(rgb(234, 234, 237), rgb(28, 27, 34));
       --toolbox-textcolor: light-dark(rgb(21, 20, 26), rgb(251, 251, 254));
@@ -117,11 +127,15 @@
         --toolbox-bgcolor-inactive: light-dark(rgb(235, 235, 239), rgb(31, 30, 37));
       }
     }
+  }
+}
 
     --toolbar-color: light-dark(rgb(21, 20, 26), rgb(251, 251, 254));
-  @media (-moz-windows-default-theme) {
+@media not (-moz-platform: windows-win7) {
+  @media not (-moz-platform: windows-win8) {
     --toolbar-bgcolor: light-dark(#f9f9fb, rgb(43, 42, 51));
   }
+}
 
     --toolbarbutton-icon-fill: light-dark(rgb(91, 91, 102), rgb(251, 251, 254));
     --toolbarbutton-icon-fill-attention: light-dark(rgb(0, 97, 224), rgb(0, 221, 255));

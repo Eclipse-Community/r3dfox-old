@@ -717,17 +717,25 @@ enum class PhysicalArrowDirection {
   Bottom,
 };
 
-void Theme::PaintMenulistArrow(nsIFrame* aFrame, DrawTarget& aDrawTarget,
-                               const LayoutDeviceRect& aRect) {
+void Theme::PaintMenuArrow(StyleAppearance aAppearance, nsIFrame* aFrame,
+                           DrawTarget& aDrawTarget,
+                           const LayoutDeviceRect& aRect) {
   // not const: these may be negated in-place below
   float polygonX[] = {-4.0f, -0.5f, 0.5f, 4.0f,  4.0f,
                       3.0f,  0.0f,  0.0f, -3.0f, -4.0f};
   float polygonY[] = {-1,    3.0f, 3.0f, -1.0f, -2.0f,
                       -2.0f, 1.5f, 1.5f, -2.0f, -2.0f};
 
+  const bool isMenuList =
+      aAppearance == StyleAppearance::MozMenulistArrowButton;
   const float kPolygonSize = kMinimumDropdownArrowButtonWidth;
+
   const auto direction = [&] {
     const auto wm = aFrame->GetWritingMode();
+    if (!isMenuList) {
+      return wm.IsPhysicalRTL() ? PhysicalArrowDirection::Left
+                                : PhysicalArrowDirection::Right;
+    }
     switch (wm.GetBlockDir()) {
       case WritingMode::BlockDir::LR:
         return PhysicalArrowDirection::Right;
@@ -1172,12 +1180,13 @@ bool Theme::DoDrawWidgetBackground(PaintBackendData& aPaintData,
     case StyleAppearance::Menulist:
       PaintMenulist(aPaintData, devPxRect, elementState, colors, dpiRatio);
       break;
+    case StyleAppearance::Menuarrow:
     case StyleAppearance::MozMenulistArrowButton:
       if constexpr (std::is_same_v<PaintBackendData, WebRenderBackendData>) {
         // TODO: Need to figure out how to best draw this using WR.
         return false;
       } else {
-        PaintMenulistArrow(aFrame, aPaintData, devPxRect);
+        PaintMenuArrow(aAppearance, aFrame, aPaintData, devPxRect);
       }
       break;
     case StyleAppearance::Tooltip: {
@@ -1632,6 +1641,7 @@ bool Theme::ThemeSupportsWidget(nsPresContext* aPresContext, nsIFrame* aFrame,
     case StyleAppearance::NumberInput:
     case StyleAppearance::PasswordInput:
     case StyleAppearance::MozMenulistArrowButton:
+    case StyleAppearance::Menuarrow:
     case StyleAppearance::SpinnerUpbutton:
     case StyleAppearance::SpinnerDownbutton:
     case StyleAppearance::Menuitem:

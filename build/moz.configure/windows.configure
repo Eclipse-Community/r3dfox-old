@@ -608,7 +608,7 @@ with only_when(depends(c_compiler)(lambda c: c.type == "clang-cl")):
     set_define("HAVE_IO_H", True)
 
     def win32_subsystem_version():
-        return "10.0"
+        return "5.01"
 
     set_config(
         "WIN32_CONSOLE_EXE_LDFLAGS",

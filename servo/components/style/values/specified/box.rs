@@ -1567,6 +1567,9 @@ pub enum Appearance {
     /// A single toolbar button (with no associated dropdown).
     #[parse(condition = "ParserContext::chrome_rules_enabled")]
     Toolbarbutton,
+    /// The gripper for a toolbar.
+    #[parse(condition = "ParserContext::chrome_rules_enabled")]
+    Toolbargripper,
     /// The toolbox that contains the toolbars.
     #[parse(condition = "ParserContext::chrome_rules_enabled")]
     Toolbox,
@@ -1583,6 +1586,9 @@ pub enum Appearance {
     /// An individual header cell
     #[parse(condition = "ParserContext::chrome_rules_enabled")]
     Treeheadercell,
+    /// The sort arrow for a header.
+    #[parse(condition = "ParserContext::chrome_rules_enabled")]
+    Treeheadersortarrow,
     /// A tree item.
     #[parse(condition = "ParserContext::chrome_rules_enabled")]
     Treeitem,

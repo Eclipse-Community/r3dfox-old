@@ -89,6 +89,18 @@ static GtkWidget* CreateFrameWidget() {
   return widget;
 }
 
+static GtkWidget* CreateToolbarWidget() {
+  GtkWidget* widget = gtk_toolbar_new();
+  gtk_container_add(GTK_CONTAINER(GetWidget(MOZ_GTK_GRIPPER)), widget);
+  return widget;
+}
+
+static GtkWidget* CreateToolbarSeparatorWidget() {
+  GtkWidget* widget = GTK_WIDGET(gtk_separator_tool_item_new());
+  AddToWindowContainer(widget);
+  return widget;
+}
+
 static GtkWidget* CreateButtonWidget() {
   GtkWidget* widget = gtk_button_new_with_label("M");
   AddToWindowContainer(widget);
@@ -141,6 +153,13 @@ static GtkWidget* CreateTreeHeaderCellWidget() {
 
   /* Use the middle column's header for our button */
   return gtk_tree_view_column_get_button(middleTreeViewColumn);
+}
+
+static GtkWidget* CreateTreeHeaderSortArrowWidget() {
+  /* TODO, but it can't be NULL */
+  GtkWidget* widget = gtk_button_new();
+  AddToWindowContainer(widget);
+  return widget;
 }
 
 static bool HasBackground(GtkStyleContext* aStyle) {
@@ -248,6 +267,12 @@ static GtkWidget* CreateWidget(WidgetNodeType aAppearance) {
       return CreateMenuBarWidget();
     case MOZ_GTK_FRAME:
       return CreateFrameWidget();
+    case MOZ_GTK_GRIPPER:
+      return CreateGripperWidget();
+    case MOZ_GTK_TOOLBAR:
+      return CreateToolbarWidget();
+    case MOZ_GTK_TOOLBAR_SEPARATOR:
+      return CreateToolbarSeparatorWidget();
     case MOZ_GTK_BUTTON:
       return CreateButtonWidget();
     case MOZ_GTK_SCROLLED_WINDOW:
@@ -256,6 +281,8 @@ static GtkWidget* CreateWidget(WidgetNodeType aAppearance) {
       return CreateTreeViewWidget();
     case MOZ_GTK_TREE_HEADER_CELL:
       return CreateTreeHeaderCellWidget();
+    case MOZ_GTK_TREE_HEADER_SORTARROW:
+      return CreateTreeHeaderSortArrowWidget();
     case MOZ_GTK_HEADERBAR_WINDOW:
     case MOZ_GTK_HEADERBAR_FIXED:
     case MOZ_GTK_HEADER_BAR:
@@ -498,6 +525,10 @@ static GtkStyleContext* GetCssNodeStyleInternal(WidgetNodeType aNodeType) {
       style = CreateChildCSSNode(GTK_STYLE_CLASS_SLIDER,
                                  MOZ_GTK_SCROLLBAR_TROUGH_VERTICAL);
       break;
+    case MOZ_GTK_GRIPPER:
+      // TODO - create from CSS node
+      style = CreateSubStyleWithClass(MOZ_GTK_GRIPPER, GTK_STYLE_CLASS_GRIP);
+      break;
     case MOZ_GTK_SCROLLED_WINDOW:
       // TODO - create from CSS node
       style = CreateSubStyleWithClass(MOZ_GTK_SCROLLED_WINDOW,
@@ -553,6 +584,9 @@ static GtkStyleContext* GetWidgetStyleInternal(WidgetNodeType aNodeType) {
     case MOZ_GTK_SCROLLBAR_THUMB_VERTICAL:
       style = CreateSubStyleWithClass(MOZ_GTK_SCROLLBAR_VERTICAL,
                                       GTK_STYLE_CLASS_SLIDER);
+      break;
+    case MOZ_GTK_GRIPPER:
+      style = CreateSubStyleWithClass(MOZ_GTK_GRIPPER, GTK_STYLE_CLASS_GRIP);
       break;
     case MOZ_GTK_SCROLLED_WINDOW:
       style = CreateSubStyleWithClass(MOZ_GTK_SCROLLED_WINDOW,

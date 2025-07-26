@@ -26,6 +26,7 @@ Preferences.addAll([
   { id: "browser.menu.navigationIcons", type: "bool",  inverted: true },
   { id: "browser.e10s.disabled", type: "bool" },
   { id: "security.csp.enable", type: "bool",  inverted: true },
+  { id: "security.port.blocking.enabled", type: "bool",  inverted: true },
   { id: "network.stricttransportsecurity.enabled", type: "bool",  inverted: true },
   { id: "accessibility.force_disabled", type: "int" },
   { id: "browser.urlbar.secondaryActions.switchToTab", type: "bool" },

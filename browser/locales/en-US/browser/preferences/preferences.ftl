@@ -219,6 +219,11 @@ r3dfox-csp =
 
 r3dfox-csp-desc = CSP is a security feature, improperly designed websites may require disabling CSP. Not recommended unless you know what you are doing.
 
+r3dfox-port-blocking =
+    .label = Disable Website Port Blocking
+
+r3dfox-port-blocking-desc = Supposedly for "security", to disallow accessing websites on specified blocked ports but it makes no sense. What can a website on a blocked port do that can't just be done on 80/443? https://fetch.spec.whatwg.org/#port-blocking
+
 r3dfox-dwrite =
     .label = Use Skia GDI font rendering (BETA)
 

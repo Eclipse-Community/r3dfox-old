@@ -1705,6 +1705,7 @@ nsresult nsNativeThemeWin::ClassicGetThemePartAndState(
     case StyleAppearance::RangeThumb:
     case StyleAppearance::Progresschunk:
     case StyleAppearance::ProgressBar:
+    case StyleAppearance::Groupbox:
       // these don't use DrawFrameControl
       return NS_OK;
     case StyleAppearance::MozMenulistArrowButton: {

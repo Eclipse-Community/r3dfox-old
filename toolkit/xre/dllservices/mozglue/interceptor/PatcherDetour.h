@@ -665,7 +665,7 @@ class WindowsDllDetourPatcher final
   }
 
 #  if defined(_M_X64)
-  enum class JumpType { Je, Jne, Jae, Jmp, Call };
+  enum class JumpType { Je, Jne, Jae, Jmp, Call, Js };
 
   static bool GenerateJump(Trampoline<MMPolicyT>& aTramp,
                            uintptr_t aAbsTargetAddress, const JumpType aType) {
@@ -695,6 +695,10 @@ class WindowsDllDetourPatcher final
     } else if (aType == JumpType::Jae) {
       // JB RIP+14
       aTramp.WriteByte(0x72);
+      aTramp.WriteByte(14);
+    } else if (aType == JumpType::Js) {
+      // JNS RIP+14
+      aTramp.WriteByte(0x79);
       aTramp.WriteByte(14);
     }
 
@@ -1543,6 +1547,16 @@ class WindowsDllDetourPatcher final
 
         if (!GenerateJump(tramp, origBytes.OffsetToAbsolute(offset),
                           jumpType)) {
+          return;
+        }
+      } else if (*origBytes == 0x78) {
+        // 78 cb    JS rel8
+        uint8_t offset = origBytes[1];
+
+        origBytes += 2;
+
+        if (!GenerateJump(tramp, origBytes.OffsetToAbsolute(offset),
+                          JumpType::Js)) {
           return;
         }
       } else if (*origBytes == 0xff) {

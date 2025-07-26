@@ -2251,6 +2251,9 @@ bool nsNativeThemeWin::ThemeDrawsFocusForWidget(nsIFrame* aFrame,
       return false;
   }
 }
+
+bool nsNativeThemeWin::ThemeNeedsComboboxDropmarker() { return true; }
+
 bool nsNativeThemeWin::WidgetAppearanceDependsOnWindowFocus(
     StyleAppearance aAppearance) {
   switch (aAppearance) {

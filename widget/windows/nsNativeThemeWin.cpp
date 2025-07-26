@@ -487,6 +487,7 @@ mozilla::Maybe<nsUXThemeClass> nsNativeThemeWin::GetThemeClass(
     case StyleAppearance::Button:
     case StyleAppearance::Radio:
     case StyleAppearance::Checkbox:
+    case StyleAppearance::Groupbox:
       return Some(eUXButton);
     case StyleAppearance::NumberInput:
     case StyleAppearance::PasswordInput:
@@ -633,6 +634,13 @@ nsresult nsNativeThemeWin::GetThemePartAndState(nsIFrame* aFrame,
 
       // 4 unchecked states, 4 checked states, 4 indeterminate states.
       aState += inputState * 4;
+      return NS_OK;
+    }
+    case StyleAppearance::Groupbox: {
+      aPart = BP_GROUPBOX;
+      aState = TS_NORMAL;
+      // Since we don't support groupbox disabled and GBS_DISABLED looks the
+      // same as GBS_NORMAL don't bother supporting GBS_DISABLED.
       return NS_OK;
     }
     case StyleAppearance::NumberInput:
@@ -1316,6 +1324,7 @@ LayoutDeviceIntSize nsNativeThemeWin::GetMinimumWidgetSize(
   }
 
   switch (aAppearance) {
+    case StyleAppearance::Groupbox:
     case StyleAppearance::NumberInput:
     case StyleAppearance::PasswordInput:
     case StyleAppearance::Textfield:
@@ -1512,6 +1521,7 @@ bool nsNativeThemeWin::ClassicThemeSupportsWidget(nsIFrame* aFrame,
     case StyleAppearance::Radio:
     case StyleAppearance::Range:
     case StyleAppearance::RangeThumb:
+    case StyleAppearance::Groupbox:
     case StyleAppearance::Menulist:
     case StyleAppearance::MozMenulistArrowButton:
     case StyleAppearance::SpinnerUpbutton:
@@ -1530,6 +1540,7 @@ LayoutDeviceIntMargin nsNativeThemeWin::ClassicGetWidgetBorder(
     nsDeviceContext* aContext, nsIFrame* aFrame, StyleAppearance aAppearance) {
   LayoutDeviceIntMargin result;
   switch (aAppearance) {
+    case StyleAppearance::Groupbox:
     case StyleAppearance::Button:
       result.top = result.left = result.bottom = result.right = 2;
       break;
@@ -1598,6 +1609,7 @@ LayoutDeviceIntSize nsNativeThemeWin::ClassicGetMinimumWidgetSize(
       break;
     case StyleAppearance::Menulist:
     case StyleAppearance::Button:
+    case StyleAppearance::Groupbox:
     case StyleAppearance::Listbox:
     case StyleAppearance::Treeview:
     case StyleAppearance::NumberInput:
@@ -1891,6 +1903,10 @@ RENDER_AGAIN:
 
       break;
     }
+    case StyleAppearance::Groupbox:
+      ::DrawEdge(hdc, &widgetRect, EDGE_ETCHED, BF_RECT | BF_ADJUST);
+      ::FillRect(hdc, &widgetRect, (HBRUSH)(COLOR_BTNFACE + 1));
+      break;
     // Draw 3D face background controls
     case StyleAppearance::ProgressBar:
       // Draw 3D border
@@ -1996,6 +2012,7 @@ uint32_t nsNativeThemeWin::GetWidgetNativeDrawingFlags(
     // these are definitely no; they're all graphics that don't get scaled up
     case StyleAppearance::Checkbox:
     case StyleAppearance::Radio:
+    case StyleAppearance::Groupbox:
       return gfxWindowsNativeDrawing::CANNOT_DRAW_TO_COLOR_ALPHA |
              gfxWindowsNativeDrawing::CANNOT_AXIS_ALIGNED_SCALE |
              gfxWindowsNativeDrawing::CANNOT_COMPLEX_TRANSFORM;

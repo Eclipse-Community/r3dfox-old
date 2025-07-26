@@ -79,12 +79,6 @@ menulist > menupopup {
       }
     }
   }
-
-  @media (-moz-platform: windows) {
-    > menuitem[_moz-menuactive][disabled="true"] {
-      color: GrayText;
-    }
-  }
 }
 
 /* Menu separator */
@@ -307,91 +301,4 @@ menucaption {
 .menu-iconic-icon {
   width: 16px;
   height: 16px;
-}
-
-@media (-moz-platform: linux) {
-  .menu-text {
-    /* This is 16px (of icons / checkbox) + the size of end-margin on .menu-iconic-left */
-    margin-inline-start: calc(16px + .5em);
-  }
-}
-
-.menu-iconic-left {
-  @media (-moz-platform: linux) {
-    margin-inline-end: .5em;
-  }
-  @media (-moz-platform: windows) {
-    padding-top: 2px;
-    margin-inline-end: 8px;
-  }
-  @media (-moz-platform: macos) {
-    margin-block: -2px;
-    margin-inline-end: 6px;
-  }
-}
-
-/* checkbox / radio rendering */
-
-/* On linux, we use regular checkboxes and radio buttons */
-@media (-moz-platform: linux) {
-  menuitem:is([type="checkbox"], [checked="true"]) .menu-iconic-icon {
-    appearance: auto;
-    -moz-default-appearance: checkbox;
-  }
-
-  menuitem[type="radio"] .menu-iconic-icon {
-    appearance: auto;
-    -moz-default-appearance: radio;
-  }
-}
-
-/* On windows we use a checkmark */
-@media (-moz-platform: windows) {
-  menuitem:is([type="checkbox"], [type="radio"]):not([checked="true"]) > .menu-iconic-left > .menu-iconic-icon {
-    display: none;
-  }
-
-  /* We need to do something to override the default style for selected
-     checkboxes and radio buttons because the native drawing we use on other
-     Windows versions looks pretty bad with the Win10 styles, so for now we'll
-     insert a generic checkmark icon for both types. */
-  menuitem[checked="true"] > .menu-iconic-left {
-    -moz-context-properties: fill, fill-opacity;
-    fill: currentColor;
-    fill-opacity: var(--menu-icon-opacity);
-    list-style-image: url("chrome://global/skin/icons/menu-check.svg");
-    width: 16px;
-  }
-}
-
-menupopup[needsgutter] {
-  @media (-moz-platform: linux) or (-moz-platform: windows) {
-    > :is(menu, menuitem) > .menu-icon {
-      display: revert;
-    }
-  }
-
-  @media (-moz-platform: macos) {
-    /* although only menuitems may be checked, apply this to
-       menus and menucaptions as well to maintain alignment */
-    > menu,
-    > menuitem,
-    > menucaption {
-      padding-inline-start: 0;
-
-      &::before {
-        content: '\2713'; /* a checkmark */
-        display: inline-block;
-        vertical-align: middle;
-        line-height: 0;
-        visibility: hidden;
-        padding-inline: 4px;
-        font-weight: bold;
-      }
-    }
-
-    > menuitem:is([checked="true"], [selected="true"])::before {
-      visibility: inherit;
-    }
-  }
 }

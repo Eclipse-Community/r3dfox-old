@@ -3104,14 +3104,14 @@ function updateToggleControlLabel(control) {
 // more like non-tablet mode and has no need for this.)
 const Win10TabletModeUpdater = {
   init() {
-    if (AppConstants.platform == "win") {
+    if (AppConstants.isPlatformAndVersionAtLeast("win", "10")) {
       this.update(WindowsUIUtils.inWin10TabletMode);
       Services.obs.addObserver(this, "tablet-mode-change");
     }
   },
 
   uninit() {
-    if (AppConstants.platform == "win") {
+    if (AppConstants.isPlatformAndVersionAtLeast("win", "10")) {
       Services.obs.removeObserver(this, "tablet-mode-change");
     }
   },
@@ -3175,7 +3175,7 @@ var gUIDensity = {
   getCurrentDensity() {
     // Automatically override the uidensity to touch in Windows tablet mode
     // (either Win10 or Win11).
-    if (AppConstants.platform == "win") {
+    if (AppConstants.isPlatformAndVersionAtLeast("win", "10")) {
       const inTablet =
         WindowsUIUtils.inWin10TabletMode || WindowsUIUtils.inWin11TabletMode;
       if (inTablet && Services.prefs.getBoolPref(this.autoTouchModePref)) {

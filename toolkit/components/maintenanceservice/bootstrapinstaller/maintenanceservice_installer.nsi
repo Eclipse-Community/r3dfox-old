@@ -115,7 +115,10 @@ Function .onInit
   System::Call 'kernel32::SetDllDirectoryW(w "")'
 
   SetSilent silent
-  ${Unless} ${AtLeastWin7}
+  ; On Windows 2000 we do not install the maintenance service.
+  ; We won't run this installer from the parent installer, but just in case 
+  ; someone tries to execute it on Windows 2000...
+  ${Unless} ${AtLeastWinXP}
     Abort
   ${EndUnless}
 FunctionEnd

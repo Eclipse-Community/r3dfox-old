@@ -25,8 +25,7 @@ namespace mozilla {
 namespace wr {
 
 RenderDXGITextureHost::RenderDXGITextureHost(
-    const RefPtr<gfx::FileHandleWrapper> aHandle,
-    const Maybe<layers::GpuProcessTextureId>& aGpuProcessTextureId,
+    const HANDLE aHandle, const Maybe<layers::GpuProcessTextureId>& aGpuProcessTextureId,
     const uint32_t aArrayIndex, const gfx::SurfaceFormat aFormat,
     const gfx::ColorSpace2 aColorSpace, const gfx::ColorRange aColorRange,
     const gfx::IntSize aSize, bool aHasKeyedMutex,
@@ -217,16 +216,9 @@ bool RenderDXGITextureHost::EnsureD3D11Texture2D(ID3D11Device* aDevice) {
     return false;
   }
 
-  RefPtr<ID3D11Device1> device1;
-  aDevice->QueryInterface((ID3D11Device1**)getter_AddRefs(device1));
-  if (!device1) {
-    gfxCriticalNoteOnce << "Failed to get ID3D11Device1";
-    return 0;
-  }
-
   // Get the D3D11 texture from shared handle.
-  HRESULT hr = device1->OpenSharedResource1(
-      (HANDLE)mHandle->GetHandle(), __uuidof(ID3D11Texture2D),
+  HRESULT hr = aDevice->OpenSharedResource(
+      (HANDLE)mHandle, __uuidof(ID3D11Texture2D),
       (void**)(ID3D11Texture2D**)getter_AddRefs(mTexture));
   if (FAILED(hr)) {
     MOZ_ASSERT(false,
@@ -475,7 +467,7 @@ bool RenderDXGITextureHost::SyncObjectNeeded() {
 }
 
 RenderDXGIYCbCrTextureHost::RenderDXGIYCbCrTextureHost(
-    RefPtr<gfx::FileHandleWrapper> (&aHandles)[3],
+    HANDLE (&aHandles)[3],
     const gfx::YUVColorSpace aYUVColorSpace, const gfx::ColorDepth aColorDepth,
     const gfx::ColorRange aColorRange, const gfx::IntSize aSizeY,
     const gfx::IntSize aSizeCbCr,
@@ -600,13 +592,6 @@ bool RenderDXGIYCbCrTextureHost::EnsureLockable() {
 }
 
 bool RenderDXGIYCbCrTextureHost::EnsureD3D11Texture2D(ID3D11Device* aDevice) {
-  RefPtr<ID3D11Device1> device1;
-  aDevice->QueryInterface((ID3D11Device1**)getter_AddRefs(device1));
-  if (!device1) {
-    gfxCriticalNoteOnce << "Failed to get ID3D11Device1";
-    return false;
-  }
-
   if (mTextures[0]) {
     RefPtr<ID3D11Device> device;
     mTextures[0]->GetDevice(getter_AddRefs(device));
@@ -622,8 +607,8 @@ bool RenderDXGIYCbCrTextureHost::EnsureD3D11Texture2D(ID3D11Device* aDevice) {
 
   for (int i = 0; i < 3; ++i) {
     // Get the R8 D3D11 texture from shared handle.
-    HRESULT hr = device1->OpenSharedResource1(
-        (HANDLE)mHandles[i]->GetHandle(), __uuidof(ID3D11Texture2D),
+    HRESULT hr = aDevice->OpenSharedResource(
+        (HANDLE)mHandles[i], __uuidof(ID3D11Texture2D),
         (void**)(ID3D11Texture2D**)getter_AddRefs(mTextures[i]));
     if (FAILED(hr)) {
       NS_WARNING(

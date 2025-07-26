@@ -21,7 +21,6 @@
 #include <dxgi1_2.h>
 #include <d3d10_1.h>
 #include <d3d11.h>
-#include <d3d11_1.h>
 
 namespace mozilla {
 namespace gfx {
@@ -57,8 +56,7 @@ bool D3D11Checks::DoesRenderTargetViewNeedRecreating(ID3D11Device* aDevice) {
   offscreenTextureDesc.BindFlags =
       D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
   offscreenTextureDesc.CPUAccessFlags = 0;
-  offscreenTextureDesc.MiscFlags = D3D11_RESOURCE_MISC_SHARED_NTHANDLE |
-                                   D3D11_RESOURCE_MISC_SHARED_KEYEDMUTEX;
+  offscreenTextureDesc.MiscFlags = D3D11_RESOURCE_MISC_SHARED_KEYEDMUTEX;
 
   HRESULT hr = aDevice->CreateTexture2D(&offscreenTextureDesc, NULL,
                                         getter_AddRefs(offscreenTexture));
@@ -238,8 +236,7 @@ static bool DoesTextureSharingWorkInternal(ID3D11Device* device,
   desc.SampleDesc.Quality = 0;
   desc.Usage = D3D11_USAGE_DEFAULT;
   desc.CPUAccessFlags = 0;
-  desc.MiscFlags = D3D11_RESOURCE_MISC_SHARED_NTHANDLE |
-                   D3D11_RESOURCE_MISC_SHARED_KEYEDMUTEX;
+  desc.MiscFlags = D3D11_RESOURCE_MISC_SHARED_KEYEDMUTEX;
   desc.BindFlags = bindflags;
 
   uint32_t color[texture_size * texture_size];
@@ -276,35 +273,23 @@ static bool DoesTextureSharingWorkInternal(ID3D11Device* device,
     return false;
   }
 
-  RefPtr<IDXGIResource1> otherResource;
-  if (FAILED(texture->QueryInterface(__uuidof(IDXGIResource1),
+  HANDLE shareHandle;
+  RefPtr<IDXGIResource> otherResource;
+  if (FAILED(texture->QueryInterface(__uuidof(IDXGIResource),
                                      getter_AddRefs(otherResource)))) {
     gfxCriticalError() << "DoesD3D11TextureSharingWork_GetResourceFailure";
     return false;
   }
 
-  HANDLE sharedHandle;
-  if (FAILED(otherResource->CreateSharedHandle(
-          nullptr, DXGI_SHARED_RESOURCE_READ | DXGI_SHARED_RESOURCE_WRITE,
-          nullptr, &sharedHandle))) {
+  if (FAILED(otherResource->GetSharedHandle(&shareHandle))) {
     gfxCriticalError() << "DoesD3D11TextureSharingWork_GetSharedTextureFailure";
-    return false;
-  }
-
-  auto handle = ipc::FileDescriptor(UniqueFileHandle(sharedHandle));
-
-  RefPtr<ID3D11Device1> device1;
-  device->QueryInterface((ID3D11Device1**)getter_AddRefs(device1));
-  if (!device1) {
-    gfxCriticalNoteOnce << "Failed to get ID3D11Device1";
     return false;
   }
 
   RefPtr<ID3D11Resource> sharedResource;
   RefPtr<ID3D11Texture2D> sharedTexture;
-  auto raw = handle.TakePlatformHandle();
-  if (FAILED(device1->OpenSharedResource1(raw.get(), __uuidof(ID3D11Resource),
-                                          getter_AddRefs(sharedResource)))) {
+  if (FAILED(device->OpenSharedResource(shareHandle, __uuidof(ID3D11Resource),
+                                        getter_AddRefs(sharedResource)))) {
     gfxCriticalError(CriticalLog::DefaultOptions(false))
         << "OpenSharedResource failed for format " << format;
     return false;

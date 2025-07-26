@@ -93,6 +93,11 @@ static nsSize GetDeviceSize(const Document& aDocument) {
   return pc->DeviceContext()->GetDeviceSurfaceDimensions();
 }
 
+bool Gecko_MediaFeatures_WindowsNonNativeMenus(const Document* aDocument) {
+  return LookAndFeel::WindowsNonNativeMenusEnabled() ||
+         aDocument->ShouldAvoidNativeTheme();
+}
+
 bool Gecko_MediaFeatures_IsResourceDocument(const Document* aDocument) {
   return aDocument->IsResourceDoc();
 }
@@ -251,6 +256,17 @@ bool Gecko_MediaFeatures_MatchesPlatform(StylePlatform aPlatform) {
 #if defined(XP_WIN)
     case StylePlatform::Windows:
       return true;
+    case StylePlatform::WindowsWin10:
+    case StylePlatform::WindowsWin7:
+    case StylePlatform::WindowsWin8: {
+      if (IsWin10OrLater()) {
+        return aPlatform == StylePlatform::WindowsWin10;
+      }
+      if (IsWin8OrLater()) {
+        return aPlatform == StylePlatform::WindowsWin8;
+      }
+      return aPlatform == StylePlatform::WindowsWin7;
+    }
 #elif defined(ANDROID)
     case StylePlatform::Android:
       return true;

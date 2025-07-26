@@ -87,9 +87,9 @@ input {
   appearance: auto;
   -moz-default-appearance: textfield;
   /* The sum of border and padding on block-start and block-end
-     must be the same here, for buttons, and for <select> */
-  padding-block: 1px;
-  padding-inline: 2px;
+     must be the same here, for buttons, and for <select> (including its
+     internal padding magic) */
+  padding: 1px;
   border: 2px inset ButtonBorder;
   background-color: Field;
   color: FieldText;
@@ -97,6 +97,12 @@ input {
   text-rendering: optimizeLegibility;
   cursor: text;
   overflow-clip-box: padding-box content-box;
+}
+
+@media (-moz-non-native-content-theme) {
+  input {
+    padding-inline: 2px;
+  }
 }
 
 textarea {
@@ -522,13 +528,23 @@ input:is([type=reset], [type=button], [type=submit]) {
   font: -moz-button;
   white-space: pre;
   text-align: center;
-  padding-inline: 4px;
 }
 
 input[type=color] {
   inline-size: 64px;
   block-size: 32px;
-  padding: 4px;
+}
+
+@media (-moz-non-native-content-theme) {
+  button,
+  ::file-selector-button,
+  input:is([type=reset], [type=button], [type=submit]) {
+    padding-inline: 4px;
+  }
+
+  input[type=color] {
+    padding: 4px;
+  }
 }
 
 /* https://github.com/whatwg/html/issues/9976 */

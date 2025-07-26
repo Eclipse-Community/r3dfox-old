@@ -44,6 +44,8 @@ class nsNativeThemeCocoa : public mozilla::widget::ThemeCocoa {
     eDisclosureButtonOpen
   };
 
+  enum class SpinButton : uint8_t { eUp, eDown };
+
   enum class SegmentType : uint8_t { eToolbarButton };
 
   enum class OptimumState : uint8_t { eOptimum, eSubOptimum, eSubSubOptimum };
@@ -78,6 +80,12 @@ class nsNativeThemeCocoa : public mozilla::widget::ThemeCocoa {
     ControlParams controlParams;
     bool pullsDown = false;
     bool editable = false;
+  };
+
+  struct SpinButtonParams {
+    mozilla::Maybe<SpinButton> pressedButton;
+    bool disabled = false;
+    bool insideActiveWindow = false;
   };
 
   struct SegmentParams {
@@ -133,12 +141,15 @@ class nsNativeThemeCocoa : public mozilla::widget::ThemeCocoa {
   };
 
   enum Widget : uint8_t {
-    eColorFill,  // mozilla::gfx::sRGBColor
-    eCheckbox,   // CheckboxOrRadioParams
-    eRadio,      // CheckboxOrRadioParams
-    eButton,     // ButtonParams
-    eDropdown,   // DropdownParams
-    eSegment,    // SegmentParams
+    eColorFill,       // mozilla::gfx::sRGBColor
+    eCheckbox,        // CheckboxOrRadioParams
+    eRadio,           // CheckboxOrRadioParams
+    eButton,          // ButtonParams
+    eDropdown,        // DropdownParams
+    eSpinButtons,     // SpinButtonParams
+    eSpinButtonUp,    // SpinButtonParams
+    eSpinButtonDown,  // SpinButtonParams
+    eSegment,         // SegmentParams
     eSeparator,
     eStatusBar,  // bool
     eGroupBox,
@@ -166,6 +177,15 @@ class nsNativeThemeCocoa : public mozilla::widget::ThemeCocoa {
     }
     static WidgetInfo Dropdown(const DropdownParams& aParams) {
       return WidgetInfo(Widget::eDropdown, aParams);
+    }
+    static WidgetInfo SpinButtons(const SpinButtonParams& aParams) {
+      return WidgetInfo(Widget::eSpinButtons, aParams);
+    }
+    static WidgetInfo SpinButtonUp(const SpinButtonParams& aParams) {
+      return WidgetInfo(Widget::eSpinButtonUp, aParams);
+    }
+    static WidgetInfo SpinButtonDown(const SpinButtonParams& aParams) {
+      return WidgetInfo(Widget::eSpinButtonDown, aParams);
     }
     static WidgetInfo Segment(const SegmentParams& aParams) {
       return WidgetInfo(Widget::eSegment, aParams);
@@ -213,9 +233,9 @@ class nsNativeThemeCocoa : public mozilla::widget::ThemeCocoa {
         : mVariant(aParams), mWidget(aWidget) {}
 
     mozilla::Variant<mozilla::gfx::sRGBColor, CheckboxOrRadioParams,
-                     ButtonParams, DropdownParams, SegmentParams,
-                     TextFieldParams, ProgressParams, MeterParams, ScaleParams,
-                     bool>
+                     ButtonParams, DropdownParams, SpinButtonParams,
+                     SegmentParams, TextFieldParams, ProgressParams,
+                     MeterParams, ScaleParams, bool>
         mVariant;
 
     enum Widget mWidget;
@@ -315,6 +335,12 @@ class nsNativeThemeCocoa : public mozilla::widget::ThemeCocoa {
                   const ButtonParams& aParams);
   void DrawDropdown(CGContextRef context, const HIRect& inBoxRect,
                     const DropdownParams& aParams);
+  HIThemeButtonDrawInfo SpinButtonDrawInfo(ThemeButtonKind aKind,
+                                           const SpinButtonParams& aParams);
+  void DrawSpinButtons(CGContextRef context, const HIRect& inBoxRect,
+                       const SpinButtonParams& aParams);
+  void DrawSpinButton(CGContextRef context, const HIRect& inBoxRect,
+                      SpinButton aDrawnButton, const SpinButtonParams& aParams);
   void DrawToolbar(CGContextRef cgContext, const CGRect& inBoxRect,
                    bool aIsMain);
   void DrawStatusBar(CGContextRef cgContext, const HIRect& inBoxRect,

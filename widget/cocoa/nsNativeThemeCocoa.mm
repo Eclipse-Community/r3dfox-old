@@ -1683,6 +1683,24 @@ void nsNativeThemeCocoa::DrawMeter(CGContextRef cgContext,
   NS_OBJC_END_TRY_IGNORE_BLOCK
 }
 
+void nsNativeThemeCocoa::DrawTabPanel(CGContextRef cgContext,
+                                      const HIRect& inBoxRect,
+                                      bool aIsInsideActiveWindow) {
+  NS_OBJC_BEGIN_TRY_IGNORE_BLOCK;
+
+  HIThemeTabPaneDrawInfo tpdi;
+
+  tpdi.version = 1;
+  tpdi.state = aIsInsideActiveWindow ? kThemeStateActive : kThemeStateInactive;
+  tpdi.direction = kThemeTabNorth;
+  tpdi.size = kHIThemeTabSizeNormal;
+  tpdi.kind = kHIThemeTabKindNormal;
+
+  HIThemeDrawTabPane(&inBoxRect, &tpdi, cgContext, HITHEME_ORIENTATION);
+
+  NS_OBJC_END_TRY_IGNORE_BLOCK;
+}
+
 Maybe<nsNativeThemeCocoa::ScaleParams>
 nsNativeThemeCocoa::ComputeHTMLScaleParams(nsIFrame* aFrame,
                                            ElementState aEventState) {
@@ -1788,6 +1806,11 @@ struct SegmentedControlRenderSettings {
   const NSString* widgetName;
 };
 
+static const CGFloat tabHeights[3] = {17, 20, 23};
+
+static const SegmentedControlRenderSettings tabRenderSettings = {tabHeights,
+                                                                 @"tab"};
+
 static const CGFloat toolbarButtonHeights[3] = {15, 18, 22};
 
 static const SegmentedControlRenderSettings toolbarButtonRenderSettings = {
@@ -1817,6 +1840,8 @@ static SegmentedControlRenderSettings RenderSettingsForSegmentType(
   switch (aSegmentType) {
     case nsNativeThemeCocoa::SegmentType::eToolbarButton:
       return toolbarButtonRenderSettings;
+    case nsNativeThemeCocoa::SegmentType::eTab:
+      return tabRenderSettings;
   }
 }
 
@@ -2092,6 +2117,17 @@ Maybe<nsNativeThemeCocoa::WidgetInfo> nsNativeThemeCocoa::ComputeWidgetInfo(
 
     case StyleAppearance::Listbox:
       return Some(WidgetInfo::ListBox());
+
+    case StyleAppearance::Tab: {
+      SegmentParams params =
+          ComputeSegmentParams(aFrame, elementState, SegmentType::eTab);
+      params.pressed = params.pressed && !params.selected;
+      return Some(WidgetInfo::Segment(params));
+    }
+
+    case StyleAppearance::Tabpanels:
+      return Some(WidgetInfo::TabPanel(FrameIsInActiveWindow(aFrame)));
+
     default:
       break;
   }
@@ -2283,6 +2319,11 @@ void nsNativeThemeCocoa::RenderWidget(const WidgetInfo& aWidgetInfo,
               });
           break;
         }
+        case Widget::eTabPanel: {
+          bool isInsideActiveWindow = aWidgetInfo.Params<bool>();
+          DrawTabPanel(cgContext, macRect, isInsideActiveWindow);
+          break;
+        }
       }
 
       // Reset the base CTM.
@@ -2336,6 +2377,9 @@ bool nsNativeThemeCocoa::CreateWebRenderCommandsForWidget(
 
     case StyleAppearance::Textarea:
     case StyleAppearance::Listbox:
+    case StyleAppearance::Tab:
+    case StyleAppearance::Tabpanels:
+      return false;
 
     default:
       return true;
@@ -2497,7 +2541,8 @@ bool nsNativeThemeCocoa::GetWidgetOverflow(nsDeviceContext* aContext,
     case StyleAppearance::Menulist:
     case StyleAppearance::MozMenulistArrowButton:
     case StyleAppearance::Checkbox:
-    case StyleAppearance::Radio: {
+    case StyleAppearance::Radio:
+    case StyleAppearance::Tab: {
       overflow.SizeTo(static_cast<int32_t>(kMaxFocusRingWidth),
                       static_cast<int32_t>(kMaxFocusRingWidth),
                       static_cast<int32_t>(kMaxFocusRingWidth),
@@ -2606,6 +2651,11 @@ LayoutDeviceIntSize nsNativeThemeCocoa::GetMinimumWidgetSize(
       break;
     }
 
+    case StyleAppearance::Tab: {
+      result.SizeTo(0, tabHeights[miniControlSize]);
+      break;
+    }
+
     case StyleAppearance::RangeThumb: {
       SInt32 width = 0;
       SInt32 height = 0;
@@ -2640,6 +2690,8 @@ bool nsNativeThemeCocoa::WidgetAttributeChangeRequiresRepaint(
     case StyleAppearance::MozSidebar:
     case StyleAppearance::Statusbar:
     case StyleAppearance::Tooltip:
+    case StyleAppearance::Tabpanels:
+    case StyleAppearance::Tabpanel:
     case StyleAppearance::Menupopup:
     case StyleAppearance::Progresschunk:
     case StyleAppearance::ProgressBar:
@@ -2699,6 +2751,10 @@ bool nsNativeThemeCocoa::ThemeSupportsWidget(nsPresContext* aPresContext,
     case StyleAppearance::Meter:
     case StyleAppearance::Meterchunk:
     case StyleAppearance::Separator:
+
+    case StyleAppearance::Tabpanels:
+    case StyleAppearance::Tab:
+
     case StyleAppearance::Range:
       return !IsWidgetStyled(aPresContext, aFrame, aAppearance);
 
@@ -2755,6 +2811,7 @@ bool nsNativeThemeCocoa::ThemeNeedsComboboxDropmarker() { return false; }
 bool nsNativeThemeCocoa::WidgetAppearanceDependsOnWindowFocus(
     StyleAppearance aAppearance) {
   switch (aAppearance) {
+    case StyleAppearance::Tabpanels:
     case StyleAppearance::Menupopup:
     case StyleAppearance::Tooltip:
     case StyleAppearance::Separator:

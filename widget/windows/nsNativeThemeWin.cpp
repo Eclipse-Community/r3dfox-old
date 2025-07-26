@@ -715,6 +715,10 @@ mozilla::Maybe<nsUXThemeClass> nsNativeThemeWin::GetThemeClass(
     case StyleAppearance::ProgressBar:
     case StyleAppearance::Progresschunk:
       return Some(eUXProgress);
+    case StyleAppearance::Tab:
+    case StyleAppearance::Tabpanel:
+    case StyleAppearance::Tabpanels:
+      return Some(eUXTab);
     case StyleAppearance::Range:
     case StyleAppearance::RangeThumb:
       return Some(eUXTrackbar);
@@ -1043,6 +1047,37 @@ nsresult nsNativeThemeWin::GetThemePartAndState(nsIFrame* aFrame,
     case StyleAppearance::Listbox: {
       aPart = TREEVIEW_BODY;
       aState = TS_NORMAL;
+      return NS_OK;
+    }
+    case StyleAppearance::Tabpanels: {
+      aPart = TABP_PANELS;
+      aState = TS_NORMAL;
+      return NS_OK;
+    }
+    case StyleAppearance::Tabpanel: {
+      aPart = TABP_PANEL;
+      aState = TS_NORMAL;
+      return NS_OK;
+    }
+    case StyleAppearance::Tab: {
+      aPart = TABP_TAB;
+      if (!aFrame) {
+        aState = TS_NORMAL;
+        return NS_OK;
+      }
+
+      ElementState elementState = GetContentState(aFrame, aAppearance);
+      if (elementState.HasState(ElementState::DISABLED)) {
+        aState = TS_DISABLED;
+        return NS_OK;
+      }
+
+      if (IsSelectedTab(aFrame)) {
+        aPart = TABP_TAB_SELECTED;
+        aState = TS_ACTIVE;  // The selected tab is always "pressed".
+      } else
+        aState = StandardGetState(aFrame, aAppearance, true);
+
       return NS_OK;
     }
     case StyleAppearance::Treeheadersortarrow: {
@@ -1420,6 +1455,31 @@ RENDER_AGAIN:
     // doesn't compensate for this in rendering the background. Push the
     // top of the bitmap down by SM_CYFRAME so we get the full graphic.
     widgetRect.top += GetSystemMetrics(SM_CYFRAME);
+  } else if (aAppearance == StyleAppearance::Tab) {
+    // For left edge and right edge tabs, we need to adjust the widget
+    // rects and clip rects so that the edges don't get drawn.
+    bool isLeft = IsLeftToSelectedTab(aFrame);
+    bool isRight = !isLeft && IsRightToSelectedTab(aFrame);
+
+    if (isLeft || isRight) {
+      // HACK ALERT: There appears to be no way to really obtain this value, so
+      // we're forced to just use the default value for Luna (which also happens
+      // to be correct for all the other skins I've tried).
+      int32_t edgeSize = 2;
+
+      // Armed with the size of the edge, we now need to either shift to the
+      // left or to the right.  The clip rect won't include this extra area, so
+      // we know that we're effectively shifting the edge out of view (such that
+      // it won't be painted).
+      if (isLeft)
+        // The right edge should not be drawn.  Extend our rect by the edge
+        // size.
+        widgetRect.right += edgeSize;
+      else
+        // The left edge should not be drawn.  Move the widget rect's left coord
+        // back.
+        widgetRect.left -= edgeSize;
+    }
   } else if (aAppearance == StyleAppearance::MozWindowButtonMinimize) {
     OffsetBackgroundRect(widgetRect, CAPTIONBUTTON_MINIMIZE);
   } else if (aAppearance == StyleAppearance::MozWindowButtonMaximize ||
@@ -1699,6 +1759,7 @@ LayoutDeviceIntMargin nsNativeThemeWin::GetWidgetBorder(
       aAppearance == StyleAppearance::MozWinCommunicationsToolbox ||
       aAppearance == StyleAppearance::MozWinBrowsertabbarToolbox ||
       aAppearance == StyleAppearance::Toolbox ||
+      aAppearance == StyleAppearance::Tabpanel ||
       aAppearance == StyleAppearance::Menuitem ||
       aAppearance == StyleAppearance::Checkmenuitem ||
       aAppearance == StyleAppearance::Radiomenuitem ||
@@ -1724,6 +1785,16 @@ LayoutDeviceIntMargin nsNativeThemeWin::GetWidgetBorder(
 
   result = GetCachedWidgetBorder(theme, themeClass.value(), aAppearance, part,
                                  state);
+
+  // Remove the edges for tabs that are before or after the selected tab,
+  if (aAppearance == StyleAppearance::Tab) {
+    if (IsLeftToSelectedTab(aFrame))
+      // Remove the right edge, since we won't be drawing it.
+      result.right = 0;
+    else if (IsRightToSelectedTab(aFrame))
+      // Remove the left edge, since we won't be drawing it.
+      result.left = 0;
+  }
 
   if (aFrame && (aAppearance == StyleAppearance::NumberInput ||
                  aAppearance == StyleAppearance::PasswordInput ||
@@ -1936,6 +2007,8 @@ LayoutDeviceIntSize nsNativeThemeWin::GetMinimumWidgetSize(
     case StyleAppearance::MozWinBrowsertabbarToolbox:
     case StyleAppearance::Toolbar:
     case StyleAppearance::Progresschunk:
+    case StyleAppearance::Tabpanels:
+    case StyleAppearance::Tabpanel:
     case StyleAppearance::Listbox:
     case StyleAppearance::Treeview:
     case StyleAppearance::Menuitemtext:
@@ -2102,6 +2175,8 @@ bool nsNativeThemeWin::WidgetAttributeChangeRequiresRepaint(
       aAppearance == StyleAppearance::Toolbar ||
       aAppearance == StyleAppearance::Progresschunk ||
       aAppearance == StyleAppearance::ProgressBar ||
+      aAppearance == StyleAppearance::Tabpanels ||
+      aAppearance == StyleAppearance::Tabpanel ||
       aAppearance == StyleAppearance::Separator ||
       aAppearance == StyleAppearance::MozWinBorderlessGlass) {
     return false;
@@ -2272,6 +2347,9 @@ bool nsNativeThemeWin::ClassicThemeSupportsWidget(nsIFrame* aFrame,
     case StyleAppearance::Treeview:
     case StyleAppearance::ProgressBar:
     case StyleAppearance::Progresschunk:
+    case StyleAppearance::Tab:
+    case StyleAppearance::Tabpanel:
+    case StyleAppearance::Tabpanels:
     case StyleAppearance::Menuitem:
     case StyleAppearance::Checkmenuitem:
     case StyleAppearance::Radiomenuitem:
@@ -2305,6 +2383,7 @@ LayoutDeviceIntMargin nsNativeThemeWin::ClassicGetWidgetBorder(
     case StyleAppearance::Listbox:
     case StyleAppearance::Treeview:
     case StyleAppearance::Menulist:
+    case StyleAppearance::Tab:
     case StyleAppearance::NumberInput:
     case StyleAppearance::PasswordInput:
     case StyleAppearance::Textfield:
@@ -2409,6 +2488,9 @@ LayoutDeviceIntSize nsNativeThemeWin::ClassicGetMinimumWidgetSize(
     case StyleAppearance::Textarea:
     case StyleAppearance::Progresschunk:
     case StyleAppearance::ProgressBar:
+    case StyleAppearance::Tab:
+    case StyleAppearance::Tabpanel:
+    case StyleAppearance::Tabpanels:
       // no minimum widget size
       break;
     case StyleAppearance::Menuseparator: {
@@ -2590,6 +2672,9 @@ nsresult nsNativeThemeWin::ClassicGetThemePartAndState(
     case StyleAppearance::RangeThumb:
     case StyleAppearance::Progresschunk:
     case StyleAppearance::ProgressBar:
+    case StyleAppearance::Tab:
+    case StyleAppearance::Tabpanel:
+    case StyleAppearance::Tabpanels:
     case StyleAppearance::Menubar:
     case StyleAppearance::Menupopup:
     case StyleAppearance::Groupbox:
@@ -2691,6 +2776,100 @@ nsresult nsNativeThemeWin::ClassicGetThemePartAndState(
     default:
       return NS_ERROR_FAILURE;
   }
+}
+
+// Draw classic Windows tab
+// (no system API for this, but DrawEdge can draw all the parts of a tab)
+static void DrawTab(HDC hdc, const RECT& R, int32_t aPosition, bool aSelected,
+                    bool aDrawLeft, bool aDrawRight) {
+  int32_t leftFlag, topFlag, rightFlag, lightFlag, shadeFlag;
+  RECT topRect, sideRect, bottomRect, lightRect, shadeRect;
+  int32_t selectedOffset, lOffset, rOffset;
+
+  selectedOffset = aSelected ? 1 : 0;
+  lOffset = aDrawLeft ? 2 : 0;
+  rOffset = aDrawRight ? 2 : 0;
+
+  // Get info for tab orientation/position (Left, Top, Right, Bottom)
+  switch (aPosition) {
+    case BF_LEFT:
+      leftFlag = BF_TOP;
+      topFlag = BF_LEFT;
+      rightFlag = BF_BOTTOM;
+      lightFlag = BF_DIAGONAL_ENDTOPRIGHT;
+      shadeFlag = BF_DIAGONAL_ENDBOTTOMRIGHT;
+
+      ::SetRect(&topRect, R.left, R.top + lOffset, R.right, R.bottom - rOffset);
+      ::SetRect(&sideRect, R.left + 2, R.top, R.right - 2 + selectedOffset,
+                R.bottom);
+      ::SetRect(&bottomRect, R.right - 2, R.top, R.right, R.bottom);
+      ::SetRect(&lightRect, R.left, R.top, R.left + 3, R.top + 3);
+      ::SetRect(&shadeRect, R.left + 1, R.bottom - 2, R.left + 2, R.bottom - 1);
+      break;
+    case BF_TOP:
+      leftFlag = BF_LEFT;
+      topFlag = BF_TOP;
+      rightFlag = BF_RIGHT;
+      lightFlag = BF_DIAGONAL_ENDTOPRIGHT;
+      shadeFlag = BF_DIAGONAL_ENDBOTTOMRIGHT;
+
+      ::SetRect(&topRect, R.left + lOffset, R.top, R.right - rOffset, R.bottom);
+      ::SetRect(&sideRect, R.left, R.top + 2, R.right,
+                R.bottom - 1 + selectedOffset);
+      ::SetRect(&bottomRect, R.left, R.bottom - 1, R.right, R.bottom);
+      ::SetRect(&lightRect, R.left, R.top, R.left + 3, R.top + 3);
+      ::SetRect(&shadeRect, R.right - 2, R.top + 1, R.right - 1, R.top + 2);
+      break;
+    case BF_RIGHT:
+      leftFlag = BF_TOP;
+      topFlag = BF_RIGHT;
+      rightFlag = BF_BOTTOM;
+      lightFlag = BF_DIAGONAL_ENDTOPLEFT;
+      shadeFlag = BF_DIAGONAL_ENDBOTTOMLEFT;
+
+      ::SetRect(&topRect, R.left, R.top + lOffset, R.right, R.bottom - rOffset);
+      ::SetRect(&sideRect, R.left + 2 - selectedOffset, R.top, R.right - 2,
+                R.bottom);
+      ::SetRect(&bottomRect, R.left, R.top, R.left + 2, R.bottom);
+      ::SetRect(&lightRect, R.right - 3, R.top, R.right - 1, R.top + 2);
+      ::SetRect(&shadeRect, R.right - 2, R.bottom - 3, R.right, R.bottom - 1);
+      break;
+    case BF_BOTTOM:
+      leftFlag = BF_LEFT;
+      topFlag = BF_BOTTOM;
+      rightFlag = BF_RIGHT;
+      lightFlag = BF_DIAGONAL_ENDTOPLEFT;
+      shadeFlag = BF_DIAGONAL_ENDBOTTOMLEFT;
+
+      ::SetRect(&topRect, R.left + lOffset, R.top, R.right - rOffset, R.bottom);
+      ::SetRect(&sideRect, R.left, R.top + 2 - selectedOffset, R.right,
+                R.bottom - 2);
+      ::SetRect(&bottomRect, R.left, R.top, R.right, R.top + 2);
+      ::SetRect(&lightRect, R.left, R.bottom - 3, R.left + 2, R.bottom - 1);
+      ::SetRect(&shadeRect, R.right - 2, R.bottom - 3, R.right, R.bottom - 1);
+      break;
+    default:
+      MOZ_CRASH();
+  }
+
+  // Background
+  ::FillRect(hdc, &R, (HBRUSH)(COLOR_3DFACE + 1));
+
+  // Tab "Top"
+  ::DrawEdge(hdc, &topRect, EDGE_RAISED, BF_SOFT | topFlag);
+
+  // Tab "Bottom"
+  if (!aSelected) ::DrawEdge(hdc, &bottomRect, EDGE_RAISED, BF_SOFT | topFlag);
+
+  // Tab "Sides"
+  if (!aDrawLeft) leftFlag = 0;
+  if (!aDrawRight) rightFlag = 0;
+  ::DrawEdge(hdc, &sideRect, EDGE_RAISED, BF_SOFT | leftFlag | rightFlag);
+
+  // Tab Diagonal Corners
+  if (aDrawLeft) ::DrawEdge(hdc, &lightRect, EDGE_RAISED, BF_SOFT | lightFlag);
+
+  if (aDrawRight) ::DrawEdge(hdc, &shadeRect, EDGE_RAISED, BF_SOFT | shadeFlag);
 }
 
 static void DrawMenuImage(HDC hdc, const RECT& rc, int32_t aComponent,
@@ -2864,8 +3043,11 @@ RENDER_AGAIN:
       // Draw 3D border
       ::DrawEdge(hdc, &widgetRect, BDR_SUNKENOUTER, BF_RECT | BF_MIDDLE);
       InflateRect(&widgetRect, -1, -1);
+      [[fallthrough]];
+    case StyleAppearance::Tabpanel: {
       ::FillRect(hdc, &widgetRect, (HBRUSH)(COLOR_BTNFACE + 1));
       break;
+    }
     case StyleAppearance::RangeThumb: {
       ElementState elementState = GetContentState(aFrame, aAppearance);
 
@@ -2927,6 +3109,20 @@ RENDER_AGAIN:
       }
       break;
     }
+
+    // Draw Tab
+    case StyleAppearance::Tab: {
+      DrawTab(hdc, widgetRect, IsBottomTab(aFrame) ? BF_BOTTOM : BF_TOP,
+              IsSelectedTab(aFrame), !IsRightToSelectedTab(aFrame),
+              !IsLeftToSelectedTab(aFrame));
+
+      break;
+    }
+    case StyleAppearance::Tabpanels:
+      ::DrawEdge(hdc, &widgetRect, EDGE_RAISED,
+                 BF_SOFT | BF_MIDDLE | BF_LEFT | BF_RIGHT | BF_BOTTOM);
+
+      break;
     case StyleAppearance::Menubar:
       break;
     case StyleAppearance::Menupopup:

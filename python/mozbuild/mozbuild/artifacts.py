@@ -57,7 +57,7 @@ import pylru
 import requests
 from mach.util import UserError
 from mozpack import executables
-from mozpack.files import FileFinder, JarFinder, TarFinder
+from mozpack.files import JarFinder, TarFinder
 from mozpack.mozjar import JarReader, JarWriter
 from mozpack.packager.unpack import UnpackFinder
 from taskgraph.util.taskcluster import find_task_id, get_artifact_url, list_artifacts
@@ -84,14 +84,10 @@ MAX_CACHED_TASKS = 400  # Number of pushheads to cache Task Cluster task data fo
 # copying from DMG files is very slow, we extract the desired binaries to a
 # separate archive for fast re-installation.
 PROCESSED_SUFFIX = ".processed.jar"
-UNFILTERED_PROJECT_PACKAGE_PROCESSED_SUFFIX = (
-    ".unfiltered_project_package.processed.jar"
-)
 
 
-class GeckoJobConfiguration:
+class ArtifactJob:
     trust_domain = "gecko"
-    product = "firefox"
     default_candidate_trees = [
         "releases/mozilla-release",
     ]
@@ -110,32 +106,6 @@ class GeckoJobConfiguration:
     ]
     try_tree = "try"
 
-
-class AndroidJobConfiguration(GeckoJobConfiguration):
-    product = "mobile"
-
-
-class ThunderbirdJobConfiguration:
-    trust_domain = "comm"
-    product = "thunderbird"
-    default_candidate_trees = [
-        "releases/comm-release",
-    ]
-    nightly_candidate_trees = [
-        "comm-central",
-    ]
-    beta_candidate_trees = [
-        "releases/comm-beta",
-    ]
-    # The list below list should be updated when we have new ESRs.
-    esr_candidate_trees = [
-        "releases/comm-esr115",
-        "releases/comm-esr128",
-    ]
-    try_tree = "try-comm-central"
-
-
-class ArtifactJob:
     # These are a subset of TEST_HARNESS_BINS in testing/mochitest/Makefile.in.
     # Each item is a pair of (pattern, (src_prefix, dest_prefix), where src_prefix
     # is the prefix of the pattern relevant to its location in the archive, and
@@ -203,13 +173,9 @@ class ArtifactJob:
         download_tests=True,
         download_symbols=False,
         download_maven_zip=False,
-        override_job_configuration=None,
         substs=None,
         mozbuild=None,
     ):
-        if override_job_configuration is not None:
-            self.job_configuration = override_job_configuration
-
         self._package_re = re.compile(self.package_re)
         self._tests_re = None
         if download_tests:
@@ -497,14 +463,6 @@ class ArtifactJob:
             raise RuntimeError("Unsupported archive type for %s" % filename)
 
     @property
-    def product(self):
-        return self.job_configuration.product
-
-    @property
-    def trust_domain(self):
-        return self.job_configuration.trust_domain
-
-    @property
     def candidate_trees(self):
         if not self._candidate_trees:
             self._candidate_trees = self.select_candidate_trees()
@@ -515,18 +473,18 @@ class ArtifactJob:
         version_display = buildconfig.substs.get("MOZ_APP_VERSION_DISPLAY")
 
         if "esr" in version_display or "esr" in source_repo:
-            return self.job_configuration.esr_candidate_trees
+            return self.esr_candidate_trees
         elif re.search(r"a\d+$", version_display):
-            return self.job_configuration.nightly_candidate_trees
+            return self.nightly_candidate_trees
         elif re.search(r"b\d+$", version_display):
-            return self.job_configuration.beta_candidate_trees
+            return self.beta_candidate_trees
 
-        return self.job_configuration.default_candidate_trees
+        return self.default_candidate_trees
 
 
 class AndroidArtifactJob(ArtifactJob):
     package_re = r"public/build/geckoview_example\.apk$"
-    job_configuration = AndroidJobConfiguration
+    product = "mobile"
 
     package_artifact_patterns = {"**/*.so"}
 
@@ -591,7 +549,7 @@ class AndroidArtifactJob(ArtifactJob):
 
 class LinuxArtifactJob(ArtifactJob):
     package_re = r"public/build/target\.tar\.(bz2|xz)$"
-    job_configuration = GeckoJobConfiguration
+    product = "firefox"
 
     _package_artifact_patterns = {
         "{product}/crashhelper",
@@ -684,7 +642,7 @@ class ResignJarWriter(JarWriter):
 
 class MacArtifactJob(ArtifactJob):
     package_re = r"public/build/target\.dmg$"
-    job_configuration = GeckoJobConfiguration
+    product = "firefox"
 
     # These get copied into dist/bin without the path, so "root/a/b/c" -> "dist/bin/c".
     _paths_no_keep_path = (
@@ -806,7 +764,7 @@ class MacArtifactJob(ArtifactJob):
 
 class WinArtifactJob(ArtifactJob):
     package_re = r"public/build/target\.(zip|tar\.gz)$"
-    job_configuration = GeckoJobConfiguration
+    product = "firefox"
 
     _package_artifact_patterns = {
         "{product}/dependentlibs.list",
@@ -870,78 +828,37 @@ class WinArtifactJob(ArtifactJob):
             )
 
 
-class UnfilteredProjectPackageArtifactJob(ArtifactJob):
-    """An `ArtifactJob` that processes only the main project package and is
-    unfiltered, i.e., does not change the internal structure of the main
-    package.  For use in repackaging, where the artifact build mode VCS and
-    Taskcluster integration is convenient but the whole package is needed (and
-    DMGs are slow to work with locally).
+class ThunderbirdMixin:
+    trust_domain = "comm"
+    product = "thunderbird"
+    try_tree = "try-comm-central"
+    default_candidate_trees = [
+        "releases/comm-release",
+    ]
+    nightly_candidate_trees = [
+        "comm-central",
+    ]
+    beta_candidate_trees = [
+        "releases/comm-beta",
+    ]
+    # The list below list should be updated when we have new ESRs.
+    esr_candidate_trees = [
+        "releases/comm-esr115",
+        "releases/comm-esr128",
+        "releases/comm-esr140",
+    ]
 
-    Desktop-only at this time.
 
-    """
+class LinuxThunderbirdArtifactJob(ThunderbirdMixin, LinuxArtifactJob):
+    pass
 
-    # Can't yet handle `AndroidArtifactJob` uniformly, since the `product` is "mobile".
-    package_re = "|".join(
-        [
-            f"({cls.package_re})"
-            for cls in (LinuxArtifactJob, MacArtifactJob, WinArtifactJob)
-        ]
-    )
-    job_configuration = GeckoJobConfiguration
 
-    @property
-    def _extra_archives(self):
-        return {}
+class MacThunderbirdArtifactJob(ThunderbirdMixin, MacArtifactJob):
+    pass
 
-    def process_package_artifact(self, filename, processed_filename):
-        tempdir = tempfile.mkdtemp()
-        try:
-            self.log(
-                logging.DEBUG,
-                "artifact",
-                {"tempdir": tempdir},
-                "Unpacking into {tempdir}",
-            )
-            mozinstall.install(filename, tempdir)
 
-            # Avoid mismatches between local packages (Nightly.app) and CI artifacts
-            # (Firefox Nightly.app).
-            if filename.endswith(".dmg"):
-                bundle_dirs = glob.glob(mozpath.join(tempdir, "*.app"))
-            else:
-                bundle_dirs = glob.glob(
-                    mozpath.join(tempdir, self._substs["MOZ_APP_NAME"])
-                )
-
-            if len(bundle_dirs) != 1:
-                raise ValueError(f"Expected one source bundle, found: {bundle_dirs}")
-            (source,) = bundle_dirs
-
-            with self.get_writer(file=processed_filename, compress_level=5) as writer:
-                finder = FileFinder(source)
-                for p, f in finder.find("*"):
-                    q = p
-                    if filename.endswith(".dmg"):
-                        q = mozpath.join(self._substs["MOZ_MACBUNDLE_NAME"], q)
-                    self.log(
-                        logging.DEBUG,
-                        "artifact",
-                        {"path": q},
-                        "Adding {path} to unfiltered project package archive",
-                    )
-                    writer.add(q.encode("utf-8"), f.open(), mode=f.mode)
-
-        finally:
-            try:
-                shutil.rmtree(tempdir)
-            except OSError:
-                self.log(
-                    logging.WARN,
-                    "artifact",
-                    {"tempdir": tempdir},
-                    "Unable to delete {tempdir}",
-                )
+class WinThunderbirdArtifactJob(ThunderbirdMixin, WinArtifactJob):
+    pass
 
 
 def startswithwhich(s, prefixes):
@@ -950,12 +867,21 @@ def startswithwhich(s, prefixes):
             return prefix
 
 
-JOB_DETAILS = {
+MOZ_JOB_DETAILS = {
     j: {
         "android": AndroidArtifactJob,
         "linux": LinuxArtifactJob,
         "macosx": MacArtifactJob,
         "win": WinArtifactJob,
+    }[startswithwhich(j, ("android", "linux", "macosx", "win"))]
+    for j in JOB_CHOICES
+}
+COMM_JOB_DETAILS = {
+    j: {
+        "android": None,
+        "linux": LinuxThunderbirdArtifactJob,
+        "macosx": MacThunderbirdArtifactJob,
+        "win": WinThunderbirdArtifactJob,
     }[startswithwhich(j, ("android", "linux", "macosx", "win"))]
     for j in JOB_CHOICES
 }
@@ -1126,7 +1052,7 @@ class TaskCache(CacheManager):
         )
 
     @cachedmethod(operator.attrgetter("_cache"))
-    def artifacts(self, tree, job, job_configuration, rev):
+    def artifacts(self, tree, job, artifact_job_class, rev):
         # Grab the second part of the repo name, which is generally how things
         # are indexed. Eg: 'integration/autoland' is indexed as
         # 'autoland'
@@ -1135,7 +1061,7 @@ class TaskCache(CacheManager):
         if job.endswith("-opt"):
             tree += ".shippable"
 
-        namespace = f"{job_configuration.trust_domain}.v2.{tree}.revision.{rev}.{job_configuration.product}.{job}"
+        namespace = f"{artifact_job_class.trust_domain}.v2.{tree}.revision.{rev}.{artifact_job_class.product}.{job}"
         self.log(
             logging.DEBUG,
             "artifact",
@@ -1171,16 +1097,10 @@ class Artifacts:
         download_symbols=False,
         download_maven_zip=False,
         no_process=False,
-        unfiltered_project_package=False,
         mozbuild=None,
     ):
         if (hg and git) or (not hg and not git):
             raise ValueError("Must provide path to exactly one of hg and git")
-
-        if no_process and unfiltered_project_package:
-            raise ValueError(
-                "Must provide only one of no_process and unfiltered_project_package"
-            )
 
         self._substs = substs
         self._defines = defines
@@ -1193,40 +1113,23 @@ class Artifacts:
         self._skip_cache = skip_cache
         self._topsrcdir = topsrcdir
         self._no_process = no_process
-        self._unfiltered_project_package = unfiltered_project_package
 
-        job_configuration = (
-            ThunderbirdJobConfiguration
-            if substs.get("MOZ_BUILD_APP") == "comm/mail"
-            else None
-        )
-        if not self._unfiltered_project_package:
-            try:
-                cls = JOB_DETAILS[self._job]
-                self._artifact_job = cls(
-                    log=self._log,
-                    download_tests=download_tests,
-                    download_symbols=download_symbols,
-                    download_maven_zip=download_maven_zip,
-                    override_job_configuration=job_configuration,
-                    substs=self._substs,
-                    mozbuild=mozbuild,
-                )
-            except KeyError:
-                self.log(
-                    logging.INFO, "artifact", {"job": self._job}, "Unknown job {job}"
-                )
-                raise KeyError("Unknown job")
-        else:
-            self._artifact_job = UnfilteredProjectPackageArtifactJob(
+        app = self._substs.get("MOZ_BUILD_APP")
+        job_details = COMM_JOB_DETAILS if app == "comm/mail" else MOZ_JOB_DETAILS
+
+        try:
+            cls = job_details[self._job]
+            self._artifact_job = cls(
                 log=self._log,
-                download_tests=False,
-                download_symbols=False,
-                download_maven_zip=False,
-                override_job_configuration=job_configuration,
+                download_tests=download_tests,
+                download_symbols=download_symbols,
+                download_maven_zip=download_maven_zip,
                 substs=self._substs,
                 mozbuild=mozbuild,
             )
+        except KeyError:
+            self.log(logging.INFO, "artifact", {"job": self._job}, "Unknown job {job}")
+            raise KeyError("Unknown job")
 
         self._task_cache = TaskCache(
             self._cache_dir, log=self._log, skip_cache=self._skip_cache
@@ -1529,7 +1432,7 @@ https://firefox-source-docs.mozilla.org/contributing/vcs/mercurial_bundles.html
     def find_pushhead_artifacts(self, task_cache, job, tree, pushhead):
         try:
             taskId, artifacts = task_cache.artifacts(
-                tree, job, self._artifact_job.job_configuration, pushhead
+                tree, job, self._artifact_job.__class__, pushhead
             )
         except ValueError:
             return None
@@ -1579,8 +1482,6 @@ https://firefox-source-docs.mozilla.org/contributing/vcs/mercurial_bundles.html
 
         # Do we need to post-process?
         processed_filename = filename + PROCESSED_SUFFIX
-        if self._unfiltered_project_package:
-            processed_filename = filename + UNFILTERED_PROJECT_PACKAGE_PROCESSED_SUFFIX
 
         if self._skip_cache and os.path.exists(processed_filename):
             self.log(

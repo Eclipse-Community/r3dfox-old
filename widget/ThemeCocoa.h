@@ -9,12 +9,18 @@
 
 #include "Theme.h"
 
+#include "ScrollbarDrawingCocoa.h"
+
 namespace mozilla::widget {
 
 class ThemeCocoa : public Theme {
  public:
   explicit ThemeCocoa(UniquePtr<ScrollbarDrawing>&& aScrollbarDrawing)
       : Theme(std::move(aScrollbarDrawing)) {}
+
+  LayoutDeviceIntSize GetMinimumWidgetSize(
+      nsPresContext* aPresContext, nsIFrame* aFrame,
+      StyleAppearance aAppearance) override;
 
   void DrawWidgetBackground(gfxContext* aContext, nsIFrame*, StyleAppearance,
                             const nsRect& aRect, const nsRect& aDirtyRect,

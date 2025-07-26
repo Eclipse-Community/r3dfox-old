@@ -6,7 +6,7 @@
 
 use super::{
     model::{self, Alignment, Element, ElementStyle, Margin},
-    Dpi, ElementRef, WideString,
+    ElementRef, WideString,
 };
 use crate::data::Property;
 use std::collections::HashMap;
@@ -29,7 +29,6 @@ pub(super) type ElementMapping = HashMap<ElementRef, HWND>;
 /// disparate locations.
 pub struct Layout<'a> {
     elements: &'a ElementMapping,
-    dpi: Dpi,
     sizes: HashMap<ElementRef, Size>,
     last_positioned: Option<HWND>,
 }
@@ -50,10 +49,9 @@ const CHECKBOX_MARGIN: Margin = Margin {
 };
 
 impl<'a> Layout<'a> {
-    pub(super) fn new(elements: &'a ElementMapping, dpi: Dpi) -> Self {
+    pub(super) fn new(elements: &'a ElementMapping) -> Self {
         Layout {
             elements,
-            dpi,
             sizes: Default::default(),
             last_positioned: None,
         }
@@ -61,14 +59,12 @@ impl<'a> Layout<'a> {
 
     /// Perform a layout of the element and all child elements.
     pub fn layout(mut self, element: &Element, max_width: u32, max_height: u32) {
-        self.dpi.clone().with_context(|| {
-            let max_size = Size {
-                width: max_width,
-                height: max_height,
-            };
-            self.resize(element, &max_size);
-            self.reposition(element, &Position::default(), &max_size);
-        })
+        let max_size = Size {
+            width: max_width,
+            height: max_height,
+        };
+        self.resize(element, &max_size);
+        self.reposition(element, &Position::default(), &max_size);
     }
 
     fn resize(&mut self, element: &Element, max_size: &Size) -> Size {
@@ -130,7 +126,6 @@ impl<'a> Layout<'a> {
                 content_size = Some(size);
             }
             VBox(model::VBox { items, spacing }) => {
-                let spacing = Dpi::context_scale(*spacing);
                 let mut height = 0;
                 let mut max_width = 0;
                 let mut remaining_size = inner_size.clone();
@@ -165,7 +160,6 @@ impl<'a> Layout<'a> {
                 spacing,
                 affirmative_order: _,
             }) => {
-                let spacing = Dpi::context_scale(*spacing);
                 let mut width = 0;
                 let mut max_height = 0;
                 let mut remaining_size = inner_size.clone();
@@ -203,8 +197,8 @@ impl<'a> Layout<'a> {
             Progress(model::Progress { .. }) => {
                 // Min size recommended by windows uxguide
                 content_size = Some(Size {
-                    width: Dpi::context_scale(160),
-                    height: Dpi::context_scale(15),
+                    width: 160,
+                    height: 15,
                 });
             }
             // We don't support sizing by textbox content yet (need to read from the HWND due to
@@ -279,7 +273,7 @@ impl<'a> Layout<'a> {
                 let mut size = inner_size;
                 for item in items {
                     self.reposition(item, &position, &size);
-                    let consumed = self.get_size(item).height + Dpi::context_scale(*spacing);
+                    let consumed = self.get_size(item).height + spacing;
                     if item.style.vertical_alignment != Alignment::End {
                         position.top += consumed;
                     }
@@ -296,7 +290,7 @@ impl<'a> Layout<'a> {
                 let mut size = inner_size;
                 for item in items {
                     self.reposition(item, &position, &inner_size);
-                    let consumed = self.get_size(item).width + Dpi::context_scale(*spacing);
+                    let consumed = self.get_size(item).width + spacing;
                     if item.style.horizontal_alignment != Alignment::End {
                         position.start += consumed;
                     }
@@ -383,21 +377,21 @@ impl Size {
     pub fn inner_size(&self, style: &ElementStyle) -> Self {
         let mut ret = self.less_margin(&style.margin);
         if let Some(width) = style.horizontal_size_request {
-            ret.width = Dpi::context_scale(width);
+            ret.width = width;
         }
         if let Some(height) = style.vertical_size_request {
-            ret.height = Dpi::context_scale(height);
+            ret.height = height;
         }
         ret
     }
 
     pub fn from_content_size(&mut self, style: &ElementStyle, content_size: &Self) {
-        if style.horizontal_size_request.map(Dpi::context_scale) < Some(content_size.width)
+        if style.horizontal_size_request < Some(content_size.width)
             && style.horizontal_alignment != Alignment::Fill
         {
             self.width = content_size.width;
         }
-        if style.vertical_size_request.map(Dpi::context_scale) < Some(content_size.height)
+        if style.vertical_size_request < Some(content_size.height)
             && style.vertical_alignment != Alignment::Fill
         {
             self.height = content_size.height;
@@ -406,19 +400,15 @@ impl Size {
 
     pub fn plus_margin(&self, margin: &Margin) -> Self {
         let mut ret = self.clone();
-        ret.width += Dpi::context_scale(margin.start + margin.end);
-        ret.height += Dpi::context_scale(margin.top + margin.bottom);
+        ret.width += margin.start + margin.end;
+        ret.height += margin.top + margin.bottom;
         ret
     }
 
     pub fn less_margin(&self, margin: &Margin) -> Self {
         let mut ret = self.clone();
-        ret.width = ret
-            .width
-            .saturating_sub(Dpi::context_scale(margin.start + margin.end));
-        ret.height = ret
-            .height
-            .saturating_sub(Dpi::context_scale(margin.top + margin.bottom));
+        ret.width = ret.width.saturating_sub(margin.start + margin.end);
+        ret.height = ret.height.saturating_sub(margin.top + margin.bottom);
         ret
     }
 }
@@ -433,15 +423,15 @@ impl Position {
     #[allow(dead_code)]
     pub fn plus_margin(&self, margin: &Margin) -> Self {
         let mut ret = self.clone();
-        ret.start = ret.start.saturating_sub(Dpi::context_scale(margin.start));
-        ret.top = ret.top.saturating_sub(Dpi::context_scale(margin.top));
+        ret.start = ret.start.saturating_sub(margin.start);
+        ret.top = ret.top.saturating_sub(margin.top);
         ret
     }
 
     pub fn less_margin(&self, margin: &Margin) -> Self {
         let mut ret = self.clone();
-        ret.start += Dpi::context_scale(margin.start);
-        ret.top += Dpi::context_scale(margin.top);
+        ret.start += margin.start;
+        ret.top += margin.top;
         ret
     }
 }

@@ -22,9 +22,8 @@
 extern "C" {}
 
 use super::model::{self, Application, Element, ElementStyle, TypedElement};
-use crate::data::{Property, Synchronized};
-use dpi::Dpi;
-use font::Fonts;
+use crate::data::Property;
+use font::Font;
 use once_cell::sync::Lazy;
 use quit_token::QuitToken;
 use std::cell::RefCell;
@@ -62,7 +61,6 @@ macro_rules! success {
     }};
 }
 
-mod dpi;
 mod font;
 mod gdi;
 mod layout;
@@ -320,8 +318,6 @@ impl CustomWindowClass for AppWindow {
         let model = me.renderer.model();
         match umsg {
             win::WM_CREATE => {
-                me.renderer.set_dpi(Dpi::for_window(hwnd));
-
                 if let Some(close) = &model.close {
                     close.subscribe(move |&()| unsafe {
                         win::SendMessageW(hwnd, win::WM_CLOSE, 0, 0);
@@ -362,8 +358,8 @@ impl CustomWindowClass for AppWindow {
             }
             win::WM_GETMINMAXINFO => {
                 let minmaxinfo = unsafe { (lparam as *mut win::MINMAXINFO).as_mut().unwrap() };
-                minmaxinfo.ptMinTrackSize.x = me.renderer.min_width().try_into().unwrap();
-                minmaxinfo.ptMinTrackSize.y = me.renderer.min_height().try_into().unwrap();
+                minmaxinfo.ptMinTrackSize.x = me.renderer.min_size.0.try_into().unwrap();
+                minmaxinfo.ptMinTrackSize.y = me.renderer.min_size.1.try_into().unwrap();
                 return Some(0);
             }
             win::WM_SIZE => {
@@ -377,31 +373,7 @@ impl CustomWindowClass for AppWindow {
                 }
                 return Some(0);
             }
-            win::WM_DPICHANGED => {
-                // When DPI changes, recompute the layout and move the window.
-                let rect: &RECT = unsafe { (lparam as *const RECT).as_ref() }
-                    .expect("null RECT pointer in WM_DPICHANGED");
-                let dpi = loword(wparam as _) as u32;
-
-                let width = rect.right - rect.left;
-                let height = rect.bottom - rect.top;
-
-                me.renderer.set_dpi(Dpi::new(dpi));
-                // This wil send WM_SIZE, which will take care of the new layout.
-                unsafe {
-                    win::SetWindowPos(
-                        hwnd,
-                        win::HWND_TOP,
-                        rect.left,
-                        rect.top,
-                        width,
-                        height,
-                        win::SWP_NOZORDER | win::SWP_NOACTIVATE,
-                    )
-                };
-                return Some(0);
-            }
-            win::WM_GETFONT => return Some(me.renderer.font()),
+            win::WM_GETFONT => return Some(**me.renderer.font() as _),
             win::WM_COMMAND => {
                 let child = lparam as HWND;
                 let windows = me.renderer.windows.borrow();
@@ -463,20 +435,17 @@ struct WindowRendererInner {
     /// changes. Unfortunately the win32 API doesn't have any nice ways to automatically perform
     /// layout.
     pub model: RefCell<Pin<Box<model::Window>>>,
-    min_size: (u32, u32),
+    pub min_size: (u32, u32),
     /// Mapping between model elements and windows.
     ///
     /// Element references pertain to elements in `model`.
     pub windows: RefCell<twoway::TwoWay<ElementRef, HWND>>,
-    pub dpi: Synchronized<Dpi>,
-    pub fonts: Synchronized<Fonts>,
+    pub font: Font,
+    pub bold_font: Font,
 }
 
 impl WindowRenderer {
     pub fn new(module: HINSTANCE, model: model::Window, style: &model::ElementStyle) -> Self {
-        let dpi: Synchronized<Dpi> = Default::default();
-        let scale_factor = font::ScaleFactor::from_registry();
-        let fonts = dpi.mapped(move |dpi| Fonts::new(*dpi, scale_factor));
         WindowRenderer {
             inner: Rc::new(WindowRendererInner {
                 module,
@@ -486,8 +455,8 @@ impl WindowRenderer {
                     style.vertical_size_request.unwrap_or(0),
                 ),
                 windows: Default::default(),
-                dpi,
-                fonts,
+                font: Font::caption(),
+                bold_font: Font::caption_bold().unwrap_or_else(Font::caption),
             }),
         }
     }
@@ -501,16 +470,9 @@ impl WindowRenderer {
         }
     }
 
-    pub fn set_dpi(&self, dpi: Dpi) {
-        *self.dpi.borrow_mut() = dpi;
-    }
-
     pub fn layout(&self, element: &Element, max_width: u32, max_height: u32) {
-        layout::Layout::new(
-            self.inner.windows.borrow().forward(),
-            *self.inner.dpi.borrow(),
-        )
-        .layout(element, max_width, max_height);
+        layout::Layout::new(self.inner.windows.borrow().forward())
+            .layout(element, max_width, max_height);
     }
 
     pub fn model(&self) -> std::cell::Ref<'_, model::Window> {
@@ -521,16 +483,8 @@ impl WindowRenderer {
         std::cell::RefMut::map(self.inner.model.borrow_mut(), |b| &mut **b)
     }
 
-    pub fn font(&self) -> Gdi::HFONT {
-        *self.inner.fonts.borrow().normal
-    }
-
-    pub fn min_width(&self) -> u32 {
-        self.inner.dpi.borrow().scale(self.min_size.0)
-    }
-
-    pub fn min_height(&self) -> u32 {
-        self.inner.dpi.borrow().scale(self.min_size.1)
+    pub fn font(&self) -> &Font {
+        &self.inner.font
     }
 }
 
@@ -604,7 +558,7 @@ impl<'a> WindowChildRenderer<'a> {
 
     fn render_child(&mut self, element: &Element) {
         if let Some(mut window) = self.render_element_type(&element.element_type) {
-            window.set_default_font(&self.renderer.fonts, |fonts| &fonts.normal);
+            window.set_default_font(&self.renderer.font);
 
             // Store the element to handle mapping.
             self.renderer
@@ -687,7 +641,7 @@ impl<'a> WindowChildRenderer<'a> {
                     }
                 };
                 if *bold {
-                    window.set_font(&self.renderer.fonts, |fonts| &fonts.bold);
+                    window.set_font(&self.renderer.bold_font);
                 }
                 Some(window.generic())
             }

@@ -81,6 +81,8 @@ class nsNativeThemeWin : public Theme {
 
   bool ThemeWantsButtonInnerFocusRing() override { return true; }
 
+  bool ThemeNeedsComboboxDropmarker() override;
+
   bool WidgetAppearanceDependsOnWindowFocus(StyleAppearance) override;
 
   enum { eThemeGeometryTypeWindowButtons = eThemeGeometryTypeUnknown + 1 };

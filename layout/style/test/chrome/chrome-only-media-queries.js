@@ -8,6 +8,8 @@ const CHROME_ONLY_TOGGLES = [
   "-moz-scrollbar-end-backward",
   "-moz-scrollbar-end-forward",
   "-moz-overlay-scrollbars",
+  "-moz-windows-default-theme",
+  "-moz-mac-graphite-theme",
   "-moz-mac-big-sur-theme",
   "-moz-menubar-drag",
   "-moz-windows-accent-color-in-titlebar",

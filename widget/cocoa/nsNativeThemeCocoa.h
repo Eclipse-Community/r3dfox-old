@@ -40,6 +40,8 @@ class nsNativeThemeCocoa : public mozilla::widget::ThemeCocoa {
     eSquareBezelPushButton,
     eArrowButton,
     eHelpButton,
+    eTreeTwistyPointingRight,
+    eTreeTwistyPointingDown,
     eDisclosureButtonClosed,
     eDisclosureButtonOpen
   };
@@ -129,6 +131,12 @@ class nsNativeThemeCocoa : public mozilla::widget::ThemeCocoa {
     bool rtl = false;
   };
 
+  struct TreeHeaderCellParams {
+    ControlParams controlParams;
+    TreeSortDirection sortDirection = eTreeSortDirection_Natural;
+    bool lastTreeHeaderCell = false;
+  };
+
   struct ScaleParams {
     int32_t value = 0;
     int32_t min = 0;
@@ -157,6 +165,7 @@ class nsNativeThemeCocoa : public mozilla::widget::ThemeCocoa {
     eSearchField,         // TextFieldParams
     eProgressBar,         // ProgressParams
     eMeter,               // MeterParams
+    eTreeHeaderCell,      // TreeHeaderCellParams
     eScale,               // ScaleParams
     eMultilineTextField,  // bool
     eListBox,
@@ -211,6 +220,9 @@ class nsNativeThemeCocoa : public mozilla::widget::ThemeCocoa {
     static WidgetInfo Meter(const MeterParams& aParams) {
       return WidgetInfo(Widget::eMeter, aParams);
     }
+    static WidgetInfo TreeHeaderCell(const TreeHeaderCellParams& aParams) {
+      return WidgetInfo(Widget::eTreeHeaderCell, aParams);
+    }
     static WidgetInfo Scale(const ScaleParams& aParams) {
       return WidgetInfo(Widget::eScale, aParams);
     }
@@ -235,7 +247,7 @@ class nsNativeThemeCocoa : public mozilla::widget::ThemeCocoa {
     mozilla::Variant<mozilla::gfx::sRGBColor, CheckboxOrRadioParams,
                      ButtonParams, DropdownParams, SpinButtonParams,
                      SegmentParams, TextFieldParams, ProgressParams,
-                     MeterParams, ScaleParams, bool>
+                     MeterParams, TreeHeaderCellParams, ScaleParams, bool>
         mVariant;
 
     enum Widget mWidget;
@@ -296,6 +308,8 @@ class nsNativeThemeCocoa : public mozilla::widget::ThemeCocoa {
   ProgressParams ComputeProgressParams(nsIFrame*, mozilla::dom::ElementState,
                                        bool aIsHorizontal);
   MeterParams ComputeMeterParams(nsIFrame*);
+  TreeHeaderCellParams ComputeTreeHeaderCellParams(nsIFrame*,
+                                                   mozilla::dom::ElementState);
   mozilla::Maybe<ScaleParams> ComputeHTMLScaleParams(
       nsIFrame*, mozilla::dom::ElementState);
 
@@ -333,6 +347,8 @@ class nsNativeThemeCocoa : public mozilla::widget::ThemeCocoa {
                          const ControlParams& aParams);
   void DrawButton(CGContextRef context, const HIRect& inBoxRect,
                   const ButtonParams& aParams);
+  void DrawTreeHeaderCell(CGContextRef context, const HIRect& inBoxRect,
+                          const TreeHeaderCellParams& aParams);
   void DrawDropdown(CGContextRef context, const HIRect& inBoxRect,
                     const DropdownParams& aParams);
   HIThemeButtonDrawInfo SpinButtonDrawInfo(ThemeButtonKind aKind,
@@ -364,6 +380,7 @@ class nsNativeThemeCocoa : public mozilla::widget::ThemeCocoa {
   NSComboBoxCell* mComboBoxCell;
   NSProgressBarCell* mProgressBarCell;
   NSLevelIndicatorCell* mMeterBarCell;
+  NSTableHeaderCell* mTreeHeaderCell;
   MOZCellDrawWindow* mCellDrawWindow = nil;
   MOZCellDrawView* mCellDrawView;
 };

@@ -17,7 +17,13 @@
 using namespace mozilla;
 using namespace mozilla::widget;
 
+const wchar_t
+nsUXThemeData::kThemeLibraryName[] = L"uxtheme.dll";
+
 MOZ_RUNINIT nsUXThemeData::ThemeHandle nsUXThemeData::sThemes[eUXNumClasses];
+
+HMODULE
+nsUXThemeData::sThemeDLL = nullptr;
 
 const int NUM_COMMAND_BUTTONS = 3;
 SIZE nsUXThemeData::sCommandButtonMetrics[NUM_COMMAND_BUTTONS];
@@ -78,6 +84,13 @@ nsUXThemeData::GetTheme(nsUXThemeClass cls) {
   NS_ASSERTION(cls < eUXNumClasses, "Invalid theme class!");
   sThemes[cls].OpenOnce(nullptr, GetClassName(cls));
   return sThemes[cls];
+}
+
+HMODULE
+nsUXThemeData::GetThemeDLL() {
+  if (!sThemeDLL)
+    sThemeDLL = ::LoadLibraryW(kThemeLibraryName);
+  return sThemeDLL;
 }
 
 const wchar_t* nsUXThemeData::GetClassName(nsUXThemeClass cls) {

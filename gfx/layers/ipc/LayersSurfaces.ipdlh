@@ -40,7 +40,7 @@ namespace mozilla {
 namespace layers {
 
 [Comparable] struct SurfaceDescriptorD3D10 {
-  nullable FileHandleWrapper handle;
+  WindowsHandle handle;
   GpuProcessTextureId? gpuProcessTextureId;
   uint32_t arrayIndex;
   SurfaceFormat format;
@@ -52,9 +52,9 @@ namespace layers {
 };
 
 [Comparable] struct SurfaceDescriptorDXGIYCbCr {
-  nullable FileHandleWrapper handleY;
-  nullable FileHandleWrapper handleCb;
-  nullable FileHandleWrapper handleCr;
+  WindowsHandle handleY;
+  WindowsHandle handleCb;
+  WindowsHandle handleCr;
   IntSize size;
   IntSize sizeY;
   IntSize sizeCbCr;

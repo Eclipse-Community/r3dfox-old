@@ -452,10 +452,25 @@ WinTaskbar::GetGroupIdForWindow(mozIDOMWindow* aParent,
   HWND toplevelHWND = ::GetAncestor(GetHWNDFromDOMWindow(aParent), GA_ROOT);
   if (!toplevelHWND) return NS_ERROR_INVALID_ARG;
   RefPtr<IPropertyStore> pPropStore;
-  if (FAILED(SHGetPropertyStoreForWindow(toplevelHWND, IID_IPropertyStore,
+  typedef HRESULT (WINAPI * SHGetPropertyStoreForWindowPtr)
+                    (HWND hwnd, REFIID riid, void** ppv);
+  SHGetPropertyStoreForWindowPtr funcGetProStore = nullptr;
+
+  HMODULE hDLL = ::LoadLibraryW(kShellLibraryName);
+  funcGetProStore = (SHGetPropertyStoreForWindowPtr)
+    GetProcAddress(hDLL, "SHGetPropertyStoreForWindow");
+
+  if (!funcGetProStore) {
+    FreeLibrary(hDLL);
+    return NS_ERROR_FAILURE;
+  }
+
+  if (FAILED(funcGetProStore(toplevelHWND, IID_IPropertyStore,
                                          getter_AddRefs(pPropStore)))) {
+    FreeLibrary(hDLL);
     return NS_ERROR_INVALID_ARG;
   }
+    FreeLibrary(hDLL);
   PROPVARIANT pv;
   PropVariantInit(&pv);
   auto cleanupPropVariant = MakeScopeExit([&] { PropVariantClear(&pv); });

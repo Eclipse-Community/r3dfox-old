@@ -2,15 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-:host([native]) {
-  appearance: auto;
-  -moz-default-appearance: menulist;
-  text-shadow: none;
-}
-
-:host([native][disabled="true"]) {
-  color: GrayText;
-}
+@namespace url("http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul");
 
 :host(:not([native])) {
   appearance: none;
@@ -48,33 +40,32 @@
 #label-box {
   min-width: 0;
   pointer-events: none;
+}
+
+#label-box:not([native]) {
   align-items: center;
   justify-content: center;
-
-  :host(:not([native])) & {
-    font-weight: 600;
-  }
+  font-weight: 600;
 }
 
 dropmarker {
   pointer-events: none;
   flex: 0;
   align-self: center;
-
-  :host(:not([native])) & {
-    display: flex;
-    appearance: none;
-    content: url(chrome://global/skin/icons/arrow-down-12.svg);
-    -moz-context-properties: fill;
-    fill: currentColor;
-  }
 }
 
-:host(:not([highlightable])) #highlightable-label,
-:host([highlightable]) #label {
+dropmarker:not([native]) {
+  display: flex;
+  appearance: none;
+}
+
+dropmarker:not([native])::part(icon) {
+  content: url(chrome://global/skin/icons/arrow-down-12.svg);
+  -moz-context-properties: fill;
+  fill: currentColor;
+}
+
+#highlightable-label:not([highlightable="true"]),
+#label[highlightable="true"] {
   display: none;
-}
-
-label {
-  margin: 0 3px;
 }

@@ -291,12 +291,8 @@ static const char sColorPrefs[][41] = {
     "ui.-moz-hyperlinktext",
     "ui.-moz-activehyperlinktext",
     "ui.-moz-visitedhyperlinktext",
-    "ui.-moz-colheader",
     "ui.-moz-colheadertext",
-    "ui.-moz-colheaderhover",
     "ui.-moz-colheaderhovertext",
-    "ui.-moz-colheaderactive",
-    "ui.-moz-colheaderactivetext",
     "ui.textSelectDisabledBackground",
     "ui.textSelectAttentionBackground",
     "ui.textSelectAttentionForeground",
@@ -765,9 +761,6 @@ Maybe<nscolor> nsXPLookAndFeel::GenericDarkColor(ColorID aID) {
     case ColorID::Captiontext:
     case ColorID::Inactivecaptiontext:  // TODO(emilio): Maybe make
                                         // Inactivecaptiontext Graytext?
-    case ColorID::MozColheadertext:
-    case ColorID::MozColheaderhovertext:
-    case ColorID::MozColheaderactivetext:
       color = kWindowText;
       break;
     case ColorID::Buttonshadow:
@@ -793,7 +786,6 @@ Maybe<nscolor> nsXPLookAndFeel::GenericDarkColor(ColorID aID) {
     case ColorID::Field:
     case ColorID::Buttonface:  // --in-content-button-background
     case ColorID::Buttonhighlight:
-    case ColorID::MozColheader:
     case ColorID::Threedface:
     case ColorID::MozCombobox:
     case ColorID::MozCellhighlighttext:
@@ -809,11 +801,9 @@ Maybe<nscolor> nsXPLookAndFeel::GenericDarkColor(ColorID aID) {
       color = NS_ComposeColors(kWindowBackground, NS_RGBA(43, 42, 51, 102));
       break;
     case ColorID::MozButtonhoverface:  // --in-content-button-background-hover
-    case ColorID::MozColheaderhover:
       color = NS_RGB(82, 82, 94);
       break;
     case ColorID::MozButtonactiveface:  // --in-content-button-background-active
-    case ColorID::MozColheaderactive:
       color = NS_RGB(91, 91, 102);
       break;
     case ColorID::Highlight:

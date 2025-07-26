@@ -992,8 +992,14 @@ nsresult nsWindow::Create(nsIWidget* aParent, const LayoutDeviceIntRect& aRect,
         // that we can explicitly assign to a regular window.
         UINT32 maxLength = MAX_PATH;
         aumid.SetLength(maxLength);
-        Unused << NS_WARN_IF(
-            GetCurrentApplicationUserModelId(&maxLength, aumid.get()));
+        // `GetCurrentApplicationUserModelId` added in Windows 8.
+        DynamicallyLinkedFunctionPtr<decltype(&GetCurrentApplicationUserModelId)>
+            pGetCurrentApplicationUserModelId(L"kernel32.dll",
+                                              "GetCurrentApplicationUserModelId");
+        if (pGetCurrentApplicationUserModelId) {
+          Unused << NS_WARN_IF(
+              pGetCurrentApplicationUserModelId(&maxLength, aumid.get()));
+        }
       }
       if (!FAILED(InitPropVariantFromString(aumid.get(), &pv))) {
         if (!FAILED(pPropStore->SetValue(PKEY_AppUserModel_ID, pv))) {

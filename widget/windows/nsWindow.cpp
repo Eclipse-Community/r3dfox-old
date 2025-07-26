@@ -2409,15 +2409,6 @@ LayoutDeviceIntRect nsWindow::GetBounds() {
   return rect;
 }
 
-LayoutDeviceIntSize nsWindow::GetSize() const {
-  if (!mWnd) {
-    return mBounds.Size();
-  }
-  RECT r;
-  VERIFY(::GetWindowRect(mWnd, &r));
-  return {r.right - r.left, r.bottom - r.top};
-}
-
 // Get this component dimension
 LayoutDeviceIntRect nsWindow::GetClientBounds() {
   if (!mWnd) {
@@ -2696,8 +2687,8 @@ bool nsWindow::UpdateNonClientMargins(bool aReflowWindow) {
 
   UpdateOpaqueRegionInternal();
   if (StaticPrefs::widget_windows_hidden_taskbar_hack_paint()) {
-    // We probably shouldn't need to clear the NC-area, but we need to in
-    // order to work around bug 642851.
+    // We probably shouldn't need to clear the NC-area if we're an opaque window,
+    // but we need to in order to work around bug 642851.
     mNeedsNCAreaClear = true;
   }
 
@@ -2770,7 +2761,7 @@ void nsWindow::SetResizeMargin(mozilla::LayoutDeviceIntCoord aResizeMargin) {
   mCustomResizeMargin = aResizeMargin;
 }
 
-LayoutDeviceIntRegion nsWindow::ComputeNonClientRegion() {
+nsAutoRegion nsWindow::ComputeNonClientHRGN() {
   // +-+-----------------------+-+
   // | | app non-client chrome | |
   // | +-----------------------+ |
@@ -2783,11 +2774,24 @@ LayoutDeviceIntRegion nsWindow::ComputeNonClientRegion() {
   // +---------------------------+ <
   //  ^                         ^    windows non-client chrome
   // client area = app *
-  auto winRect = LayoutDeviceIntRect(LayoutDeviceIntPoint(), GetSize());
-  LayoutDeviceIntRegion region{winRect};
-  winRect.Deflate(mCustomNonClientMetrics.DefaultMargins());
-  region.SubOut(winRect);
-  return region;
+  RECT rect;
+  GetWindowRect(mWnd, &rect);
+  MapWindowPoints(nullptr, mWnd, (LPPOINT)&rect, 2);
+  nsAutoRegion winRgn(::CreateRectRgnIndirect(&rect));
+
+  // Subtract app client chrome and app content leaving
+  // windows non-client chrome and app non-client chrome
+  // in winRgn.
+  ::GetWindowRect(mWnd, &rect);
+  rect.top += mCustomNonClientMetrics.mCaptionHeight +
+              mCustomNonClientMetrics.mVertResizeMargin;
+  rect.right -= mCustomNonClientMetrics.mHorResizeMargin;
+  rect.bottom -= mCustomNonClientMetrics.mVertResizeMargin;
+  rect.left += mCustomNonClientMetrics.mHorResizeMargin;
+  ::MapWindowPoints(nullptr, mWnd, (LPPOINT)&rect, 2);
+  nsAutoRegion clientRgn(::CreateRectRgnIndirect(&rect));
+  ::CombineRgn(winRgn, winRgn, clientRgn, RGN_DIFF);
+  return nsAutoRegion(winRgn.out());
 }
 
 /**************************************************************
@@ -3897,10 +3901,10 @@ void nsWindow::SetIsEarlyBlankWindow(bool aIsEarlyBlankWindow) {
     return;
   }
   mIsEarlyBlankWindow = aIsEarlyBlankWindow;
-  if (!aIsEarlyBlankWindow) {
+  if (!aIsEarlyBlankWindow && mNeedsNCAreaClear) {
     // We skip processing WM_PAINT messages while we're the blank window;
     // ensure we get one to do any work we might have missed.
-    MaybeInvalidateTranslucentRegion();
+    ::RedrawWindow(mWnd, nullptr, nullptr, RDW_INVALIDATE | RDW_INTERNALPAINT);
   }
 }
 
@@ -5035,10 +5039,18 @@ bool nsWindow::ProcessMessageInternal(UINT msg, WPARAM& wParam, LPARAM& lParam,
     } break;
 
     case WM_NCPAINT: {
-      // ClearType changes often don't send a WM_SETTINGCHANGE message. But
-      // they do seem to always send a WM_NCPAINT message, so let's update on
-      // that.
+      /*
+       * ClearType changes often don't send a WM_SETTINGCHANGE message. But they
+       * do seem to always send a WM_NCPAINT message, so let's update on that.
+       */
       gfxDWriteFont::UpdateSystemTextVars();
+      if (mCustomNonClient &&
+          mTransparencyMode == TransparencyMode::Transparent) {
+        // We rely on dwm for glass / semi-transparent window painting, so we
+        // just need to make sure to clear the non-client area next time we get
+        // around to doing a main-thread paint.
+        mNeedsNCAreaClear = true;
+      }
     } break;
 
     case WM_POWERBROADCAST:
@@ -7201,34 +7213,6 @@ void nsWindow::UpdateOpaqueRegion(const LayoutDeviceIntRegion& aRegion) {
   UpdateOpaqueRegionInternal();
 }
 
-LayoutDeviceIntRegion nsWindow::GetTranslucentRegion() {
-  if (mTransparencyMode != TransparencyMode::Transparent) {
-    return {};
-  }
-  const auto winRect = LayoutDeviceIntRect(LayoutDeviceIntPoint(), GetSize());
-  LayoutDeviceIntRegion translucentRegion{winRect};
-  translucentRegion.SubOut(mOpaqueRegion.MovedBy(GetClientOffset()));
-  return translucentRegion;
-}
-
-void nsWindow::MaybeInvalidateTranslucentRegion() {
-  if (mTransparencyMode != TransparencyMode::Transparent) {
-    return;
-  }
-  const auto translucent = GetTranslucentRegion();
-  if (translucent.IsEmpty() || mClearedRegion.Contains(translucent)) {
-    return;
-  }
-  // We need to clear some part of the window that isn't cleared already, make
-  // sure we trigger a WM_PAINT message.
-  //
-  // NOTE(emilio): we could provide a finer grained region here (i.e., only
-  // invalidate the translucent region, or even only the bits that are not yet
-  // cleared), but we don't do much with that region in OnPaint message so this
-  // seems fine for now.
-  ::RedrawWindow(mWnd, nullptr, nullptr, RDW_INVALIDATE | RDW_INTERNALPAINT);
-}
-
 void nsWindow::UpdateOpaqueRegionInternal() {
   MARGINS margins{0};
   if (mTransparencyMode == TransparencyMode::Transparent) {
@@ -7253,7 +7237,10 @@ void nsWindow::UpdateOpaqueRegionInternal() {
     }
   }
   DwmExtendFrameIntoClientArea(mWnd, &margins);
-  MaybeInvalidateTranslucentRegion();
+  if (mTransparencyMode == TransparencyMode::Transparent) {
+    mNeedsNCAreaClear = true;
+    ::RedrawWindow(mWnd, nullptr, nullptr, RDW_INVALIDATE | RDW_INTERNALPAINT);
+  }
 }
 
 /**************************************************************

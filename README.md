@@ -1,4 +1,4 @@
-# r3dfox (r3dactedfox)
+<span style="display:block;text-align:center">![Eclipse r3dfox](./docs/readme/banner2.png)</span>
 
 r3dfox is a fork of the open source web browser Mozilla Firefox made specifically for Windows Vista, 7, and 8 compatibility.
 
@@ -84,24 +84,21 @@ wanderer - Various code contributions for Vista support
 
 # Original repository readme
 
-An explanation of the Firefox Source Code Directory Structure and links to
-project pages with documentation can be found at:
+![Firefox Browser](./docs/readme/readme-banner.svg)
 
-    https://firefox-source-docs.mozilla.org/contributing/directory_structure.html
+[Firefox](https://firefox.com/) is a fast, reliable and private web browser from the non-profit [Mozilla organization](https://mozilla.org/).
 
-For information on how to build Firefox from the source code and create the patch see:
+### Contributing
 
-    https://firefox-source-docs.mozilla.org/contributing/contribution_quickref.html
+To learn how to contribute to Firefox read the [Firefox Contributors' Quick Reference document](https://firefox-source-docs.mozilla.org/contributing/contribution_quickref.html).
+
+We use [bugzilla.mozilla.org](https://bugzilla.mozilla.org/) as our issue tracker, please file bugs there.
+
+### Resources
+
+* [Firefox Source Docs](https://firefox-source-docs.mozilla.org/) is our primary documentation repository
+* Nightly development builds can be downloaded from [Firefox Nightly page](https://www.mozilla.org/firefox/channel/desktop/#nightly)
 
 If you have a question about developing Firefox, and can't find the solution
-on https://firefox-source-docs.mozilla.org/, you can try asking your question on Matrix at chat.mozilla.org in `Introduction` (https://chat.mozilla.org/#/room/#introduction:mozilla.org) channel.
-
-
-Nightly development builds can be downloaded from:
-
-    https://archive.mozilla.org/pub/firefox/nightly/latest-mozilla-central/
-            - or -
-    https://www.mozilla.org/firefox/channel/desktop/#nightly
-
-Keep in mind that nightly builds, which are used by Firefox developers for
-testing, may be buggy.
+on [Firefox Source Docs](https://firefox-source-docs.mozilla.org/), you can try asking your question on Matrix at
+chat.mozilla.org in the [Introduction channel](https://chat.mozilla.org/#/room/#introduction:mozilla.org).

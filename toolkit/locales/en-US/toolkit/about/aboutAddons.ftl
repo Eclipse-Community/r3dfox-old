@@ -554,10 +554,10 @@ details-notification-incompatible2 =
     .message = { $name } is incompatible with { -brand-short-name } { $version }.
 
 details-notification-unsigned-and-disabled2 =
-    .message = { $name } could not be verified for use in { -brand-short-name } and has been disabled.
+    .message = { $name } is unsigned and xpinstall.signatures.required is set to true. Set this to false in about:config to use this addon.
 
 details-notification-unsigned2 =
-    .message = { $name } could not be verified for use in { -brand-short-name }. Proceed with caution.
+    .message = { $name } is an unsigned addon, not approved by Mozila.
 
 details-notification-hard-blocked-extension =
     .message = This extension is blocked for violating Mozilla’s policies and has been disabled.

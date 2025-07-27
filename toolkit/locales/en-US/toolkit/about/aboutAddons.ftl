@@ -534,11 +534,11 @@ details-notification-incompatible2 =
 details-notification-incompatible-link = More Information
 
 details-notification-unsigned-and-disabled2 =
-    .message = { $name } could not be verified for use in { -brand-short-name } and has been disabled.
+    .message = { $name } is unsigned and xpinstall.signatures.required is set to true. Set this to false in about:config to use this addon.
 details-notification-unsigned-and-disabled-link = More Information
 
 details-notification-unsigned2 =
-    .message = { $name } could not be verified for use in { -brand-short-name }. Proceed with caution.
+    .message = { $name } is an unsigned addon, not approved by Mozila.
 details-notification-unsigned-link = More Information
 
 details-notification-blocked2 =

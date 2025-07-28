@@ -1,4 +1,4 @@
-<span style="display:block;text-align:center">![Eclipse r3dfox](./docs/readme/banner2.png)</span>
+<span style="display:block;text-align:center">![Eclipse r3dfox](./docs/readme/banner.png)</span>
 
 r3dfox is a fork of the open source web browser Mozilla Firefox made specifically for Windows Vista, 7, and 8 compatibility.
 

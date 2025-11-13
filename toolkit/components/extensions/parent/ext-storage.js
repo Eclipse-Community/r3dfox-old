@@ -344,6 +344,14 @@ this.storage = class extends ExtensionAPIPersistent {
 
             let data = await lookup;
             if (!data) {
+              const assetsBootstrapLocation = Services.prefs.getStringPref("librewolf.uBO.assetsBootstrapLocation", undefined);
+              if (extension.id == "uBlock0@raymondhill.net" && assetsBootstrapLocation) {
+                return {
+                  adminSettings: {
+                    assetsBootstrapLocation
+                  }
+                }
+              }
               return Promise.reject({
                 message: "Managed storage manifest not found",
               });

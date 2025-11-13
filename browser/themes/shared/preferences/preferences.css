@@ -9,6 +9,30 @@
   user-select: text;
 }
 
+.librewolf-collapse > input {
+	display: none;
+}
+.librewolf-collapse > input ~ .librewolf-collapsed {
+	display: none;
+	/* max-height: 0; */
+	transition: max-height 0.25s ease-in-out;
+}
+.librewolf-collapse > input:checked ~ .librewolf-collapsed {
+	display: block;
+	/* max-height: 20rem; */
+}
+.librewolf-warning {
+	display: inline;
+	font-size: 0.8em;
+}
+.librewolf-button-icon {
+	width: 16px;
+	height: 16px;
+	margin-right: 8px;
+	-moz-context-properties: fill, fill-opacity;
+	fill: currentColor;
+}
+
 #preferences-root {
   text-rendering: optimizeLegibility;
 }

@@ -1,0 +1,12 @@
+FINAL_TARGET_FILES += [
+  "librewolf.cfg",
+]
+
+FINAL_TARGET_FILES.distribution += [
+  "policies.json",
+]
+
+# local-settings does not yet end up being pacakged.
+FINAL_TARGET_FILES.defaults.pref += [
+  "local-settings.js",
+]

@@ -1,0 +1,254 @@
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+<script src="chrome://browser/content/preferences/librewolf.js"/>
+
+<html:template id="template-paneLibrewolf">
+
+<hbox class="subcategory" hidden="true" data-category="paneLibrewolf">
+  <html:h1 data-l10n-id="librewolf-header"/>
+</hbox>
+
+<groupbox hidden="true" data-category="paneLibrewolf">
+  <html:h2 data-l10n-id="librewolf-general-heading"/>
+
+  <!-- TEMPLATE FOR A NEW PREFERENCE
+  <hbox>
+    <checkbox id="librewolf-LABEL-checkbox" data-l10n-id="librewolf-LABEL-checkbox" preference="PREF" flex="1" />
+    <html:label for="librewolf-LABEL-collapse" class="sidebar-footer-link" pack="end"> <image class="sidebar-footer-icon help-icon"/> </html:label>
+  </hbox>
+  <vbox class="librewolf-collapse indent">
+    <html:input type="checkbox" id="librewolf-LABEL-collapse" />
+    <vbox class="librewolf-collapsed tracking-protection-ui content-blocking-category">
+      <label data-l10n-id="librewolf-LABEL-description" />
+      <html:div> <image src="chrome://browser/skin/warning.svg" /> <label data-l10n-id="librewolf-LABEL-warning1" class="librewolf-warning" /> </html:div>
+      <checkbox preference="PREF" label="PREF" />
+    </vbox>
+  </vbox>
+  -->
+
+  <hbox>
+    <checkbox id="librewolf-extension-update-checkbox" data-l10n-id="librewolf-extension-update-checkbox" preference="extensions.update.autoUpdateDefault" flex="1" />
+    <html:label for="librewolf-extension-update-collapse" class="sidebar-footer-link" pack="end"> <image class="sidebar-footer-icon help-icon"/> </html:label>
+  </hbox>
+  <vbox class="librewolf-collapse indent">
+    <html:input type="checkbox" id="librewolf-extension-update-collapse" />
+    <vbox class="librewolf-collapsed tracking-protection-ui content-blocking-category">
+      <label data-l10n-id="librewolf-extension-update-description" />
+      <html:div> <image src="chrome://browser/skin/warning.svg" /> <label data-l10n-id="librewolf-extension-update-warning1" class="librewolf-warning" /> </html:div>
+      <checkbox preference="extensions.update.autoUpdateDefault" label="extensions.update.autoUpdateDefault" />
+      <checkbox preference="extensions.update.enabled" label="extensions.update.enabled" />
+    </vbox>
+  </vbox>
+
+  <hbox>
+    <checkbox id="librewolf-sync-checkbox" data-l10n-id="librewolf-sync-checkbox" preference="identity.fxaccounts.enabled" flex="1" />
+    <html:label for="librewolf-sync-collapse" class="sidebar-footer-link" pack="end"> <image class="sidebar-footer-icon help-icon"/> </html:label>
+  </hbox>
+  <vbox class="librewolf-collapse indent">
+    <html:input type="checkbox" id="librewolf-sync-collapse" />
+    <vbox class="librewolf-collapsed tracking-protection-ui content-blocking-category">
+      <label data-l10n-id="librewolf-sync-description" />
+      <html:div> <image src="chrome://browser/skin/warning.svg" /> <label data-l10n-id="librewolf-sync-warning1" class="librewolf-warning" /> </html:div>
+      <checkbox preference="identity.fxaccounts.enabled" label="identity.fxaccounts.enabled" />
+    </vbox>
+  </vbox>
+  
+  <hbox>
+    <checkbox id="librewolf-autocopy-checkbox" data-l10n-id="librewolf-autocopy-checkbox" preference="clipboard.autocopy" flex="1" />
+    <html:label for="librewolf-autocopy-collapse" class="sidebar-footer-link" pack="end"> <image class="sidebar-footer-icon help-icon"/> </html:label>
+  </hbox>
+  <vbox class="librewolf-collapse indent">
+    <html:input type="checkbox" id="librewolf-autocopy-collapse" />
+    <vbox class="librewolf-collapsed tracking-protection-ui content-blocking-category">
+      <label data-l10n-id="librewolf-autocopy-description" />
+      <checkbox preference="clipboard.autocopy" label="clipboard.autocopy" />
+      <checkbox preference="middlemouse.paste" label="middlemouse.paste" />
+    </vbox>
+  </vbox>
+
+  <hbox>
+    <checkbox id="librewolf-styling-checkbox" data-l10n-id="librewolf-styling-checkbox" preference="toolkit.legacyUserProfileCustomizations.stylesheets" flex="1" />
+    <html:label for="librewolf-styling-collapse" class="sidebar-footer-link" pack="end"> <image class="sidebar-footer-icon help-icon"/> </html:label>
+  </hbox>
+  <vbox class="librewolf-collapse indent">
+    <html:input type="checkbox" id="librewolf-styling-collapse" />
+    <vbox class="librewolf-collapsed tracking-protection-ui content-blocking-category">
+      <label data-l10n-id="librewolf-styling-description" />
+      <html:div> <image src="chrome://browser/skin/warning.svg" /> <label data-l10n-id="librewolf-styling-warning1" class="librewolf-warning" /> </html:div>
+      <checkbox preference="toolkit.legacyUserProfileCustomizations.stylesheets" label="toolkit.legacyUserProfileCustomizations.stylesheets" />
+    </vbox>
+  </vbox>
+
+</groupbox>
+
+<groupbox hidden="true" data-category="paneLibrewolf">
+  <html:h2 data-l10n-id="librewolf-network-heading" />
+
+  <hbox>
+    <checkbox id="librewolf-ipv6-checkbox" data-l10n-id="librewolf-ipv6-checkbox" preference="network.dns.disableIPv6" flex="1" />
+    <html:label for="librewolf-ipv6-collapse" class="sidebar-footer-link" pack="end"> <image class="sidebar-footer-icon help-icon"/> </html:label>
+  </hbox>
+  <vbox class="librewolf-collapse indent">
+    <html:input type="checkbox" id="librewolf-ipv6-collapse" />
+    <vbox class="librewolf-collapsed tracking-protection-ui content-blocking-category">
+      <label data-l10n-id="librewolf-ipv6-description" />
+      <html:div> <image src="chrome://browser/skin/warning.svg" /> <label data-l10n-id="librewolf-ipv6-warning1" class="librewolf-warning" /> </html:div>
+      <checkbox preference="network.dns.disableIPv6" label="network.dns.disableIPv6" />
+    </vbox>
+  </vbox>
+
+</groupbox>
+
+<groupbox hidden="true" data-category="paneLibrewolf">
+  <html:h2 data-l10n-id="librewolf-privacy-heading" />
+
+  <hbox>
+    <checkbox id="librewolf-xorigin-ref-checkbox" data-l10n-id="librewolf-xorigin-ref-checkbox" preference="network.http.referer.XOriginPolicy" flex="1" />
+    <html:label for="librewolf-xorigin-ref-collapse" class="sidebar-footer-link" pack="end"> <image class="sidebar-footer-icon help-icon"/> </html:label>
+  </hbox>
+  <vbox class="librewolf-collapse indent">
+    <html:input type="checkbox" id="librewolf-xorigin-ref-collapse" />
+    <vbox class="librewolf-collapsed tracking-protection-ui content-blocking-category">
+      <label data-l10n-id="librewolf-xorigin-ref-description" />
+      <html:div> <image src="chrome://browser/skin/warning.svg" /> <label data-l10n-id="librewolf-xorigin-ref-warning1" class="librewolf-warning" /> </html:div>
+      <checkbox disabled="true" preference="network.http.referer.XOriginPolicy" label="network.http.referer.XOriginPolicy" />
+    </vbox>
+  </vbox>
+
+</groupbox>
+
+<groupbox hidden="true" data-category="paneLibrewolf">
+  <html:h2 data-l10n-id="librewolf-broken-heading" />
+
+  <hbox>
+    <checkbox id="librewolf-rfp-checkbox" data-l10n-id="librewolf-rfp-checkbox" preference="privacy.resistFingerprinting" flex="1" />
+    <html:label for="librewolf-rfp-collapse" class="sidebar-footer-link" pack="end"> <image class="sidebar-footer-icon help-icon"/> </html:label>
+  </hbox>
+  <vbox class="librewolf-collapse indent">
+    <html:input type="checkbox" id="librewolf-rfp-collapse" />
+    <vbox class="librewolf-collapsed tracking-protection-ui content-blocking-category">
+      <label data-l10n-id="librewolf-rfp-description" />
+      <html:div> <image src="chrome://browser/skin/warning.svg" /> <label data-l10n-id="librewolf-rfp-warning1" class="librewolf-warning" /> </html:div>
+      <checkbox preference="privacy.resistFingerprinting" label="privacy.resistFingerprinting" />
+    </vbox>
+  </vbox>
+
+  <vbox class="indent">
+
+    <hbox>
+      <checkbox id="librewolf-letterboxing-checkbox" data-l10n-id="librewolf-letterboxing-checkbox" preference="privacy.resistFingerprinting.letterboxing" flex="1" />
+      <html:label for="librewolf-letterboxing-collapse" class="sidebar-footer-link" pack="end"> <image class="sidebar-footer-icon help-icon"/> </html:label>
+    </hbox>
+    <vbox class="librewolf-collapse indent">
+      <html:input type="checkbox" id="librewolf-letterboxing-collapse" />
+      <vbox class="librewolf-collapsed tracking-protection-ui content-blocking-category">
+        <label data-l10n-id="librewolf-letterboxing-description" />
+        <checkbox preference="privacy.resistFingerprinting.letterboxing" label="privacy.resistFingerprinting.letterboxing" />
+      </vbox>
+    </vbox>
+
+    <hbox>
+      <checkbox id="librewolf-auto-decline-canvas-checkbox" data-l10n-id="librewolf-auto-decline-canvas-checkbox" preference="privacy.resistFingerprinting.autoDeclineNoUserInputCanvasPrompts" flex="1" />
+      <html:label for="librewolf-auto-decline-canvas-collapse" class="sidebar-footer-link" pack="end"> <image class="sidebar-footer-icon help-icon"/> </html:label>
+    </hbox>
+    <vbox class="librewolf-collapse indent">
+      <html:input type="checkbox" id="librewolf-auto-decline-canvas-collapse" />
+      <vbox class="librewolf-collapsed tracking-protection-ui content-blocking-category">
+        <label data-l10n-id="librewolf-auto-decline-canvas-description" />
+        <html:div> <label data-l10n-id="librewolf-auto-decline-canvas-warning1" class="librewolf-warning" /> </html:div>
+        <checkbox preference="privacy.resistFingerprinting.autoDeclineNoUserInputCanvasPrompts" label="privacy.resistFingerprinting.autoDeclineNoUserInputCanvasPrompts" />
+      </vbox>
+    </vbox>
+
+  </vbox>
+
+  <hbox>
+    <checkbox id="librewolf-webgl-checkbox" data-l10n-id="librewolf-webgl-checkbox" preference="webgl.disabled" flex="1" />
+    <html:label for="librewolf-webgl-collapse" class="sidebar-footer-link" pack="end"> <image class="sidebar-footer-icon help-icon"/> </html:label>
+  </hbox>
+  <vbox class="librewolf-collapse indent">
+    <html:input type="checkbox" id="librewolf-webgl-collapse" />
+    <vbox class="librewolf-collapsed tracking-protection-ui content-blocking-category">
+      <label data-l10n-id="librewolf-webgl-description" />
+      <html:div> <image src="chrome://browser/skin/warning.svg" /> <label data-l10n-id="librewolf-webgl-warning1" class="librewolf-warning" /> </html:div>
+      <checkbox preference="webgl.disabled" label="webgl.disabled" />
+    </vbox>
+  </vbox>
+
+
+</groupbox>
+
+<groupbox hidden="true" data-category="paneLibrewolf">
+  <html:h2 data-l10n-id="librewolf-security-heading" />
+
+  <hbox>
+    <checkbox id="librewolf-ocsp-checkbox" data-l10n-id="librewolf-ocsp-checkbox" preference="security.OCSP.require" flex="1" />
+    <html:label for="librewolf-ocsp-collapse" class="sidebar-footer-link" pack="end"> <image class="sidebar-footer-icon help-icon"/> </html:label>
+  </hbox>
+  <vbox class="librewolf-collapse indent">
+    <html:input type="checkbox" id="librewolf-ocsp-collapse" />
+    <vbox class="librewolf-collapsed tracking-protection-ui content-blocking-category">
+      <label data-l10n-id="librewolf-ocsp-description" />
+      <html:div> <image src="chrome://browser/skin/warning.svg" /> <label data-l10n-id="librewolf-ocsp-warning1" class="librewolf-warning" /> </html:div>
+      <checkbox preference="security.OCSP.require" label="security.OCSP.require" />
+    </vbox>
+  </vbox>
+
+  <hbox>
+    <checkbox id="librewolf-goog-safe-checkbox" data-l10n-id="librewolf-goog-safe-checkbox" preference="browser.safebrowsing.malware.enabled" flex="1" />
+    <html:label for="librewolf-goog-safe-collapse" class="sidebar-footer-link" pack="end"> <image class="sidebar-footer-icon help-icon"/> </html:label>
+  </hbox>
+  <vbox class="librewolf-collapse indent">
+    <html:input type="checkbox" id="librewolf-goog-safe-collapse" />
+    <vbox class="librewolf-collapsed tracking-protection-ui content-blocking-category">
+      <label data-l10n-id="librewolf-goog-safe-description" />
+      <html:div> <image src="chrome://browser/skin/warning.svg" /> <label data-l10n-id="librewolf-goog-safe-warning1" class="librewolf-warning" /> </html:div>
+      <checkbox preference="browser.safebrowsing.malware.enabled" label="browser.safebrowsing.malware.enabled" />
+      <checkbox preference="browser.safebrowsing.phishing.enabled" label="browser.safebrowsing.phishing.enabled" />
+      <checkbox preference="browser.safebrowsing.blockedURIs.enabled" label="browser.safebrowsing.blockedURIs.enabled" />
+      <checkbox preference="browser.safebrowsing.provider.google4.gethashURL" label="browser.safebrowsing.provider.google4.gethashURL" id="librewolf-goog-safe-hash4"/>
+      <checkbox preference="browser.safebrowsing.provider.google4.updateURL" label="browser.safebrowsing.provider.google4.updateURL" id="librewolf-goog-safe-up4"/>
+      <checkbox preference="browser.safebrowsing.provider.google.gethashURL" label="browser.safebrowsing.provider.google.gethashURL" id="librewolf-goog-safe-hash"/>
+      <checkbox preference="browser.safebrowsing.provider.google.updateURL" label="browser.safebrowsing.provider.google.updateURL" id="librewolf-goog-safe-up"/>
+    </vbox>
+  </vbox>
+
+  <vbox class="indent">
+    <hbox>
+      <checkbox id="librewolf-goog-safe-download-checkbox" data-l10n-id="librewolf-goog-safe-download-checkbox" preference="browser.safebrowsing.downloads.enabled" flex="1" />
+      <html:label for="librewolf-goog-safe-download-collapse" class="sidebar-footer-link" pack="end"> <image class="sidebar-footer-icon help-icon"/> </html:label>
+    </hbox>
+    <vbox class="librewolf-collapse indent">
+      <html:input type="checkbox" id="librewolf-goog-safe-download-collapse" />
+      <vbox class="librewolf-collapsed tracking-protection-ui content-blocking-category">
+        <label data-l10n-id="librewolf-goog-safe-download-description" />
+        <html:div> <image src="chrome://browser/skin/warning.svg" /> <label data-l10n-id="librewolf-goog-safe-download-warning1" class="librewolf-warning" /> </html:div>
+        <checkbox preference="browser.safebrowsing.downloads.enabled" label="browser.safebrowsing.downloads.enabled" />
+      </vbox>
+    </vbox>
+  </vbox>
+
+</groupbox>
+
+<hbox class="subcategory" hidden="true" data-category="paneLibrewolf">
+    <html:h1 data-l10n-id="librewolf-footer"/>
+</hbox>
+
+<groupbox data-category="paneLibrewolf" hidden="true">
+  <vbox align="start">
+    <hbox>
+      <button id="librewolf-config-link" is="highlightable-button" flex="1">
+        <image class="librewolf-button-icon" src="chrome://browser/skin/ion.svg" /> <!-- TODO not the typical way a picture is defined I think, and also we should copy the svg file in case they change it -->
+        <label data-l10n-id="librewolf-config-link"></label>
+      </button>
+      <button id="librewolf-open-profile" is="highlightable-button" flex="1">
+        <image class="librewolf-button-icon" src="chrome://browser/skin/open.svg" />
+        <label data-l10n-id="librewolf-open-profile"></label>
+      </button>
+    </hbox>
+  </vbox>
+</groupbox>
+
+</html:template>

@@ -73,7 +73,7 @@ bool nsDBusRemoteClient::GetRemoteDestinationName(const char* aProgram,
   mozilla::XREAppData::SanitizeNameForDBus(profileName);
 
   aDestinationName =
-      nsPrintfCString("org.mozilla.%s.%s", aProgram, profileName.get());
+      nsPrintfCString("io.gitlab.%s.%s", aProgram, profileName.get());
   if (aDestinationName.Length() > DBUS_MAXIMUM_NAME_LENGTH)
     aDestinationName.Truncate(DBUS_MAXIMUM_NAME_LENGTH);
 
@@ -87,7 +87,7 @@ bool nsDBusRemoteClient::GetRemoteDestinationName(const char* aProgram,
   if (!sDBusValidateBusName(aDestinationName.get(), nullptr)) {
     // We don't have a valid busName yet - try to create a default one.
     aDestinationName =
-        nsPrintfCString("org.mozilla.%s.%s", aProgram, "default");
+        nsPrintfCString("io.gitlab.%s.%s", aProgram, "default");
     if (!sDBusValidateBusName(aDestinationName.get(), nullptr)) {
       // We failed completelly to get a valid bus name - just quit
       // to prevent crash at dbus_bus_request_name().
@@ -114,7 +114,7 @@ nsresult nsDBusRemoteClient::DoSendDBusCommandLine(const char* aProfile,
   }
 
   nsAutoCString pathName;
-  pathName = nsPrintfCString("/org/mozilla/%s/Remote", appName.get());
+  pathName = nsPrintfCString("/io/gitlab/%s/Remote", appName.get());
 
   static auto sDBusValidatePathName = (bool (*)(const char*, DBusError*))dlsym(
       RTLD_DEFAULT, "dbus_validate_path");
@@ -125,7 +125,7 @@ nsresult nsDBusRemoteClient::DoSendDBusCommandLine(const char* aProfile,
   }
 
   nsAutoCString remoteInterfaceName;
-  remoteInterfaceName = nsPrintfCString("org.mozilla.%s", appName.get());
+  remoteInterfaceName = nsPrintfCString("io.gitlab.%s", appName.get());
 
   LOG("  DBus destination: %s\n", destinationName.get());
   LOG("  DBus path: %s\n", pathName.get());

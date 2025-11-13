@@ -29,7 +29,7 @@ static const char* introspect_template =
     "1.0//EN\"\n"
     "\"http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd\">\n"
     "<node>\n"
-    " <interface name=\"org.mozilla.%s\">\n"
+    " <interface name=\"io.gitlab.%s\">\n"
     "   <method name=\"OpenURL\">\n"
     "     <arg name=\"url\" direction=\"in\" type=\"ay\"/>\n"
     "   </method>\n"
@@ -39,7 +39,7 @@ static const char* introspect_template =
 bool nsDBusRemoteServer::HandleOpenURL(const gchar* aInterfaceName,
                                        const gchar* aMethodName,
                                        const gchar* aParam) {
-  nsPrintfCString ourInterfaceName("org.mozilla.%s", mAppName.get());
+  nsPrintfCString ourInterfaceName("io.gitlab.%s", mAppName.get());
 
   if ((strcmp("OpenURL", aMethodName) != 0) ||
       (strcmp(ourInterfaceName.get(), aInterfaceName) != 0)) {
@@ -130,7 +130,7 @@ static const GDBusInterfaceVTable gInterfaceVTable = {
     HandleMethodCall, HandleGetProperty, HandleSetProperty};
 
 void nsDBusRemoteServer::OnBusAcquired(GDBusConnection* aConnection) {
-  mPathName = nsPrintfCString("/org/mozilla/%s/Remote", mAppName.get());
+  mPathName = nsPrintfCString("/io/gitlab/%s/Remote", mAppName.get());
   static auto sDBusValidatePathName = (bool (*)(const char*, DBusError*))dlsym(
       RTLD_DEFAULT, "dbus_validate_path");
   if (!sDBusValidatePathName ||
@@ -204,8 +204,7 @@ nsresult nsDBusRemoteServer::Startup(const char* aAppName,
 
   mozilla::XREAppData::SanitizeNameForDBus(profileName);
 
-  nsPrintfCString busName("org.mozilla.%s.%s", mAppName.get(),
-                          profileName.get());
+  nsPrintfCString busName("io.gitlab.%s.%s", mAppName.get(), profileName.get());
   if (busName.Length() > DBUS_MAXIMUM_NAME_LENGTH) {
     busName.Truncate(DBUS_MAXIMUM_NAME_LENGTH);
   }
@@ -219,7 +218,7 @@ nsresult nsDBusRemoteServer::Startup(const char* aAppName,
 
   // We don't have a valid busName yet - try to create a default one.
   if (!sDBusValidateBusName(busName.get(), nullptr)) {
-    busName = nsPrintfCString("org.mozilla.%s.%s", mAppName.get(), "default");
+    busName = nsPrintfCString("io.gitlab.%s.%s", mAppName.get(), "default");
     if (!sDBusValidateBusName(busName.get(), nullptr)) {
       // We failed completelly to get a valid bus name - just quit
       // to prevent crash at dbus_bus_request_name().

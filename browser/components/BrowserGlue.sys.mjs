@@ -1500,7 +1500,6 @@ BrowserGlue.prototype = {
       lazy.Normandy.init();
     }
 
-    lazy.SaveToPocket.init();
 
     lazy.ResetPBMPanel.init();
 

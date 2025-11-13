@@ -3630,7 +3630,6 @@ var XULBrowserWindow = {
 
     SafeBrowsingNotificationBox.onLocationChange(aLocationURI);
 
-    SaveToPocket.onLocationChange(window);
 
     let originalURI;
     if (aRequest instanceof Ci.nsIChannel) {

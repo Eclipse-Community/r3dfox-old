@@ -418,6 +418,33 @@ var gIdentityHandler = {
     event.stopPropagation();
   },
 
+  async refreshSiteData() {
+    document.getElementById("identity-popup-allow-sitedata-toggle").toggleAttribute(
+      "pressed",
+      Services.perms.testExactPermissionFromPrincipal(
+        gBrowser.contentPrincipal,
+        "cookie"
+      ) === Services.perms.ALLOW_ACTION
+    );
+  },
+
+  async toggleSiteData() {
+    const pressed = document.getElementById("identity-popup-allow-sitedata-toggle").toggleAttribute(
+      "pressed"
+    );
+
+    if (pressed) {
+      Services.perms.addFromPrincipal(
+        gBrowser.contentPrincipal,
+        "cookie",
+        Services.perms.ALLOW_ACTION,
+        Services.perms.EXPIRE_NEVER
+      );
+    } else {
+      Services.perms.removeFromPrincipal(gBrowser.contentPrincipal, "cookie");
+    }
+  },
+
   /**
    * Handler for mouseclicks on the "More Information" button in the
    * "identity-popup" panel.
@@ -1175,6 +1202,8 @@ var gIdentityHandler = {
     this._identityPopupContentOwner.textContent = owner;
     this._identityPopupContentSupp.textContent = supplemental;
     this._identityPopupContentVerif.textContent = verifier;
+
+    this.refreshSiteData();
   },
 
   setURI(uri) {

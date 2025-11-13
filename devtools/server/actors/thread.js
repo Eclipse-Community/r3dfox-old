@@ -386,7 +386,8 @@ class ThreadActor extends Actor {
   attach(options) {
     // Note that the client avoids trying to call attach if already attached.
     // But just in case, avoid any possible duplicate call to attach.
-    if (this.alreadyAttached) {
+    let forceDetach = Services.prefs.getBoolPref("librewolf.debugger.force_detach", false);
+    if (this.alreadyAttached || forceDetach) {
       return;
     }
 

@@ -19,6 +19,11 @@
   #endif
 #endif
 
+
+pref("librewolf.uBO.assetsBootstrapLocation", "");
+pref("librewolf.aboutMenu.checkVersion", false);
+pref("librewolf.hidePasswdmgr", false);
+pref("librewolf.debugger.force_detach", false);
 pref("browser.hiddenWindowChromeURL", "chrome://browser/content/hiddenWindowMac.xhtml");
 
 // Set add-ons abuse report related prefs specific to Firefox Desktop.

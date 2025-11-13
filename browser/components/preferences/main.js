@@ -145,6 +145,10 @@ Preferences.addAll([
   { id: "dom.ipc.processCount.web", type: "int" },
   { id: "layers.acceleration.disabled", type: "bool", inverted: true },
 
+  /* Fullpage Translations */
+  { id: "browser.translations.enable", type: "bool" },
+  { id: "browser.translations.automaticallyPopup", type: "bool" },
+
   // Files and Applications
   { id: "pref.downloads.disable_button.edit_actions", type: "bool" },
 
@@ -325,6 +329,22 @@ var gMainPane = {
     gMainPane.initDefaultZoomValues();
 
     gMainPane.initTranslations();
+
+    let inPrompt = false;
+    Preferences.get("browser.translations.enable").on("change", () => {
+      if(!Preferences.get("browser.translations.enable").value)
+      if(!inPrompt) {
+        inPrompt = true;
+        confirmRestartPrompt(false, 1, true, false).then(buttonIndex => {
+          inPrompt = false;
+          if (buttonIndex == CONFIRM_RESTART_PROMPT_RESTART_NOW) {
+            Services.startup.quit(
+              Ci.nsIAppStartup.eAttemptQuit | Ci.nsIAppStartup.eRestart
+            );
+          }
+        });
+      }
+    });
 
     if (
       Services.prefs.getBoolPref(
@@ -794,6 +814,10 @@ var gMainPane = {
       () => this.writeCheckSpelling()
     );
     Preferences.addSyncFromPrefListener(
+      document.getElementById("translations-manage-enable"),
+      () => this.readEnableTranslations()
+    );
+    Preferences.addSyncFromPrefListener(
       document.getElementById("alwaysAsk"),
       () => this.readUseDownloadDir()
     );
@@ -1023,23 +1047,32 @@ var gMainPane = {
     document.getElementById("zoomBox").hidden = false;
   },
 
+  readEnableTranslations(skipInit = false) {
+    const translationsEnabled = Preferences.get("browser.translations.enable").value;
+    document.getElementById("innerTranslationsGroup").hidden = !translationsEnabled;
+    if (!this._translationsInitialized && !skipInit)
+      this.initTranslations();
+  },
+
+  _translationsInitialized: false,
+
   /**
    * Initialize the translations view.
    */
   async initTranslations() {
+    this.readEnableTranslations(true);
+
     if (!Services.prefs.getBoolPref("browser.translations.enable")) {
       return;
     }
+
+    this._translationsInitialized = true;
 
     /**
      * Which phase a language download is in.
      *
      * @typedef {"downloaded" | "loading" | "uninstalled"} DownloadPhase
      */
-
-    // Immediately show the group so that the async load of the component does
-    // not cause the layout to jump. The group will be empty initially.
-    document.getElementById("translationsGroup").hidden = false;
 
     class TranslationsState {
       /**

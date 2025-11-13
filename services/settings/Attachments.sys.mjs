@@ -146,6 +146,7 @@ export class Downloader {
    * @param {Boolean} [options.fallbackToDump] Use the remote settings dump as a
    *                                         potential source of the attachment.
    *                                         (default: `false`)
+   * @param {string} options.serverUrl
    * @throws {Downloader.DownloadError} if the file could not be fetched.
    * @throws {Downloader.BadContentError} if the downloaded content integrity is not valid.
    * @throws {Downloader.ServerInfoError} if the server response is not valid.
@@ -205,6 +206,7 @@ export class Downloader {
       fallbackToCache = false,
       fallbackToDump = false,
       avoidDownload = false,
+      serverUrl,
     } = options || {};
     if (!attachmentId) {
       // Check for pre-condition. This should not happen, but it is explicitly
@@ -265,6 +267,7 @@ export class Downloader {
         const newBuffer = await this.downloadAsBytes(record, {
           retries,
           checkHash,
+          serverUrl,
         });
         const blob = new Blob([newBuffer]);
         // Store in cache but don't wait for it before returning.
@@ -435,6 +438,7 @@ export class Downloader {
    * @param {Object} options Some download options.
    * @param {Number} options.retries Number of times download should be retried (default: `3`)
    * @param {Boolean} options.checkHash Check content integrity (default: `true`)
+   * @param {String} options.serverUrl
    * @throws {Downloader.DownloadError} if the file could not be fetched.
    * @throws {Downloader.BadContentError} if the downloaded content integrity is not valid.
    * @returns {ArrayBuffer} the file content.
@@ -443,10 +447,11 @@ export class Downloader {
     const {
       attachment: { location, hash, size },
     } = record;
+    const { retries = 3, checkHash = true, serverUrl } = options;
 
-    const remoteFileUrl = (await this._baseAttachmentsURL()) + location;
+    const remoteFileUrl =
+      (await this._baseAttachmentsURL(serverUrl)) + location;
 
-    const { retries = 3, checkHash = true } = options;
     let retried = 0;
     while (true) {
       try {
@@ -495,9 +500,9 @@ export class Downloader {
     await this._rmDirs();
   }
 
-  async _baseAttachmentsURL() {
-    if (!this._cdnURLs[lazy.Utils.SERVER_URL]) {
-      const resp = await lazy.Utils.fetch(`${lazy.Utils.SERVER_URL}/`);
+  async _baseAttachmentsURL(serverUrl = lazy.Utils.SERVER_URL) {
+    if (!this._cdnURLs[serverUrl]) {
+      const resp = await lazy.Utils.fetch(`${serverUrl}/`);
       let serverInfo;
       try {
         serverInfo = await resp.json();
@@ -511,10 +516,9 @@ export class Downloader {
         },
       } = serverInfo;
       // Make sure the URL always has a trailing slash.
-      this._cdnURLs[lazy.Utils.SERVER_URL] =
-        base_url + (base_url.endsWith("/") ? "" : "/");
+      this._cdnURLs[serverUrl] = base_url + (base_url.endsWith("/") ? "" : "/");
     }
-    return this._cdnURLs[lazy.Utils.SERVER_URL];
+    return this._cdnURLs[serverUrl];
   }
 
   async _fetchAttachment(url) {

@@ -389,8 +389,16 @@
           preference="layout.spellcheckDefault"/>
 
   <!-- Translations -->
-  <vbox id="translationsGroup" hidden="true" data-subcategory="translations">
+  <vbox id="translationsGroup" data-subcategory="translations">
     <label><html:h2 data-l10n-id="translations-manage-header"/></label>
+    <checkbox id="translations-manage-enable" 
+          data-l10n-id="translations-manage-enable" 
+          preference="browser.translations.enable"
+          data-subcategory="translations-enable" />
+    <vbox id="innerTranslationsGroup" hidden="true">
+    <checkbox id="translations-manage-autopopup" 
+              data-l10n-id="translations-manage-autopopup" 
+              preference="browser.translations.automaticallyPopup" />
     <hbox id="translations-manage-description" align="center">
       <description flex="1" data-l10n-id="translations-manage-intro-2"/>
       <button id="translations-manage-settings-button"
@@ -411,6 +419,7 @@
       </html:div>
       <description id="translations-manage-error" hidden="true"></description>
     </vbox>
+  </vbox>
   </vbox>
 </groupbox>
 

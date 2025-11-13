@@ -58,6 +58,9 @@ translations-panel-settings-never-translate-unknown-language =
 translations-panel-settings-never-translate-site =
   .label = Never translate this site
 
+translations-panel-disable-translations =
+  .label = Disable translations completely
+
 ## The translation panel appears from the url bar, and this view is the default
 ## translation view.
 
@@ -123,6 +126,10 @@ translations-manage-header = Translations
 translations-manage-settings-button =
     .label = Settings…
     .accesskey = t
+translations-manage-enable = 
+  .label = Enable fullpage translations
+translations-manage-autopopup = 
+  .label = Prompt to translate pages that aren’t in the browser’s configured language
 translations-manage-intro-2 = Set your language and site translation preferences and manage languages downloaded for offline translation.
 translations-manage-download-description = Download languages for offline translation
 translations-manage-language-download-button =

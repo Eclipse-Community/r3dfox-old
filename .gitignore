@@ -37,6 +37,7 @@ ID
 /.clang-tidy
 /.mozconfig*
 /mozconfig*
+!/mozconfigs
 /configure
 /old-configure
 /config.cache

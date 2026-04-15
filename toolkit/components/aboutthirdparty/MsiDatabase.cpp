@@ -73,7 +73,7 @@ Maybe<MsiDatabase> MsiDatabase::FromProductId(const wchar_t* aProductId) {
   // needs to include a null-character.
   ++len;
 
-  std::unique_ptr<wchar_t[]> bufHeap(new wchar_t[len]);
+  UniquePtr<wchar_t[]> bufHeap(new wchar_t[len]);
   ret = ::MsiGetProductInfoW(aProductId, INSTALLPROPERTY_LOCALPACKAGE_W,
                              bufHeap.get(), &len);
   if (ret == ERROR_SUCCESS) {

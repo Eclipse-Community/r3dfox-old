@@ -381,12 +381,6 @@ int main(int argc, char* argv[], char* envp[]) {
 
   int result = do_main(argc, argv, envp);
 
-#if defined(XP_WIN) && defined(MOZ_LAUNCHER_PROCESS)
-  // This is used by the pre-XUL skeleton, so we only compile it when the
-  // launcher process is enabled.
-  CleanupProcessRuntime();
-#endif
-
   gBootstrap->NS_LogTerm();
 
 #if defined(DEBUG) && defined(HAS_DLL_BLOCKLIST)

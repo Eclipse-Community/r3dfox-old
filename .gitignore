@@ -38,6 +38,7 @@ ID
 /.clangd
 /.mozconfig*
 /mozconfig*
+!/mozconfigs
 /old-configure
 /config.cache
 /config.log

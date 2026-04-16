@@ -330,14 +330,14 @@ nsXREDirProvider::Portable(uint32_t *aResult)
   bool portable;
   nsCOMPtr<nsIFile> portmodemark;
   GetAppDir()->Clone(getter_AddRefs(portmodemark));
-  portmodemark->AppendNative(NS_LITERAL_CSTRING("pmprt.mod"));
+  portmodemark->AppendNative("pmprt.mod"_ns);
   portmodemark->Exists(&portable);
   if (portable) {
      *aResult = 1;
      return NS_OK;
      }
   GetAppDir()->Clone(getter_AddRefs(portmodemark));
-  portmodemark->AppendNative(NS_LITERAL_CSTRING("pmundprt.mod"));
+  portmodemark->AppendNative("pmprt.mod"_ns);
   portmodemark->Exists(&portable);
   if (portable) *aResult = 2;
   else *aResult = 0;

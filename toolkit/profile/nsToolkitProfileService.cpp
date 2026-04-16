@@ -1432,7 +1432,7 @@ nsresult nsToolkitProfileService::SelectStartupProfile(
     rv = gDirServiceProvider->GetFile(XRE_EXECUTABLE_FILE, &exists, getter_AddRefs(exeFile));
     NS_ENSURE_SUCCESS(rv, rv);
     exeFile->GetParent(getter_AddRefs(rootDir));
-    rootDir->AppendNative(NS_LITERAL_CSTRING("Profile"));
+    rootDir->AppendNative("pmprt.mod"_ns);
     rv = rootDir->Exists(&exists);
     NS_ENSURE_SUCCESS(rv, rv);
     if (!exists) {

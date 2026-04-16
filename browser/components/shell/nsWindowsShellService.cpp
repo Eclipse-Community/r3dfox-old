@@ -191,7 +191,7 @@ nsWindowsShellService::CancelPortableMode()
                               getter_AddRefs(portmodemark));
   NS_ENSURE_SUCCESS(rv, rv);
 
-  rv = portmodemark->AppendNative(NS_LITERAL_CSTRING("pmprt.mod"));
+  rv = portmodemark->AppendNative("pmprt.mod"_ns);
 
   NS_ENSURE_SUCCESS(rv, rv);
 

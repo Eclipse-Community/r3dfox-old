@@ -777,7 +777,7 @@ def vc_compiler_version(vc_compiler_path):
 
 
 @depends_if(vc_compiler_version)
-def msvs_version(vc_compiler_version):
+def msvs_version_vc(vc_compiler_version):
     # clang-cl emulates the same version scheme as cl. And MSVS_VERSION needs to
     # be set for GYP on Windows.
     if vc_compiler_version >= Version("19.30"):
@@ -787,7 +787,7 @@ def msvs_version(vc_compiler_version):
     return ""
 
 
-set_config("MSVS_VERSION", msvs_version)
+set_config("MSVS_VERSION", msvs_version_vc)
 
 
 clang_search_path = bootstrap_search_path("clang/bin")
@@ -2087,6 +2087,19 @@ def gcc_use_gnu_ld(select_linker, target, c_compiler):
 # GCC_USE_GNU_LD=1 means the linker is command line compatible with GNU ld.
 set_config("GCC_USE_GNU_LD", gcc_use_gnu_ld)
 add_old_configure_assignment("GCC_USE_GNU_LD", gcc_use_gnu_ld)
+
+
+@depends(c_compiler)
+def msvs_version_cl(info):
+    # clang-cl emulates the same version scheme as cl. And MSVS_VERSION needs to
+    # be set for GYP on Windows.
+    if info.type == "clang-cl":
+        return "2017"
+
+    return ""
+
+
+set_config("MSVS_VERSION", msvs_version_cl)
 
 
 include("compile-checks.configure")

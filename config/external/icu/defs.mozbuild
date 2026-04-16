@@ -50,9 +50,8 @@ AllowCompilerWarnings()
 # warnings that get triggered for every file.
 if CONFIG["CC_TYPE"] in ("clang", "clang-cl"):
     CFLAGS += [
-        "-Wno-c++20-compat",
+        '-Wno-c++2a-compat',
         "-Wno-comma",
-        "-Wno-implicit-const-int-float-conversion",
         "-Wno-macro-redefined",
         "-Wno-microsoft-include",
         "-Wno-tautological-unsigned-enum-zero-compare",
@@ -60,9 +59,8 @@ if CONFIG["CC_TYPE"] in ("clang", "clang-cl"):
         "-Wno-unreachable-code-return",
     ]
     CXXFLAGS += [
-        "-Wno-c++20-compat",
+        '-Wno-c++2a-compat',
         "-Wno-comma",
-        "-Wno-implicit-const-int-float-conversion",
         "-Wno-macro-redefined",
         "-Wno-microsoft-include",
         "-Wno-tautological-unsigned-enum-zero-compare",

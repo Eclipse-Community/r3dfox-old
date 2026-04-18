@@ -27,9 +27,11 @@ nsCString camelToSnake(const nsACString& aCamel) {
   const auto* start = aCamel.BeginReading();
   const auto* end = aCamel.EndReading();
   for (; start != end; ++start) {
-    if ('A' <= *start && *start <= 'Z') {
+    unsigned char c = static_cast<unsigned char>(*start);
+    if ('A' <= c && c <= 'Z') {
       snake.AppendLiteral("_");
-      snake.Append(static_cast<char>(std::tolower(*start)));
+      char lower = static_cast<char>(c - 'A' + 'a'); // manual tolower for ASCII
+      snake.Append(lower);
     } else {
       snake.Append(*start);
     }

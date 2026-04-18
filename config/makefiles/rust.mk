@@ -170,7 +170,7 @@ rust_host_cc_env_name := $(subst -,_,$(RUST_HOST_TARGET))
 # moment.
 export CC_$(rust_host_cc_env_name)=$(filter-out $(HOST_CC_BASE_FLAGS),$(HOST_CC))
 export CXX_$(rust_host_cc_env_name)=$(filter-out $(HOST_CXX_BASE_FLAGS),$(HOST_CXX))
-export AR_$(rust_host_cc_env_name)=$(HOST_AR)
+#export AR_$(rust_host_cc_env_name)=$(HOST_AR) Let rust pick the HOST_AR as the LLVM 9 one does not work here.
 
 rust_cc_env_name := $(subst -,_,$(RUST_TARGET))
 

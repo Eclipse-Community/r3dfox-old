@@ -2675,7 +2675,7 @@ impl Build {
                 // the -print-search-dirs option.
                 if let Some(mut cmd) = which(&compiler.path) {
                     cmd.pop();
-                    cmd.push("llvm-lib.exe");
+                    cmd.push("lib.exe");
                     if let Some(llvm_lib) = which(&cmd) {
                         lib = llvm_lib.to_str().unwrap().to_owned();
                     }

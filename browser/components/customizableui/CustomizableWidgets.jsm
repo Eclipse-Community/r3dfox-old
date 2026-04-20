@@ -873,6 +873,14 @@ if (AppConstants.platform == "win") {
 }
 CustomizableWidgets.push(preferencesButton);
 
+CustomizableWidgets.push({
+  id: "preferencesA-button",
+  onCommand(e) {
+    let win = e.target.ownerGlobal;
+    win.openTrustedLinkIn("about:config", "tab");
+  },
+});
+
 if (Services.prefs.getBoolPref("privacy.panicButton.enabled")) {
   CustomizableWidgets.push({
     id: "panic-button",

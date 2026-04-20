@@ -54,28 +54,6 @@ extern "C" {
 // for now, none of the optimizations below are available in emscripten
 #if !defined(EMSCRIPTEN)
 
-#if defined(_MSC_VER) && _MSC_VER > 1310 && \
-    (defined(_M_X64) || defined(_M_IX86))
-#define WEBP_MSC_SSE2  // Visual C++ SSE2 targets
-#endif
-
-#if defined(_MSC_VER) && _MSC_VER >= 1500 && \
-    (defined(_M_X64) || defined(_M_IX86))
-#define WEBP_MSC_SSE41  // Visual C++ SSE4.1 targets
-#endif
-
-// WEBP_HAVE_* are used to indicate the presence of the instruction set in dsp
-// files without intrinsics, allowing the corresponding Init() to be called.
-// Files containing intrinsics will need to be built targeting the instruction
-// set so should succeed on one of the earlier tests.
-#if defined(__SSE2__) || defined(WEBP_MSC_SSE2) || defined(WEBP_HAVE_SSE2)
-#define WEBP_USE_SSE2
-#endif
-
-#if defined(__SSE4_1__) || defined(WEBP_MSC_SSE41) || defined(WEBP_HAVE_SSE41)
-#define WEBP_USE_SSE41
-#endif
-
 // The intrinsics currently cause compiler errors with arm-nacl-gcc and the
 // inline assembly would need to be modified for use with Native Client.
 #if (defined(__ARM_NEON__) || \

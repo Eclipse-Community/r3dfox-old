@@ -1,6 +1,6 @@
 This directory contains files used in gecko builds from FFmpeg
 (http://ffmpeg.org). The current files are from FFmpeg as of
-revision n4.0.2-6-g2be51cbeea
+revision n4.3.1
 All source files match their path from the library's source archive.
 
 Currently, we only use the vp8 and vp9 portion of the library, and only on x86
@@ -12,7 +12,7 @@ Once yasm is upgraded to 1.2 or later, AVX2 code could be re-enabled.
 Add --disable-avx2 to configure on those platforms.
 
 configuration files were generated as follow using the configure script:
-./configure --disable-everything --disable-protocols --disable-demuxers --disable-muxers --disable-filters --disable-programs --disable-doc --disable-parsers --enable-parser=vp8 --enable-parser=vp9 --enable-decoder=vp8 --enable-decoder=vp9 --disable-static --enable-shared --disable-debug --disable-sdl2 --disable-libxcb --disable-securetransport --disable-iconv --disable-swresample --disable-swscale --disable-avdevice --disable-avfilter --disable-avformat --disable-d3d11va --disable-dxva2 --disable-vaapi --disable-vdpau --disable-videotoolbox --enable-decoder=flac --enable-asm --enable-x86asm --disable-cuvid --disable-cuda
+./configure --disable-everything --disable-protocols --disable-demuxers --disable-muxers --disable-filters --disable-programs --disable-doc --disable-parsers --enable-parser=aac --enable-parser=flac --enable-parser=h264 --enable-parser=hevc --enable-parser=opus --enable-parser=vorbis --enable-parser=vp8 --enable-parser=vp9 --enable-decoder=aac --enable-decoder=flac --enable-decoder=h264 --enable-decoder=hevc --enable-decoder=mp3 --enable-decoder=opus --enable-decoder=vorbis --enable-decoder=vp8 --enable-decoder=vp9 --disable-static --enable-shared --disable-debug --disable-sdl2 --disable-libxcb --disable-securetransport --disable-iconv --disable-swscale --disable-avdevice --disable-avfilter --disable-avformat --disable-d3d11va --disable-dxva2 --disable-vaapi --disable-vdpau --disable-videotoolbox --enable-asm --enable-x86asm --disable-cuvid --disable-cuda --disable-nvenc --enable-w32threads
 
 config*:
 replace: /HAVE_(MALLOC_H|ARC4RANDOM|LOCALTIME_R|MEMALIGN|POSIX_MEMALIGN)/d
@@ -33,8 +33,6 @@ Regenerate defaults_disabled.{h,asm} with:
 $ grep -E ".*_(INDEV|OUTDEV|DECODER|ENCODER|DEMUXER|MUXER|PARSER|FILTER|HWACCEL|PROTOCOL|ENCODERS|DECODERS|HWACCELS|INDEVS|OUTDEVS|FILTERS|DEMUXERS|MUXERS|PROTOCOLS|BSF) 0" config.h | sort -u > ~/Work/Mozilla/mozilla-central/media/ffvpx/defaults_disabled.h
 $ grep -E ".*_(INDEV|OUTDEV|DECODER|ENCODER|DEMUXER|MUXER|PARSER|FILTER|HWACCEL|PROTOCOL|ENCODERS|DECODERS|HWACCELS|INDEVS|OUTDEVS|FILTERS|DEMUXERS|MUXERS|PROTOCOLS|BSF) 0" config.asm | sort -u > ~/Work/Mozilla/mozilla-central/media/ffvpx/defaults_disabled.asm
 
-All new decoders/muxers/encoders/... should be added in the list of dummy functions found in libavcodec/dummy_funcs.c
-otherwise linkage will fail on Windows. On other platforms they are optimised out and aren't necessary.
 The GNU comm utility is a useful tool to compare and extract only the changes.
 
 To update the source tree, perform a diff on the files listed in FILES.

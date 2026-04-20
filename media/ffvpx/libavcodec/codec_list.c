@@ -1,11 +1,11 @@
 static const AVCodec * const codec_list[] = {
-#if CONFIG_VP8_DECODER
+    &ff_h264_decoder,
+    &ff_hevc_decoder,
     &ff_vp8_decoder,
-#endif
-#if CONFIG_VP9_DECODER
     &ff_vp9_decoder,
-#endif
-#if CONFIG_FLAC_DECODER
+    &ff_aac_decoder,
     &ff_flac_decoder,
-#endif
+    &ff_mp3_decoder,
+    &ff_opus_decoder,
+    &ff_vorbis_decoder,
     NULL };

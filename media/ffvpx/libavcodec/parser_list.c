@@ -1,8 +1,10 @@
 static const AVCodecParser * const parser_list[] = {
-#if CONFIG_VP8_PARSER
+    &ff_aac_parser,
+    &ff_flac_parser,
+    &ff_h264_parser,
+    &ff_hevc_parser,
+    &ff_opus_parser,
+    &ff_vorbis_parser,
     &ff_vp8_parser,
-#endif
-#if CONFIG_VP9_PARSER
     &ff_vp9_parser,
-#endif
     NULL };

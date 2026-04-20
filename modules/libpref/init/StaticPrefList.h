@@ -1795,6 +1795,12 @@ VARCACHE_PREF(
    MediaFfmpegLowLatencyEnabled,
   RelaxedAtomicBool, false
 )
+
+VARCACHE_PREF(
+  "media.ffmpeg.hwacc_type",
+   MediaFFmpegHwaccType,
+  uint32_t, 0
+)
 #endif
 
 #ifdef MOZ_WMF

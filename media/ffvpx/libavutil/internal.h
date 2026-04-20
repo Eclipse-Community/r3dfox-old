@@ -52,7 +52,7 @@
 #endif
 
 #ifndef emms_c
-#   define emms_c() while(0)
+#   define emms_c() do {} while(0)
 #endif
 
 #ifndef attribute_align_arg
@@ -63,7 +63,7 @@
 #endif
 #endif
 
-#if defined(_WIN32) && CONFIG_SHARED && !defined(BUILDING_avutil)
+#if defined(_WIN32) && CONFIG_SHARED && !defined(BUILDING_avutil) && !defined(__MINGW32__)
 #    define av_export_avutil __declspec(dllimport)
 #else
 #    define av_export_avutil

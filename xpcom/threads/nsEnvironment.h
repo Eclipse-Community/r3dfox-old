@@ -8,7 +8,7 @@
 #define nsEnvironment_h__
 
 #include "mozilla/Attributes.h"
-#include "mozilla/Mutex.h"
+#include "base/lock.h"
 #include "nsIEnvironment.h"
 
 #define NS_ENVIRONMENT_CID                           \
@@ -30,7 +30,7 @@ class nsEnvironment final : public nsIEnvironment {
   nsEnvironment() : mLock("nsEnvironment.mLock") {}
   ~nsEnvironment();
 
-  mozilla::Mutex mLock;
+  Lock mLock;
 };
 
 #endif /* !nsEnvironment_h__ */

@@ -73,7 +73,7 @@ void LazyIdleThread::DisableIdleTimeout() {
     NS_WARNING("Failed to cancel timer!");
   }
 
-  MutexAutoLock lock(mMutex);
+  AutoLock lock(mMutex);
 
   // Pretend we have a pending event to keep the idle timer from firing.
   MOZ_ASSERT(mPendingEventCount < UINT32_MAX, "Way too many!");
@@ -88,7 +88,7 @@ void LazyIdleThread::EnableIdleTimeout() {
   mIdleTimeoutEnabled = true;
 
   {
-    MutexAutoLock lock(mMutex);
+    AutoLock lock(mMutex);
 
     MOZ_ASSERT(mPendingEventCount, "Mismatched calls to observer methods!");
     --mPendingEventCount;
@@ -103,7 +103,7 @@ void LazyIdleThread::EnableIdleTimeout() {
 }
 
 void LazyIdleThread::PreDispatch() {
-  MutexAutoLock lock(mMutex);
+  AutoLock lock(mMutex);
 
   MOZ_ASSERT(mPendingEventCount < UINT32_MAX, "Way too many!");
   mPendingEventCount++;
@@ -179,7 +179,7 @@ void LazyIdleThread::CleanupThread() {
   }
 
   {
-    MutexAutoLock lock(mMutex);
+    AutoLock lock(mMutex);
 
     MOZ_ASSERT(!mThreadIsShuttingDown, "Shouldn't be true ever!");
     mThreadIsShuttingDown = true;
@@ -191,7 +191,7 @@ void LazyIdleThread::ScheduleTimer() {
 
   bool shouldSchedule;
   {
-    MutexAutoLock lock(mMutex);
+    AutoLock lock(mMutex);
 
     MOZ_ASSERT(mIdleNotificationCount, "Should have at least one!");
     --mIdleNotificationCount;
@@ -252,7 +252,7 @@ nsresult LazyIdleThread::ShutdownThread() {
 
 #ifdef DEBUG
     {
-      MutexAutoLock lock(mMutex);
+      AutoLock lock(mMutex);
       MOZ_ASSERT(!mThreadIsShuttingDown, "Huh?!");
     }
 #endif
@@ -283,7 +283,7 @@ nsresult LazyIdleThread::ShutdownThread() {
     mThread = nullptr;
 
     {
-      MutexAutoLock lock(mMutex);
+      AutoLock lock(mMutex);
 
       MOZ_ASSERT(!mPendingEventCount, "Huh?!");
       MOZ_ASSERT(!mIdleNotificationCount, "Huh?!");
@@ -504,7 +504,7 @@ LazyIdleThread::Notify(nsITimer* aTimer) {
   ASSERT_OWNING_THREAD();
 
   {
-    MutexAutoLock lock(mMutex);
+    AutoLock lock(mMutex);
 
     if (mPendingEventCount || mIdleNotificationCount) {
       // Another event was scheduled since this timer was set. Don't do
@@ -544,7 +544,7 @@ LazyIdleThread::AfterProcessNextEvent(nsIThreadInternal* /* aThread */,
                                       bool aEventWasProcessed) {
   bool shouldNotifyIdle;
   {
-    MutexAutoLock lock(mMutex);
+    AutoLock lock(mMutex);
 
     if (aEventWasProcessed) {
       MOZ_ASSERT(mPendingEventCount, "Mismatched calls to observer methods!");

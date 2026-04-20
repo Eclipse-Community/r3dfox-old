@@ -126,7 +126,7 @@ nsEnvironment::Set(const nsAString& aName, const nsAString& aValue) {
     return rv;
   }
 
-  MutexAutoLock lock(mLock);
+  AutoLock lock(mLock);
 
   if (!EnsureEnvHash()) {
     return NS_ERROR_UNEXPECTED;

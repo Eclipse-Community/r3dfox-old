@@ -138,7 +138,7 @@ void nsProcess::Monitor(void* aArg) {
 
   // Lock in case Kill or GetExitCode are called during this
   {
-    MutexAutoLock lock(process->mLock);
+    AutoLock lock(process->mLock);
     CloseHandle(process->mProcess);
     process->mProcess = nullptr;
     process->mExitValue = exitCode;
@@ -170,7 +170,7 @@ void nsProcess::Monitor(void* aArg) {
 
   // Lock in case Kill or GetExitCode are called during this
   {
-    MutexAutoLock lock(process->mLock);
+    AutoLock lock(process->mLock);
 #  if !defined(XP_UNIX)
     process->mProcess = nullptr;
 #  endif
@@ -517,7 +517,7 @@ nsProcess::Kill() {
   }
 
   {
-    MutexAutoLock lock(mLock);
+    AutoLock lock(mLock);
 #if defined(PROCESSMODEL_WINAPI)
     if (TerminateProcess(mProcess, 0) == 0) {
       return NS_ERROR_FAILURE;
@@ -547,7 +547,7 @@ nsProcess::Kill() {
 
 NS_IMETHODIMP
 nsProcess::GetExitValue(int32_t* aExitValue) {
-  MutexAutoLock lock(mLock);
+  AutoLock lock(mLock);
 
   *aExitValue = mExitValue;
 
@@ -569,7 +569,7 @@ nsProcess::Observe(nsISupports* aSubject, const char* aTopic,
   mObserver = nullptr;
   mWeakObserver = nullptr;
 
-  MutexAutoLock lock(mLock);
+  AutoLock lock(mLock);
   mShutdown = true;
 
   return NS_OK;

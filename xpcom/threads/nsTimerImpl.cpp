@@ -34,7 +34,6 @@ using namespace mozilla::tasktracer;
 using mozilla::Atomic;
 using mozilla::LogLevel;
 using mozilla::MakeRefPtr;
-using mozilla::MutexAutoLock;
 using mozilla::TimeDuration;
 using mozilla::TimeStamp;
 
@@ -332,7 +331,7 @@ nsresult nsTimerImpl::InitWithFuncCallbackCommon(nsTimerCallbackFunc aFunc,
   cb.mClosure = aClosure;
   cb.mName = aName;
 
-  MutexAutoLock lock(mMutex);
+  AutoLock lock(mMutex);
   return InitCommon(aDelay, aType, std::move(cb));
 }
 
@@ -368,7 +367,7 @@ nsresult nsTimerImpl::InitHighResolutionWithCallback(
   cb.mCallback.i = aCallback;
   NS_ADDREF(cb.mCallback.i);
 
-  MutexAutoLock lock(mMutex);
+  AutoLock lock(mMutex);
   return InitCommon(aDelay, aType, std::move(cb));
 }
 
@@ -383,7 +382,7 @@ nsresult nsTimerImpl::Init(nsIObserver* aObserver, uint32_t aDelay,
   cb.mCallback.o = aObserver;
   NS_ADDREF(cb.mCallback.o);
 
-  MutexAutoLock lock(mMutex);
+  AutoLock lock(mMutex);
   return InitCommon(aDelay, aType, std::move(cb));
 }
 
@@ -397,7 +396,7 @@ void nsTimerImpl::CancelImpl(bool aClearITimer) {
   RefPtr<nsITimer> timerTrash;
 
   {
-    MutexAutoLock lock(mMutex);
+    AutoLock lock(mMutex);
     if (gThread) {
       gThread->RemoveTimer(this);
     }
@@ -418,7 +417,7 @@ void nsTimerImpl::CancelImpl(bool aClearITimer) {
 }
 
 nsresult nsTimerImpl::SetDelay(uint32_t aDelay) {
-  MutexAutoLock lock(mMutex);
+  AutoLock lock(mMutex);
   if (GetCallback().mType == Callback::Type::Unknown && !IsRepeating()) {
     // This may happen if someone tries to re-use a one-shot timer
     // by re-setting delay instead of reinitializing the timer.
@@ -444,13 +443,13 @@ nsresult nsTimerImpl::SetDelay(uint32_t aDelay) {
 }
 
 nsresult nsTimerImpl::GetDelay(uint32_t* aDelay) {
-  MutexAutoLock lock(mMutex);
+  AutoLock lock(mMutex);
   *aDelay = mDelay.ToMilliseconds();
   return NS_OK;
 }
 
 nsresult nsTimerImpl::SetType(uint32_t aType) {
-  MutexAutoLock lock(mMutex);
+  AutoLock lock(mMutex);
   mType = (uint8_t)aType;
   // XXX if this is called, we should change the actual type.. this could effect
   // repeating timers.  we need to ensure in Fire() that if mType has changed
@@ -459,19 +458,19 @@ nsresult nsTimerImpl::SetType(uint32_t aType) {
 }
 
 nsresult nsTimerImpl::GetType(uint32_t* aType) {
-  MutexAutoLock lock(mMutex);
+  AutoLock lock(mMutex);
   *aType = mType;
   return NS_OK;
 }
 
 nsresult nsTimerImpl::GetClosure(void** aClosure) {
-  MutexAutoLock lock(mMutex);
+  AutoLock lock(mMutex);
   *aClosure = GetCallback().mClosure;
   return NS_OK;
 }
 
 nsresult nsTimerImpl::GetCallback(nsITimerCallback** aCallback) {
-  MutexAutoLock lock(mMutex);
+  AutoLock lock(mMutex);
   if (GetCallback().mType == Callback::Type::Interface) {
     NS_IF_ADDREF(*aCallback = GetCallback().mCallback.i);
   } else {
@@ -482,13 +481,13 @@ nsresult nsTimerImpl::GetCallback(nsITimerCallback** aCallback) {
 }
 
 nsresult nsTimerImpl::GetTarget(nsIEventTarget** aTarget) {
-  MutexAutoLock lock(mMutex);
+  AutoLock lock(mMutex);
   NS_IF_ADDREF(*aTarget = mEventTarget);
   return NS_OK;
 }
 
 nsresult nsTimerImpl::SetTarget(nsIEventTarget* aTarget) {
-  MutexAutoLock lock(mMutex);
+  AutoLock lock(mMutex);
   if (NS_WARN_IF(mCallback.mType != Callback::Type::Unknown)) {
     return NS_ERROR_ALREADY_INITIALIZED;
   }
@@ -516,7 +515,7 @@ void nsTimerImpl::Fire(int32_t aGeneration) {
   {
     // Don't fire callbacks or fiddle with refcounts when the mutex is locked.
     // If some other thread Cancels/Inits after this, they're just too late.
-    MutexAutoLock lock(mMutex);
+    AutoLock lock(mMutex);
     if (aGeneration != mGeneration) {
       return;
     }
@@ -570,7 +569,7 @@ void nsTimerImpl::Fire(int32_t aGeneration) {
     default:;
   }
 
-  MutexAutoLock lock(mMutex);
+  AutoLock lock(mMutex);
   if (aGeneration == mGeneration) {
     if (IsRepeating()) {
       // Repeating timer has not been re-init or canceled; reschedule
@@ -723,7 +722,7 @@ void nsTimerImpl::LogFiring(const Callback& aCallback, uint8_t aType,
 }
 
 void nsTimerImpl::GetName(nsACString& aName) {
-  MutexAutoLock lock(mMutex);
+  AutoLock lock(mMutex);
   Callback& cb(GetCallback());
   switch (cb.mType) {
     case Callback::Type::Function:

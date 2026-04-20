@@ -14,8 +14,8 @@
 #include "nsIFile.h"
 #include "nsIFileURL.h"
 #include "mozilla/Telemetry.h"
-#include "mozilla/Mutex.h"
-#include "mozilla/CondVar.h"
+#include "base/lock.h"
+#include "base/condition_variable.h"
 #include "mozilla/Attributes.h"
 #include "mozilla/ErrorNames.h"
 #include "mozilla/Unused.h"
@@ -276,26 +276,26 @@ void aggregateFunctionFinalHelper(sqlite3_context* aCtx) {
 class UnlockNotification {
  public:
   UnlockNotification()
-      : mMutex("UnlockNotification mMutex"),
+      : mMutex(),
         mCondVar(mMutex, "UnlockNotification condVar"),
         mSignaled(false) {}
 
   void Wait() {
-    MutexAutoLock lock(mMutex);
+    AutoLock lock(mMutex);
     while (!mSignaled) {
       (void)mCondVar.Wait();
     }
   }
 
   void Signal() {
-    MutexAutoLock lock(mMutex);
+    AutoLock lock(mMutex);
     mSignaled = true;
-    (void)mCondVar.Notify();
+    (void)mCondVar.Signal();
   }
 
  private:
-  Mutex mMutex;
-  CondVar mCondVar;
+  Lock mMutex;
+  ConditionVariable mCondVar;
   bool mSignaled;
 };
 
@@ -461,7 +461,7 @@ NS_IMPL_ISUPPORTS(CloseListener, mozIStorageCompletionCallback)
 Connection::Connection(Service* aService, int aFlags,
                        ConnectionOperation aSupportedOperations,
                        bool aIgnoreLockingMode)
-    : sharedAsyncExecutionMutex("Connection::sharedAsyncExecutionMutex"),
+    : sharedAsyncExecutionMutex(),
       sharedDBMutex("Connection::sharedDBMutex"),
       threadOpenedOn(do_GetCurrentThread()),
       mDBConn(nullptr),
@@ -807,7 +807,7 @@ nsresult Connection::initializeOnAsyncThread(nsIFile* aStorageFile) {
   nsresult rv = aStorageFile ? initialize(aStorageFile) : initialize();
   if (NS_FAILED(rv)) {
     // Shutdown the async thread, since initialization failed.
-    MutexAutoLock lockedScope(sharedAsyncExecutionMutex);
+    AutoLock lockedScope(sharedAsyncExecutionMutex);
     mAsyncExecutionThreadShuttingDown = true;
     nsCOMPtr<nsIRunnable> event =
         NewRunnableMethod("Connection::shutdownAsyncThread", this,
@@ -819,7 +819,7 @@ nsresult Connection::initializeOnAsyncThread(nsIFile* aStorageFile) {
 
 void Connection::initializeFailed() {
   {
-    MutexAutoLock lockedScope(sharedAsyncExecutionMutex);
+    AutoLock lockedScope(sharedAsyncExecutionMutex);
     mConnectionClosed = true;
   }
   MOZ_ALWAYS_TRUE(::sqlite3_close(mDBConn) == SQLITE_OK);
@@ -928,7 +928,7 @@ nsresult Connection::setClosedState() {
   // Flag that we are shutting down the async thread, so that
   // getAsyncExecutionTarget knows not to expose/create the async thread.
   {
-    MutexAutoLock lockedScope(sharedAsyncExecutionMutex);
+    AutoLock lockedScope(sharedAsyncExecutionMutex);
     NS_ENSURE_FALSE(mAsyncExecutionThreadShuttingDown, NS_ERROR_UNEXPECTED);
     mAsyncExecutionThreadShuttingDown = true;
 
@@ -976,16 +976,16 @@ bool Connection::isConnectionReadyOnThisThread() {
 }
 
 bool Connection::isClosing() {
-  MutexAutoLock lockedScope(sharedAsyncExecutionMutex);
+  AutoLock lockedScope(sharedAsyncExecutionMutex);
   return mAsyncExecutionThreadShuttingDown && !mConnectionClosed;
 }
 
 bool Connection::isClosed() {
-  MutexAutoLock lockedScope(sharedAsyncExecutionMutex);
+  AutoLock lockedScope(sharedAsyncExecutionMutex);
   return mConnectionClosed;
 }
 
-bool Connection::isClosed(MutexAutoLock& lock) { return mConnectionClosed; }
+bool Connection::isClosed(AutoLock& lock) { return mConnectionClosed; }
 
 bool Connection::isAsyncExecutionThreadAvailable() {
   MOZ_ASSERT(threadOpenedOn == NS_GetCurrentThread());
@@ -1004,7 +1004,7 @@ void Connection::shutdownAsyncThread() {
 nsresult Connection::internalClose(sqlite3* aNativeConnection) {
 #ifdef DEBUG
   {  // Make sure we have marked our async thread as shutting down.
-    MutexAutoLock lockedScope(sharedAsyncExecutionMutex);
+    AutoLock lockedScope(sharedAsyncExecutionMutex);
     MOZ_ASSERT(mAsyncExecutionThreadShuttingDown,
                "Did not call setClosedState!");
     MOZ_ASSERT(!isClosed(lockedScope), "Unexpected closed state");
@@ -1025,7 +1025,7 @@ nsresult Connection::internalClose(sqlite3* aNativeConnection) {
   // unfinalized client statements, in which case we need to finalize
   // these statements and close again.
   {
-    MutexAutoLock lockedScope(sharedAsyncExecutionMutex);
+    AutoLock lockedScope(sharedAsyncExecutionMutex);
     mConnectionClosed = true;
   }
 

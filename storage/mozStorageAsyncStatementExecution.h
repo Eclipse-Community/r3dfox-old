@@ -10,7 +10,7 @@
 #include "nscore.h"
 #include "nsTArray.h"
 #include "nsAutoPtr.h"
-#include "mozilla/Mutex.h"
+#include "base/lock.h"
 #include "mozilla/TimeStamp.h"
 #include "mozilla/Attributes.h"
 #include "nsIRunnable.h"
@@ -226,7 +226,7 @@ class AsyncExecuteStatements final : public nsIRunnable,
    *     held.  It is always read from within the lock on the background thread,
    *     but not on the calling thread (see shouldNotify for why).
    */
-  Mutex& mMutex;
+  Lock& mMutex;
 
   /**
    * The wrapped SQLite recursive connection mutex.  We use it whenever we call

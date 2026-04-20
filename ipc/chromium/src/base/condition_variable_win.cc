@@ -10,9 +10,8 @@
 
 #include "base/lock.h"
 #include "base/logging.h"
-#include "base/time.h"
 
-using base::TimeDelta;
+#include <windows.h>
 
 /*ConditionVariable::ConditionVariable(Lock* user_lock)
     : srwlock_(user_lock->lock_.native_handle()) {
@@ -20,13 +19,23 @@ using base::TimeDelta;
   InitializeConditionVariable(&cv_);
 }*/
 
-ConditionVariable::ConditionVariable(Lock* user_lock)
+ConditionVariable::ConditionVariable(Lock& user_lock)
   : run_state_(RUNNING),
-    user_lock_(*user_lock),
+    user_lock_(user_lock),
     recycling_list_size_(0),
     allocation_counter_(0) {
-  DCHECK(user_lock);
+  //DCHECK(user_lock);
 }
+
+ConditionVariable::ConditionVariable(Lock& user_lock, const char* aName)
+  : run_state_(RUNNING),
+    user_lock_(user_lock),
+    recycling_list_size_(0),
+    allocation_counter_(0) {
+  //DCHECK(user_lock);
+  user_lock_.mName = aName;
+}
+
 
 //ConditionVariable::~ConditionVariable() = default;
 
@@ -54,7 +63,7 @@ ConditionVariable::~ConditionVariable() {
 }
 
 void ConditionVariable::Wait() {
-  TimedWait(base::TimeDelta::FromMilliseconds(INFINITE));
+  TimedWait(mozilla::TimeDuration::FromMilliseconds(INFINITE));
 }
 
 /*void ConditionVariable::TimedWait(const base::TimeDelta& max_time) {
@@ -69,13 +78,19 @@ void ConditionVariable::Wait() {
     DCHECK_EQ(static_cast<DWORD>(ERROR_TIMEOUT), GetLastError());
   }
 }*/
-
-void ConditionVariable::TimedWait(const TimeDelta& max_time) {
+mozilla::CVStatus2 ConditionVariable::TimedWait(const mozilla::TimeDuration& rel_time) {
   Event* waiting_event;
+  DWORD waitResult;
+  double msecd = rel_time.ToMilliseconds();
+  DWORD msec = msecd < 0.0
+               ? 0
+               : msecd > UINT32_MAX
+                 ? INFINITE
+                 : static_cast<DWORD>(msecd);
   HANDLE handle;
   {
     AutoLock auto_lock(internal_lock_);
-    if (RUNNING != run_state_) return;  // Destruction in progress.
+    if (RUNNING != run_state_) return mozilla::CVStatus2::NoTimeout;  // Destruction in progress.
     waiting_event = GetEventForWaiting();
     handle = waiting_event->handle();
     DCHECK(handle);
@@ -83,12 +98,19 @@ void ConditionVariable::TimedWait(const TimeDelta& max_time) {
 
   {
     AutoUnlock unlock(user_lock_);  // Release caller's lock
-    WaitForSingleObject(handle, static_cast<DWORD>(max_time.InMilliseconds()));
+    waitResult = WaitForSingleObject(handle, msec);
     // Minimize spurious signal creation window by recycling asap.
     AutoLock auto_lock(internal_lock_);
     RecycleEvent(waiting_event);
     // Release internal_lock_
   }  // Reacquire callers lock to depth at entry.
+
+    if (waitResult == WAIT_TIMEOUT) {
+      SetLastError(ERROR_TIMEOUT);
+      return mozilla::CVStatus2::Timeout;
+    }
+    return mozilla::CVStatus2::NoTimeout;
+
 }
 
 /*void ConditionVariable::Broadcast() { WakeAllConditionVariable(&cv_); }

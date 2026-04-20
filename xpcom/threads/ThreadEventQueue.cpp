@@ -27,7 +27,7 @@ class ThreadEventQueue<InnerQueueT>::NestedSink : public ThreadTargetSink {
     return mOwner->PutEventInternal(std::move(aEvent), aPriority, this);
   }
 
-  void Disconnect(const MutexAutoLock& aProofOfLock) final { mQueue = nullptr; }
+  void Disconnect(const AutoLock& aProofOfLock) final { mQueue = nullptr; }
 
   size_t SizeOfExcludingThis(mozilla::MallocSizeOf aMallocSizeOf) const {
     if (mQueue) {
@@ -48,7 +48,7 @@ class ThreadEventQueue<InnerQueueT>::NestedSink : public ThreadTargetSink {
 template <class InnerQueueT>
 ThreadEventQueue<InnerQueueT>::ThreadEventQueue(UniquePtr<InnerQueueT> aQueue)
     : mBaseQueue(std::move(aQueue)),
-      mLock("ThreadEventQueue"),
+      mLock(),
       mEventsAvailable(mLock, "EventsAvail") {
   static_assert(IsBaseOf<AbstractEventQueue, InnerQueueT>::value,
                 "InnerQueueT must be an AbstractEventQueue subclass");
@@ -93,7 +93,7 @@ bool ThreadEventQueue<InnerQueueT>::PutEventInternal(
       }
     }
 
-    MutexAutoLock lock(mLock);
+    AutoLock lock(mLock);
 
     if (mEventsAreDoomed) {
       return false;
@@ -109,7 +109,7 @@ bool ThreadEventQueue<InnerQueueT>::PutEventInternal(
       mBaseQueue->PutEvent(event.take(), aPriority, lock);
     }
 
-    mEventsAvailable.Notify();
+    mEventsAvailable.Signal();
 
     // Make sure to grab the observer before dropping the lock, otherwise the
     // event that we just placed into the queue could run and eventually delete
@@ -128,7 +128,7 @@ bool ThreadEventQueue<InnerQueueT>::PutEventInternal(
 template <class InnerQueueT>
 already_AddRefed<nsIRunnable> ThreadEventQueue<InnerQueueT>::GetEvent(
     bool aMayWait, EventQueuePriority* aPriority) {
-  MutexAutoLock lock(mLock);
+  AutoLock lock(mLock);
 
   nsCOMPtr<nsIRunnable> event;
   for (;;) {
@@ -154,7 +154,7 @@ already_AddRefed<nsIRunnable> ThreadEventQueue<InnerQueueT>::GetEvent(
 
 template <class InnerQueueT>
 bool ThreadEventQueue<InnerQueueT>::HasPendingEvent() {
-  MutexAutoLock lock(mLock);
+  AutoLock lock(mLock);
 
   // We always get events from the topmost queue when there are nested queues.
   if (mNestedQueues.IsEmpty()) {
@@ -166,7 +166,7 @@ bool ThreadEventQueue<InnerQueueT>::HasPendingEvent() {
 
 template <class InnerQueueT>
 bool ThreadEventQueue<InnerQueueT>::HasPendingHighPriorityEvents() {
-  MutexAutoLock lock(mLock);
+  AutoLock lock(mLock);
 
   // We always get events from the topmost queue when there are nested queues.
   if (mNestedQueues.IsEmpty()) {
@@ -179,7 +179,7 @@ bool ThreadEventQueue<InnerQueueT>::HasPendingHighPriorityEvents() {
 
 template <class InnerQueueT>
 bool ThreadEventQueue<InnerQueueT>::ShutdownIfNoPendingEvents() {
-  MutexAutoLock lock(mLock);
+  AutoLock lock(mLock);
   if (mNestedQueues.IsEmpty() && mBaseQueue->IsEmpty(lock)) {
     mEventsAreDoomed = true;
     return true;
@@ -189,25 +189,25 @@ bool ThreadEventQueue<InnerQueueT>::ShutdownIfNoPendingEvents() {
 
 template <class InnerQueueT>
 void ThreadEventQueue<InnerQueueT>::EnableInputEventPrioritization() {
-  MutexAutoLock lock(mLock);
+  AutoLock lock(mLock);
   mBaseQueue->EnableInputEventPrioritization(lock);
 }
 
 template <class InnerQueueT>
 void ThreadEventQueue<InnerQueueT>::FlushInputEventPrioritization() {
-  MutexAutoLock lock(mLock);
+  AutoLock lock(mLock);
   mBaseQueue->FlushInputEventPrioritization(lock);
 }
 
 template <class InnerQueueT>
 void ThreadEventQueue<InnerQueueT>::SuspendInputEventPrioritization() {
-  MutexAutoLock lock(mLock);
+  AutoLock lock(mLock);
   mBaseQueue->SuspendInputEventPrioritization(lock);
 }
 
 template <class InnerQueueT>
 void ThreadEventQueue<InnerQueueT>::ResumeInputEventPrioritization() {
-  MutexAutoLock lock(mLock);
+  AutoLock lock(mLock);
   mBaseQueue->ResumeInputEventPrioritization(lock);
 }
 
@@ -219,7 +219,7 @@ ThreadEventQueue<InnerQueueT>::PushEventQueue() {
   RefPtr<ThreadEventTarget> eventTarget =
       new ThreadEventTarget(sink, NS_IsMainThread());
 
-  MutexAutoLock lock(mLock);
+  AutoLock lock(mLock);
 
   mNestedQueues.AppendElement(NestedQueueItem(std::move(queue), eventTarget));
   return eventTarget.forget();
@@ -227,7 +227,7 @@ ThreadEventQueue<InnerQueueT>::PushEventQueue() {
 
 template <class InnerQueueT>
 void ThreadEventQueue<InnerQueueT>::PopEventQueue(nsIEventTarget* aTarget) {
-  MutexAutoLock lock(mLock);
+  AutoLock lock(mLock);
 
   MOZ_ASSERT(!mNestedQueues.IsEmpty());
 
@@ -272,7 +272,7 @@ size_t ThreadEventQueue<InnerQueueT>::SizeOfExcludingThis(
 template <class InnerQueueT>
 already_AddRefed<nsIThreadObserver>
 ThreadEventQueue<InnerQueueT>::GetObserver() {
-  MutexAutoLock lock(mLock);
+  AutoLock lock(mLock);
   return do_AddRef(mObserver);
 }
 
@@ -284,7 +284,7 @@ ThreadEventQueue<InnerQueueT>::GetObserverOnThread() {
 
 template <class InnerQueueT>
 void ThreadEventQueue<InnerQueueT>::SetObserver(nsIThreadObserver* aObserver) {
-  MutexAutoLock lock(mLock);
+  AutoLock lock(mLock);
   mObserver = aObserver;
 }
 

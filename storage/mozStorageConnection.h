@@ -10,7 +10,7 @@
 #include "nsAutoPtr.h"
 #include "nsCOMPtr.h"
 #include "mozilla/Atomics.h"
-#include "mozilla/Mutex.h"
+#include "base/lock.h"
 #include "nsProxyRelease.h"
 #include "nsThreadUtils.h"
 #include "nsIInterfaceRequestor.h"
@@ -167,7 +167,7 @@ class Connection final : public mozIStorageConnection,
    *  - Connection.mConnectionClosed
    *  - AsyncExecuteStatements.mCancelRequested
    */
-  Mutex sharedAsyncExecutionMutex;
+  Lock sharedAsyncExecutionMutex;
 
   /**
    * Wraps the mutex that SQLite gives us from sqlite3_db_mutex.  This is public
@@ -283,7 +283,7 @@ class Connection final : public mozIStorageConnection,
    * Same as isClosed(), but takes a proof-of-lock instead of locking
    * internally.
    */
-  bool isClosed(MutexAutoLock& lock);
+  bool isClosed(AutoLock& lock);
 
   /**
    * True if the async execution thread is alive and able to be used (i.e., it

@@ -865,21 +865,21 @@ class CancelingRunnable final : public Runnable {
 class WorkerPrivate::EventTarget final : public nsISerialEventTarget {
   // This mutex protects mWorkerPrivate and must be acquired *before* the
   // WorkerPrivate's mutex whenever they must both be held.
-  mozilla::Mutex mMutex;
+  Lock mMutex;
   WorkerPrivate* mWorkerPrivate;
   nsIEventTarget* mWeakNestedEventTarget;
   nsCOMPtr<nsIEventTarget> mNestedEventTarget;
 
  public:
   explicit EventTarget(WorkerPrivate* aWorkerPrivate)
-      : mMutex("WorkerPrivate::EventTarget::mMutex"),
+      : mMutex(),
         mWorkerPrivate(aWorkerPrivate),
         mWeakNestedEventTarget(nullptr) {
     MOZ_ASSERT(aWorkerPrivate);
   }
 
   EventTarget(WorkerPrivate* aWorkerPrivate, nsIEventTarget* aNestedEventTarget)
-      : mMutex("WorkerPrivate::EventTarget::mMutex"),
+      : mMutex(),
         mWorkerPrivate(aWorkerPrivate),
         mWeakNestedEventTarget(aNestedEventTarget),
         mNestedEventTarget(aNestedEventTarget) {
@@ -890,7 +890,7 @@ class WorkerPrivate::EventTarget final : public nsISerialEventTarget {
   void Disable() {
     nsCOMPtr<nsIEventTarget> nestedEventTarget;
     {
-      MutexAutoLock lock(mMutex);
+      AutoLock lock(mMutex);
 
       // Note, Disable() can be called more than once safely.
       mWorkerPrivate = nullptr;
@@ -1097,7 +1097,7 @@ WorkerPrivate::MemoryReporter::CollectReports(
   RefPtr<CollectReportsRunnable> runnable;
 
   {
-    MutexAutoLock lock(mMutex);
+    AutoLock lock(mMutex);
 
     if (!mWorkerPrivate) {
       // This will effectively report 0 memory.
@@ -1336,13 +1336,13 @@ void WorkerPrivate::Traverse(nsCycleCollectionTraversalCallback& aCb) {
 nsresult WorkerPrivate::Dispatch(already_AddRefed<WorkerRunnable> aRunnable,
                                  nsIEventTarget* aSyncLoopTarget) {
   // May be called on any thread!
-  MutexAutoLock lock(mMutex);
+  AutoLock lock(mMutex);
   return DispatchLockHeld(std::move(aRunnable), aSyncLoopTarget, lock);
 }
 
 nsresult WorkerPrivate::DispatchLockHeld(
     already_AddRefed<WorkerRunnable> aRunnable, nsIEventTarget* aSyncLoopTarget,
-    const MutexAutoLock& aProofOfLock) {
+    const AutoLock& aProofOfLock) {
   // May be called on any thread!
   RefPtr<WorkerRunnable> runnable(aRunnable);
 
@@ -1388,7 +1388,7 @@ nsresult WorkerPrivate::DispatchLockHeld(
     return rv;
   }
 
-  mCondVar.Notify();
+  mCondVar.Signal();
   return NS_OK;
 }
 
@@ -1422,7 +1422,7 @@ nsresult WorkerPrivate::DispatchControlRunnable(
   MOZ_ASSERT(runnable);
 
   {
-    MutexAutoLock lock(mMutex);
+    AutoLock lock(mMutex);
 
     if (mStatus == Dead) {
       return NS_ERROR_UNEXPECTED;
@@ -1436,7 +1436,7 @@ nsresult WorkerPrivate::DispatchControlRunnable(
       JS_RequestInterruptCallback(cx);
     }
 
-    mCondVar.Notify();
+    mCondVar.Signal();
   }
 
   return NS_OK;
@@ -1451,7 +1451,7 @@ nsresult WorkerPrivate::DispatchDebuggerRunnable(
   MOZ_ASSERT(runnable);
 
   {
-    MutexAutoLock lock(mMutex);
+    AutoLock lock(mMutex);
 
     if (mStatus == Dead) {
       NS_WARNING(
@@ -1463,7 +1463,7 @@ nsresult WorkerPrivate::DispatchDebuggerRunnable(
     // Transfer ownership to the debugger queue.
     mDebuggerQueue.Push(runnable.forget().take());
 
-    mCondVar.Notify();
+    mCondVar.Signal();
   }
 
   return NS_OK;
@@ -1494,7 +1494,7 @@ already_AddRefed<WorkerRunnable> WorkerPrivate::MaybeWrapAsWorkerRunnable(
 bool WorkerPrivate::Start() {
   // May be called on any thread!
   {
-    MutexAutoLock lock(mMutex);
+    AutoLock lock(mMutex);
     NS_ASSERTION(mParentStatus != Running, "How can this be?!");
 
     if (mParentStatus == Pending) {
@@ -1512,7 +1512,7 @@ bool WorkerPrivate::Notify(WorkerStatus aStatus) {
 
   bool pending;
   {
-    MutexAutoLock lock(mMutex);
+    AutoLock lock(mMutex);
 
     if (mParentStatus >= aStatus) {
       return true;
@@ -1572,7 +1572,7 @@ bool WorkerPrivate::Freeze(nsPIDOMWindowInner* aWindow) {
   }
 
   {
-    MutexAutoLock lock(mMutex);
+    AutoLock lock(mMutex);
 
     if (mParentStatus >= Canceling) {
       return true;
@@ -1612,7 +1612,7 @@ bool WorkerPrivate::Thaw(nsPIDOMWindowInner* aWindow) {
   }
 
   {
-    MutexAutoLock lock(mMutex);
+    AutoLock lock(mMutex);
 
     if (mParentStatus >= Canceling) {
       return true;
@@ -1649,7 +1649,7 @@ void WorkerPrivate::ParentWindowResumed() {
   mParentWindowPaused = false;
 
   {
-    MutexAutoLock lock(mMutex);
+    AutoLock lock(mMutex);
 
     if (mParentStatus >= Canceling) {
       return;
@@ -1669,7 +1669,7 @@ void WorkerPrivate::PropagateFirstPartyStorageAccessGranted() {
   AssertIsOnParentThread();
 
   {
-    MutexAutoLock lock(mMutex);
+    AutoLock lock(mMutex);
 
     if (mParentStatus >= Canceling) {
       return;
@@ -1703,7 +1703,7 @@ bool WorkerPrivate::ModifyBusyCount(bool aIncrease) {
   if (--mBusyCount == 0) {
     bool shouldCancel;
     {
-      MutexAutoLock lock(mMutex);
+      AutoLock lock(mMutex);
       shouldCancel = mParentStatus == Canceling;
     }
 
@@ -1739,7 +1739,7 @@ void WorkerPrivate::UpdateContextOptions(
   AssertIsOnParentThread();
 
   {
-    MutexAutoLock lock(mMutex);
+    AutoLock lock(mMutex);
     mJSSettings.contextOptions = aContextOptions;
   }
 
@@ -1767,7 +1767,7 @@ void WorkerPrivate::UpdateJSWorkerMemoryParameter(JSGCParamKey aKey,
   bool found = false;
 
   {
-    MutexAutoLock lock(mMutex);
+    AutoLock lock(mMutex);
     found = mJSSettings.ApplyGCSetting(aKey, aValue);
   }
 
@@ -1785,7 +1785,7 @@ void WorkerPrivate::UpdateGCZeal(uint8_t aGCZeal, uint32_t aFrequency) {
   AssertIsOnParentThread();
 
   {
-    MutexAutoLock lock(mMutex);
+    AutoLock lock(mMutex);
     mJSSettings.gcZeal = aGCZeal;
     mJSSettings.gcZealFrequency = aFrequency;
   }
@@ -2049,7 +2049,7 @@ WorkerPrivate::WorkerPrivate(WorkerPrivate* aParent,
                              const nsAString& aWorkerName,
                              const nsACString& aServiceWorkerScope,
                              WorkerLoadInfo& aLoadInfo)
-    : mMutex("WorkerPrivate Mutex"),
+    : mMutex(),
       mCondVar(mMutex, "WorkerPrivate CondVar"),
       mParent(aParent),
       mScriptURL(aScriptURL),
@@ -2284,7 +2284,7 @@ already_AddRefed<WorkerPrivate> WorkerPrivate::Constructor(
 
 nsresult WorkerPrivate::SetIsDebuggerReady(bool aReady) {
   AssertIsOnParentThread();
-  MutexAutoLock lock(mMutex);
+  AutoLock lock(mMutex);
 
   if (mDebuggerReady == aReady) {
     return NS_OK;
@@ -2340,7 +2340,7 @@ nsresult WorkerPrivate::GetLoadInfo(JSContext* aCx, nsPIDOMWindowInner* aWindow,
     // If the parent is going away give up now.
     WorkerStatus parentStatus;
     {
-      MutexAutoLock lock(aParent->mMutex);
+      AutoLock lock(aParent->mMutex);
       parentStatus = aParent->mStatus;
     }
 
@@ -2359,7 +2359,7 @@ nsresult WorkerPrivate::GetLoadInfo(JSContext* aCx, nsPIDOMWindowInner* aWindow,
     // Now that we've spun the loop there's no guarantee that our parent is
     // still alive.  We may have received control messages initiating shutdown.
     {
-      MutexAutoLock lock(aParent->mMutex);
+      AutoLock lock(aParent->mMutex);
       parentStatus = aParent->mStatus;
     }
 
@@ -2625,7 +2625,7 @@ void WorkerPrivate::DoRunLoop(JSContext* aCx) {
   MOZ_ASSERT(mThread);
 
   {
-    MutexAutoLock lock(mMutex);
+    AutoLock lock(mMutex);
     mJSContext = aCx;
 
     MOZ_ASSERT(mStatus == Pending);
@@ -2649,7 +2649,7 @@ void WorkerPrivate::DoRunLoop(JSContext* aCx) {
     bool normalRunnablesPending = false;
 
     {
-      MutexAutoLock lock(mMutex);
+      AutoLock lock(mMutex);
 
       // Wait for a runnable to arrive that we can execute, or for it to be okay
       // to shutdown this worker once all holders have been removed.
@@ -2684,7 +2684,7 @@ void WorkerPrivate::DoRunLoop(JSContext* aCx) {
 
 #ifdef DEBUG
         {
-          MutexAutoLock lock(mMutex);
+          AutoLock lock(mMutex);
           currentStatus = mStatus;
         }
         MOZ_ASSERT(currentStatus == Killing);
@@ -2708,7 +2708,7 @@ void WorkerPrivate::DoRunLoop(JSContext* aCx) {
         DisableMemoryReporter();
 
         {
-          MutexAutoLock lock(mMutex);
+          AutoLock lock(mMutex);
 
           mStatus = Dead;
           mJSContext = nullptr;
@@ -2741,7 +2741,7 @@ void WorkerPrivate::DoRunLoop(JSContext* aCx) {
       WorkerRunnable* runnable = nullptr;
 
       {
-        MutexAutoLock lock(mMutex);
+        AutoLock lock(mMutex);
 
         mDebuggerQueue.Pop(runnable);
         debuggerRunnablesPending = !mDebuggerQueue.IsEmpty();
@@ -2963,7 +2963,7 @@ const ClientState WorkerPrivate::GetClientState() const {
 const Maybe<ServiceWorkerDescriptor> WorkerPrivate::GetController() {
   MOZ_ACCESS_THREAD_BOUND(mWorkerThreadAccessible, data);
   {
-    MutexAutoLock lock(mMutex);
+    AutoLock lock(mMutex);
     if (mStatus >= Canceling) {
       return Maybe<ServiceWorkerDescriptor>();
     }
@@ -2977,7 +2977,7 @@ void WorkerPrivate::Control(const ServiceWorkerDescriptor& aServiceWorker) {
   MOZ_DIAGNOSTIC_ASSERT(!IsChromeWorker());
   MOZ_DIAGNOSTIC_ASSERT(Type() != WorkerTypeService);
   {
-    MutexAutoLock lock(mMutex);
+    AutoLock lock(mMutex);
     if (mStatus >= Canceling) {
       return;
     }
@@ -2998,7 +2998,7 @@ void WorkerPrivate::Control(const ServiceWorkerDescriptor& aServiceWorker) {
 void WorkerPrivate::ExecutionReady() {
   MOZ_ACCESS_THREAD_BOUND(mWorkerThreadAccessible, data);
   {
-    MutexAutoLock lock(mMutex);
+    AutoLock lock(mMutex);
     if (mStatus >= Canceling) {
       return;
     }
@@ -3116,7 +3116,7 @@ bool WorkerPrivate::InterruptCallback(JSContext* aCx) {
     bool mayFreeze = data->mFrozen;
 
     {
-      MutexAutoLock lock(mMutex);
+      AutoLock lock(mMutex);
 
       if (mayFreeze) {
         mayFreeze = mStatus <= Running;
@@ -3139,7 +3139,7 @@ bool WorkerPrivate::InterruptCallback(JSContext* aCx) {
     }
 
     while ((mayContinue = MayContinueRunning())) {
-      MutexAutoLock lock(mMutex);
+      AutoLock lock(mMutex);
       if (!mControlQueue.IsEmpty()) {
         break;
       }
@@ -3242,7 +3242,7 @@ void WorkerPrivate::DisableMemoryReporter() {
   {
     // Mutex protectes MemoryReporter::mWorkerPrivate which is cleared by
     // MemoryReporter::Disable() below.
-    MutexAutoLock lock(mMutex);
+    AutoLock lock(mMutex);
 
     // There is nothing to do here if the memory reporter was never successfully
     // registered.
@@ -3290,7 +3290,7 @@ WorkerPrivate::ProcessAllControlRunnablesLocked() {
       break;
     }
 
-    MutexAutoUnlock unlock(mMutex);
+    AutoUnlock unlock(mMutex);
 
     MOZ_ASSERT(event);
     if (NS_FAILED(static_cast<nsIRunnable*>(event)->Run())) {
@@ -3422,7 +3422,7 @@ bool WorkerPrivate::ModifyBusyCountFromWorker(bool aIncrease) {
   AssertIsOnWorkerThread();
 
   {
-    MutexAutoLock lock(mMutex);
+    AutoLock lock(mMutex);
 
     // If we're in shutdown then the busy count is no longer being considered so
     // just return now.
@@ -3443,7 +3443,7 @@ bool WorkerPrivate::AddChildWorker(WorkerPrivate* aChildWorker) {
   {
     WorkerStatus currentStatus;
     {
-      MutexAutoLock lock(mMutex);
+      AutoLock lock(mMutex);
       currentStatus = mStatus;
     }
 
@@ -3475,7 +3475,7 @@ bool WorkerPrivate::AddHolder(WorkerHolder* aHolder, WorkerStatus aFailStatus) {
   MOZ_ACCESS_THREAD_BOUND(mWorkerThreadAccessible, data);
 
   {
-    MutexAutoLock lock(mMutex);
+    AutoLock lock(mMutex);
 
     if (mStatus >= aFailStatus) {
       return false;
@@ -3583,7 +3583,7 @@ already_AddRefed<nsIEventTarget> WorkerPrivate::CreateNewSyncLoop(
       "Sync loops can be created when the worker is in Running/Closing state!");
 
   {
-    MutexAutoLock lock(mMutex);
+    AutoLock lock(mMutex);
 
     if (mStatus >= aFailStatus) {
       return nullptr;
@@ -3602,7 +3602,7 @@ already_AddRefed<nsIEventTarget> WorkerPrivate::CreateNewSyncLoop(
     // Modifications must be protected by mMutex in DEBUG builds, see comment
     // about mSyncLoopStack in WorkerPrivate.h.
 #ifdef DEBUG
-    MutexAutoLock lock(mMutex);
+    AutoLock lock(mMutex);
 #endif
 
     mSyncLoopStack.AppendElement(new SyncLoopInfo(workerEventTarget));
@@ -3641,7 +3641,7 @@ bool WorkerPrivate::RunCurrentSyncLoop() {
 
     // Wait for something to do.
     {
-      MutexAutoLock lock(mMutex);
+      AutoLock lock(mMutex);
 
       for (;;) {
         while (mControlQueue.IsEmpty() && !normalRunnablesPending &&
@@ -3726,7 +3726,7 @@ bool WorkerPrivate::DestroySyncLoop(uint32_t aLoopIndex) {
     // Modifications must be protected by mMutex in DEBUG builds, see comment
     // about mSyncLoopStack in WorkerPrivate.h.
 #ifdef DEBUG
-    MutexAutoLock lock(mMutex);
+    AutoLock lock(mMutex);
 #endif
 
     // This will delete |loopInfo|!
@@ -3796,7 +3796,7 @@ void WorkerPrivate::AssertValidSyncLoop(nsIEventTarget* aSyncLoopTarget) {
   bool valid = false;
 
   {
-    MutexAutoLock lock(mMutex);
+    AutoLock lock(mMutex);
 
     for (uint32_t index = 0; index < mSyncLoopStack.Length(); index++) {
       nsAutoPtr<SyncLoopInfo>& loopInfo = mSyncLoopStack[index];
@@ -3879,7 +3879,7 @@ void WorkerPrivate::EnterDebuggerEventLoop() {
     bool debuggerRunnablesPending = false;
 
     {
-      MutexAutoLock lock(mMutex);
+      AutoLock lock(mMutex);
 
       debuggerRunnablesPending = !mDebuggerQueue.IsEmpty();
     }
@@ -3891,7 +3891,7 @@ void WorkerPrivate::EnterDebuggerEventLoop() {
 
     // Wait for something to do
     {
-      MutexAutoLock lock(mMutex);
+      AutoLock lock(mMutex);
 
       std::queue<RefPtr<MicroTaskRunnable>>& debuggerMtQueue =
           ccjscx->GetDebuggerMicroTaskQueue();
@@ -3913,7 +3913,7 @@ void WorkerPrivate::EnterDebuggerEventLoop() {
       WorkerRunnable* runnable = nullptr;
 
       {
-        MutexAutoLock lock(mMutex);
+        AutoLock lock(mMutex);
 
         mDebuggerQueue.Pop(runnable);
       }
@@ -3937,7 +3937,7 @@ void WorkerPrivate::LeaveDebuggerEventLoop() {
 
   // TODO: Why lock the mutex if we're accessing data accessible to one thread
   // only?
-  MutexAutoLock lock(mMutex);
+  AutoLock lock(mMutex);
 
   if (data->mDebuggerEventLoopLevel > 0) {
     --data->mDebuggerEventLoopLevel;
@@ -3975,7 +3975,7 @@ bool WorkerPrivate::NotifyInternal(WorkerStatus aStatus) {
   // Save the old status and set the new status.
   WorkerStatus previousStatus;
   {
-    MutexAutoLock lock(mMutex);
+    AutoLock lock(mMutex);
 
     if (mStatus >= aStatus) {
       return true;
@@ -3984,7 +3984,7 @@ bool WorkerPrivate::NotifyInternal(WorkerStatus aStatus) {
     MOZ_ASSERT_IF(aStatus == Killing, mStatus == Canceling);
 
     if (aStatus >= Canceling) {
-      MutexAutoUnlock unlock(mMutex);
+      AutoUnlock unlock(mMutex);
       data->mClientSource.reset();
       if (data->mScope) {
         data->mScope->NoteTerminating();
@@ -4000,7 +4000,7 @@ bool WorkerPrivate::NotifyInternal(WorkerStatus aStatus) {
       // need to unlock the worker private mutex before we lock the event target
       // mutex in ForgetWorkerPrivate.
       {
-        MutexAutoUnlock unlock(mMutex);
+        AutoUnlock unlock(mMutex);
         mWorkerHybridEventTarget->ForgetWorkerPrivate(this);
       }
 
@@ -4163,7 +4163,7 @@ int32_t WorkerPrivate::SetTimeout(JSContext* aCx,
 
   WorkerStatus currentStatus;
   {
-    MutexAutoLock lock(mMutex);
+    AutoLock lock(mMutex);
     currentStatus = mStatus;
   }
 
@@ -4451,7 +4451,7 @@ void WorkerPrivate::StartCancelingTimer() {
 
   // This is not needed if we are already in an advanced shutdown state.
   {
-    MutexAutoLock lock(mMutex);
+    AutoLock lock(mMutex);
     if (ParentStatus() >= Canceling) {
       return;
     }
@@ -4623,7 +4623,7 @@ void WorkerPrivate::SetThread(WorkerThread* aThread) {
 
 void WorkerPrivate::SetWorkerPrivateInWorkerThread(
     WorkerThread* const aThread) {
-  MutexAutoLock lock(mMutex);
+  AutoLock lock(mMutex);
 
   MOZ_ASSERT(!mThread);
   MOZ_ASSERT(mStatus == Pending);
@@ -4644,7 +4644,7 @@ void WorkerPrivate::ResetWorkerPrivateInWorkerThread() {
   RefPtr<WorkerThread> doomedThread;
 
   // Release the mutex before doomedThread.
-  MutexAutoLock lock(mMutex);
+  AutoLock lock(mMutex);
 
   MOZ_ASSERT(mThread);
 
@@ -4889,7 +4889,7 @@ WorkerPrivate::EventTarget::Dispatch(already_AddRefed<nsIRunnable> aRunnable,
 
   RefPtr<WorkerRunnable> workerRunnable;
 
-  MutexAutoLock lock(mMutex);
+  AutoLock lock(mMutex);
 
   if (!mWorkerPrivate) {
     NS_WARNING(
@@ -4925,7 +4925,7 @@ WorkerPrivate::EventTarget::IsOnCurrentThread(bool* aIsOnCurrentThread) {
 
   MOZ_ASSERT(aIsOnCurrentThread);
 
-  MutexAutoLock lock(mMutex);
+  AutoLock lock(mMutex);
 
   if (!mWorkerPrivate) {
     NS_WARNING("A worker's event target was used after the worker has !");
@@ -4940,7 +4940,7 @@ NS_IMETHODIMP_(bool)
 WorkerPrivate::EventTarget::IsOnCurrentThreadInfallible() {
   // May be called on any thread!
 
-  MutexAutoLock lock(mMutex);
+  AutoLock lock(mMutex);
 
   if (!mWorkerPrivate) {
     NS_WARNING("A worker's event target was used after the worker has !");

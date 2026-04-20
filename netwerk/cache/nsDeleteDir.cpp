@@ -24,9 +24,9 @@ class nsBlockOnBackgroundThreadEvent : public Runnable {
   nsBlockOnBackgroundThreadEvent()
       : mozilla::Runnable("nsBlockOnBackgroundThreadEvent") {}
   NS_IMETHOD Run() override {
-    MutexAutoLock lock(nsDeleteDir::gInstance->mLock);
+    AutoLock lock(nsDeleteDir::gInstance->mLock);
     nsDeleteDir::gInstance->mNotified = true;
-    nsDeleteDir::gInstance->mCondVar.Notify();
+    nsDeleteDir::gInstance->mCondVar.Signal();
     return NS_OK;
   }
 };
@@ -34,7 +34,7 @@ class nsBlockOnBackgroundThreadEvent : public Runnable {
 nsDeleteDir* nsDeleteDir::gInstance = nullptr;
 
 nsDeleteDir::nsDeleteDir()
-    : mLock("nsDeleteDir.mLock"),
+    : mLock(),
       mCondVar(mLock, "nsDeleteDir.mCondVar"),
       mNotified(false),
       mShutdownPending(false),
@@ -57,7 +57,7 @@ nsresult nsDeleteDir::Shutdown(bool finishDeleting) {
   nsCOMArray<nsIFile> dirsToRemove;
   nsCOMPtr<nsIThread> thread;
   {
-    MutexAutoLock lock(gInstance->mLock);
+    AutoLock lock(gInstance->mLock);
     NS_ASSERTION(!gInstance->mShutdownPending,
                  "Unexpected state in nsDeleteDir::Shutdown()");
     gInstance->mShutdownPending = true;
@@ -136,7 +136,7 @@ void nsDeleteDir::DestroyThread() {
 void nsDeleteDir::TimerCallback(nsITimer* aTimer, void* arg) {
   Telemetry::AutoTimer<Telemetry::NETWORK_DISK_CACHE_DELETEDIR> timer;
   {
-    MutexAutoLock lock(gInstance->mLock);
+    AutoLock lock(gInstance->mLock);
 
     int32_t idx = gInstance->mTimers.IndexOf(aTimer);
     if (idx == -1) {
@@ -164,7 +164,7 @@ void nsDeleteDir::TimerCallback(nsITimer* aTimer, void* arg) {
   }
 
   {
-    MutexAutoLock lock(gInstance->mLock);
+    AutoLock lock(gInstance->mLock);
     gInstance->DestroyThread();
   }
 }
@@ -319,7 +319,7 @@ nsresult nsDeleteDir::RemoveOldTrashes(nsIFile* cacheDir) {
 nsresult nsDeleteDir::PostTimer(void* arg, uint32_t delay) {
   nsresult rv;
 
-  MutexAutoLock lock(mLock);
+  AutoLock lock(mLock);
 
   rv = InitThread();
   if (NS_FAILED(rv)) return rv;
@@ -362,7 +362,7 @@ nsresult nsDeleteDir::RemoveDir(nsIFile* file, bool* stopDeleting) {
   file->Remove(false);
   // No check for errors to remove as much as possible
 
-  MutexAutoLock lock(mLock);
+  AutoLock lock(mLock);
   if (mStopDeleting) *stopDeleting = true;
 
   return NS_OK;

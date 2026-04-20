@@ -69,7 +69,7 @@ WorkerThread::WorkerThread()
     : nsThread(MakeNotNull<ThreadEventQueue<mozilla::EventQueue>*>(
                    MakeUnique<mozilla::EventQueue>()),
                nsThread::NOT_MAIN_THREAD, kWorkerStackSize),
-      mLock("WorkerThread::mLock"),
+      mLock(),
       mWorkerPrivateCondVar(mLock, "WorkerThread::mWorkerPrivateCondVar"),
       mWorkerPrivate(nullptr),
       mOtherThreadsDispatchingViaEventTarget(0)
@@ -104,7 +104,7 @@ void WorkerThread::SetWorker(const WorkerThreadFriendKey& /* aKey */,
 
   if (aWorkerPrivate) {
     {
-      MutexAutoLock lock(mLock);
+      AutoLock lock(mLock);
 
       MOZ_ASSERT(!mWorkerPrivate);
       MOZ_ASSERT(mAcceptingNonWorkerRunnables);
@@ -122,7 +122,7 @@ void WorkerThread::SetWorker(const WorkerThreadFriendKey& /* aKey */,
     mObserver = nullptr;
 
     {
-      MutexAutoLock lock(mLock);
+      AutoLock lock(mLock);
 
       MOZ_ASSERT(mWorkerPrivate);
       MOZ_ASSERT(!mAcceptingNonWorkerRunnables);
@@ -143,7 +143,7 @@ void WorkerThread::SetWorker(const WorkerThreadFriendKey& /* aKey */,
 }
 
 void WorkerThread::IncrementDispatchCounter() {
-  MutexAutoLock lock(mLock);
+  AutoLock lock(mLock);
   if (mWorkerPrivate) {
     PerformanceCounter* performanceCounter =
         mWorkerPrivate->GetPerformanceCounter();
@@ -162,7 +162,7 @@ nsresult WorkerThread::DispatchPrimaryRunnable(
   MOZ_ASSERT(PR_GetCurrentThread() != mThread);
   MOZ_ASSERT(runnable);
   {
-    MutexAutoLock lock(mLock);
+    AutoLock lock(mLock);
 
     MOZ_ASSERT(!mWorkerPrivate);
     MOZ_ASSERT(mAcceptingNonWorkerRunnables);
@@ -186,7 +186,7 @@ nsresult WorkerThread::DispatchAnyThread(
   {
     const bool onWorkerThread = PR_GetCurrentThread() == mThread;
     {
-      MutexAutoLock lock(mLock);
+      AutoLock lock(mLock);
 
       MOZ_ASSERT(mWorkerPrivate);
       MOZ_ASSERT(!mAcceptingNonWorkerRunnables);
@@ -239,7 +239,7 @@ WorkerThread::Dispatch(already_AddRefed<nsIRunnable> aRunnable,
     nsCOMPtr<nsICancelableRunnable> cancelable = do_QueryInterface(runnable);
 
     {
-      MutexAutoLock lock(mLock);
+      AutoLock lock(mLock);
 
       // Only enforce cancelable runnables after we've started the worker loop.
       if (!mAcceptingNonWorkerRunnables) {
@@ -258,7 +258,7 @@ WorkerThread::Dispatch(already_AddRefed<nsIRunnable> aRunnable,
 
     workerPrivate = mWorkerPrivate;
   } else {
-    MutexAutoLock lock(mLock);
+    AutoLock lock(mLock);
 
     MOZ_ASSERT(mOtherThreadsDispatchingViaEventTarget < UINT32_MAX);
 
@@ -287,19 +287,19 @@ WorkerThread::Dispatch(already_AddRefed<nsIRunnable> aRunnable,
     // We need to wake the worker thread if we're not already on the right
     // thread and the dispatch succeeded.
     if (NS_SUCCEEDED(rv)) {
-      MutexAutoLock workerLock(workerPrivate->mMutex);
+      AutoLock workerLock(workerPrivate->mMutex);
 
-      workerPrivate->mCondVar.Notify();
+      workerPrivate->mCondVar.Signal();
     }
 
     // Now unset our waiting flag.
     {
-      MutexAutoLock lock(mLock);
+      AutoLock lock(mLock);
 
       MOZ_ASSERT(mOtherThreadsDispatchingViaEventTarget);
 
       if (!--mOtherThreadsDispatchingViaEventTarget) {
-        mWorkerPrivateCondVar.Notify();
+        mWorkerPrivateCondVar.Signal();
       }
     }
   }

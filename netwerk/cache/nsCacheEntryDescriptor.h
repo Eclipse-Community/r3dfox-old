@@ -13,7 +13,7 @@
 #include "nsIOutputStream.h"
 #include "nsCacheService.h"
 #include "zlib.h"
-#include "mozilla/Mutex.h"
+#include "base/lock.h"
 
 /******************************************************************************
  * nsCacheEntryDescriptor
@@ -46,7 +46,7 @@ class nsCacheEntryDescriptor final : public PRCList,
     bool doomEntry = false;
     bool asyncDoomPending;
     {
-      mozilla::MutexAutoLock lock(mLock);
+      AutoLock lock(mLock);
       asyncDoomPending = mAsyncDoomPending;
     }
 
@@ -76,7 +76,7 @@ class nsCacheEntryDescriptor final : public PRCList,
     nsCOMPtr<nsIInputStream> mInput;
     uint32_t mStartOffset;
     bool mInitialized;
-    mozilla::Mutex mLock;
+    Lock mLock;
 
    public:
     NS_DECL_THREADSAFE_ISUPPORTS
@@ -86,7 +86,7 @@ class nsCacheEntryDescriptor final : public PRCList,
         : mDescriptor(desc),
           mStartOffset(off),
           mInitialized(false),
-          mLock("nsInputStreamWrapper.mLock") {
+          mLock() {
       NS_ADDREF(mDescriptor);
     }
 
@@ -141,7 +141,7 @@ class nsCacheEntryDescriptor final : public PRCList,
     nsCOMPtr<nsIOutputStream> mOutput;
     uint32_t mStartOffset;
     bool mInitialized;
-    mozilla::Mutex mLock;
+    Lock mLock;
 
    public:
     NS_DECL_THREADSAFE_ISUPPORTS
@@ -151,7 +151,7 @@ class nsCacheEntryDescriptor final : public PRCList,
         : mDescriptor(desc),
           mStartOffset(off),
           mInitialized(false),
-          mLock("nsOutputStreamWrapper.mLock") {
+          mLock() {
       NS_ADDREF(mDescriptor);  // owning ref
     }
 
@@ -211,7 +211,7 @@ class nsCacheEntryDescriptor final : public PRCList,
   nsCacheAccessMode mAccessGranted;
   nsTArray<nsInputStreamWrapper*> mInputWrappers;
   nsOutputStreamWrapper* mOutputWrapper;
-  mozilla::Mutex mLock;
+  Lock mLock;
   bool mAsyncDoomPending;
   bool mDoomedOnClose;
   bool mClosingDescriptor;

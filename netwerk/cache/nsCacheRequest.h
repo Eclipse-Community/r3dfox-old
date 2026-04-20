@@ -8,8 +8,8 @@
 #define _nsCacheRequest_h_
 
 #include "nspr.h"
-#include "mozilla/CondVar.h"
-#include "mozilla/Mutex.h"
+#include "base/condition_variable.h"
+#include "base/lock.h"
 #include "nsCOMPtr.h"
 #include "nsICache.h"
 #include "nsICacheListener.h"
@@ -17,9 +17,6 @@
 #include "nsCacheService.h"
 
 class nsCacheRequest : public PRCList {
-  typedef mozilla::CondVar CondVar;
-  typedef mozilla::MutexAutoLock MutexAutoLock;
-  typedef mozilla::Mutex Mutex;
 
  private:
   friend class nsCacheService;
@@ -32,7 +29,7 @@ class nsCacheRequest : public PRCList {
       : mKey(key),
         mInfo(0),
         mListener(listener),
-        mLock("nsCacheRequest.mLock"),
+        mLock(),
         mCondVar(mLock, "nsCacheRequest.mCondVar"),
         mProfileDir(session->ProfileDir()) {
     MOZ_COUNT_CTOR(nsCacheRequest);
@@ -116,7 +113,7 @@ class nsCacheRequest : public PRCList {
       return NS_OK;                 // early exit;
     }
     {
-      MutexAutoLock lock(mLock);
+      AutoLock lock(mLock);
       while (WaitingForValidation()) {
         mCondVar.Wait();
       }
@@ -127,8 +124,8 @@ class nsCacheRequest : public PRCList {
 
   void WakeUp(void) {
     DoneWaitingForValidation();
-    MutexAutoLock lock(mLock);
-    mCondVar.Notify();
+    AutoLock lock(mLock);
+    mCondVar.Signal();
   }
 
   /**
@@ -138,8 +135,8 @@ class nsCacheRequest : public PRCList {
   uint32_t mInfo;
   nsICacheListener* mListener;  // strong ref
   nsCOMPtr<nsIEventTarget> mEventTarget;
-  Mutex mLock;
-  CondVar mCondVar;
+  Lock mLock;
+  ConditionVariable mCondVar;
   nsCOMPtr<nsIFile> mProfileDir;
 };
 

@@ -8,7 +8,7 @@
 #define mozilla_ThreadEventTarget_h
 
 #include "mozilla/MemoryReporting.h"
-#include "mozilla/Mutex.h"
+#include "base/lock.h"
 #include "mozilla/SynchronizedEventQueue.h"  // for ThreadTargetSink
 #include "nsISerialEventTarget.h"
 
@@ -24,7 +24,7 @@ class ThreadEventTarget final : public nsISerialEventTarget {
   NS_DECL_NSIEVENTTARGET_FULL
 
   // Disconnects the target so that it can no longer post events.
-  void Disconnect(const MutexAutoLock& aProofOfLock) {
+  void Disconnect(const AutoLock& aProofOfLock) {
     mSink->Disconnect(aProofOfLock);
   }
 

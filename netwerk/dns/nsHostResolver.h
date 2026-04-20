@@ -9,8 +9,8 @@
 #include "nscore.h"
 #include "prnetdb.h"
 #include "PLDHashTable.h"
-#include "mozilla/CondVar.h"
-#include "mozilla/Mutex.h"
+#include "base/condition_variable.h"
+#include "base/lock.h"
 #include "nsISupportsImpl.h"
 #include "nsIDNSListener.h"
 #include "nsIDNSService.h"
@@ -156,7 +156,6 @@ class nsHostRecord : public mozilla::LinkedListElement<RefPtr<nsHostRecord>>,
   }
 
 class AddrHostRecord final : public nsHostRecord {
-  typedef mozilla::Mutex Mutex;
 
  public:
   NS_DECLARE_STATIC_IID_ACCESSOR(ADDRHOSTRECORD_IID)
@@ -179,7 +178,7 @@ class AddrHostRecord final : public nsHostRecord {
    * the other threads just read it.  therefore the resolver worker
    * thread doesn't need to lock when reading |addr_info|.
    */
-  Mutex addr_info_lock;
+  Lock addr_info_lock;
   int addr_info_gencnt; /* generation count of |addr_info| */
   RefPtr<mozilla::net::AddrInfo> addr_info;
   mozilla::UniquePtr<mozilla::net::NetAddr> addr;
@@ -246,7 +245,7 @@ class AddrHostRecord final : public nsHostRecord {
 
   enum { INIT, STARTED, OK, FAILED } mTrrAUsed, mTrrAAAAUsed;
 
-  Mutex mTrrLock;  // lock when accessing the mTrrA[AAA] pointers
+  Lock mTrrLock;  // lock when accessing the mTrrA[AAA] pointers
   RefPtr<mozilla::net::TRR> mTrrA;
   RefPtr<mozilla::net::TRR> mTrrAAAA;
 
@@ -293,11 +292,11 @@ class TypeHostRecord final : public nsHostRecord {
 
   bool HasUsableResult();
 
-  mozilla::Mutex mTrrLock;  // lock when accessing the mTrr pointer
+  Lock mTrrLock;  // lock when accessing the mTrr pointer
   RefPtr<mozilla::net::TRR> mTrr;
 
   nsTArray<nsCString> mResults;
-  mozilla::Mutex mResultsLock;
+  Lock mResultsLock;
 
   // When the lookups of this record started (for telemetry).
   mozilla::TimeStamp mStart;
@@ -387,9 +386,6 @@ class AHostResolver {
  * nsHostResolver - an asynchronous host name resolver.
  */
 class nsHostResolver : public nsISupports, public AHostResolver {
-  typedef mozilla::CondVar CondVar;
-  typedef mozilla::Mutex Mutex;
-
  public:
   NS_DECL_THREADSAFE_ISUPPORTS
 
@@ -539,8 +535,8 @@ class nsHostResolver : public nsISupports, public AHostResolver {
   uint32_t mMaxCacheEntries;
   uint32_t mDefaultCacheLifetime;  // granularity seconds
   uint32_t mDefaultGracePeriod;    // granularity seconds
-  mutable Mutex mLock;  // mutable so SizeOfIncludingThis can be const
-  CondVar mIdleTaskCV;
+  mutable Lock mLock;  // mutable so SizeOfIncludingThis can be const
+  ConditionVariable mIdleTaskCV;
   nsRefPtrHashtable<nsGenericHashKey<nsHostKey>, nsHostRecord> mRecordDB;
   mozilla::LinkedList<RefPtr<nsHostRecord>> mHighQ;
   mozilla::LinkedList<RefPtr<nsHostRecord>> mMediumQ;

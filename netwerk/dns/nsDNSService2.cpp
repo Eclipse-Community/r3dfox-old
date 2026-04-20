@@ -91,7 +91,7 @@ nsDNSRecord::GetCanonicalName(nsACString& result) {
   NS_ENSURE_TRUE(mHostRecord->flags & nsHostResolver::RES_CANON_NAME,
                  NS_ERROR_NOT_AVAILABLE);
 
-  MutexAutoLock lock(mHostRecord->addr_info_lock);
+  AutoLock lock(mHostRecord->addr_info_lock);
 
   // if the record is for an IP address literal, then the canonical
   // host name is the IP address literal.
@@ -110,7 +110,7 @@ nsDNSRecord::GetCanonicalName(nsACString& result) {
 
 NS_IMETHODIMP
 nsDNSRecord::IsTRR(bool* retval) {
-  MutexAutoLock lock(mHostRecord->addr_info_lock);
+  AutoLock lock(mHostRecord->addr_info_lock);
   if (mHostRecord->addr_info) {
     *retval = mHostRecord->addr_info->IsTRR();
   } else {
@@ -124,7 +124,7 @@ nsDNSRecord::GetNextAddr(uint16_t port, NetAddr* addr) {
     return NS_ERROR_NOT_AVAILABLE;
   }
 
-  mHostRecord->addr_info_lock.Lock();
+  mHostRecord->addr_info_lock.Acquire();
   if (mHostRecord->addr_info) {
     if (mIterGenCnt != mHostRecord->addr_info_gencnt) {
       // mHostRecord->addr_info has changed, restart the iteration.
@@ -154,14 +154,14 @@ nsDNSRecord::GetNextAddr(uint16_t port, NetAddr* addr) {
       memcpy(addr, &mIter->mAddress, sizeof(NetAddr));
     }
 
-    mHostRecord->addr_info_lock.Unlock();
+    mHostRecord->addr_info_lock.Release();
 
     if (!mIter) {
       mDone = true;
       return NS_ERROR_NOT_AVAILABLE;
     }
   } else {
-    mHostRecord->addr_info_lock.Unlock();
+    mHostRecord->addr_info_lock.Release();
 
     if (!mHostRecord->addr) {
       // Both mHostRecord->addr_info and mHostRecord->addr are null.
@@ -190,7 +190,7 @@ nsDNSRecord::GetAddresses(nsTArray<NetAddr>& aAddressArray) {
     return NS_ERROR_NOT_AVAILABLE;
   }
 
-  mHostRecord->addr_info_lock.Lock();
+  mHostRecord->addr_info_lock.Acquire();
   if (mHostRecord->addr_info) {
     for (NetAddrElement* iter = mHostRecord->addr_info->mAddresses.getFirst();
          iter; iter = iter->getNext()) {
@@ -205,9 +205,9 @@ nsDNSRecord::GetAddresses(nsTArray<NetAddr>& aAddressArray) {
         addr->inet6.port = 0;
       }
     }
-    mHostRecord->addr_info_lock.Unlock();
+    mHostRecord->addr_info_lock.Release();
   } else {
-    mHostRecord->addr_info_lock.Unlock();
+    mHostRecord->addr_info_lock.Release();
 
     if (!mHostRecord->addr) {
       return NS_ERROR_NOT_AVAILABLE;
@@ -281,7 +281,7 @@ NS_IMETHODIMP
 nsDNSRecord::ReportUnusable(uint16_t aPort) {
   // right now we don't use the port in the blacklist
 
-  MutexAutoLock lock(mHostRecord->addr_info_lock);
+  AutoLock lock(mHostRecord->addr_info_lock);
 
   // Check that we are using a real addr_info (as opposed to a single
   // constant address), and that the generation count is valid. Otherwise,
@@ -615,7 +615,7 @@ nsresult nsDNSService::ReadPrefs(const char* name) {
   if (!name || !strcmp(name, kPrefDnsLocalDomains)) {
     nsCString localDomains;
     Preferences::GetCString(kPrefDnsLocalDomains, localDomains);
-    MutexAutoLock lock(mLock);
+    AutoLock lock(mLock);
     mLocalDomains.Clear();
     if (!localDomains.IsEmpty()) {
       nsCCharSeparatedTokenizer tokenizer(
@@ -658,7 +658,7 @@ nsDNSService::Init() {
                                        mResCacheGrace, getter_AddRefs(res));
   if (NS_SUCCEEDED(rv)) {
     // now, set all of our member variables while holding the lock
-    MutexAutoLock lock(mLock);
+    AutoLock lock(mLock);
     mResolver = res;
   }
 
@@ -703,7 +703,7 @@ nsDNSService::Shutdown() {
 
   RefPtr<nsHostResolver> res;
   {
-    MutexAutoLock lock(mLock);
+    AutoLock lock(mLock);
     res = mResolver;
     mResolver = nullptr;
   }
@@ -733,14 +733,14 @@ bool nsDNSService::GetOffline() const {
 
 NS_IMETHODIMP
 nsDNSService::GetPrefetchEnabled(bool* outVal) {
-  MutexAutoLock lock(mLock);
+  AutoLock lock(mLock);
   *outVal = !mDisablePrefetch;
   return NS_OK;
 }
 
 NS_IMETHODIMP
 nsDNSService::SetPrefetchEnabled(bool inVal) {
-  MutexAutoLock lock(mLock);
+  AutoLock lock(mLock);
   mDisablePrefetch = !inVal;
   return NS_OK;
 }
@@ -764,7 +764,7 @@ nsresult nsDNSService::PreprocessHostname(bool aLocalDomain,
   }
 
   if (mForceResolveOn) {
-    MutexAutoLock lock(mLock);
+    AutoLock lock(mLock);
     if (!aInput.LowerCaseEqualsASCII("localhost") &&
         !aInput.LowerCaseEqualsASCII("127.0.0.1")) {
       aACE.Assign(mForceResolve);
@@ -795,7 +795,7 @@ nsresult nsDNSService::AsyncResolveInternal(
   nsCOMPtr<nsIDNSListener> listener = aListener;
   bool localDomain = false;
   {
-    MutexAutoLock lock(mLock);
+    AutoLock lock(mLock);
 
     if (mDisablePrefetch && (flags & RESOLVE_SPECULATE))
       return NS_ERROR_DNS_LOOKUP_QUEUE_FULL;
@@ -860,7 +860,7 @@ nsresult nsDNSService::CancelAsyncResolveInternal(
   nsCOMPtr<nsIIDNService> idn;
   bool localDomain = false;
   {
-    MutexAutoLock lock(mLock);
+    AutoLock lock(mLock);
 
     if (mDisablePrefetch && (aFlags & RESOLVE_SPECULATE))
       return NS_ERROR_DNS_LOOKUP_QUEUE_FULL;
@@ -1035,7 +1035,7 @@ nsresult nsDNSService::ResolveInternal(
   nsCOMPtr<nsIIDNService> idn;
   bool localDomain = false;
   {
-    MutexAutoLock lock(mLock);
+    AutoLock lock(mLock);
     res = mResolver;
     idn = mIDN;
     localDomain = mLocalDomains.GetEntry(aHostname);
@@ -1139,7 +1139,7 @@ nsDNSService::Observe(nsISupports* subject, const char* topic,
 uint16_t nsDNSService::GetAFForLookup(const nsACString& host, uint32_t flags) {
   if (mDisableIPv6 || (flags & RESOLVE_DISABLE_IPV6)) return PR_AF_INET;
 
-  MutexAutoLock lock(mLock);
+  AutoLock lock(mLock);
 
   uint16_t af = PR_AF_UNSPEC;
 

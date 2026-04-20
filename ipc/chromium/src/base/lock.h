@@ -17,6 +17,7 @@ class Lock {
  public:
   // Optimized wrapper implementation
   Lock() : lock_() {}
+  explicit Lock(const char* aName): mName(aName), lock_() {}
   ~Lock() {}
   void Acquire() { lock_.Lock(); }
   void Release() { lock_.Unlock(); }
@@ -29,6 +30,9 @@ class Lock {
 
   // Null implementation if not debug.
   void AssertAcquired() const {}
+
+  void AssertCurrentThreadOwns() const {}
+  void AssertNotCurrentThreadOwns() const {}
 
   // Whether Lock mitigates priority inversion when used from different thread
   // priorities.
@@ -46,6 +50,7 @@ class Lock {
 #  error Unsupported platform
 #endif
   }
+  const char* mName;
 
 #if defined(OS_POSIX) || defined(OS_WIN)
   // Both Windows and POSIX implementations of ConditionVariable need to be

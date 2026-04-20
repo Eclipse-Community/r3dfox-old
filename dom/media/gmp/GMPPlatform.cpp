@@ -6,7 +6,7 @@
 #include "GMPPlatform.h"
 #include "GMPStorageChild.h"
 #include "GMPTimerChild.h"
-#include "mozilla/Monitor.h"
+#include "mozilla/Monitor2.h"
 #include "GMPChild.h"
 #include "mozilla/Mutex.h"
 #include "base/thread.h"
@@ -66,7 +66,7 @@ class GMPSyncRunnable final {
 
     mMessageLoop->PostTask(NewRunnableMethod("gmp::GMPSyncRunnable::Run", this,
                                              &GMPSyncRunnable::Run));
-    MonitorAutoLock lock(mMonitor);
+    Monitor2AutoLock lock(mMonitor);
     while (!mDone) {
       lock.Wait();
     }
@@ -76,9 +76,9 @@ class GMPSyncRunnable final {
     mTask->Run();
     mTask->Destroy();
     mTask = nullptr;
-    MonitorAutoLock lock(mMonitor);
+    Monitor2AutoLock lock(mMonitor);
     mDone = true;
-    lock.Notify();
+    lock.Signal();
   }
 
  private:
@@ -87,7 +87,7 @@ class GMPSyncRunnable final {
   bool mDone;
   GMPTask* mTask;
   MessageLoop* mMessageLoop;
-  Monitor mMonitor;
+  Monitor2 mMonitor;
 };
 
 class GMPThreadImpl : public GMPThread {

@@ -19,7 +19,7 @@
 #include "mozilla/dom/BrowserChild.h"
 #include "mozilla/dom/BrowserParent.h"
 #include "mozilla/ipc/TaskFactory.h"
-#include "mozilla/Monitor.h"
+#include "mozilla/Monitor2.h"
 #include "mozilla/plugins/PluginBridge.h"
 #include "mozilla/Preferences.h"
 #include "mozilla/Unused.h"
@@ -145,7 +145,7 @@ class HangMonitorChild : public PProcessHangMonitorChild,
       sInstance;
 
   const RefPtr<ProcessHangMonitor> mHangMonitor;
-  Monitor mMonitor;
+  Monitor2 mMonitor;
 
   // Main thread-only.
   bool mSentReport;
@@ -295,7 +295,7 @@ class HangMonitorParent : public PProcessHangMonitorParent,
   // This field is only accessed on the hang thread.
   bool mIPCOpen;
 
-  Monitor mMonitor;
+  Monitor2 mMonitor;
 
   // Must be accessed with mMonitor held.
   RefPtr<HangMonitoredProcess> mProcess;
@@ -319,7 +319,7 @@ HangMonitorChild::HangMonitorChild(ProcessHangMonitor* aMonitor)
     : mHangMonitor(aMonitor),
       // Ordering of this atomic is not preserved while recording/replaying, as
       // it may be accessed during the JS interrupt callback.
-      mMonitor("HangMonitorChild lock", recordreplay::Behavior::DontPreserve),
+      mMonitor("HangMonitorChild lock"),
       mSentReport(false),
       mTerminateScript(false),
       mTerminateGlobal(false),
@@ -362,7 +362,7 @@ bool HangMonitorChild::InterruptCallback() {
   LayersObserverEpoch paintWhileInterruptingJSEpoch;
 
   {
-    MonitorAutoLock lock(mMonitor);
+    Monitor2AutoLock lock(mMonitor);
     paintWhileInterruptingJS = mPaintWhileInterruptingJS;
     paintWhileInterruptingJSForce = mPaintWhileInterruptingJSForce;
     paintWhileInterruptingJSTab = mPaintWhileInterruptingJSTab;
@@ -397,7 +397,7 @@ bool HangMonitorChild::InterruptCallback() {
   int32_t cancelContentJSEpoch;
 
   {
-    MonitorAutoLock lock(mMonitor);
+    Monitor2AutoLock lock(mMonitor);
     cancelContentJS = mCancelContentJS;
     cancelContentJSTab = mCancelContentJSTab;
     cancelContentJSNavigationType = mCancelContentJSNavigationType;
@@ -456,7 +456,7 @@ void HangMonitorChild::Shutdown() {
 
   BackgroundHangMonitor::UnregisterAnnotator(*this);
 
-  MonitorAutoLock lock(mMonitor);
+  Monitor2AutoLock lock(mMonitor);
   while (!mShutdownDone) {
     mMonitor.Wait();
   }
@@ -465,9 +465,9 @@ void HangMonitorChild::Shutdown() {
 void HangMonitorChild::ShutdownOnThread() {
   MOZ_RELEASE_ASSERT(IsOnThread());
 
-  MonitorAutoLock lock(mMonitor);
+  Monitor2AutoLock lock(mMonitor);
   mShutdownDone = true;
-  mMonitor.Notify();
+  mMonitor.Signal();
 }
 
 void HangMonitorChild::ActorDestroy(ActorDestroyReason aWhy) {
@@ -486,7 +486,7 @@ mozilla::ipc::IPCResult HangMonitorChild::RecvTerminateScript(
     const bool& aTerminateGlobal) {
   MOZ_RELEASE_ASSERT(IsOnThread());
 
-  MonitorAutoLock lock(mMonitor);
+  Monitor2AutoLock lock(mMonitor);
   if (aTerminateGlobal) {
     mTerminateGlobal = true;
   } else {
@@ -498,7 +498,7 @@ mozilla::ipc::IPCResult HangMonitorChild::RecvTerminateScript(
 mozilla::ipc::IPCResult HangMonitorChild::RecvBeginStartingDebugger() {
   MOZ_RELEASE_ASSERT(IsOnThread());
 
-  MonitorAutoLock lock(mMonitor);
+  Monitor2AutoLock lock(mMonitor);
   mStartDebugger = true;
   return IPC_OK();
 }
@@ -506,7 +506,7 @@ mozilla::ipc::IPCResult HangMonitorChild::RecvBeginStartingDebugger() {
 mozilla::ipc::IPCResult HangMonitorChild::RecvEndStartingDebugger() {
   MOZ_RELEASE_ASSERT(IsOnThread());
 
-  MonitorAutoLock lock(mMonitor);
+  Monitor2AutoLock lock(mMonitor);
   mFinishedStartingDebugger = true;
   return IPC_OK();
 }
@@ -517,7 +517,7 @@ mozilla::ipc::IPCResult HangMonitorChild::RecvPaintWhileInterruptingJS(
   MOZ_RELEASE_ASSERT(IsOnThread());
 
   {
-    MonitorAutoLock lock(mMonitor);
+    Monitor2AutoLock lock(mMonitor);
     MaybeStartPaintWhileInterruptingJS();
     mPaintWhileInterruptingJS = true;
     mPaintWhileInterruptingJSForce = aForceRepaint;
@@ -548,7 +548,7 @@ mozilla::ipc::IPCResult HangMonitorChild::RecvCancelContentJSExecutionIfRunning(
   MOZ_RELEASE_ASSERT(IsOnThread());
 
   {
-    MonitorAutoLock lock(mMonitor);
+    Monitor2AutoLock lock(mMonitor);
     mCancelContentJS = true;
     mCancelContentJSTab = aTabId;
     mCancelContentJSNavigationType = aNavigationType;
@@ -588,7 +588,7 @@ HangMonitorChild::SlowScriptAction HangMonitorChild::NotifySlowScript(
   mSentReport = true;
 
   {
-    MonitorAutoLock lock(mMonitor);
+    Monitor2AutoLock lock(mMonitor);
 
     if (mTerminateScript) {
       mTerminateScript = false;
@@ -623,7 +623,7 @@ HangMonitorChild::SlowScriptAction HangMonitorChild::NotifySlowScript(
 bool HangMonitorChild::IsDebuggerStartupComplete() {
   MOZ_RELEASE_ASSERT(NS_IsMainThread());
 
-  MonitorAutoLock lock(mMonitor);
+  Monitor2AutoLock lock(mMonitor);
 
   if (mFinishedStartingDebugger) {
     mFinishedStartingDebugger = false;
@@ -664,7 +664,7 @@ void HangMonitorChild::ClearHang() {
                                         this,
                                         &HangMonitorChild::ClearHangAsync));
 
-    MonitorAutoLock lock(mMonitor);
+    Monitor2AutoLock lock(mMonitor);
     mSentReport = false;
     mTerminateScript = false;
     mTerminateGlobal = false;
@@ -717,7 +717,7 @@ HangMonitorParent::~HangMonitorParent() {
 void HangMonitorParent::Shutdown() {
   MOZ_RELEASE_ASSERT(NS_IsMainThread());
 
-  MonitorAutoLock lock(mMonitor);
+  Monitor2AutoLock lock(mMonitor);
 
   if (mProcess) {
     mProcess->Clear();
@@ -743,9 +743,9 @@ void HangMonitorParent::ShutdownOnThread() {
     Close();
   }
 
-  MonitorAutoLock lock(mMonitor);
+  Monitor2AutoLock lock(mMonitor);
   mShutdownDone = true;
-  mMonitor.Notify();
+  mMonitor.Signal();
 }
 
 void HangMonitorParent::PaintWhileInterruptingJS(
@@ -906,7 +906,7 @@ mozilla::ipc::IPCResult HangMonitorParent::RecvHangEvidence(
 
   mHangMonitor->InitiateCPOWTimeout();
 
-  MonitorAutoLock lock(mMonitor);
+  Monitor2AutoLock lock(mMonitor);
 
   NS_DispatchToMainThread(mMainThreadTaskFactory.NewRunnableMethod(
       &HangMonitorParent::SendHangNotification, aHangData, crashId,
@@ -925,7 +925,7 @@ mozilla::ipc::IPCResult HangMonitorParent::RecvClearHang() {
 
   mHangMonitor->InitiateCPOWTimeout();
 
-  MonitorAutoLock lock(mMonitor);
+  Monitor2AutoLock lock(mMonitor);
 
   NS_DispatchToMainThread(mMainThreadTaskFactory.NewRunnableMethod(
       &HangMonitorParent::ClearHangNotification));

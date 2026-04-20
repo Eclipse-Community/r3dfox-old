@@ -30,7 +30,7 @@ class TaskQueue::EventTargetWrapper final : public nsISerialEventTarget {
   NS_IMETHOD
   Dispatch(already_AddRefed<nsIRunnable> aEvent, uint32_t aFlags) override {
     nsCOMPtr<nsIRunnable> runnable = aEvent;
-    MonitorAutoLock mon(mTaskQueue->mQueueMonitor);
+    Monitor2AutoLock mon(mTaskQueue->mQueueMonitor);
     return mTaskQueue->DispatchLocked(/* passed by ref */ runnable,
                                       NormalDispatch);
   }
@@ -113,7 +113,7 @@ nsresult TaskQueue::DispatchLocked(nsCOMPtr<nsIRunnable>& aRunnable,
 }
 
 void TaskQueue::AwaitIdle() {
-  MonitorAutoLock mon(mQueueMonitor);
+  Monitor2AutoLock mon(mQueueMonitor);
   AwaitIdleLocked();
 }
 
@@ -137,7 +137,7 @@ void TaskQueue::AwaitShutdownAndIdle() {
   MOZ_ASSERT_IF(AbstractThread::GetCurrent(),
                 !AbstractThread::GetCurrent()->HasTailTasksFor(this));
 
-  MonitorAutoLock mon(mQueueMonitor);
+  Monitor2AutoLock mon(mQueueMonitor);
   while (!mIsShutdown) {
     mQueueMonitor.Wait();
   }
@@ -150,16 +150,16 @@ RefPtr<ShutdownPromise> TaskQueue::BeginShutdown() {
   if (AbstractThread* currentThread = AbstractThread::GetCurrent()) {
     currentThread->TailDispatchTasksFor(this);
   }
-  MonitorAutoLock mon(mQueueMonitor);
+  Monitor2AutoLock mon(mQueueMonitor);
   mIsShutdown = true;
   RefPtr<ShutdownPromise> p = mShutdownPromise.Ensure(__func__);
   MaybeResolveShutdown();
-  mon.NotifyAll();
+  mon.Broadcast();
   return p;
 }
 
 bool TaskQueue::IsEmpty() {
-  MonitorAutoLock mon(mQueueMonitor);
+  Monitor2AutoLock mon(mQueueMonitor);
   return mTasks.empty();
 }
 
@@ -176,12 +176,12 @@ already_AddRefed<nsISerialEventTarget> TaskQueue::WrapAsEventTarget() {
 nsresult TaskQueue::Runner::Run() {
   RefPtr<nsIRunnable> event;
   {
-    MonitorAutoLock mon(mQueue->mQueueMonitor);
+    Monitor2AutoLock mon(mQueue->mQueueMonitor);
     MOZ_ASSERT(mQueue->mIsRunning);
     if (mQueue->mTasks.empty()) {
       mQueue->mIsRunning = false;
       mQueue->MaybeResolveShutdown();
-      mon.NotifyAll();
+      mon.Broadcast();
       return NS_OK;
     }
     event = mQueue->mTasks.front().forget();
@@ -207,12 +207,12 @@ nsresult TaskQueue::Runner::Run() {
   event = nullptr;
 
   {
-    MonitorAutoLock mon(mQueue->mQueueMonitor);
+    Monitor2AutoLock mon(mQueue->mQueueMonitor);
     if (mQueue->mTasks.empty()) {
       // No more events to run. Exit the task runner.
       mQueue->mIsRunning = false;
       mQueue->MaybeResolveShutdown();
-      mon.NotifyAll();
+      mon.Broadcast();
       return NS_OK;
     }
   }
@@ -225,11 +225,11 @@ nsresult TaskQueue::Runner::Run() {
   nsresult rv = mQueue->mTarget->Dispatch(this, NS_DISPATCH_AT_END);
   if (NS_FAILED(rv)) {
     // Failed to dispatch, shutdown!
-    MonitorAutoLock mon(mQueue->mQueueMonitor);
+    Monitor2AutoLock mon(mQueue->mQueueMonitor);
     mQueue->mIsRunning = false;
     mQueue->mIsShutdown = true;
     mQueue->MaybeResolveShutdown();
-    mon.NotifyAll();
+    mon.Broadcast();
   }
 
   return NS_OK;

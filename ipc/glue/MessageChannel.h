@@ -39,16 +39,6 @@ namespace ipc {
 class MessageChannel;
 class IToplevelProtocol;
 
-class RefCountedMonitor : public Monitor {
- public:
-  RefCountedMonitor() : Monitor("mozilla.ipc.MessageChannel.mMonitor") {}
-
-  NS_INLINE_DECL_THREADSAFE_REFCOUNTING(RefCountedMonitor)
-
- private:
-  ~RefCountedMonitor() {}
-};
-
 enum class SyncSendError {
   SendSuccess,
   PreviousTimeout,
@@ -609,7 +599,7 @@ class MessageChannel : HasResultCodes, MessageLoop::DestructionObserver {
   // this is never nullified.
   IToplevelProtocol* mListener;
   ChannelState mChannelState;
-  RefPtr<RefCountedMonitor> mMonitor;
+  Monitor2* mMonitor;
   Side mSide;
   bool mIsCrossProcess;
   MessageLink* mLink;

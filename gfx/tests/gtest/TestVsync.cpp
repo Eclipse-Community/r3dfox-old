@@ -12,7 +12,7 @@
 #include "mozilla/RefPtr.h"
 #include "SoftwareVsyncSource.h"
 #include "VsyncSource.h"
-#include "mozilla/Monitor.h"
+#include "mozilla/Monitor2.h"
 #include "mozilla/TimeStamp.h"
 #include "mozilla/VsyncDispatcher.h"
 
@@ -31,7 +31,7 @@ class TestVsyncObserver : public VsyncObserver {
       : mDidGetVsyncNotification(false), mVsyncMonitor("VsyncMonitor") {}
 
   virtual bool NotifyVsync(const VsyncEvent& aVsync) override {
-    MonitorAutoLock lock(mVsyncMonitor);
+    Monitor2AutoLock lock(mVsyncMonitor);
     mDidGetVsyncNotification = true;
     mVsyncMonitor.Notify();
     return true;
@@ -44,18 +44,18 @@ class TestVsyncObserver : public VsyncObserver {
     }
 
     {  // scope lock
-      MonitorAutoLock lock(mVsyncMonitor);
+      Monitor2AutoLock lock(mVsyncMonitor);
       lock.Wait(TimeDuration::FromMilliseconds(kVsyncTimeoutMS));
     }
   }
 
   bool DidGetVsyncNotification() {
-    MonitorAutoLock lock(mVsyncMonitor);
+    Monitor2AutoLock lock(mVsyncMonitor);
     return mDidGetVsyncNotification;
   }
 
   void ResetVsyncNotification() {
-    MonitorAutoLock lock(mVsyncMonitor);
+    Monitor2AutoLock lock(mVsyncMonitor);
     mDidGetVsyncNotification = false;
   }
 

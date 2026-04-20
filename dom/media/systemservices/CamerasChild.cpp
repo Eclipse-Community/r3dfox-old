@@ -159,30 +159,30 @@ int CamerasChild::AddDeviceChangeCallback(DeviceChangeCallback* aCallback) {
 
 mozilla::ipc::IPCResult CamerasChild::RecvReplyFailure(void) {
   LOG((__PRETTY_FUNCTION__));
-  MonitorAutoLock monitor(mReplyMonitor);
+  Monitor2AutoLock monitor(mReplyMonitor);
   mReceivedReply = true;
   mReplySuccess = false;
-  monitor.Notify();
+  monitor.Signal();
   return IPC_OK();
 }
 
 mozilla::ipc::IPCResult CamerasChild::RecvReplySuccess(void) {
   LOG((__PRETTY_FUNCTION__));
-  MonitorAutoLock monitor(mReplyMonitor);
+  Monitor2AutoLock monitor(mReplyMonitor);
   mReceivedReply = true;
   mReplySuccess = true;
-  monitor.Notify();
+  monitor.Signal();
   return IPC_OK();
 }
 
 mozilla::ipc::IPCResult CamerasChild::RecvReplyNumberOfCapabilities(
     const int& numdev) {
   LOG((__PRETTY_FUNCTION__));
-  MonitorAutoLock monitor(mReplyMonitor);
+  Monitor2AutoLock monitor(mReplyMonitor);
   mReceivedReply = true;
   mReplySuccess = true;
   mReplyInteger = numdev;
-  monitor.Notify();
+  monitor.Signal();
   return IPC_OK();
 }
 
@@ -232,7 +232,7 @@ class LockAndDispatch {
   // Prevent concurrent use of the reply variables by holding
   // the mReplyMonitor. Note that this is unlocked while waiting for
   // the reply to be filled in, necessitating the additional mRequestLock/Mutex;
-  MonitorAutoLock mReplyLock;
+  Monitor2AutoLock mReplyLock;
   MutexAutoLock mRequestLock;
   bool mSuccess;
   const T mFailureValue;
@@ -240,7 +240,7 @@ class LockAndDispatch {
 };
 
 bool CamerasChild::DispatchToParent(nsIRunnable* aRunnable,
-                                    MonitorAutoLock& aMonitor) {
+                                    Monitor2AutoLock& aMonitor) {
   CamerasSingleton::Mutex().AssertCurrentThreadOwns();
   CamerasSingleton::Thread()->Dispatch(aRunnable, NS_DISPATCH_NORMAL);
   // We can't see if the send worked, so we need to be able to bail
@@ -287,11 +287,11 @@ int CamerasChild::NumberOfCaptureDevices(CaptureEngine aCapEngine) {
 mozilla::ipc::IPCResult CamerasChild::RecvReplyNumberOfCaptureDevices(
     const int& numdev) {
   LOG((__PRETTY_FUNCTION__));
-  MonitorAutoLock monitor(mReplyMonitor);
+  Monitor2AutoLock monitor(mReplyMonitor);
   mReceivedReply = true;
   mReplySuccess = true;
   mReplyInteger = numdev;
-  monitor.Notify();
+  monitor.Signal();
   return IPC_OK();
 }
 
@@ -326,7 +326,7 @@ int CamerasChild::GetCaptureCapability(
 mozilla::ipc::IPCResult CamerasChild::RecvReplyGetCaptureCapability(
     const VideoCaptureCapability& ipcCapability) {
   LOG((__PRETTY_FUNCTION__));
-  MonitorAutoLock monitor(mReplyMonitor);
+  Monitor2AutoLock monitor(mReplyMonitor);
   mReceivedReply = true;
   mReplySuccess = true;
   mReplyCapability.width = ipcCapability.width();
@@ -335,7 +335,7 @@ mozilla::ipc::IPCResult CamerasChild::RecvReplyGetCaptureCapability(
   mReplyCapability.videoType =
       static_cast<webrtc::VideoType>(ipcCapability.videoType());
   mReplyCapability.interlaced = ipcCapability.interlaced();
-  monitor.Notify();
+  monitor.Signal();
   return IPC_OK();
 }
 
@@ -365,13 +365,13 @@ mozilla::ipc::IPCResult CamerasChild::RecvReplyGetCaptureDevice(
     const nsCString& device_name, const nsCString& device_id,
     const bool& scary) {
   LOG((__PRETTY_FUNCTION__));
-  MonitorAutoLock monitor(mReplyMonitor);
+  Monitor2AutoLock monitor(mReplyMonitor);
   mReceivedReply = true;
   mReplySuccess = true;
   mReplyDeviceName = device_name;
   mReplyDeviceID = device_id;
   mReplyScary = scary;
-  monitor.Notify();
+  monitor.Signal();
   return IPC_OK();
 }
 
@@ -398,11 +398,11 @@ int CamerasChild::AllocateCaptureDevice(
 mozilla::ipc::IPCResult CamerasChild::RecvReplyAllocateCaptureDevice(
     const int& numdev) {
   LOG((__PRETTY_FUNCTION__));
-  MonitorAutoLock monitor(mReplyMonitor);
+  Monitor2AutoLock monitor(mReplyMonitor);
   mReceivedReply = true;
   mReplySuccess = true;
   mReplyInteger = numdev;
-  monitor.Notify();
+  monitor.Signal();
   return IPC_OK();
 }
 
@@ -521,9 +521,9 @@ void CamerasChild::ShutdownAll() {
 void CamerasChild::ShutdownParent() {
   // Called with CamerasSingleton::Mutex() held
   {
-    MonitorAutoLock monitor(mReplyMonitor);
+    Monitor2AutoLock monitor(mReplyMonitor);
     mIPCIsAlive = false;
-    monitor.NotifyAll();
+    monitor.Broadcast();
   }
   if (CamerasSingleton::Thread()) {
     LOG(("Dispatching actor deletion"));
@@ -608,11 +608,11 @@ int CamerasChild::SetFakeDeviceChangeEvents() {
 }
 
 void CamerasChild::ActorDestroy(ActorDestroyReason aWhy) {
-  MonitorAutoLock monitor(mReplyMonitor);
+  Monitor2AutoLock monitor(mReplyMonitor);
   mIPCIsAlive = false;
   // Hopefully prevent us from getting stuck
   // on replies that'll never come.
-  monitor.NotifyAll();
+  monitor.Broadcast();
 }
 
 CamerasChild::CamerasChild()

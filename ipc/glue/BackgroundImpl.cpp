@@ -492,7 +492,7 @@ class ParentImpl::ConnectActorRunnable final : public Runnable {
 };
 
 class ParentImpl::CreateActorHelper final : public Runnable {
-  mozilla::Monitor mMonitor;
+  mozilla::Monitor2 mMonitor;
   RefPtr<ParentImpl> mParentActor;
   nsCOMPtr<nsIThread> mThread;
   nsresult mMainThreadResultCode;
@@ -552,7 +552,7 @@ class ChildImpl::SendInitBackgroundRunnable final : public CancelableRunnable {
   nsCOMPtr<nsISerialEventTarget> mOwningEventTarget;
   RefPtr<StrongWorkerRef> mWorkerRef;
   Endpoint<PBackgroundParent> mParent;
-  mozilla::Mutex mMutex;
+  Lock mMutex;
   bool mSentInitBackground;
   std::function<void(Endpoint<PBackgroundParent>&& aParent)> mSendInitfunc;
 
@@ -564,7 +564,7 @@ class ChildImpl::SendInitBackgroundRunnable final : public CancelableRunnable {
   void ClearEventTarget() {
     mWorkerRef = nullptr;
 
-    mozilla::MutexAutoLock lock(mMutex);
+    AutoLock lock(mMutex);
     mOwningEventTarget = nullptr;
   }
 
@@ -1224,7 +1224,7 @@ nsresult ParentImpl::CreateActorHelper::BlockAndGetResults(
     MOZ_ALWAYS_SUCCEEDS(NS_DispatchToMainThread(this));
   }
 
-  mozilla::MonitorAutoLock lock(mMonitor);
+  mozilla::Monitor2AutoLock lock(mMonitor);
   while (mWaiting) {
     lock.Wait();
   }
@@ -1265,11 +1265,11 @@ ParentImpl::CreateActorHelper::Run() {
     mMainThreadResultCode = rv;
   }
 
-  mozilla::MonitorAutoLock lock(mMonitor);
+  mozilla::Monitor2AutoLock lock(mMonitor);
   MOZ_ASSERT(mWaiting);
 
   mWaiting = false;
-  lock.Notify();
+  lock.Signal();
 
   return NS_OK;
 }
@@ -1775,7 +1775,7 @@ ChildImpl::SendInitBackgroundRunnable::Run() {
 
     nsCOMPtr<nsISerialEventTarget> owningEventTarget;
     {
-      mozilla::MutexAutoLock lock(mMutex);
+      AutoLock lock(mMutex);
       owningEventTarget = mOwningEventTarget;
     }
 

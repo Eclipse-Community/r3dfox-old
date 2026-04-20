@@ -14,7 +14,7 @@
 
 #include "mozilla/ipc/FileDescriptor.h"
 #include "mozilla/Atomics.h"
-#include "mozilla/Monitor.h"
+#include "mozilla/Monitor2.h"
 #include "mozilla/MozPromise.h"
 #include "mozilla/StaticPtr.h"
 #include "mozilla/UniquePtr.h"
@@ -39,7 +39,7 @@ namespace ipc {
 
 class GeckoChildProcessHost : public ChildProcessHost {
  protected:
-  typedef mozilla::Monitor Monitor;
+  typedef mozilla::Monitor2 Monitor2;
   typedef std::vector<std::string> StringVector;
 
  public:
@@ -159,7 +159,7 @@ class GeckoChildProcessHost : public ChildProcessHost {
 
   GeckoProcessType mProcessType;
   bool mIsFileContent;
-  Monitor mMonitor;
+  Monitor2 mMonitor;
   FilePath mProcessPath;
   // GeckoChildProcessHost holds the launch options so they can be set
   // up on the main thread using main-thread-only APIs like prefs, and

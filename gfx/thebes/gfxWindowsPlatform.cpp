@@ -1778,7 +1778,7 @@ class D3DVsyncSource final : public VsyncSource {
       MOZ_ASSERT(NS_IsMainThread());
       MOZ_ASSERT(mVsyncThread->IsRunning());
       {  // scope lock
-        MonitorAutoLock lock(mVsyncEnabledLock);
+        Monitor2AutoLock lock(mVsyncEnabledLock);
         if (mVsyncEnabled) {
           return;
         }
@@ -1792,7 +1792,7 @@ class D3DVsyncSource final : public VsyncSource {
     virtual void DisableVsync() override {
       MOZ_ASSERT(NS_IsMainThread());
       MOZ_ASSERT(mVsyncThread->IsRunning());
-      MonitorAutoLock lock(mVsyncEnabledLock);
+      Monitor2AutoLock lock(mVsyncEnabledLock);
       if (!mVsyncEnabled) {
         return;
       }
@@ -1801,7 +1801,7 @@ class D3DVsyncSource final : public VsyncSource {
 
     virtual bool IsVsyncEnabled() override {
       MOZ_ASSERT(NS_IsMainThread());
-      MonitorAutoLock lock(mVsyncEnabledLock);
+      Monitor2AutoLock lock(mVsyncEnabledLock);
       return mVsyncEnabled;
     }
 
@@ -1895,7 +1895,7 @@ class D3DVsyncSource final : public VsyncSource {
 
       for (;;) {
         {  // scope lock
-          MonitorAutoLock lock(mVsyncEnabledLock);
+          Monitor2AutoLock lock(mVsyncEnabledLock);
           if (!mVsyncEnabled) return;
         }
 
@@ -1964,7 +1964,7 @@ class D3DVsyncSource final : public VsyncSource {
     }
 
     TimeStamp mPrevVsync;
-    Monitor mVsyncEnabledLock;
+    Monitor2 mVsyncEnabledLock;
     base::Thread* mVsyncThread;
     TimeDuration mVsyncRate;
     bool mVsyncEnabled;

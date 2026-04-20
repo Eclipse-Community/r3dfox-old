@@ -82,7 +82,7 @@ class OCSPRequest final : public nsIStreamLoaderObserver, public nsIRunnable {
   ~OCSPRequest() = default;
 
   static void OnTimeout(nsITimer* timer, void* closure);
-  nsresult NotifyDone(nsresult rv, MonitorAutoLock& proofOfLock);
+  nsresult NotifyDone(nsresult rv, Monitor2AutoLock& proofOfLock);
 
   // mMonitor provides the memory barrier protecting these member variables.
   // What happens is the originating thread creates an OCSPRequest object with
@@ -101,7 +101,7 @@ class OCSPRequest final : public nsIStreamLoaderObserver, public nsIRunnable {
   // cancelled. This is how we know the closure in OnTimeout is valid. If the
   // timer fires before OnStreamComplete runs, it should be safe to not cancel
   // the request because necko has a strong reference to it.
-  Monitor mMonitor;
+  Monitor2 mMonitor;
   bool mNotifiedDone;
   nsCOMPtr<nsIStreamLoader> mLoader;
   const nsCString mAIALocation;
@@ -140,7 +140,7 @@ nsresult OCSPRequest::DispatchToMainThreadAndWait() {
     return NS_ERROR_FAILURE;
   }
 
-  MonitorAutoLock lock(mMonitor);
+  Monitor2AutoLock lock(mMonitor);
   nsresult rv = NS_DispatchToMainThread(this);
   if (NS_FAILED(rv)) {
     return rv;
@@ -184,7 +184,7 @@ nsresult OCSPRequest::GetResponse(/*out*/ Vector<uint8_t>& response) {
     return NS_ERROR_FAILURE;
   }
 
-  MonitorAutoLock lock(mMonitor);
+  Monitor2AutoLock lock(mMonitor);
   if (!mNotifiedDone) {
     return NS_ERROR_IN_PROGRESS;
   }
@@ -209,7 +209,7 @@ OCSPRequest::Run() {
     return NS_ERROR_FAILURE;
   }
 
-  MonitorAutoLock lock(mMonitor);
+  Monitor2AutoLock lock(mMonitor);
 
   nsCOMPtr<nsIIOService> ios = do_GetIOService();
   if (!ios) {
@@ -342,7 +342,7 @@ OCSPRequest::Run() {
   return NS_OK;
 }
 
-nsresult OCSPRequest::NotifyDone(nsresult rv, MonitorAutoLock& lock) {
+nsresult OCSPRequest::NotifyDone(nsresult rv, Monitor2AutoLock& lock) {
   MOZ_ASSERT(NS_IsMainThread());
   if (!NS_IsMainThread()) {
     return NS_ERROR_FAILURE;
@@ -357,7 +357,7 @@ nsresult OCSPRequest::NotifyDone(nsresult rv, MonitorAutoLock& lock) {
     Unused << mTimeoutTimer->Cancel();
   }
   mNotifiedDone = true;
-  lock.Notify();
+  lock.Signal();
   return rv;
 }
 
@@ -370,7 +370,7 @@ OCSPRequest::OnStreamComplete(nsIStreamLoader* aLoader, nsISupports* aContext,
     return NS_ERROR_FAILURE;
   }
 
-  MonitorAutoLock lock(mMonitor);
+  Monitor2AutoLock lock(mMonitor);
 
   nsCOMPtr<nsIRequest> req;
   nsresult rv = aLoader->GetRequest(getter_AddRefs(req));
@@ -424,7 +424,7 @@ void OCSPRequest::OnTimeout(nsITimer* timer, void* closure) {
   // (i.e. OnStreamComplete ran), the timer would have been cancelled in
   // NotifyDone.
   OCSPRequest* self = static_cast<OCSPRequest*>(closure);
-  MonitorAutoLock lock(self->mMonitor);
+  Monitor2AutoLock lock(self->mMonitor);
   self->mTimeoutTimer = nullptr;
   self->NotifyDone(NS_ERROR_NET_TIMEOUT, lock);
 }

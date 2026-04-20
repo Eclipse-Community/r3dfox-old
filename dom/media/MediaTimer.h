@@ -9,7 +9,7 @@
 
 #  include "mozilla/AbstractThread.h"
 #  include "mozilla/IntegerPrintfMacros.h"
-#  include "mozilla/Monitor.h"
+#  include "mozilla/Monitor2.h"
 #  include "mozilla/MozPromise.h"
 #  include "mozilla/RefPtr.h"
 #  include "mozilla/TimeStamp.h"
@@ -97,7 +97,7 @@ class MediaTimer {
   NS_DECL_OWNINGTHREAD
   nsCOMPtr<nsIEventTarget> mThread;
   std::priority_queue<Entry> mEntries;
-  Monitor mMonitor;
+  Monitor2 mMonitor;
   nsCOMPtr<nsITimer> mTimer;
   TimeStamp mCurrentTimerTarget;
 

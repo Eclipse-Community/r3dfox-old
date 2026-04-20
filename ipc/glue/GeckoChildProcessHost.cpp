@@ -78,7 +78,7 @@
 #include "nscore.h"  // for NS_FREE_PERMANENT_DATA
 #include "private/pprio.h"
 
-using mozilla::MonitorAutoLock;
+using mozilla::Monitor2AutoLock;
 using mozilla::Preferences;
 using mozilla::StaticMutexAutoLock;
 using mozilla::ipc::GeckoChildProcessHost;
@@ -399,7 +399,7 @@ bool GeckoChildProcessHost::WaitUntilConnected(int32_t aTimeoutMs) {
                              ? TimeDuration::FromMilliseconds(aTimeoutMs)
                              : TimeDuration::Forever();
 
-  MonitorAutoLock lock(mMonitor);
+  Monitor2AutoLock lock(mMonitor);
   TimeStamp waitStart = TimeStamp::Now();
   TimeStamp current;
 
@@ -411,8 +411,8 @@ bool GeckoChildProcessHost::WaitUntilConnected(int32_t aTimeoutMs) {
       break;
     }
 
-    CVStatus status = lock.Wait(timeout);
-    if (status == CVStatus::Timeout) {
+    CVStatus2 status = lock.Wait(timeout);
+    if (status == CVStatus2::Timeout) {
       break;
     }
 
@@ -432,7 +432,7 @@ bool GeckoChildProcessHost::LaunchAndWaitForProcessHandle(
     return false;
   }
 
-  MonitorAutoLock lock(mMonitor);
+  Monitor2AutoLock lock(mMonitor);
   while (mProcessState < PROCESS_CREATED) {
     lock.Wait();
   }
@@ -444,9 +444,9 @@ bool GeckoChildProcessHost::LaunchAndWaitForProcessHandle(
 void GeckoChildProcessHost::InitializeChannel() {
   CreateChannel();
 
-  MonitorAutoLock lock(mMonitor);
+  Monitor2AutoLock lock(mMonitor);
   mProcessState = CHANNEL_INITIALIZED;
-  lock.Notify();
+  lock.Signal();
 }
 
 void GeckoChildProcessHost::Join() {
@@ -586,9 +586,9 @@ void GeckoChildProcessHost::RunPerformAsyncLaunch(
   // like `delete this` everywhere.)
   auto fail = [this] {
     {
-      MonitorAutoLock lock(mMonitor);
+      Monitor2AutoLock lock(mMonitor);
       mProcessState = PROCESS_ERROR;
-      lock.Notify();
+      lock.Signal();
     }
     mHandlePromise->Reject(LaunchError{}, __func__);
   };
@@ -1281,14 +1281,14 @@ bool GeckoChildProcessHost::PerformAsyncLaunch(
       base::GetProcId(process), crashAnnotationReadPipe.forget());
 
   {
-    MonitorAutoLock lock(mMonitor);
+    Monitor2AutoLock lock(mMonitor);
     // This runs on a launch thread, but the OnChannel{Connected,Error}
     // callbacks run on the I/O thread, so it's possible that the state already
     // advanced beyond PROCESS_CREATED.
     if (mProcessState < PROCESS_CREATED) {
       mProcessState = PROCESS_CREATED;
     }
-    lock.Notify();
+    lock.Signal();
   }
 
   mLaunchOptions = nullptr;
@@ -1313,9 +1313,9 @@ void GeckoChildProcessHost::OnChannelConnected(int32_t peer_pid) {
   if (!OpenPrivilegedHandle(peer_pid)) {
     MOZ_CRASH("can't open handle to child process");
   }
-  MonitorAutoLock lock(mMonitor);
+  Monitor2AutoLock lock(mMonitor);
   mProcessState = PROCESS_CONNECTED;
-  lock.Notify();
+  lock.Signal();
 }
 
 void GeckoChildProcessHost::OnMessageReceived(IPC::Message&& aMsg) {
@@ -1329,10 +1329,10 @@ void GeckoChildProcessHost::OnChannelError() {
   // error before we're connected. This fixes certain failures,
   // but does not address the full range of possible issues described
   // in the FIXME comment below.
-  MonitorAutoLock lock(mMonitor);
+  Monitor2AutoLock lock(mMonitor);
   if (mProcessState < PROCESS_CONNECTED) {
     mProcessState = PROCESS_ERROR;
-    lock.Notify();
+    lock.Signal();
   }
   // FIXME/bug 773925: save up this error for the next listener.
 }

@@ -11,7 +11,7 @@
 #include "AudioMixer.h"
 #include "GraphDriver.h"
 #include "mozilla/Atomics.h"
-#include "mozilla/Monitor.h"
+#include "mozilla/Monitor2.h"
 #include "mozilla/TimeStamp.h"
 #include "mozilla/UniquePtr.h"
 #include "mozilla/WeakPtr.h"
@@ -561,7 +561,7 @@ class MediaStreamGraphImpl : public MediaStreamGraph,
     mDriver = aDriver;
   }
 
-  Monitor& GetMonitor() { return mMonitor; }
+  Monitor2& GetMonitor() { return mMonitor; }
 
   void EnsureNextIteration() {
     mNeedAnotherIteration = true;  // atomic
@@ -569,7 +569,7 @@ class MediaStreamGraphImpl : public MediaStreamGraph,
     // mNeedAnotherIteration and mGraphDriverAsleep -- see
     // WaitForNextIteration()
     if (mGraphDriverAsleep) {  // atomic
-      MonitorAutoLock mon(mMonitor);
+      Monitor2AutoLock mon(mMonitor);
       CurrentDriver()
           ->WakeUp();  // Might not be the same driver; might have woken already
     }
@@ -737,7 +737,7 @@ class MediaStreamGraphImpl : public MediaStreamGraph,
   // not safe to just grab mMonitor from some thread and start monkeying with
   // the graph. Instead, communicate with the graph thread using provided
   // mechanisms such as the ControlMessage queue.
-  Monitor mMonitor;
+  Monitor2 mMonitor;
 
   // Data guarded by mMonitor (must always be accessed with mMonitor held,
   // regardless of the value of mLifecycleState).

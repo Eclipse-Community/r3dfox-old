@@ -10,7 +10,7 @@
 
 #  include "OggCodecState.h"
 #  include "VideoUtils.h"
-#  include "mozilla/Monitor.h"
+#  include "mozilla/Monitor2.h"
 
 namespace mozilla {
 
@@ -29,7 +29,7 @@ class OggCodecStore {
   nsClassHashtable<nsUint32HashKey, OggCodecState> mCodecStates;
 
   // Protects the |mCodecStates| and the |mKnownStreams| members.
-  Monitor mMonitor;
+  Monitor2 mMonitor;
 };
 
 }  // namespace mozilla

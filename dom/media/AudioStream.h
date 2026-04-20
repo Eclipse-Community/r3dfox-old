@@ -9,7 +9,7 @@
 #  include "AudioSampleFormat.h"
 #  include "CubebUtils.h"
 #  include "MediaInfo.h"
-#  include "mozilla/Monitor.h"
+#  include "mozilla/Monitor2.h"
 #  include "mozilla/RefPtr.h"
 #  include "mozilla/TimeStamp.h"
 #  include "mozilla/UniquePtr.h"
@@ -301,7 +301,7 @@ class AudioStream final
   int InvokeCubeb(Function aFunction, Args&&... aArgs);
 
   // The monitor is held to protect all access to member variables.
-  Monitor mMonitor;
+  Monitor2 mMonitor;
 
   uint32_t mChannels;
   uint32_t mOutChannels;

@@ -95,7 +95,7 @@ class BackgroundHangManager : public nsIObserver {
   static bool sDisabled;
 
   // Lock for access to members of this class
-  Monitor mLock;
+  Monitor2 mLock;
   // Current time as seen by hang monitors
   TimeStamp mNow;
   // List of BackgroundHangThread instances associated with each thread
@@ -109,15 +109,15 @@ class BackgroundHangManager : public nsIObserver {
   CPUUsageWatcher mCPUUsageWatcher;
 
   void Shutdown() {
-    MonitorAutoLock autoLock(mLock);
+    Monitor2AutoLock autoLock(mLock);
     mShutdown = true;
-    autoLock.Notify();
+    autoLock.Signal();
   }
 
   // Attempt to wakeup the hang monitor thread.
   void Wakeup() {
     mLock.AssertCurrentThreadOwns();
-    mLock.NotifyAll();
+    mLock.Broadcast();
   }
 
   BackgroundHangManager();
@@ -221,12 +221,12 @@ class BackgroundHangThread : public LinkedListElement<BackgroundHangThread> {
   void ReportPermaHang();
   // Called by BackgroundHangMonitor::NotifyActivity
   void NotifyActivity() {
-    MonitorAutoLock autoLock(mManager->mLock);
+    Monitor2AutoLock autoLock(mManager->mLock);
     Update();
   }
   // Called by BackgroundHangMonitor::NotifyWait
   void NotifyWait() {
-    MonitorAutoLock autoLock(mManager->mLock);
+    Monitor2AutoLock autoLock(mManager->mLock);
 
     if (mWaiting) {
       return;
@@ -259,7 +259,7 @@ bool BackgroundHangThread::sTlsKeyInitialized;
 BackgroundHangManager::BackgroundHangManager()
     : mShutdown(false), mLock("BackgroundHangManager") {
   // Lock so we don't race against the new monitor thread
-  MonitorAutoLock autoLock(mLock);
+  Monitor2AutoLock autoLock(mLock);
 
   mHangMonitorThread = PR_CreateThread(
       PR_USER_THREAD, MonitorThread, this, PR_PRIORITY_LOW, PR_GLOBAL_THREAD,
@@ -293,7 +293,7 @@ BackgroundHangManager::~BackgroundHangManager() {
 
 void BackgroundHangManager::RunMonitorThread() {
   // Keep us locked except when waiting
-  MonitorAutoLock autoLock(mLock);
+  Monitor2AutoLock autoLock(mLock);
 
   /* mNow is updated at various intervals determined by waitTime.
      However, if an update latency is too long (due to CPU scheduling, system
@@ -447,20 +447,20 @@ BackgroundHangThread::BackgroundHangThread(
     sTlsKey.set(this);
   }
   // Lock here because LinkedList is not thread-safe
-  MonitorAutoLock autoLock(mManager->mLock);
+  Monitor2AutoLock autoLock(mManager->mLock);
   // Add to thread list
   mManager->mHangThreads.insertBack(this);
   // Wake up monitor thread to process new thread
-  autoLock.Notify();
+  autoLock.Signal();
 }
 
 BackgroundHangThread::~BackgroundHangThread() {
   // Lock here because LinkedList is not thread-safe
-  MonitorAutoLock autoLock(mManager->mLock);
+  Monitor2AutoLock autoLock(mManager->mLock);
   // Remove from thread list
   remove();
   // Wake up monitor thread to process removed thread
-  autoLock.Notify();
+  autoLock.Signal();
 
   // We no longer have a thread
   if (sTlsKeyInitialized && IsShared()) {
@@ -553,7 +553,7 @@ BackgroundHangThread* BackgroundHangThread::FindThread() {
 
   PRThread* threadID = PR_GetCurrentThread();
   // Lock thread list for traversal
-  MonitorAutoLock autoLock(manager->mLock);
+  Monitor2AutoLock autoLock(manager->mLock);
   for (BackgroundHangThread* thread = manager->mHangThreads.getFirst(); thread;
        thread = thread->getNext()) {
     if (thread->mThreadID == threadID && thread->IsShared()) {

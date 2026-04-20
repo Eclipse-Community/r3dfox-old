@@ -67,9 +67,9 @@ void FunctionBrokerChild::ShutdownOnDispatchThread() {
   MOZ_ASSERT(mThread->IsOnThread());
 
   // Set mShutdownDone and notify waiting thread (if any) that we are done.
-  MonitorAutoLock lock(mMonitor);
+  Monitor2AutoLock lock(mMonitor);
   mShutdownDone = true;
-  mMonitor.Notify();
+  mMonitor.Signal();
 }
 
 void FunctionBrokerChild::ActorDestroy(ActorDestroyReason aWhy) {
@@ -95,7 +95,7 @@ void FunctionBrokerChild::Destroy() {
   // on the FunctionBrokerThread have completed.  At that point, we can
   // safely delete the actor.
   {
-    MonitorAutoLock lock(sInstance->mMonitor);
+    Monitor2AutoLock lock(sInstance->mMonitor);
     while (!sInstance->mShutdownDone) {
       // Release lock and wait.  Regain lock when we are notified that
       // we have ShutdownOnDispatchThread.

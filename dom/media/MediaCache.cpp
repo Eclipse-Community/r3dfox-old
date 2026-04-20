@@ -15,7 +15,7 @@
 #include "mozilla/ClearOnShutdown.h"
 #include "mozilla/ErrorNames.h"
 #include "mozilla/Logging.h"
-#include "mozilla/Monitor.h"
+#include "mozilla/Monitor2.h"
 #include "mozilla/Preferences.h"
 #include "mozilla/Services.h"
 #include "mozilla/StaticPtr.h"
@@ -145,7 +145,7 @@ void MediaCacheFlusher::UnregisterMediaCache(MediaCache* aMediaCache) {
 }
 
 class MediaCache {
-  using AutoLock = MonitorAutoLock;
+  using AutoLock = Monitor2AutoLock;
 
  public:
   NS_INLINE_DECL_THREADSAFE_REFCOUNTING(MediaCache)
@@ -240,7 +240,7 @@ class MediaCache {
   void Verify(AutoLock&) {}
 #endif
 
-  mozilla::Monitor& Monitor() {
+  mozilla::Monitor2& Monitor() {
     // This method should only be called outside the main thread.
     // The MOZ_DIAGNOSTIC_ASSERT(!NS_IsMainThread()) assertion should be
     // re-added as part of bug 1464045
@@ -452,7 +452,7 @@ class MediaCache {
   // The monitor protects all the data members here. Also, off-main-thread
   // readers that need to block will Wait() on this monitor. When new
   // data becomes available in the cache, we NotifyAll() on this monitor.
-  mozilla::Monitor mMonitor;
+  mozilla::Monitor2 mMonitor;
   // This must always be accessed when the monitor is held.
   nsTArray<MediaCacheStream*> mStreams;
   // The Blocks describing the cache entries.
@@ -486,7 +486,7 @@ class MediaCache {
   // Used by MediaCacheStream::GetDebugInfo() only for debugging.
   // Don't add new callers to this function.
   friend nsCString MediaCacheStream::GetDebugInfo();
-  mozilla::Monitor& GetMonitorOnTheMainThread() {
+  mozilla::Monitor2& GetMonitorOnTheMainThread() {
     MOZ_DIAGNOSTIC_ASSERT(NS_IsMainThread());
     return mMonitor;
   }
@@ -2022,7 +2022,7 @@ void MediaCacheStream::NotifyDataReceived(uint32_t aLoadID, uint32_t aCount,
   // avoid waking up reader threads unnecessarily
   if (cacheUpdated) {
     // Wake up the reader who is waiting for the committed blocks.
-    lock.NotifyAll();
+    lock.Broadcast();
   }
 }
 
@@ -2053,7 +2053,7 @@ void MediaCacheStream::FlushPartialBlockInternal(AutoLock& aLock,
   // that will never come.
   if ((blockOffset > 0 || mChannelOffset == 0) && aNotifyAll) {
     // Wake up readers who may be waiting for this data
-    aLock.NotifyAll();
+    aLock.Broadcast();
   }
 }
 
@@ -2088,7 +2088,7 @@ void MediaCacheStream::NotifyDataEndedInternal(uint32_t aLoadID,
     mNotifyDataEndedStatus = aStatus;
     mClient->CacheClientNotifyDataEnded(aStatus);
     // Wake up the readers so they can fail gracefully.
-    lock.NotifyAll();
+    lock.Broadcast();
     return;
   }
 
@@ -2135,7 +2135,7 @@ void MediaCacheStream::NotifyClientSuspended(bool aSuspended) {
           if (mClientSuspended) {
             // Download is suspended. Wake up the readers that might be able to
             // get data from the partial block.
-            lock.NotifyAll();
+            lock.Broadcast();
           }
         }
       });
@@ -2231,7 +2231,7 @@ void MediaCacheStream::CloseInternal(AutoLock& aLock) {
   mMediaCache->ReleaseStreamBlocks(aLock, this);
   mMediaCache->ReleaseStream(aLock, this);
   // Wake up any blocked readers
-  aLock.NotifyAll();
+  aLock.Broadcast();
 
   // Queue an Update since we may have created more free space.
   mMediaCache->QueueUpdate(aLock);
@@ -2739,7 +2739,7 @@ void MediaCacheStream::InitAsCloneInternal(MediaCacheStream* aOriginal) {
   // Step 5: add the stream to be managed by the cache.
   mMediaCache->OpenStream(lock, this, true /* aIsClone */);
   // Wake up the reader which is waiting for the cloned data.
-  lock.NotifyAll();
+  lock.Broadcast();
 }
 
 nsIEventTarget* MediaCacheStream::OwnerThread() const {

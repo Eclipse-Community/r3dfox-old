@@ -307,7 +307,7 @@ nsresult DataStorage::Init(
     return NS_ERROR_NOT_SAME_THREAD;
   }
 
-  MutexAutoLock lock(mMutex);
+  AutoLock lock(mMutex);
 
   // Ignore attempts to initialize several times.
   if (mInitCalled) {
@@ -402,9 +402,9 @@ class DataStorage::Reader : public Runnable {
 DataStorage::Reader::~Reader() {
   // Notify that calls to Get can proceed.
   {
-    MonitorAutoLock readyLock(mDataStorage->mReadyMonitor);
+    Monitor2AutoLock readyLock(mDataStorage->mReadyMonitor);
     mDataStorage->mReady = true;
-    nsresult rv = mDataStorage->mReadyMonitor.NotifyAll();
+    nsresult rv = mDataStorage->mReadyMonitor.Broadcast();
     Unused << NS_WARN_IF(NS_FAILED(rv));
   }
 
@@ -424,7 +424,7 @@ DataStorage::Reader::Run() {
   // At that point, we can safely operate on the clone.
   nsCOMPtr<nsIFile> file;
   {
-    MutexAutoLock lock(mDataStorage->mMutex);
+    AutoLock lock(mDataStorage->mMutex);
     // If we don't have a profile, bail.
     if (!mDataStorage->mBackingFile) {
       return NS_OK;
@@ -458,7 +458,7 @@ DataStorage::Reader::Run() {
   // Don't clear existing entries - they may have been inserted between when
   // this read was kicked-off and when it was run.
   {
-    MutexAutoLock lock(mDataStorage->mMutex);
+    AutoLock lock(mDataStorage->mMutex);
     // The backing file consists of a list of
     //   <key>\t<score>\t<last accessed time>\t<value>\n
     // The final \n is not optional; if it is not present the line is assumed
@@ -597,7 +597,7 @@ nsresult DataStorage::Reader::ParseLine(nsDependentCSubstring& aLine,
   return NS_OK;
 }
 
-nsresult DataStorage::AsyncReadData(const MutexAutoLock& /*aProofOfLock*/) {
+nsresult DataStorage::AsyncReadData(const AutoLock& /*aProofOfLock*/) {
   MOZ_ASSERT(XRE_IsParentProcess());
   // Allocate a Reader so that even if it isn't dispatched,
   // the data-storage-ready notification will be fired and Get
@@ -629,7 +629,7 @@ nsresult DataStorage::AsyncReadData(const MutexAutoLock& /*aProofOfLock*/) {
 void DataStorage::WaitForReady() {
   MOZ_DIAGNOSTIC_ASSERT(mInitCalled, "Waiting before Init() has been called?");
 
-  MonitorAutoLock readyLock(mReadyMonitor);
+  Monitor2AutoLock readyLock(mReadyMonitor);
   while (!mReady) {
     readyLock.Wait();
   }
@@ -638,7 +638,7 @@ void DataStorage::WaitForReady() {
 
 nsCString DataStorage::Get(const nsCString& aKey, DataStorageType aType) {
   WaitForReady();
-  MutexAutoLock lock(mMutex);
+  AutoLock lock(mMutex);
 
   Entry entry;
   bool foundValue = GetInternal(aKey, &entry, aType, lock);
@@ -656,14 +656,14 @@ nsCString DataStorage::Get(const nsCString& aKey, DataStorageType aType) {
 
 bool DataStorage::GetInternal(const nsCString& aKey, Entry* aEntry,
                               DataStorageType aType,
-                              const MutexAutoLock& aProofOfLock) {
+                              const AutoLock& aProofOfLock) {
   DataStorageTable& table = GetTableForType(aType, aProofOfLock);
   bool foundValue = table.Get(aKey, aEntry);
   return foundValue;
 }
 
 DataStorage::DataStorageTable& DataStorage::GetTableForType(
-    DataStorageType aType, const MutexAutoLock& /*aProofOfLock*/) {
+    DataStorageType aType, const AutoLock& /*aProofOfLock*/) {
   switch (aType) {
     case DataStorage_Persistent:
       return mPersistentDataTable;
@@ -678,7 +678,7 @@ DataStorage::DataStorageTable& DataStorage::GetTableForType(
 
 void DataStorage::ReadAllFromTable(
     DataStorageType aType, InfallibleTArray<dom::DataStorageItem>* aItems,
-    const MutexAutoLock& aProofOfLock) {
+    const AutoLock& aProofOfLock) {
   for (auto iter = GetTableForType(aType, aProofOfLock).Iter(); !iter.Done();
        iter.Next()) {
     DataStorageItem* item = aItems->AppendElement();
@@ -690,7 +690,7 @@ void DataStorage::ReadAllFromTable(
 
 void DataStorage::GetAll(InfallibleTArray<dom::DataStorageItem>* aItems) {
   WaitForReady();
-  MutexAutoLock lock(mMutex);
+  AutoLock lock(mMutex);
 
   aItems->SetCapacity(mPersistentDataTable.Count() +
                       mTemporaryDataTable.Count() + mPrivateDataTable.Count());
@@ -707,7 +707,7 @@ void DataStorage::GetAll(InfallibleTArray<dom::DataStorageItem>* aItems) {
 //    except for when there are multiple entries with the lowest score,
 //    in which case one of them is evicted - which one is not specified).
 void DataStorage::MaybeEvictOneEntry(DataStorageType aType,
-                                     const MutexAutoLock& aProofOfLock) {
+                                     const AutoLock& aProofOfLock) {
   DataStorageTable& table = GetTableForType(aType, aProofOfLock);
   if (table.Count() >= sMaxDataEntries) {
     KeyAndEntry toEvict;
@@ -757,7 +757,7 @@ static void RunOnAllContentParents(Functor func) {
 nsresult DataStorage::Put(const nsCString& aKey, const nsCString& aValue,
                           DataStorageType aType) {
   WaitForReady();
-  MutexAutoLock lock(mMutex);
+  AutoLock lock(mMutex);
 
   nsresult rv;
   rv = ValidateKeyAndValue(aKey, aValue);
@@ -793,7 +793,7 @@ nsresult DataStorage::Put(const nsCString& aKey, const nsCString& aValue,
 
 nsresult DataStorage::PutInternal(const nsCString& aKey, Entry& aEntry,
                                   DataStorageType aType,
-                                  const MutexAutoLock& aProofOfLock) {
+                                  const AutoLock& aProofOfLock) {
   DataStorageTable& table = GetTableForType(aType, aProofOfLock);
   table.Put(aKey, aEntry);
 
@@ -806,7 +806,7 @@ nsresult DataStorage::PutInternal(const nsCString& aKey, Entry& aEntry,
 
 void DataStorage::Remove(const nsCString& aKey, DataStorageType aType) {
   WaitForReady();
-  MutexAutoLock lock(mMutex);
+  AutoLock lock(mMutex);
 
   DataStorageTable& table = GetTableForType(aType, lock);
   table.Remove(aKey);
@@ -843,7 +843,7 @@ DataStorage::Writer::Run() {
   // At that point, we can safely operate on the clone.
   nsCOMPtr<nsIFile> file;
   {
-    MutexAutoLock lock(mDataStorage->mMutex);
+    AutoLock lock(mDataStorage->mMutex);
     // If we don't have a profile, bail.
     if (!mDataStorage->mBackingFile) {
       return NS_OK;
@@ -885,7 +885,7 @@ DataStorage::Writer::Run() {
   return NS_OK;
 }
 
-nsresult DataStorage::AsyncWriteData(const MutexAutoLock& /*aProofOfLock*/) {
+nsresult DataStorage::AsyncWriteData(const AutoLock& /*aProofOfLock*/) {
   MOZ_ASSERT(XRE_IsParentProcess());
 
   if (mShuttingDown || !mBackingFile) {
@@ -917,7 +917,7 @@ nsresult DataStorage::AsyncWriteData(const MutexAutoLock& /*aProofOfLock*/) {
 
 nsresult DataStorage::Clear() {
   WaitForReady();
-  MutexAutoLock lock(mMutex);
+  AutoLock lock(mMutex);
   mPersistentDataTable.Clear();
   mTemporaryDataTable.Clear();
   mPrivateDataTable.Clear();
@@ -945,13 +945,13 @@ void DataStorage::TimerCallback(nsITimer* aTimer, void* aClosure) {
   MOZ_ASSERT(XRE_IsParentProcess());
 
   RefPtr<DataStorage> aDataStorage = (DataStorage*)aClosure;
-  MutexAutoLock lock(aDataStorage->mMutex);
+  AutoLock lock(aDataStorage->mMutex);
   Unused << aDataStorage->AsyncWriteData(lock);
 }
 
 // We only initialize the timer on the worker thread because it's not safe
 // to mix what threads are operating on the timer.
-nsresult DataStorage::AsyncSetTimer(const MutexAutoLock& /*aProofOfLock*/) {
+nsresult DataStorage::AsyncSetTimer(const AutoLock& /*aProofOfLock*/) {
   if (mShuttingDown || !XRE_IsParentProcess()) {
     return NS_OK;
   }
@@ -970,7 +970,7 @@ void DataStorage::SetTimer() {
   MOZ_ASSERT(!NS_IsMainThread());
   MOZ_ASSERT(XRE_IsParentProcess());
 
-  MutexAutoLock lock(mMutex);
+  AutoLock lock(mMutex);
 
   nsresult rv;
   if (!mTimer) {
@@ -1001,7 +1001,7 @@ void DataStorage::NotifyObservers(const char* aTopic) {
 }
 
 nsresult DataStorage::DispatchShutdownTimer(
-    const MutexAutoLock& /*aProofOfLock*/) {
+    const AutoLock& /*aProofOfLock*/) {
   MOZ_ASSERT(XRE_IsParentProcess());
 
   nsCOMPtr<nsIRunnable> job = NewRunnableMethod(
@@ -1016,7 +1016,7 @@ nsresult DataStorage::DispatchShutdownTimer(
 void DataStorage::ShutdownTimer() {
   MOZ_ASSERT(XRE_IsParentProcess());
   MOZ_ASSERT(!NS_IsMainThread());
-  MutexAutoLock lock(mMutex);
+  AutoLock lock(mMutex);
   nsresult rv = mTimer->Cancel();
   Unused << NS_WARN_IF(NS_FAILED(rv));
   mTimer = nullptr;
@@ -1036,7 +1036,7 @@ DataStorage::Observe(nsISupports* /*aSubject*/, const char* aTopic,
   }
 
   if (strcmp(aTopic, "last-pb-context-exited") == 0) {
-    MutexAutoLock lock(mMutex);
+    AutoLock lock(mMutex);
     mPrivateDataTable.Clear();
   }
 
@@ -1056,7 +1056,7 @@ DataStorage::Observe(nsISupports* /*aSubject*/, const char* aTopic,
       strcmp(aTopic, "xpcom-shutdown-threads") == 0) {
     for (auto iter = sDataStorages->Iter(); !iter.Done(); iter.Next()) {
       RefPtr<DataStorage> storage = iter.UserData();
-      MutexAutoLock lock(storage->mMutex);
+      AutoLock lock(storage->mMutex);
       if (!storage->mShuttingDown) {
         nsresult rv = storage->AsyncWriteData(lock);
         storage->mShuttingDown = true;
@@ -1074,7 +1074,7 @@ DataStorage::Observe(nsISupports* /*aSubject*/, const char* aTopic,
 }
 
 void DataStorage::PrefChanged(const char* aPref) {
-  MutexAutoLock lock(mMutex);
+  AutoLock lock(mMutex);
   mTimerDelay = Preferences::GetInt("test.datastorage.write_timer_ms",
                                     sDataStorageDefaultTimerDelay);
 }

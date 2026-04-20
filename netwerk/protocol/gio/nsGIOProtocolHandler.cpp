@@ -26,7 +26,7 @@
 #include "nsIChannel.h"
 #include "nsIInputStream.h"
 #include "nsIProtocolHandler.h"
-#include "mozilla/Monitor.h"
+#include "mozilla/Monitor2.h"
 #include "plstr.h"
 #include "prtime.h"
 #include <gio/gio.h>
@@ -206,7 +206,7 @@ class nsGIOInputStream final : public nsIInputStream {
   uint32_t mDirBufCursor;
   bool mDirOpen;
   MountOperationResult mMountRes;
-  mozilla::Monitor mMonitorMountInProgress;
+  mozilla::Monitor2 mMonitorMountInProgress;
   gint mMountErrorCode;
 };
 /**
@@ -217,10 +217,10 @@ class nsGIOInputStream final : public nsIInputStream {
  */
 void nsGIOInputStream::SetMountResult(MountOperationResult result,
                                       gint error_code) {
-  mozilla::MonitorAutoLock mon(mMonitorMountInProgress);
+  mozilla::Monitor2AutoLock mon(mMonitorMountInProgress);
   mMountRes = result;
   mMountErrorCode = error_code;
-  mon.Notify();
+  mon.Signal();
 }
 
 /**
@@ -237,7 +237,7 @@ nsresult nsGIOInputStream::MountVolume() {
      (not this thread on which this method is called). */
   g_file_mount_enclosing_volume(mHandle, G_MOUNT_MOUNT_NONE, mount_op, nullptr,
                                 mount_enclosing_volume_finished, this);
-  mozilla::MonitorAutoLock mon(mMonitorMountInProgress);
+  mozilla::Monitor2AutoLock mon(mMonitorMountInProgress);
   /* Waiting for finish of mount operation thread */
   while (mMountRes == MOUNT_OPERATION_IN_PROGRESS) mon.Wait();
 

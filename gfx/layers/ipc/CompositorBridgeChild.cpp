@@ -556,7 +556,7 @@ void CompositorBridgeChild::ActorDestroy(ActorDestroyReason aWhy) {
     // tells us whether GetIPCChannel is safe to call. If we access the IPC
     // channel within this lock, when mCanSend is true, then we know it has not
     // been zapped by IPDL.
-    MonitorAutoLock lock(mPaintLock);
+    Monitor2AutoLock lock(mPaintLock);
     mCanSend = false;
     mActorDestroyed = true;
   }
@@ -1046,7 +1046,7 @@ void CompositorBridgeChild::FlushAsyncPaints() {
   }
 
   {
-    MonitorAutoLock lock(mPaintLock);
+    Monitor2AutoLock lock(mPaintLock);
     while (mOutstandingAsyncPaints > 0 || mOutstandingAsyncEndTransaction) {
       lock.Wait();
     }
@@ -1074,7 +1074,7 @@ void CompositorBridgeChild::FlushAsyncPaints() {
 void CompositorBridgeChild::NotifyBeginAsyncPaint(PaintTask* aTask) {
   MOZ_ASSERT(NS_IsMainThread());
 
-  MonitorAutoLock lock(mPaintLock);
+  Monitor2AutoLock lock(mPaintLock);
 
   if (mTotalAsyncPaints == 0) {
     mAsyncTransactionBegin = TimeStamp::Now();
@@ -1101,7 +1101,7 @@ void CompositorBridgeChild::NotifyBeginAsyncPaint(PaintTask* aTask) {
 bool CompositorBridgeChild::NotifyFinishedAsyncWorkerPaint(PaintTask* aTask) {
   MOZ_ASSERT(PaintThread::Get()->IsOnPaintWorkerThread());
 
-  MonitorAutoLock lock(mPaintLock);
+  Monitor2AutoLock lock(mPaintLock);
   mOutstandingAsyncPaints--;
 
   for (auto& client : aTask->mClients) {
@@ -1117,7 +1117,7 @@ bool CompositorBridgeChild::NotifyFinishedAsyncWorkerPaint(PaintTask* aTask) {
 bool CompositorBridgeChild::NotifyBeginAsyncEndLayerTransaction(
     SyncObjectClient* aSyncObject) {
   MOZ_ASSERT(NS_IsMainThread());
-  MonitorAutoLock lock(mPaintLock);
+  Monitor2AutoLock lock(mPaintLock);
 
   MOZ_ASSERT(!mOutstandingAsyncEndTransaction);
   mOutstandingAsyncEndTransaction = true;
@@ -1133,7 +1133,7 @@ void CompositorBridgeChild::NotifyFinishedAsyncEndLayerTransaction() {
     mOutstandingAsyncSyncObject = nullptr;
   }
 
-  MonitorAutoLock lock(mPaintLock);
+  Monitor2AutoLock lock(mPaintLock);
 
   if (mTotalAsyncPaints > 0) {
     float tenthMs =
@@ -1160,7 +1160,7 @@ void CompositorBridgeChild::NotifyFinishedAsyncEndLayerTransaction() {
 
   // Notify the main thread in case it's blocking. We do this unconditionally
   // to avoid deadlocking.
-  lock.Notify();
+  lock.Signal();
 }
 
 void CompositorBridgeChild::ResumeIPCAfterAsyncPaint() {
@@ -1184,7 +1184,7 @@ void CompositorBridgeChild::ResumeIPCAfterAsyncPaint() {
 void CompositorBridgeChild::PostponeMessagesIfAsyncPainting() {
   MOZ_ASSERT(NS_IsMainThread());
 
-  MonitorAutoLock lock(mPaintLock);
+  Monitor2AutoLock lock(mPaintLock);
 
   MOZ_ASSERT(!mIsDelayingForAsyncPaints);
 

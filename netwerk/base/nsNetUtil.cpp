@@ -15,7 +15,7 @@
 #include "mozilla/LoadContext.h"
 #include "mozilla/LoadInfo.h"
 #include "mozilla/BasePrincipal.h"
-#include "mozilla/Monitor.h"
+#include "mozilla/Monitor2.h"
 #include "mozilla/StoragePrincipalHelper.h"
 #include "mozilla/TaskQueue.h"
 #include "mozilla/Telemetry.h"
@@ -1429,7 +1429,7 @@ class BufferWriter final : public nsIInputStreamCallback {
           return rv;
         }
 
-        MonitorAutoLock lock(mMonitor);
+        Monitor2AutoLock lock(mMonitor);
 
         rv = mAsyncInputStream->AsyncWait(this, 0, length, mTaskQueue);
         if (NS_WARN_IF(NS_FAILED(rv))) {
@@ -1469,8 +1469,8 @@ class BufferWriter final : public nsIInputStreamCallback {
     MOZ_ASSERT(!NS_IsMainThread());
 
     // We have something to read. Let's unlock the main-thread.
-    MonitorAutoLock lock(mMonitor);
-    lock.Notify();
+    Monitor2AutoLock lock(mMonitor);
+    lock.Signal();
     return NS_OK;
   }
 
@@ -1507,7 +1507,7 @@ class BufferWriter final : public nsIInputStreamCallback {
 
   // All the members of this class are touched on the owning thread only. The
   // monitor is only used to communicate when there is more data to read.
-  Monitor mMonitor;
+  Monitor2 mMonitor;
 
   nsCOMPtr<nsIInputStream> mInputStream;
   nsCOMPtr<nsIAsyncInputStream> mAsyncInputStream;

@@ -13,7 +13,7 @@
 #include "nsString.h"
 #include "nsDataHashtable.h"
 #include "nsHashKeys.h"
-#include "mozilla/Monitor.h"
+#include "mozilla/Monitor2.h"
 #include "mozilla/Telemetry.h"
 #include "mozilla/Atomics.h"
 
@@ -247,7 +247,7 @@ class LocalStorageCache : public LocalStorageCacheBridge {
   Data mData[kDataSetCount];
 
   // This monitor is used to wait for full load of data.
-  mozilla::Monitor mMonitor;
+  mozilla::Monitor2 mMonitor;
 
   // Flag that is initially false.  When the cache is about to work with
   // the database (i.e. it is persistent) this flags is set to true after

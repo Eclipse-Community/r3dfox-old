@@ -109,7 +109,7 @@ void CompositorVsyncScheduler::Destroy() {
 
 void CompositorVsyncScheduler::PostCompositeTask(
     VsyncId aId, TimeStamp aCompositeTimestamp) {
-  MonitorAutoLock lock(mCurrentCompositeTaskMonitor);
+  Monitor2AutoLock lock(mCurrentCompositeTaskMonitor);
   if (mCurrentCompositeTask == nullptr && CompositorThreadHolder::Loop()) {
     RefPtr<CancelableRunnable> task =
         NewCancelableRunnableMethod<VsyncId, TimeStamp>(
@@ -121,7 +121,7 @@ void CompositorVsyncScheduler::PostCompositeTask(
 }
 
 void CompositorVsyncScheduler::PostVRTask(TimeStamp aTimestamp) {
-  MonitorAutoLock lockVR(mCurrentVRTaskMonitor);
+  Monitor2AutoLock lockVR(mCurrentVRTaskMonitor);
   if (mCurrentVRTask == nullptr && CompositorThreadHolder::Loop()) {
     RefPtr<CancelableRunnable> task = NewCancelableRunnableMethod<TimeStamp>(
         "layers::CompositorVsyncScheduler::DispatchVREvents", this,
@@ -194,7 +194,7 @@ bool CompositorVsyncScheduler::NotifyVsync(const VsyncEvent& aVsync) {
 void CompositorVsyncScheduler::CancelCurrentVRTask() {
   MOZ_ASSERT(CompositorThreadHolder::IsInCompositorThread() ||
              NS_IsMainThread());
-  MonitorAutoLock lock(mCurrentVRTaskMonitor);
+  Monitor2AutoLock lock(mCurrentVRTaskMonitor);
   if (mCurrentVRTask) {
     mCurrentVRTask->Cancel();
     mCurrentVRTask = nullptr;
@@ -204,7 +204,7 @@ void CompositorVsyncScheduler::CancelCurrentVRTask() {
 void CompositorVsyncScheduler::CancelCurrentCompositeTask() {
   MOZ_ASSERT(CompositorThreadHolder::IsInCompositorThread() ||
              NS_IsMainThread());
-  MonitorAutoLock lock(mCurrentCompositeTaskMonitor);
+  Monitor2AutoLock lock(mCurrentCompositeTaskMonitor);
   if (mCurrentCompositeTask) {
     mCurrentCompositeTask->Cancel();
     mCurrentCompositeTask = nullptr;
@@ -217,7 +217,7 @@ void CompositorVsyncScheduler::Composite(VsyncId aId,
   MOZ_ASSERT(mVsyncSchedulerOwner);
 
   {  // scope lock
-    MonitorAutoLock lock(mCurrentCompositeTaskMonitor);
+    Monitor2AutoLock lock(mCurrentCompositeTaskMonitor);
     mCurrentCompositeTask = nullptr;
   }
 
@@ -314,7 +314,7 @@ void CompositorVsyncScheduler::UnobserveVsync() {
 
 void CompositorVsyncScheduler::DispatchVREvents(TimeStamp aVsyncTimestamp) {
   {
-    MonitorAutoLock lock(mCurrentVRTaskMonitor);
+    Monitor2AutoLock lock(mCurrentVRTaskMonitor);
     mCurrentVRTask = nullptr;
   }
   // This only allows to be called by CompositorVsyncScheduler::PostVRTask()

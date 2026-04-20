@@ -12,7 +12,7 @@
 #include "nsString.h"
 #include "SamplesWaitingForKey.h"
 
-#include "mozilla/Monitor.h"
+#include "mozilla/Monitor2.h"
 #include "mozilla/Attributes.h"
 #include "mozilla/dom/MediaKeyStatusMapBinding.h"  // For MediaKeyStatus
 #include "mozilla/dom/BindingDeclarations.h"       // For Optional

@@ -236,12 +236,12 @@ CompositorBridgeParent::LayerTreeState::~LayerTreeState() {
 
 typedef map<LayersId, CompositorBridgeParent::LayerTreeState> LayerTreeMap;
 LayerTreeMap sIndirectLayerTrees;
-StaticAutoPtr<mozilla::Monitor> sIndirectLayerTreesLock;
+StaticAutoPtr<mozilla::Monitor2> sIndirectLayerTreesLock;
 
 static void EnsureLayerTreeMapReady() {
   MOZ_ASSERT(NS_IsMainThread());
   if (!sIndirectLayerTreesLock) {
-    sIndirectLayerTreesLock = new Monitor("IndirectLayerTree");
+    sIndirectLayerTreesLock = new Monitor2("IndirectLayerTree");
     mozilla::ClearOnShutdown(&sIndirectLayerTreesLock);
   }
 }
@@ -386,7 +386,7 @@ void CompositorBridgeParent::Initialize() {
       "AddCompositorRunnable", &AddCompositor, this, &mCompositorBridgeID));
 
   {  // scope lock
-    MonitorAutoLock lock(*sIndirectLayerTreesLock);
+    Monitor2AutoLock lock(*sIndirectLayerTreesLock);
     sIndirectLayerTrees[mRootLayerTreeID].mParent = this;
   }
 
@@ -444,7 +444,7 @@ void CompositorBridgeParent::StopAndClearResources() {
 
   // Ensure that the layer manager is destroyed before CompositorBridgeChild.
   if (mLayerManager) {
-    MonitorAutoLock lock(*sIndirectLayerTreesLock);
+    Monitor2AutoLock lock(*sIndirectLayerTreesLock);
     ForEachIndirectLayerTree([this](LayerTreeState* lts, LayersId) -> void {
       mLayerManager->ClearCachedResources(lts->mRoot);
       lts->mLayerManager = nullptr;
@@ -460,7 +460,7 @@ void CompositorBridgeParent::StopAndClearResources() {
     // the WebRenderBridgeParent instances because it may block on WR.
     std::vector<RefPtr<WebRenderBridgeParent>> indirectBridgeParents;
     {  // scope lock
-      MonitorAutoLock lock(*sIndirectLayerTreesLock);
+      Monitor2AutoLock lock(*sIndirectLayerTreesLock);
       ForEachIndirectLayerTree([&](LayerTreeState* lts, LayersId) -> void {
         if (lts->mWrBridge) {
           indirectBridgeParents.emplace_back(lts->mWrBridge.forget());
@@ -636,7 +636,7 @@ void CompositorBridgeParent::ActorDestroy(ActorDestroyReason why) {
   mCompositionManager = nullptr;
 
   {  // scope lock
-    MonitorAutoLock lock(*sIndirectLayerTreesLock);
+    Monitor2AutoLock lock(*sIndirectLayerTreesLock);
     sIndirectLayerTrees.erase(mRootLayerTreeID);
   }
 
@@ -669,7 +669,7 @@ void CompositorBridgeParent::PauseComposition() {
   MOZ_ASSERT(CompositorThreadHolder::IsInCompositorThread(),
              "PauseComposition() can only be called on the compositor thread");
 
-  MonitorAutoLock lock(mPauseCompositionMonitor);
+  Monitor2AutoLock lock(mPauseCompositionMonitor);
 
   if (!mPaused) {
     mPaused = true;
@@ -688,14 +688,14 @@ void CompositorBridgeParent::PauseComposition() {
 
   // if anyone's waiting to make sure that composition really got paused, tell
   // them
-  lock.NotifyAll();
+  lock.Broadcast();
 }
 
 void CompositorBridgeParent::ResumeComposition() {
   MOZ_ASSERT(CompositorThreadHolder::IsInCompositorThread(),
              "ResumeComposition() can only be called on the compositor thread");
 
-  MonitorAutoLock lock(mResumeCompositionMonitor);
+  Monitor2AutoLock lock(mResumeCompositionMonitor);
 
   bool resumed =
       mOptions.UseWebRender() ? mWrBridge->Resume() : mCompositor->Resume();
@@ -707,7 +707,7 @@ void CompositorBridgeParent::ResumeComposition() {
         ANDROID_LOG_INFO, "CompositorBridgeParent",
         "Unable to renew compositor surface; remaining in paused state");
 #endif
-    lock.NotifyAll();
+    lock.Broadcast();
     return;
   }
 
@@ -718,7 +718,7 @@ void CompositorBridgeParent::ResumeComposition() {
 
   // if anyone's waiting to make sure that composition really got resumed, tell
   // them
-  lock.NotifyAll();
+  lock.Broadcast();
 }
 
 void CompositorBridgeParent::ForceComposition() {
@@ -756,7 +756,7 @@ void CompositorBridgeParent::ResumeCompositionAndResize(int x, int y, int width,
  * compositor really is paused.
  */
 void CompositorBridgeParent::SchedulePauseOnCompositorThread() {
-  MonitorAutoLock lock(mPauseCompositionMonitor);
+  Monitor2AutoLock lock(mPauseCompositionMonitor);
 
   MOZ_ASSERT(CompositorLoop());
   CompositorLoop()->PostTask(
@@ -768,7 +768,7 @@ void CompositorBridgeParent::SchedulePauseOnCompositorThread() {
 }
 
 bool CompositorBridgeParent::ScheduleResumeOnCompositorThread() {
-  MonitorAutoLock lock(mResumeCompositionMonitor);
+  Monitor2AutoLock lock(mResumeCompositionMonitor);
 
   MOZ_ASSERT(CompositorLoop());
   CompositorLoop()->PostTask(
@@ -784,7 +784,7 @@ bool CompositorBridgeParent::ScheduleResumeOnCompositorThread() {
 bool CompositorBridgeParent::ScheduleResumeOnCompositorThread(int x, int y,
                                                               int width,
                                                               int height) {
-  MonitorAutoLock lock(mResumeCompositionMonitor);
+  Monitor2AutoLock lock(mResumeCompositionMonitor);
 
   MOZ_ASSERT(CompositorLoop());
   CompositorLoop()->PostTask(NewRunnableMethod<int, int, int, int>(
@@ -1097,7 +1097,7 @@ PAPZCTreeManagerParent* CompositorBridgeParent::AllocPAPZCTreeManagerParent(
   // The main process should pass in 0 because we assume mRootLayerTreeID
   MOZ_ASSERT(!aLayersId.IsValid());
 
-  MonitorAutoLock lock(*sIndirectLayerTreesLock);
+  Monitor2AutoLock lock(*sIndirectLayerTreesLock);
   CompositorBridgeParent::LayerTreeState& state =
       sIndirectLayerTrees[mRootLayerTreeID];
   MOZ_ASSERT(state.mParent.get() == this);
@@ -1116,7 +1116,7 @@ bool CompositorBridgeParent::DeallocPAPZCTreeManagerParent(
 }
 
 void CompositorBridgeParent::AllocateAPZCTreeManagerParent(
-    const MonitorAutoLock& aProofOfLayerTreeStateLock,
+    const Monitor2AutoLock& aProofOfLayerTreeStateLock,
     const WRRootId& aWrRootId, LayerTreeState& aState) {
   MOZ_ASSERT(aState.mParent == this);
   MOZ_ASSERT(mApzcTreeManager);
@@ -1136,7 +1136,7 @@ PAPZParent* CompositorBridgeParent::AllocPAPZParent(const LayersId& aLayersId) {
   // controller alive until it is released by IPDL in DeallocPAPZParent.
   controller->AddRef();
 
-  MonitorAutoLock lock(*sIndirectLayerTreesLock);
+  Monitor2AutoLock lock(*sIndirectLayerTreesLock);
   CompositorBridgeParent::LayerTreeState& state =
       sIndirectLayerTrees[mRootLayerTreeID];
   MOZ_ASSERT(!state.mController);
@@ -1171,7 +1171,7 @@ RefPtr<APZUpdater> CompositorBridgeParent::GetAPZUpdater() {
 CompositorBridgeParent*
 CompositorBridgeParent::GetCompositorBridgeParentFromLayersId(
     const LayersId& aLayersId) {
-  MonitorAutoLock lock(*sIndirectLayerTreesLock);
+  Monitor2AutoLock lock(*sIndirectLayerTreesLock);
   return sIndirectLayerTrees[aLayersId].mParent;
 }
 
@@ -1179,7 +1179,7 @@ CompositorBridgeParent::GetCompositorBridgeParentFromLayersId(
 RefPtr<CompositorBridgeParent>
 CompositorBridgeParent::GetCompositorBridgeParentFromWindowId(
     const wr::WindowId& aWindowId) {
-  MonitorAutoLock lock(*sIndirectLayerTreesLock);
+  Monitor2AutoLock lock(*sIndirectLayerTreesLock);
   for (auto it = sIndirectLayerTrees.begin(); it != sIndirectLayerTrees.end();
        it++) {
     LayerTreeState* state = &it->second;
@@ -1435,7 +1435,7 @@ void CompositorBridgeParent::InitializeLayerManager(
   }
   mLayerManager->SetCompositorBridgeID(mCompositorBridgeID);
 
-  MonitorAutoLock lock(*sIndirectLayerTreesLock);
+  Monitor2AutoLock lock(*sIndirectLayerTreesLock);
   sIndirectLayerTrees[mRootLayerTreeID].mLayerManager = mLayerManager;
 }
 
@@ -1620,7 +1620,7 @@ void CompositorBridgeParent::NotifyVsync(const VsyncEvent& aVsync,
   MOZ_ASSERT(XRE_GetProcessType() == GeckoProcessType_GPU);
   MOZ_ASSERT(CompositorThreadHolder::IsInCompositorThread());
 
-  MonitorAutoLock lock(*sIndirectLayerTreesLock);
+  Monitor2AutoLock lock(*sIndirectLayerTreesLock);
   auto it = sIndirectLayerTrees.find(aLayersId);
   if (it == sIndirectLayerTrees.end()) return;
 
@@ -1635,7 +1635,7 @@ void CompositorBridgeParent::NotifyVsync(const VsyncEvent& aVsync,
 
 mozilla::ipc::IPCResult CompositorBridgeParent::RecvNotifyChildCreated(
     const LayersId& child, CompositorOptions* aOptions) {
-  MonitorAutoLock lock(*sIndirectLayerTreesLock);
+  Monitor2AutoLock lock(*sIndirectLayerTreesLock);
   NotifyChildCreated(child);
   *aOptions = mOptions;
   return IPC_OK();
@@ -1643,7 +1643,7 @@ mozilla::ipc::IPCResult CompositorBridgeParent::RecvNotifyChildCreated(
 
 mozilla::ipc::IPCResult CompositorBridgeParent::RecvNotifyChildRecreated(
     const LayersId& aChild, CompositorOptions* aOptions) {
-  MonitorAutoLock lock(*sIndirectLayerTreesLock);
+  Monitor2AutoLock lock(*sIndirectLayerTreesLock);
 
   if (sIndirectLayerTrees.find(aChild) != sIndirectLayerTrees.end()) {
     NS_WARNING("Invalid to register the same layer tree twice");
@@ -1670,7 +1670,7 @@ mozilla::ipc::IPCResult CompositorBridgeParent::RecvMapAndNotifyChildCreated(
 
   LayerTreeOwnerTracker::Get()->Map(aChild, aOwnerPid);
 
-  MonitorAutoLock lock(*sIndirectLayerTreesLock);
+  Monitor2AutoLock lock(*sIndirectLayerTreesLock);
   NotifyChildCreated(aChild);
   *aOptions = mOptions;
   return IPC_OK();
@@ -1685,7 +1685,7 @@ mozilla::ipc::IPCResult CompositorBridgeParent::RecvAdoptChild(
   RefPtr<WebRenderBridgeParent> childWrBridge;
 
   {  // scope lock
-    MonitorAutoLock lock(*sIndirectLayerTreesLock);
+    Monitor2AutoLock lock(*sIndirectLayerTreesLock);
     // If child is already belong to this CompositorBridgeParent,
     // no need to handle adopting child.
     if (sIndirectLayerTrees[child].mParent == this) {
@@ -1817,7 +1817,7 @@ PWebRenderBridgeParent* CompositorBridgeParent::AllocPWebRenderBridgeParent(
   mCompositorScheduler = mWrBridge->CompositorScheduler();
   MOZ_ASSERT(mCompositorScheduler);
   {  // scope lock
-    MonitorAutoLock lock(*sIndirectLayerTreesLock);
+    Monitor2AutoLock lock(*sIndirectLayerTreesLock);
     MOZ_ASSERT(sIndirectLayerTrees[mRootLayerTreeID].mWrBridge == nullptr);
     sIndirectLayerTrees[mRootLayerTreeID].mWrBridge = mWrBridge;
   }
@@ -1833,7 +1833,7 @@ bool CompositorBridgeParent::DeallocPWebRenderBridgeParent(
 #endif
   WebRenderBridgeParent* parent = static_cast<WebRenderBridgeParent*>(aActor);
   {
-    MonitorAutoLock lock(*sIndirectLayerTreesLock);
+    Monitor2AutoLock lock(*sIndirectLayerTreesLock);
     auto it = sIndirectLayerTrees.find(wr::AsLayersId(parent->PipelineId()));
     if (it != sIndirectLayerTrees.end()) {
       it->second.mWrBridge = nullptr;
@@ -1876,7 +1876,7 @@ static void EraseLayerState(LayersId aId) {
   RefPtr<APZUpdater> apz;
 
   {  // scope lock
-    MonitorAutoLock lock(*sIndirectLayerTreesLock);
+    Monitor2AutoLock lock(*sIndirectLayerTreesLock);
     auto iter = sIndirectLayerTrees.find(aId);
     if (iter != sIndirectLayerTrees.end()) {
       CompositorBridgeParent* parent = iter->second.mParent;
@@ -1910,7 +1910,7 @@ void CompositorBridgeParent::DeallocateLayerTreeId(LayersId aId) {
 static void UpdateControllerForLayersId(LayersId aLayersId,
                                         GeckoContentController* aController) {
   // Adopt ref given to us by SetControllerForLayerTree()
-  MonitorAutoLock lock(*sIndirectLayerTreesLock);
+  Monitor2AutoLock lock(*sIndirectLayerTreesLock);
   sIndirectLayerTrees[aLayersId].mController =
       already_AddRefed<GeckoContentController>(aController);
 }
@@ -1920,13 +1920,13 @@ ScopedLayerTreeRegistration::ScopedLayerTreeRegistration(
     GeckoContentController* aController)
     : mLayersId(aLayersId) {
   EnsureLayerTreeMapReady();
-  MonitorAutoLock lock(*sIndirectLayerTreesLock);
+  Monitor2AutoLock lock(*sIndirectLayerTreesLock);
   sIndirectLayerTrees[aLayersId].mRoot = aRoot;
   sIndirectLayerTrees[aLayersId].mController = aController;
 }
 
 ScopedLayerTreeRegistration::~ScopedLayerTreeRegistration() {
-  MonitorAutoLock lock(*sIndirectLayerTreesLock);
+  Monitor2AutoLock lock(*sIndirectLayerTreesLock);
   sIndirectLayerTrees.erase(mLayersId);
 }
 
@@ -1944,7 +1944,7 @@ void CompositorBridgeParent::SetControllerForLayerTree(
 already_AddRefed<IAPZCTreeManager> CompositorBridgeParent::GetAPZCTreeManager(
     LayersId aLayersId) {
   EnsureLayerTreeMapReady();
-  MonitorAutoLock lock(*sIndirectLayerTreesLock);
+  Monitor2AutoLock lock(*sIndirectLayerTreesLock);
   LayerTreeMap::iterator cit = sIndirectLayerTrees.find(aLayersId);
   if (sIndirectLayerTrees.end() == cit) {
     return nullptr;
@@ -2165,7 +2165,7 @@ void CompositorBridgeParent::NotifyDidComposite(TransactionId aTransactionId,
     }
   }
 
-  MonitorAutoLock lock(*sIndirectLayerTreesLock);
+  Monitor2AutoLock lock(*sIndirectLayerTreesLock);
   ForEachIndirectLayerTree([&](LayerTreeState* lts,
                                const LayersId& aLayersId) -> void {
     if (lts->mContentCompositorBridgeParent && lts->mParent == this) {
@@ -2180,7 +2180,7 @@ void CompositorBridgeParent::InvalidateRemoteLayers() {
 
   Unused << PCompositorBridgeParent::SendInvalidateLayers(LayersId{0});
 
-  MonitorAutoLock lock(*sIndirectLayerTreesLock);
+  Monitor2AutoLock lock(*sIndirectLayerTreesLock);
   ForEachIndirectLayerTree([](LayerTreeState* lts,
                               const LayersId& aLayersId) -> void {
     if (lts->mContentCompositorBridgeParent) {
@@ -2192,7 +2192,7 @@ void CompositorBridgeParent::InvalidateRemoteLayers() {
 
 static void UpdateIndirectTree(LayersId aId, Layer* aRoot,
                                const TargetConfig& aTargetConfig) {
-  MonitorAutoLock lock(*sIndirectLayerTreesLock);
+  Monitor2AutoLock lock(*sIndirectLayerTreesLock);
   sIndirectLayerTrees[aId].mRoot = aRoot;
   sIndirectLayerTrees[aId].mTargetConfig = aTargetConfig;
 }
@@ -2202,7 +2202,7 @@ CompositorBridgeParent::GetIndirectShadowTree(LayersId aId) {
   // Only the compositor thread should use this method variant
   MOZ_ASSERT(CompositorThreadHolder::IsInCompositorThread());
 
-  MonitorAutoLock lock(*sIndirectLayerTreesLock);
+  Monitor2AutoLock lock(*sIndirectLayerTreesLock);
   LayerTreeMap::iterator cit = sIndirectLayerTrees.find(aId);
   if (sIndirectLayerTrees.end() == cit) {
     return nullptr;
@@ -2219,7 +2219,7 @@ bool CompositorBridgeParent::CallWithIndirectShadowTree(
   // thread can mutate the LayerTreeState outside the lock. It does however
   // ensure that the *storage* for the LayerTreeState remains stable, since we
   // should always hold the lock when adding/removing entries to the map.
-  MonitorAutoLock lock(*sIndirectLayerTreesLock);
+  Monitor2AutoLock lock(*sIndirectLayerTreesLock);
   LayerTreeMap::iterator cit = sIndirectLayerTrees.find(aId);
   if (sIndirectLayerTrees.end() == cit) {
     return false;
@@ -2229,7 +2229,7 @@ bool CompositorBridgeParent::CallWithIndirectShadowTree(
 }
 
 static CompositorBridgeParent::LayerTreeState* GetStateForRoot(
-    LayersId aContentLayersId, const MonitorAutoLock& aProofOfLock) {
+    LayersId aContentLayersId, const Monitor2AutoLock& aProofOfLock) {
   CompositorBridgeParent::LayerTreeState* state = nullptr;
   LayerTreeMap::iterator itr = sIndirectLayerTrees.find(aContentLayersId);
   if (sIndirectLayerTrees.end() != itr) {
@@ -2254,7 +2254,7 @@ static CompositorBridgeParent::LayerTreeState* GetStateForRoot(
 /* static */
 APZCTreeManagerParent* CompositorBridgeParent::GetApzcTreeManagerParentForRoot(
     LayersId aContentLayersId) {
-  MonitorAutoLock lock(*sIndirectLayerTreesLock);
+  Monitor2AutoLock lock(*sIndirectLayerTreesLock);
   CompositorBridgeParent::LayerTreeState* state =
       GetStateForRoot(aContentLayersId, lock);
   return state ? state->mApzcTreeManagerParent : nullptr;
@@ -2264,7 +2264,7 @@ APZCTreeManagerParent* CompositorBridgeParent::GetApzcTreeManagerParentForRoot(
 GeckoContentController*
 CompositorBridgeParent::GetGeckoContentControllerForRoot(
     LayersId aContentLayersId) {
-  MonitorAutoLock lock(*sIndirectLayerTreesLock);
+  Monitor2AutoLock lock(*sIndirectLayerTreesLock);
   CompositorBridgeParent::LayerTreeState* state =
       GetStateForRoot(aContentLayersId, lock);
   return state ? state->mController.get() : nullptr;
@@ -2302,7 +2302,7 @@ void CompositorBridgeParent::NotifyWebRenderContextPurge() {
 #  define PLUGINS_LOG(...)
 
 bool CompositorBridgeParent::UpdatePluginWindowState(LayersId aId) {
-  MonitorAutoLock lock(*sIndirectLayerTreesLock);
+  Monitor2AutoLock lock(*sIndirectLayerTreesLock);
   CompositorBridgeParent::LayerTreeState& lts = sIndirectLayerTrees[aId];
   if (!lts.mParent) {
     PLUGINS_LOG("[%" PRIu64 "] layer tree compositor parent pointer is null",

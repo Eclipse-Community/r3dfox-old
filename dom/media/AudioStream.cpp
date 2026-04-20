@@ -10,7 +10,7 @@
 #include "prdtoa.h"
 #include "AudioStream.h"
 #include "VideoUtils.h"
-#include "mozilla/Monitor.h"
+#include "mozilla/Monitor2.h"
 #include "mozilla/Mutex.h"
 #include "mozilla/Sprintf.h"
 #include "mozilla/Unused.h"
@@ -181,7 +181,7 @@ nsresult AudioStream::EnsureTimeStretcherInitializedUnlocked() {
 nsresult AudioStream::SetPlaybackRate(double aPlaybackRate) {
   // MUST lock since the rate transposer is used from the cubeb callback,
   // and rate changes can cause the buffer to be reallocated
-  MonitorAutoLock mon(mMonitor);
+  Monitor2AutoLock mon(mMonitor);
 
   NS_ASSERTION(
       aPlaybackRate > 0.0,
@@ -211,7 +211,7 @@ nsresult AudioStream::SetPlaybackRate(double aPlaybackRate) {
 nsresult AudioStream::SetPreservesPitch(bool aPreservesPitch) {
   // MUST lock since the rate transposer is used from the cubeb callback,
   // and rate changes can cause the buffer to be reallocated
-  MonitorAutoLock mon(mMonitor);
+  Monitor2AutoLock mon(mMonitor);
 
   // Avoid instantiating the timestretcher instance if not needed.
   if (aPreservesPitch == mAudioClock.GetPreservesPitch()) {
@@ -320,7 +320,7 @@ struct ToCubebFormat<AUDIO_FORMAT_S16> {
 
 template <typename Function, typename... Args>
 int AudioStream::InvokeCubeb(Function aFunction, Args&&... aArgs) {
-  MonitorAutoUnlock mon(mMonitor);
+  Monitor2AutoUnlock mon(mMonitor);
   return aFunction(mCubebStream.get(), std::forward<Args>(aArgs)...);
 }
 
@@ -398,7 +398,7 @@ void AudioStream::SetVolume(double aVolume) {
   MOZ_ASSERT(aVolume >= 0.0 && aVolume <= 1.0, "Invalid volume");
 
   {
-    MonitorAutoLock mon(mMonitor);
+    Monitor2AutoLock mon(mMonitor);
     MOZ_ASSERT(mState != SHUTDOWN, "Don't set volume after shutdown.");
     if (mState == ERRORED) {
       return;
@@ -413,7 +413,7 @@ void AudioStream::SetVolume(double aVolume) {
 }
 
 nsresult AudioStream::Start() {
-  MonitorAutoLock mon(mMonitor);
+  Monitor2AutoLock mon(mMonitor);
   MOZ_ASSERT(mState == INITIALIZED);
   mState = STARTED;
   auto r = InvokeCubeb(cubeb_stream_start);
@@ -430,7 +430,7 @@ nsresult AudioStream::Start() {
 }
 
 void AudioStream::Pause() {
-  MonitorAutoLock mon(mMonitor);
+  Monitor2AutoLock mon(mMonitor);
   MOZ_ASSERT(mState != INITIALIZED, "Must be Start()ed.");
   MOZ_ASSERT(mState != STOPPED, "Already Pause()ed.");
   MOZ_ASSERT(mState != SHUTDOWN, "Already Shutdown()ed.");
@@ -450,7 +450,7 @@ void AudioStream::Pause() {
 }
 
 void AudioStream::Resume() {
-  MonitorAutoLock mon(mMonitor);
+  Monitor2AutoLock mon(mMonitor);
   MOZ_ASSERT(mState != INITIALIZED, "Must be Start()ed.");
   MOZ_ASSERT(mState != STARTED, "Already Start()ed.");
   MOZ_ASSERT(mState != SHUTDOWN, "Already Shutdown()ed.");
@@ -470,11 +470,11 @@ void AudioStream::Resume() {
 }
 
 void AudioStream::Shutdown() {
-  MonitorAutoLock mon(mMonitor);
+  Monitor2AutoLock mon(mMonitor);
   LOG("Shutdown, state %d", mState);
 
   if (mCubebStream) {
-    MonitorAutoUnlock mon(mMonitor);
+    Monitor2AutoUnlock mon(mMonitor);
     // Force stop to put the cubeb stream in a stable state before deletion.
     cubeb_stream_stop(mCubebStream.get());
     // Must not try to shut down cubeb from within the lock!  wasapi may still
@@ -487,7 +487,7 @@ void AudioStream::Shutdown() {
 
 #if defined(XP_WIN)
 void AudioStream::ResetDefaultDevice() {
-  MonitorAutoLock mon(mMonitor);
+  Monitor2AutoLock mon(mMonitor);
   if (mState != STARTED && mState != STOPPED) {
     return;
   }
@@ -501,13 +501,13 @@ void AudioStream::ResetDefaultDevice() {
 #endif
 
 int64_t AudioStream::GetPosition() {
-  MonitorAutoLock mon(mMonitor);
+  Monitor2AutoLock mon(mMonitor);
   int64_t frames = GetPositionInFramesUnlocked();
   return frames >= 0 ? mAudioClock.GetPosition(frames) : -1;
 }
 
 int64_t AudioStream::GetPositionInFrames() {
-  MonitorAutoLock mon(mMonitor);
+  Monitor2AutoLock mon(mMonitor);
   int64_t frames = GetPositionInFramesUnlocked();
   return frames >= 0 ? mAudioClock.GetPositionInFrames(frames) : -1;
 }
@@ -624,7 +624,7 @@ void AudioStream::GetTimeStretched(AudioBufferWriter& aWriter) {
 }
 
 long AudioStream::DataCallback(void* aBuffer, long aFrames) {
-  MonitorAutoLock mon(mMonitor);
+  Monitor2AutoLock mon(mMonitor);
   MOZ_ASSERT(mState != SHUTDOWN, "No data callback after shutdown");
 
   auto writer = AudioBufferWriter(
@@ -674,7 +674,7 @@ long AudioStream::DataCallback(void* aBuffer, long aFrames) {
 }
 
 void AudioStream::StateCallback(cubeb_state aState) {
-  MonitorAutoLock mon(mMonitor);
+  Monitor2AutoLock mon(mMonitor);
   MOZ_ASSERT(mState != SHUTDOWN, "No state callback after shutdown");
   LOG("StateCallback, mState=%d cubeb_state=%d", mState, aState);
   if (aState == CUBEB_STATE_DRAINED) {

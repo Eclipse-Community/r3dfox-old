@@ -9,7 +9,7 @@
 
 #include "mozilla/CPUUsageWatcher.h"
 #include "mozilla/HangAnnotations.h"
-#include "mozilla/Monitor.h"
+#include "mozilla/Monitor2.h"
 #include "mozilla/RefPtr.h"
 
 #include "nsString.h"

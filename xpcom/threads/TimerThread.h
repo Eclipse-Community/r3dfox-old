@@ -18,7 +18,7 @@
 
 #include "mozilla/Atomics.h"
 #include "mozilla/Attributes.h"
-#include "mozilla/Monitor.h"
+#include "mozilla/Monitor2.h"
 #include "mozilla/UniquePtr.h"
 
 #include <algorithm>
@@ -29,7 +29,7 @@ class TimeStamp;
 
 class TimerThread final : public nsIRunnable, public nsIObserver {
  public:
-  typedef mozilla::Monitor Monitor;
+  typedef mozilla::Monitor2 Monitor;
   typedef mozilla::TimeStamp TimeStamp;
   typedef mozilla::TimeDuration TimeDuration;
 

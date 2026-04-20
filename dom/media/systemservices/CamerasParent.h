@@ -158,7 +158,7 @@ class CamerasParent final : public PCamerasParent,
   nsCOMPtr<nsISerialEventTarget> mPBackgroundEventTarget;
 
   static StaticMutex sMutex;
-  static Monitor* sThreadMonitor;
+  static Monitor2* sThreadMonitor;
 
   // video processing thread - where webrtc.org capturer code runs
   static base::Thread* sVideoCaptureThread;

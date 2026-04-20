@@ -26,7 +26,7 @@ namespace mozilla {
 class ChannelMediaResource;
 typedef media::IntervalSet<int64_t> MediaByteRangeSet;
 class MediaResource;
-class MonitorAutoLock;
+class Monitor2AutoLock;
 
 /**
  * Media applications want fast, "on demand" random access to media data,
@@ -191,7 +191,7 @@ DDLoggedTypeDeclName(MediaCacheStream);
  * This class can be directly embedded as a value.
  */
 class MediaCacheStream : public DecoderDoctorLifeLogger<MediaCacheStream> {
-  using AutoLock = MonitorAutoLock;
+  using AutoLock = Monitor2AutoLock;
 
  public:
   // This needs to be a power of two

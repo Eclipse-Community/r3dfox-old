@@ -2067,12 +2067,11 @@ void ContentParent::LaunchSubprocessInternal(
   // the command line.
 
   SharedPreferenceSerializer prefSerializer;
-  if (!prefSerializer.SerializeToSharedMemory()) {
+  if (!prefSerializer.SerializeToSharedMemory(*mSubprocess, extraArgs)) {
     MarkAsDead();
     earlyReject();
     return;
   }
-  prefSerializer.AddSharedPrefCmdLineArgs(*mSubprocess, extraArgs);
 
   // Register ContentParent as an observer for changes to any pref
   // whose prefix matches the empty string, i.e. all of them.  The

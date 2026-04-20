@@ -230,6 +230,7 @@ const DATA: &'static [(&'static str, &'static [&'static str], &'static [&'static
     ("namespaceapi", &["minwinbase", "minwindef", "ntdef", "winnt"], &["kernel32"]),
     ("nb30", &["minwindef", "winnt"], &["netapi32"]),
     ("ncrypt", &["basetsd", "bcrypt", "minwindef", "winnt"], &["ncrypt"]),
+    ("ntifs", &["basetsd", "minwindef", "ntdef", "winnt"], &["ntdll"]),
     ("ntlsa", &["basetsd", "guiddef", "lsalookup", "minwindef", "ntdef", "ntsecapi", "subauth", "winnt"], &["advapi32"]),
     ("ntsecapi", &["basetsd", "guiddef", "lsalookup", "minwindef", "ntdef", "sspi", "subauth", "winnt"], &["advapi32"]),
     ("oaidl", &["basetsd", "guiddef", "minwindef", "rpcndr", "unknwnbase", "winnt", "wtypes", "wtypesbase"], &[]),

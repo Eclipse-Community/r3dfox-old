@@ -47,17 +47,17 @@ if CONFIG['MOZ_WIDGET_TOOLKIT'] == 'windows':
     EXPORTS.mozilla += [
         'AssembleCmdLine.h',
         'LauncherResult.h',
-        'ModuleEvaluator_windows.h',
-        'ModuleVersionInfo_windows.h',
+        #'ModuleEvaluator_windows.h',
+        #'ModuleVersionInfo_windows.h',
         'PolicyChecks.h',
-        'WinDllServices.h',
+        #'WinDllServices.h',
     ]
     UNIFIED_SOURCES += [
         '/toolkit/mozapps/update/common/updateutils_win.cpp',
-        'ModuleEvaluator_windows.cpp',
-        'ModuleVersionInfo_windows.cpp',
+        #'ModuleEvaluator_windows.cpp',
+        #'ModuleVersionInfo_windows.cpp',
         'nsNativeAppSupportWin.cpp',
-        'WinDllServices.cpp',
+        #'WinDllServices.cpp',
     ]
     DEFINES['PROXY_PRINTING'] = 1
     LOCAL_INCLUDES += [

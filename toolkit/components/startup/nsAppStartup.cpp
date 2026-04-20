@@ -554,7 +554,8 @@ nsAppStartup::GetWasRestarted(bool* aResult) {
 
 NS_IMETHODIMP
 nsAppStartup::GetSecondsSinceLastOSRestart(int64_t *aResult) {
-#if defined(XP_WIN)
+return NS_ERROR_NOT_IMPLEMENTED;
+/*#if defined(XP_WIN)
   *aResult = int64_t(GetTickCount64() / 1000ull);
   return NS_OK;
 #elif defined(XP_DARWIN)
@@ -568,7 +569,7 @@ nsAppStartup::GetSecondsSinceLastOSRestart(int64_t *aResult) {
   return NS_OK;
 #else
   return NS_ERROR_NOT_IMPLEMENTED;
-#endif
+#endif*/
 }
 
 NS_IMETHODIMP

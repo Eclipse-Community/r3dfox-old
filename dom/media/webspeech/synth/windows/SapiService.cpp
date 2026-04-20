@@ -278,10 +278,10 @@ bool SapiService::RegisterVoices() {
     nsAutoString hexLcid;
     LCID lcid = wcstol(language, nullptr, 16);
     CoTaskMemFree(language);
-    if (NS_WARN_IF(
-            !LCIDToLocaleName(lcid, locale, LOCALE_NAME_MAX_LENGTH, 0))) {
-      continue;
-    }
+    //if (NS_WARN_IF(
+    //        !LCIDToLocaleName(lcid, locale, LOCALE_NAME_MAX_LENGTH, 0))) {
+    //  continue;
+    //}
 
     WCHAR* description = nullptr;
     if (FAILED(voiceToken->GetStringValue(nullptr, &description))) {

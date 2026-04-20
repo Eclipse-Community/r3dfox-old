@@ -11,7 +11,7 @@
 #endif  // defined(ACCESSIBILITY) && defined(MOZILLA_INTERNAL_API)
 #include "mozilla/Assertions.h"
 #include "mozilla/DynamicallyLinkedFunctionPtr.h"
-#include "mozilla/mscom/ProcessRuntimeShared.h"
+//#include "mozilla/mscom/ProcessRuntimeShared.h"
 #include "mozilla/RefPtr.h"
 #include "mozilla/UniquePtr.h"
 #include "mozilla/Unused.h"
@@ -33,6 +33,9 @@
 // This API from oleaut32.dll is not declared in Windows SDK headers
 extern "C" void __cdecl SetOaNoCache(void);
 
+static CRITICAL_SECTION gLock;
+static bool gIsProcessInitialized = false;
+
 namespace mozilla {
 namespace mscom {
 
@@ -44,6 +47,7 @@ ProcessRuntime::ProcessRuntime(GeckoProcessType aProcessType)
       mActCtxRgn(a11y::Compatibility::GetActCtxResourceId())
 #endif  // defined(ACCESSIBILITY) && defined(MOZILLA_INTERNAL_API)
 {
+  InitializeCriticalSection(&gLock);
 #if defined(MOZILLA_INTERNAL_API) && defined(MOZ_SANDBOX)
   // If our process is running under Win32k lockdown, we cannot initialize
   // COM with single-threaded apartments. This is because STAs create a hidden
@@ -126,9 +130,23 @@ ProcessRuntime::ProcessRuntime(GeckoProcessType aProcessType)
 }
 
 void ProcessRuntime::InitInsideApartment() {
-  ProcessInitLock lock;
-  if (lock.IsInitialized()) {
+  if (gIsProcessInitialized) {
+    mInitResult = S_OK;
+    return;
+  }
+  EnterCriticalSection(&gLock);
+  gIsProcessInitialized = true;
+
+  //ProcessInitLock lock;
+  /*if (lock.IsInitialized()) {
     // COM has already been initialized by a previous ProcessRuntime instance
+    mInitResult = S_OK;
+    return;
+  }*/
+
+  // Windows XP doesn't support setting of the COM exception policy, so we'll
+  // just stop here in that case.
+  if (!IsVistaOrLater()) {
     mInitResult = S_OK;
     return;
   }
@@ -150,8 +168,13 @@ void ProcessRuntime::InitInsideApartment() {
   }
 
   // Disable COM's catch-all exception handler
+  // Windows 7 has a policy that is even more strict. We should use that one
+  // whenever possible.
+  ULONG_PTR exceptionSetting = IsWin7OrLater() ?
+                               COMGLB_EXCEPTION_DONOT_HANDLE_ANY :
+                               COMGLB_EXCEPTION_DONOT_HANDLE;
   mInitResult = globalOpts->Set(COMGLB_EXCEPTION_HANDLING,
-                                COMGLB_EXCEPTION_DONOT_HANDLE_ANY);
+                                exceptionSetting);
   MOZ_ASSERT(SUCCEEDED(mInitResult));
 
   // Disable the BSTR cache (as it never invalidates, thus leaking memory)
@@ -161,7 +184,7 @@ void ProcessRuntime::InitInsideApartment() {
     return;
   }
 
-  lock.SetInitialized();
+  //lock.SetInitialized();
 }
 
 /* static */
@@ -306,6 +329,11 @@ ProcessRuntime::InitializeSecurity() {
   return ::CoInitializeSecurity(
       &sd, -1, nullptr, nullptr, RPC_C_AUTHN_LEVEL_DEFAULT,
       RPC_C_IMP_LEVEL_IDENTIFY, nullptr, EOAC_NONE, nullptr);
+}
+
+ProcessRuntime::~ProcessRuntime() {
+  LeaveCriticalSection(&gLock);
+  DeleteCriticalSection(&gLock);
 }
 
 }  // namespace mscom

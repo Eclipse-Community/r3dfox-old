@@ -86,7 +86,7 @@ SOURCES += [
 
 if CONFIG['OS_ARCH'] == 'WINNT':
     SOURCES += [
-        'other/UntrustedModules.cpp',
+    #    'other/UntrustedModules.cpp',
     ]
 
 # KeyedStackCapturer entirely relies on profiler to be enabled.
@@ -124,7 +124,7 @@ EXTRA_JS_MODULES += [
     'pings/ModulesPing.jsm',
     'pings/PrioPing.jsm',
     'pings/TelemetrySession.jsm',
-    'pings/UntrustedModulesPing.jsm',
+    #'pings/UntrustedModulesPing.jsm',
     'pings/UpdatePing.jsm',
     'TelemetryStartup.jsm',
 ]

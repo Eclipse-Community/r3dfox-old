@@ -315,6 +315,8 @@ class SharedPrefMap {
  public:
   NS_INLINE_DECL_REFCOUNTING(SharedPrefMap)
 
+  nsCString NameMap;
+
   // A temporary wrapper class for accessing entries in the array. Instances of
   // this class are valid as long as SharedPrefMap instance is alive, but
   // generally should not be stored long term, or allocated on the heap.
@@ -415,7 +417,7 @@ class SharedPrefMap {
   // Note: These constructors are infallible, because the preference database is
   // critical to platform functionality, and we cannot operate without it.
   SharedPrefMap(const FileDescriptor&, size_t);
-  explicit SharedPrefMap(SharedPrefMapBuilder&&);
+  explicit SharedPrefMap(SharedPrefMapBuilder&&, nsAutoCString&);
 
   // Searches for the given preference in the map, and returns true if it
   // exists.
@@ -577,7 +579,7 @@ class MOZ_RAII SharedPrefMapBuilder {
   // This should generally not be used directly by callers. The
   // SharedPrefMapBuilder instance should instead be passed to the SharedPrefMap
   // constructor as a move reference.
-  Result<Ok, nsresult> Finalize(loader::AutoMemMap& aMap);
+  Result<Ok, nsresult> Finalize(loader::AutoMemMap& aMap, nsAutoCString& aName);
 
  private:
   using StringTableEntry = mozilla::dom::ipc::StringTableEntry;

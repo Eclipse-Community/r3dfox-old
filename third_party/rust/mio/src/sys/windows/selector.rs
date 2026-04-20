@@ -76,7 +76,7 @@ impl Selector {
         events.clear();
 
         trace!("polling IOCP");
-        let n = match self.inner.port.get_many(&mut events.statuses, timeout) {
+        /*let n = match self.inner.port.get_many(&mut events.statuses, timeout) {
             Ok(statuses) => statuses.len(),
             Err(ref e) if e.raw_os_error() == Some(WAIT_TIMEOUT as i32) => 0,
             Err(e) => return Err(e),
@@ -98,10 +98,10 @@ impl Selector {
 
             trace!("select; -> got overlapped");
             callback(status.entry());
-        }
+        }*/
 
         trace!("returning");
-        Ok(ret)
+        Ok(false)
     }
 
     /// Gets a reference to the underlying `CompletionPort` structure.

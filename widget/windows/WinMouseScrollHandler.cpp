@@ -20,6 +20,7 @@
 #include "mozilla/MouseEvents.h"
 #include "mozilla/Preferences.h"
 #include "mozilla/dom/WheelEventBinding.h"
+#include "mozilla/WindowsVersion.h"
 
 #include <psapi.h>
 
@@ -1028,7 +1029,7 @@ void MouseScrollHandler::SystemSettings::TrustedScrollSettingsDriver() {
 bool MouseScrollHandler::SystemSettings::
     IsOverridingSystemScrollSpeedAllowed() {
   return mScrollLines == DefaultScrollLines() &&
-         mScrollChars == DefaultScrollChars();
+         (!IsVistaOrLater() || mScrollChars == DefaultScrollChars());
 }
 
 /******************************************************************************
@@ -1269,7 +1270,7 @@ bool MouseScrollHandler::Device::Elantech::IsHelperWindow(HWND aWnd) {
 
   bool result = false;
   wchar_t path[256] = {L'\0'};
-  if (::GetProcessImageFileNameW(hProcess, path, ArrayLength(path))) {
+  /*if (::GetProcessImageFileNameW(hProcess, path, ArrayLength(path))) {
     int pathLength = lstrlenW(path);
     if (pathLength >= filenameSuffixLength) {
       if (lstrcmpiW(path + pathLength - filenameSuffixLength, filenameSuffix) ==
@@ -1277,7 +1278,7 @@ bool MouseScrollHandler::Device::Elantech::IsHelperWindow(HWND aWnd) {
         result = true;
       }
     }
-  }
+  }*/
   ::CloseHandle(hProcess);
 
   return result;

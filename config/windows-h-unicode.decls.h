@@ -297,7 +297,7 @@ BOOL CallNamedPipe(LPCTSTR, LPVOID, DWORD, LPVOID, DWORD, LPDWORD, DWORD);
 
 BOOL WaitNamedPipe(LPCTSTR, DWORD);
 
-BOOL GetNamedPipeClientComputerName(HANDLE, LPTSTR, ULONG);
+//BOOL GetNamedPipeClientComputerName(HANDLE, LPTSTR, ULONG);
 
 BOOL SetVolumeLabel(LPCTSTR, LPCTSTR);
 

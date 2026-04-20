@@ -163,6 +163,6 @@ OS_LIBS += [
 
 if CONFIG['CC_TYPE'] == 'clang-cl':
     SOURCES += [
-        'ToastNotification.cpp',
-        'ToastNotificationHandler.cpp',
+        #'ToastNotification.cpp',
+        #'ToastNotificationHandler.cpp',
     ]

@@ -1014,8 +1014,8 @@ void IMEHandler::ShowOnScreenKeyboard() {
             std::wstring(commonProgramFilesPathW6432.data());
       } else {
         PWSTR path = nullptr;
-        HRESULT hres = SHGetKnownFolderPath(FOLDERID_ProgramFilesCommon, 0,
-                                            nullptr, &path);
+        HRESULT hres = WinUtils::SHGetKnownFolderPath(FOLDERID_ProgramFilesCommon, 0,
+                                                      nullptr, &path);
         if (FAILED(hres) || !path) {
           return;
         }

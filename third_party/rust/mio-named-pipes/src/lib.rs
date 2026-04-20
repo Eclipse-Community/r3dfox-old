@@ -569,8 +569,7 @@ impl Inner {
 
 unsafe fn cancel(handle: &AsRawHandle,
                  overlapped: &windows::Overlapped) -> io::Result<()> {
-    let ret = kernel32::CancelIoEx(handle.as_raw_handle(),
-                                   overlapped.as_mut_ptr());
+    let ret = kernel32::CancelIo(handle.as_raw_handle());
     if ret == 0 {
         Err(io::Error::last_os_error())
     } else {

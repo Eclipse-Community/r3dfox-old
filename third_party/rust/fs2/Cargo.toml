@@ -25,7 +25,7 @@ version = "0.3"
 version = "0.2.30"
 [target."cfg(windows)".dependencies.winapi]
 version = "0.3"
-features = ["handleapi", "processthreadsapi", "winerror", "fileapi", "winbase", "std"]
+features = ["handleapi", "processthreadsapi", "winerror", "ntifs", "fileapi", "winbase", "std"]
 [badges.appveyor]
 repository = "danburkert/fs2-rs"
 

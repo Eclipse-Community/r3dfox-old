@@ -8,6 +8,7 @@
 #define BASE_LOCK_IMPL_H_
 
 #include "base/basictypes.h"
+#include "base/platform_thread.h"
 #include "build/build_config.h"
 
 #if defined(OS_WIN)
@@ -25,7 +26,8 @@ namespace internal {
 class LockImpl {
  public:
 #if defined(OS_WIN)
-  using NativeHandle = SRWLOCK;
+//  using NativeHandle = SRWLOCK;
+  typedef CRITICAL_SECTION OSLockType;
 #elif defined(OS_POSIX)
   using NativeHandle = pthread_mutex_t;
 #endif
@@ -47,7 +49,7 @@ class LockImpl {
   // Return the native underlying lock.
   // TODO(awalker): refactor lock and condition variables so that this is
   // unnecessary.
-  NativeHandle* native_handle() { return &native_handle_; }
+  //NativeHandle* native_handle() { return &native_handle_; }
 
 #if defined(OS_POSIX)
   // Whether this lock will attempt to use priority inheritance.
@@ -55,7 +57,16 @@ class LockImpl {
 #endif
 
  private:
-  NativeHandle native_handle_;
+  //NativeHandle native_handle_;
+  OSLockType os_lock_;
+
+#if !defined(NDEBUG) && defined(OS_WIN)
+  // All private data is implicitly protected by lock_.
+  // Be VERY careful to only access members under that lock.
+  PlatformThreadId owning_thread_id_;
+  int32_t recursion_count_shadow_;
+  bool recursion_used_;      // Allow debugging to continued after a DCHECK().
+#endif  // NDEBUG
 
   DISALLOW_COPY_AND_ASSIGN(LockImpl);
 };

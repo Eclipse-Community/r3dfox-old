@@ -556,7 +556,7 @@ static Atomic<bool, SequentiallyConsistent,
     malloc_initialized;
 #endif
 
-static StaticMutex gInitLock = {STATIC_MUTEX_INIT};
+static StaticMutex gInitLock;
 
 // ***************************************************************************
 // Statistics data structures.

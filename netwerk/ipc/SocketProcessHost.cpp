@@ -108,10 +108,9 @@ bool SocketProcessHost::Launch() {
   extraArgs.push_back(parentBuildID.get());
 
   SharedPreferenceSerializer prefSerializer;
-  if (!prefSerializer.SerializeToSharedMemory()) {
+  if (!prefSerializer.SerializeToSharedMemory(*this, extraArgs)) {
     return false;
   }
-  prefSerializer.AddSharedPrefCmdLineArgs(*this, extraArgs);
 
   mLaunchPhase = LaunchPhase::Waiting;
   if (!GeckoChildProcessHost::LaunchAndWaitForProcessHandle(extraArgs)) {

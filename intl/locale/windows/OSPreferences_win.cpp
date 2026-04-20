@@ -17,7 +17,7 @@ OSPreferences::OSPreferences() {}
 OSPreferences::~OSPreferences() {}
 
 bool OSPreferences::ReadSystemLocales(nsTArray<nsCString>& aLocaleList) {
-  MOZ_ASSERT(aLocaleList.IsEmpty());
+/*  MOZ_ASSERT(aLocaleList.IsEmpty());
 
   ULONG numLanguages = 0;
   DWORD cchLanguagesBuffer = 0;
@@ -39,12 +39,12 @@ bool OSPreferences::ReadSystemLocales(nsTArray<nsCString>& aLocaleList) {
       }
     }
   }
-
+*/
   return false;
 }
 
 bool OSPreferences::ReadRegionalPrefsLocales(nsTArray<nsCString>& aLocaleList) {
-  MOZ_ASSERT(aLocaleList.IsEmpty());
+/*  MOZ_ASSERT(aLocaleList.IsEmpty());
 
   WCHAR locale[LOCALE_NAME_MAX_LENGTH];
   if (NS_WARN_IF(!LCIDToLocaleName(LOCALE_USER_DEFAULT, locale,
@@ -57,7 +57,7 @@ bool OSPreferences::ReadRegionalPrefsLocales(nsTArray<nsCString>& aLocaleList) {
   if (CanonicalizeLanguageTag(loc)) {
     aLocaleList.AppendElement(loc);
     return true;
-  }
+  }*/
   return false;
 }
 
@@ -84,10 +84,10 @@ static LCTYPE ToTimeLCType(OSPreferences::DateTimeFormatStyle aFormatStyle) {
   switch (aFormatStyle) {
     case OSPreferences::DateTimeFormatStyle::None:
       return LOCALE_STIMEFORMAT;
-    case OSPreferences::DateTimeFormatStyle::Short:
+    /*case OSPreferences::DateTimeFormatStyle::Short:
       return LOCALE_SSHORTTIME;
     case OSPreferences::DateTimeFormatStyle::Medium:
-      return LOCALE_SSHORTTIME;
+      return LOCALE_SSHORTTIME;*/
     case OSPreferences::DateTimeFormatStyle::Long:
       return LOCALE_STIMEFORMAT;
     case OSPreferences::DateTimeFormatStyle::Full:
@@ -150,9 +150,9 @@ bool OSPreferences::ReadDateTimePattern(DateTimeFormatStyle aDateStyle,
 
   if (isDate) {
     LCTYPE lcType = ToDateLCType(aDateStyle);
-    size_t len = GetLocaleInfoEx(
+    size_t len = 0;/*GetLocaleInfoEx(
         reinterpret_cast<const wchar_t*>(localeName.BeginReading()), lcType,
-        nullptr, 0);
+        nullptr, 0);*/
     if (len == 0) {
       return false;
     }
@@ -160,8 +160,8 @@ bool OSPreferences::ReadDateTimePattern(DateTimeFormatStyle aDateStyle,
     // We're doing it to ensure the terminator will fit when Windows writes the
     // data to its output buffer. See bug 1358159 for details.
     str->SetLength(len);
-    GetLocaleInfoEx(reinterpret_cast<const wchar_t*>(localeName.BeginReading()),
-                    lcType, (WCHAR*)str->BeginWriting(), len);
+    /*GetLocaleInfoEx(reinterpret_cast<const wchar_t*>(localeName.BeginReading()),
+                    lcType, (WCHAR*)str->BeginWriting(), len);*/
     str->SetLength(len - 1);  // -1 because len counts the null terminator
 
     // Windows uses "ddd" and "dddd" for abbreviated and full day names
@@ -208,9 +208,9 @@ bool OSPreferences::ReadDateTimePattern(DateTimeFormatStyle aDateStyle,
 
   if (isTime) {
     LCTYPE lcType = ToTimeLCType(aTimeStyle);
-    size_t len = GetLocaleInfoEx(
+    size_t len = 0; /*GetLocaleInfoEx(
         reinterpret_cast<const wchar_t*>(localeName.BeginReading()), lcType,
-        nullptr, 0);
+        nullptr, 0);*/
     if (len == 0) {
       return false;
     }
@@ -218,8 +218,8 @@ bool OSPreferences::ReadDateTimePattern(DateTimeFormatStyle aDateStyle,
     // We're doing it to ensure the terminator will fit when Windows writes the
     // data to its output buffer. See bug 1358159 for details.
     str->SetLength(len);
-    GetLocaleInfoEx(reinterpret_cast<const wchar_t*>(localeName.BeginReading()),
-                    lcType, (WCHAR*)str->BeginWriting(), len);
+    /*GetLocaleInfoEx(reinterpret_cast<const wchar_t*>(localeName.BeginReading()),
+                    lcType, (WCHAR*)str->BeginWriting(), len);*/
     str->SetLength(len - 1);
 
     // Windows uses "t" or "tt" for a "time marker" (am/pm indicator),

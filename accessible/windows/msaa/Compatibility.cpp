@@ -259,6 +259,7 @@ void Compatibility::Init() {
 
 static bool ReadCOMRegDefaultString(const nsString& aRegPath,
                                     nsAString& aOutBuf) {
+return false;
   aOutBuf.Truncate();
 
   nsAutoString fullyQualifiedRegPath;
@@ -269,8 +270,8 @@ static bool ReadCOMRegDefaultString(const nsString& aRegPath,
   // We expect either REG_SZ or REG_EXPAND_SZ.
   DWORD type;
   DWORD bufLen = 0;
-  LONG result = ::RegGetValue(HKEY_LOCAL_MACHINE, fullyQualifiedRegPath.get(),
-                              nullptr, RRF_RT_ANY, &type, nullptr, &bufLen);
+  LONG result;// = ::RegGetValue(HKEY_LOCAL_MACHINE, fullyQualifiedRegPath.get(),
+  //                            nullptr, RRF_RT_ANY, &type, nullptr, &bufLen);
   if (result != ERROR_SUCCESS || (type != REG_SZ && type != REG_EXPAND_SZ)) {
     return false;
   }
@@ -280,9 +281,9 @@ static bool ReadCOMRegDefaultString(const nsString& aRegPath,
 
   aOutBuf.SetLength((bufLen + 1) / sizeof(char16_t));
 
-  result =
-      ::RegGetValue(HKEY_LOCAL_MACHINE, fullyQualifiedRegPath.get(), nullptr,
-                    flags, nullptr, aOutBuf.BeginWriting(), &bufLen);
+  //result =
+  //    ::RegGetValue(HKEY_LOCAL_MACHINE, fullyQualifiedRegPath.get(), nullptr,
+  //                  flags, nullptr, aOutBuf.BeginWriting(), &bufLen);
   if (result != ERROR_SUCCESS) {
     aOutBuf.Truncate();
     return false;
@@ -298,12 +299,13 @@ static bool IsSystemOleAcc(nsCOMPtr<nsIFile>& aFile) {
   // system32 if we're a 32-bit process running on a 64-bit OS. This is
   // necessary because the values that we are reading from the registry
   // are not redirected; they reference SysWOW64 directly.
+return false;
   PWSTR systemPath = nullptr;
-  HRESULT hr =
-      ::SHGetKnownFolderPath(FOLDERID_SystemX86, 0, nullptr, &systemPath);
-  if (FAILED(hr)) {
-    return false;
-  }
+  //HRESULT hr =
+  //    ::SHGetKnownFolderPath(FOLDERID_SystemX86, 0, nullptr, &systemPath);
+  //if (FAILED(hr)) {
+  //  return false;
+  //}
 
   nsCOMPtr<nsIFile> oleAcc;
   nsresult rv = NS_NewLocalFile(nsDependentString(systemPath), false,

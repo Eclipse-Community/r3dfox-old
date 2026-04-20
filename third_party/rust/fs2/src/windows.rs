@@ -9,12 +9,13 @@ use std::ptr;
 use winapi::shared::minwindef::{BOOL, DWORD};
 use winapi::shared::winerror::ERROR_LOCK_VIOLATION;
 use winapi::um::fileapi::{FILE_ALLOCATION_INFO, FILE_STANDARD_INFO, GetDiskFreeSpaceW};
-use winapi::um::fileapi::{GetVolumePathNameW, LockFileEx, UnlockFile, SetFileInformationByHandle};
+use winapi::um::fileapi::{GetVolumePathNameW, LockFileEx, UnlockFile};
 use winapi::um::handleapi::DuplicateHandle;
 use winapi::um::minwinbase::{FileAllocationInfo, FileStandardInfo};
 use winapi::um::minwinbase::{LOCKFILE_FAIL_IMMEDIATELY, LOCKFILE_EXCLUSIVE_LOCK};
 use winapi::um::processthreadsapi::GetCurrentProcess;
 use winapi::um::winbase::GetFileInformationByHandleEx;
+use winapi::um::ntifs::{IO_STATUS_BLOCK, NtQueryInformationFile, NtSetInformationFile};
 use winapi::um::winnt::DUPLICATE_SAME_ACCESS;
 
 use FsStats;
@@ -41,14 +42,16 @@ pub fn duplicate(file: &File) -> Result<File> {
 pub fn allocated_size(file: &File) -> Result<u64> {
     unsafe {
         let mut info: FILE_STANDARD_INFO = mem::zeroed();
+        let mut io: IO_STATUS_BLOCK = mem::zeroed();
 
-        let ret = GetFileInformationByHandleEx(
+        let ret = NtQueryInformationFile(
             file.as_raw_handle(),
-            FileStandardInfo,
+            &mut io as *mut _ as *mut _,
             &mut info as *mut _ as *mut _,
-            mem::size_of::<FILE_STANDARD_INFO>() as DWORD);
+            mem::size_of::<FILE_STANDARD_INFO>() as DWORD,
+            5);
 
-        if ret == 0 {
+        if ret != 0 {
             Err(Error::last_os_error())
         } else {
             Ok(*info.AllocationSize.QuadPart() as u64)
@@ -60,13 +63,16 @@ pub fn allocate(file: &File, len: u64) -> Result<()> {
     if try!(allocated_size(file)) < len {
         unsafe {
             let mut info: FILE_ALLOCATION_INFO = mem::zeroed();
+            let mut io: IO_STATUS_BLOCK = mem::zeroed();
             *info.AllocationSize.QuadPart_mut() = len as i64;
-            let ret = SetFileInformationByHandle(
+            let ret = NtSetInformationFile(
                 file.as_raw_handle(),
-                FileAllocationInfo,
+                &mut io as *mut _ as *mut _,
                 &mut info as *mut _ as *mut _,
-                mem::size_of::<FILE_ALLOCATION_INFO>() as DWORD);
-            if ret == 0 {
+                mem::size_of::<FILE_ALLOCATION_INFO>() as DWORD,
+                19);
+
+            if ret != 0 {
                 return Err(Error::last_os_error());
             }
         }

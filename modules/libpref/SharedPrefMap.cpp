@@ -33,8 +33,8 @@ SharedPrefMap::SharedPrefMap(const FileDescriptor& aMapFile, size_t aMapSize) {
   mMap.setPersistent();
 }
 
-SharedPrefMap::SharedPrefMap(SharedPrefMapBuilder&& aBuilder) {
-  auto result = aBuilder.Finalize(mMap);
+SharedPrefMap::SharedPrefMap(SharedPrefMapBuilder&& aBuilder, nsAutoCString& aName) {
+  auto result = aBuilder.Finalize(mMap,aName);
   MOZ_RELEASE_ASSERT(result.isOk());
   mMap.setPersistent();
 }
@@ -132,7 +132,7 @@ void SharedPrefMapBuilder::Add(const char* aKey, const Flags& aFlags,
   });
 }
 
-Result<Ok, nsresult> SharedPrefMapBuilder::Finalize(loader::AutoMemMap& aMap) {
+Result<Ok, nsresult> SharedPrefMapBuilder::Finalize(loader::AutoMemMap& aMap, nsAutoCString& aName) {
   using Header = SharedPrefMap::Header;
 
   // Create an array of entry pointers for the entry array, and sort it by
@@ -182,8 +182,10 @@ Result<Ok, nsresult> SharedPrefMapBuilder::Finalize(loader::AutoMemMap& aMap) {
   offset += header.mValueStrings.mSize;
 
   MemMapSnapshot mem;
-  MOZ_TRY(mem.Init(offset));
 
+  const char* str;
+  aName.GetData(&str);
+  MOZ_TRY(mem.Init(offset, str));
   auto headerPtr = mem.Get<Header>();
   headerPtr[0] = header;
 

@@ -73,7 +73,7 @@ std::unique_ptr<char[]> GetUserTokenInfo() {
 static nsresult ReauthenticateUserWindows(const nsACString& aPrompt,
                                           /* out */ bool& reauthenticated) {
   reauthenticated = false;
-
+  return NS_OK;
   // Is used in next iteration if the previous login failed.
   DWORD err = 0;
   uint8_t numAttempts = 3;
@@ -115,9 +115,9 @@ static nsresult ReauthenticateUserWindows(const nsACString& aPrompt,
 
     // Get user's Windows credentials.
     // https://docs.microsoft.com/en-us/windows/desktop/api/wincred/nf-wincred-creduipromptforwindowscredentialsw
-    err = CredUIPromptForWindowsCredentialsW(
+    /*err = CredUIPromptForWindowsCredentialsW(
         &credui, err, &authPackage, nullptr, 0, &outCredBuffer, &outCredSize,
-        &save, CREDUIWIN_ENUMERATE_CURRENT_USER);
+        &save, CREDUIWIN_ENUMERATE_CURRENT_USER);*/
     ScopedBuffer scopedOutCredBuffer(outCredBuffer);
     if (err == ERROR_CANCELLED) {
       MOZ_LOG(gCredentialManagerSecretLog, LogLevel::Debug,
@@ -198,7 +198,7 @@ static nsresult ReauthenticateUser(const nsACString& prompt,
                                    /* out */ bool& reauthenticated) {
   reauthenticated = false;
 #if defined(XP_WIN)
-  return ReauthenticateUserWindows(prompt, reauthenticated);
+  //return ReauthenticateUserWindows(prompt, reauthenticated);
 #elif defined(XP_MACOSX)
   return ReauthenticateUserMacOS(prompt, reauthenticated);
 #endif  // Reauthentication is not implemented for this platform.

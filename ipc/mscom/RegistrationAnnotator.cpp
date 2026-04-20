@@ -50,14 +50,15 @@ static const char16_t kWin64[] = u"Win64";
 
 static bool GetStringValue(HKEY aBaseKey, const nsAString& aStrSubKey,
                            const nsAString& aValueName, nsAString& aOutput) {
+return false;
   const nsString& flatSubKey = PromiseFlatString(aStrSubKey);
   const nsString& flatValueName = PromiseFlatString(aValueName);
   LPCWSTR valueName = aValueName.IsEmpty() ? nullptr : flatValueName.get();
 
   DWORD type = 0;
   DWORD numBytes = 0;
-  LONG result = RegGetValue(aBaseKey, flatSubKey.get(), valueName, RRF_RT_ANY,
-                            &type, nullptr, &numBytes);
+  LONG result;// = RegGetValue(aBaseKey, flatSubKey.get(), valueName, RRF_RT_ANY,
+//                            &type, nullptr, &numBytes);
   if (result != ERROR_SUCCESS || (type != REG_SZ && type != REG_EXPAND_SZ)) {
     return false;
   }
@@ -67,8 +68,8 @@ static bool GetStringValue(HKEY aBaseKey, const nsAString& aStrSubKey,
 
   DWORD acceptFlag = type == REG_SZ ? RRF_RT_REG_SZ : RRF_RT_REG_EXPAND_SZ;
 
-  result = RegGetValue(aBaseKey, flatSubKey.get(), valueName, acceptFlag,
-                       nullptr, aOutput.BeginWriting(), &numBytes);
+//  result = RegGetValue(aBaseKey, flatSubKey.get(), valueName, acceptFlag,
+//                       nullptr, aOutput.BeginWriting(), &numBytes);
   if (result == ERROR_SUCCESS) {
     // Truncate null terminator
     aOutput.SetLength(((numBytes + 1) / sizeof(wchar_t)) - 1);

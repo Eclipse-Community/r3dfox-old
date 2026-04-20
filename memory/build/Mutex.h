@@ -75,6 +75,9 @@ struct Mutex {
     pthread_mutex_unlock(&mMutex);
 #endif
   }
+  inline void Del() {
+    DeleteCriticalSection(&mMutex);
+  }
 };
 
 // Mutex that can be used for static initialization.
@@ -86,16 +89,16 @@ struct Mutex {
 // everywhere incur a performance penalty. See bug 1418389.
 #if defined(XP_WIN)
 struct StaticMutex {
-  SRWLOCK mMutex;
+  CRITICAL_SECTION mMutex;
 
-  inline void Lock() { AcquireSRWLockExclusive(&mMutex); }
+  inline void Lock() {
+  InitializeCriticalSectionAndSpinCount(&mMutex, 5000);
+  EnterCriticalSection(&mMutex); }
 
-  inline void Unlock() { ReleaseSRWLockExclusive(&mMutex); }
+  inline void Unlock() {
+  LeaveCriticalSection(&mMutex);
+  DeleteCriticalSection(&mMutex); }
 };
-
-// Normally, we'd use a constexpr constructor, but MSVC likes to create
-// static initializers anyways.
-#  define STATIC_MUTEX_INIT SRWLOCK_INIT
 
 #else
 typedef Mutex StaticMutex;
@@ -119,7 +122,6 @@ struct MOZ_RAII AutoLock {
   }
 
   ~AutoLock() { mMutex.Unlock(); }
-
  private:
   MOZ_DECL_USE_GUARD_OBJECT_NOTIFIER;
   T& mMutex;

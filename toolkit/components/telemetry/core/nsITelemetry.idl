@@ -198,8 +198,8 @@ interface nsITelemetry : nsISupports
    * event (including stack trace), and flags describing the module's
    * trustworthiness.
    */
-  [implicit_jscontext]
-  Promise getUntrustedModuleLoadEvents();
+  //[implicit_jscontext]
+  //Promise getUntrustedModuleLoadEvents();
 
   /*
    * Record the current thread's call stack on demand. Note that, the stack is

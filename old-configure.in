@@ -132,7 +132,7 @@ dnl ========================================================
 dnl Special win32 checks
 dnl ========================================================
 
-WINVER=601
+WINVER=502
 
 case "$target" in
 *-mingw*)
@@ -166,9 +166,14 @@ case "$target" in
         _CC_SUITE=14
         MSVC_C_RUNTIME_DLL=vcruntime140.dll
         MSVC_CXX_RUNTIME_DLL=msvcp140.dll
+        MSVC_CONCUR_RUNTIME_DLL=concrt140.dll
 
         # -Zc:sizedDealloc- disables C++14 global sized deallocation (see bug 1160146)
         CXXFLAGS="$CXXFLAGS -Zc:sizedDealloc-"
+
+        # Disable C++11 thread-safe statics due to crashes on XP (bug 1204752)
+        # See https://connect.microsoft.com/VisualStudio/feedback/details/1789709/visual-c-2015-runtime-broken-on-windows-server-2003-c-11-magic-statics
+        CXXFLAGS="$CXXFLAGS -Zc:threadSafeInit-"
 
         if test -n "$WIN_UCRT_REDIST_DIR"; then
           if test ! -d "$WIN_UCRT_REDIST_DIR"; then
@@ -179,6 +184,7 @@ case "$target" in
 
         AC_SUBST(MSVC_C_RUNTIME_DLL)
         AC_SUBST(MSVC_CXX_RUNTIME_DLL)
+        AC_SUBST(MSVC_CONCUR_RUNTIME_DLL)
 
         AC_DEFINE(HAVE_SEH_EXCEPTIONS)
 
@@ -687,9 +693,9 @@ case "$target" in
         PKG_SKIP_STRIP=1
         # aarch64 doesn't support subsystems below 6.02
         if test "$CPU_ARCH" = "aarch64"; then
-            WIN32_SUBSYSTEM_VERSION=6.02
+            WIN32_SUBSYSTEM_VERSION=5.02
         else
-            WIN32_SUBSYSTEM_VERSION=6.01
+            WIN32_SUBSYSTEM_VERSION=5.01
         fi
         WIN32_CONSOLE_EXE_LDFLAGS=-SUBSYSTEM:CONSOLE,$WIN32_SUBSYSTEM_VERSION
         WIN32_GUI_EXE_LDFLAGS=-SUBSYSTEM:WINDOWS,$WIN32_SUBSYSTEM_VERSION

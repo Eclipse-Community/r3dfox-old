@@ -16,10 +16,11 @@
 namespace mozilla {
 
 inline bool PolicyHasRegValue(HKEY aKey, LPCWSTR aName, DWORD* aValue) {
-  DWORD len = sizeof(DWORD);
+  /*DWORD len = sizeof(DWORD);
   LONG ret = ::RegGetValueW(aKey, L"SOFTWARE\\Policies\\Mozilla\\Firefox",
                             aName, RRF_RT_DWORD, nullptr, aValue, &len);
-  return ret == ERROR_SUCCESS;
+  return ret == ERROR_SUCCESS;*/
+  return false;
 }
 
 inline bool PolicyCheckBoolean(LPCWSTR aPolicyName) {

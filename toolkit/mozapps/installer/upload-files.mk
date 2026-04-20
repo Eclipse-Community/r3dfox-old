@@ -70,6 +70,10 @@ endif
 ifdef MSVC_CXX_RUNTIME_DLL
   JSSHELL_BINS += $(MSVC_CXX_RUNTIME_DLL)
 endif
+ifdef MSVC_CONCUR_RUNTIME_DLL
+  JSSHELL_BINS += $(MSVC_CONCUR_RUNTIME_DLL)
+endif
+
 
 ifdef WIN_UCRT_REDIST_DIR
   JSSHELL_BINS += $(notdir $(wildcard $(DIST)/bin/api-ms-win-*.dll))

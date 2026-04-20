@@ -64,9 +64,9 @@
 #        include <dxgi1_2.h>
 #    endif
 
-#    if defined(ANGLE_ENABLE_D3D9) || defined(ANGLE_ENABLE_D3D11)
+/*#    if defined(ANGLE_ENABLE_D3D9) || defined(ANGLE_ENABLE_D3D11)
 #        include <wrl.h>
-#    endif
+#    endif*/
 
 #    if defined(ANGLE_ENABLE_WINDOWS_STORE)
 #        include <dxgi1_3.h>

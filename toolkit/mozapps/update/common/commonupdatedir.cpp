@@ -798,9 +798,10 @@ nsresult GetInstallHash(const char16_t* installPath, const char* vendor,
 static bool GetCachedHash(const char16_t* installPath, HKEY rootKey,
                           const SimpleAutoString& regPath,
                           mozilla::UniquePtr<NS_tchar[]>& result) {
+  return false;
   // Find the size of the string we are reading before we read it so we can
   // allocate space.
-  unsigned long bufferSize;
+  /*unsigned long bufferSize;
   LSTATUS lrv = RegGetValueW(rootKey, regPath.String(),
                              reinterpret_cast<const wchar_t*>(installPath),
                              RRF_RT_REG_SZ, nullptr, nullptr, &bufferSize);
@@ -815,7 +816,7 @@ static bool GetCachedHash(const char16_t* installPath, HKEY rootKey,
   lrv = RegGetValueW(rootKey, regPath.String(),
                      reinterpret_cast<const wchar_t*>(installPath),
                      RRF_RT_REG_SZ, nullptr, result.get(), &bufferSize);
-  return (lrv == ERROR_SUCCESS);
+  return (lrv == ERROR_SUCCESS);*/
 }
 
 /**
@@ -911,7 +912,8 @@ static HRESULT GetUpdateDirectory(const wchar_t* installPath,
                                   WhichUpdateDir whichDir,
                                   SetPermissionsOf permsToSet,
                                   mozilla::UniquePtr<wchar_t[]>& result) {
-  PWSTR baseDirParentPath;
+  return E_FAIL;
+  /*PWSTR baseDirParentPath;
   REFKNOWNFOLDERID folderID = (whichDir == WhichUpdateDir::CommonAppData)
                                   ? FOLDERID_ProgramData
                                   : FOLDERID_LocalAppData;
@@ -939,8 +941,8 @@ static HRESULT GetUpdateDirectory(const wchar_t* installPath,
   // Generate the base path (C:\ProgramData\Mozilla)
   SimpleAutoString basePath;
   size_t basePathLen =
-      wcslen(baseDirParentPath) + 1 /* path separator */ + baseDir.Length();
-  basePath.AllocAndAssignSprintf(basePathLen, L"%s\\%s", baseDirParentPath,
+      wcslen(baseDirParentPath) + 1 /* path separator */ //+ baseDir.Length();
+  /*basePath.AllocAndAssignSprintf(basePathLen, L"%s\\%s", baseDirParentPath,
                                  baseDir.String());
   if (basePath.Length() != basePathLen) {
     return E_FAIL;
@@ -974,9 +976,9 @@ static HRESULT GetUpdateDirectory(const wchar_t* installPath,
     }
     if (NS_SUCCEEDED(rv)) {
       const wchar_t midPathDirName[] = NS_T(UPDATE_PATH_MID_DIR_NAME);
-      size_t updatePathLen = basePath.Length() + 1 /* path separator */ +
-                             wcslen(midPathDirName) + 1 /* path separator */ +
-                             wcslen(hash.get());
+      size_t updatePathLen = basePath.Length() + 1 /* path separator */ //+
+      //                       wcslen(midPathDirName) + 1 /* path separator */ //+
+      /*                       wcslen(hash.get());
       updatePath.AllocAndAssignSprintf(updatePathLen, L"%s\\%s\\%s",
                                        basePath.String(), midPathDirName,
                                        hash.get());
@@ -1007,7 +1009,7 @@ static HRESULT GetUpdateDirectory(const wchar_t* installPath,
     return E_FAIL;
   }
   updatePath.SwapBufferWith(result);
-  return S_OK;
+  return S_OK;*/
 }
 
 /**

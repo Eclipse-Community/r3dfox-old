@@ -28,9 +28,10 @@ mozilla::LazyLogModule gDhcpUtilsLog("dhcpUtils");
 #define LOG(args) MOZ_LOG(gDhcpUtilsLog, LogLevel::Debug, args)
 
 bool IsCurrentAndHasDHCP(PIP_ADAPTER_ADDRESSES aAddresses) {
-  return aAddresses->OperStatus == 1 &&
+  return false;
+  /*return aAddresses->OperStatus == 1 &&
          (aAddresses->Dhcpv4Server.iSockaddrLength ||
-          aAddresses->Dhcpv6Server.iSockaddrLength);
+          aAddresses->Dhcpv6Server.iSockaddrLength);*/
 }
 
 nsresult GetActiveDHCPNetworkAdapterName(

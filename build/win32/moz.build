@@ -16,19 +16,38 @@ if CONFIG['ENABLE_TESTS']:
 NO_PGO = True
 
 if CONFIG['WIN32_REDIST_DIR'] and CONFIG['COMPILE_ENVIRONMENT']:
-    for f in ['MSVC_C_RUNTIME_DLL', 'MSVC_CXX_RUNTIME_DLL']:
+    for f in ['MSVC_C_RUNTIME_DLL', 'MSVC_CXX_RUNTIME_DLL', 'MSVC_CONCUR_RUNTIME_DLL']:
         FINAL_TARGET_FILES += [
             '%%%s/%s' % (CONFIG['WIN32_REDIST_DIR'], CONFIG[f])
         ]
 
 if CONFIG['WIN_UCRT_REDIST_DIR'] and CONFIG['COMPILE_ENVIRONMENT']:
     win7_ucrt_redists = [
+        'api-ms-win-core-console-l1-1-0.dll',
+        'api-ms-win-core-datetime-l1-1-0.dll',
+        'api-ms-win-core-debug-l1-1-0.dll',
+        'api-ms-win-core-errorhandling-l1-1-0.dll',
+        'api-ms-win-core-file-l1-1-0.dll',
         'api-ms-win-core-file-l1-2-0.dll',
         'api-ms-win-core-file-l2-1-0.dll',
+        'api-ms-win-core-handle-l1-1-0.dll',
+        'api-ms-win-core-heap-l1-1-0.dll',
+        'api-ms-win-core-interlocked-l1-1-0.dll',
+        'api-ms-win-core-libraryloader-l1-1-0.dll',
         'api-ms-win-core-localization-l1-2-0.dll',
+        'api-ms-win-core-memory-l1-1-0.dll',
+        'api-ms-win-core-namedpipe-l1-1-0.dll',
+        'api-ms-win-core-processenvironment-l1-1-0.dll',
+        'api-ms-win-core-processthreads-l1-1-0.dll',
         'api-ms-win-core-processthreads-l1-1-1.dll',
+        'api-ms-win-core-profile-l1-1-0.dll',
+        'api-ms-win-core-rtlsupport-l1-1-0.dll',
+        'api-ms-win-core-string-l1-1-0.dll',
+        'api-ms-win-core-synch-l1-1-0.dll',
         'api-ms-win-core-synch-l1-2-0.dll',
+        'api-ms-win-core-sysinfo-l1-1-0.dll',
         'api-ms-win-core-timezone-l1-1-0.dll',
+        'api-ms-win-core-util-l1-1-0.dll',
         'api-ms-win-crt-*.dll',
         'ucrtbase.dll',
     ]

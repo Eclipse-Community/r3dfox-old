@@ -119,7 +119,8 @@ class nsNativeThemeWin : private nsNativeTheme, public nsITheme {
                                     bool aIsClassic);
   void DrawThemedProgressMeter(nsIFrame* aFrame, StyleAppearance aAppearance,
                                HANDLE aTheme, HDC aHdc, int aPart, int aState,
-                               RECT* aWidgetRect, RECT* aClipRect);
+                               RECT* aWidgetRect, RECT* aClipRect,
+                               gfxFloat aAppUnits);
 
   MOZ_MUST_USE LayoutDeviceIntMargin GetCachedWidgetBorder(
       HANDLE aTheme, nsUXThemeClass aThemeClass, StyleAppearance aAppearance,

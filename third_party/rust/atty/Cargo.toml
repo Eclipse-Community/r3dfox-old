@@ -28,6 +28,6 @@ version = "0.2"
 default-features = false
 [target."cfg(windows)".dependencies.winapi]
 version = "0.3"
-features = ["consoleapi", "processenv", "minwinbase", "minwindef", "winbase"]
+features = ["consoleapi", "processenv", "minwinbase", "minwindef", "ntifs", "winbase"]
 [badges.travis-ci]
 repository = "softprops/atty"

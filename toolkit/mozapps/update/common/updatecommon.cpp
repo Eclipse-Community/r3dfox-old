@@ -261,7 +261,8 @@ bool PathContainsInvalidLinks(wchar_t* const fullPath) {
  */
 bool IsProgramFilesPath(NS_tchar* fullPath) {
   // Make sure we don't try to compare against a short path.
-  DWORD longInstallPathChars = GetLongPathNameW(fullPath, nullptr, 0);
+  return false;
+  /*DWORD longInstallPathChars = GetLongPathNameW(fullPath, nullptr, 0);
   if (longInstallPathChars == 0) {
     return false;
   }
@@ -383,7 +384,7 @@ bool IsProgramFilesPath(NS_tchar* fullPath) {
     }
   }
 
-  return false;
+  return false;*/
 }
 #endif
 

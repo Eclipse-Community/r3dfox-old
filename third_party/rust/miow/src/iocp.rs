@@ -132,7 +132,7 @@ impl CompletionPort {
     /// function does not wait to fill up the entire list of statuses provided.
     ///
     /// Like with `get`, a timeout may be specified for this operation.
-    pub fn get_many<'a>(&self,
+    /*pub fn get_many<'a>(&self,
                         list: &'a mut [CompletionStatus],
                         timeout: Option<Duration>)
                         -> io::Result<&'a mut [CompletionStatus]>
@@ -154,7 +154,7 @@ impl CompletionPort {
             Ok(_) => Ok(&mut list[..removed as usize]),
             Err(e) => Err(e),
         }
-    }
+    }*/
 
     /// Posts a new completion status onto this I/O completion port.
     ///

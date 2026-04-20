@@ -8,6 +8,7 @@
 
 #include "mozilla/Preferences.h"
 #include "mozilla/ipc/GeckoChildProcessHost.h"
+#include "mozilla/RandomNum.h"
 
 namespace mozilla {
 namespace ipc {
@@ -29,15 +30,31 @@ SharedPreferenceSerializer::SharedPreferenceSerializer(
   MOZ_COUNT_CTOR(SharedPreferenceSerializer);
 }
 
-bool SharedPreferenceSerializer::SerializeToSharedMemory() {
+bool SharedPreferenceSerializer::SerializeToSharedMemory(
+    mozilla::ipc::GeckoChildProcessHost& procHost,
+    std::vector<std::string>& aExtraOpts) {
+
+  nsAutoCString name;
+
   mPrefMapHandle =
-      Preferences::EnsureSnapshot(&mPrefMapSize).ClonePlatformHandle();
+      Preferences::EnsureSnapshot(&mPrefMapSize, name).ClonePlatformHandle();
 
   // Serialize the early prefs.
   Preferences::SerializePreferences(mPrefs);
 
+  nsAutoCString name2;
+  name2.SetLength(sizeof("MSM_") + 16 * 2);
+  name2.AssignLiteral("MSM_");
+  Maybe<uint64_t> randomNum = RandomUint64();
+  name2.AppendPrintf("%016llx", *randomNum);
+  randomNum = RandomUint64();
+  name2.AppendPrintf("%016llx", *randomNum);
+
+  const char* str;
+  name2.GetData(&str);
+
   // Set up the shared memory.
-  if (!mShm.Create(mPrefs.Length())) {
+  if (!mShm.Create(mPrefs.Length(), str)) {
     NS_ERROR("failed to create shared memory in the parent");
     return false;
   }
@@ -49,12 +66,6 @@ bool SharedPreferenceSerializer::SerializeToSharedMemory() {
   // Copy the serialized prefs into the shared memory.
   memcpy(static_cast<char*>(mShm.memory()), mPrefs.get(), mPrefs.Length());
 
-  return true;
-}
-
-void SharedPreferenceSerializer::AddSharedPrefCmdLineArgs(
-    mozilla::ipc::GeckoChildProcessHost& procHost,
-    std::vector<std::string>& aExtraOpts) const {
   // Formats a pointer or pointer-sized-integer as a string suitable for passing
   // in an arguments list.
   auto formatPtrArg = [](auto arg) {
@@ -68,9 +79,9 @@ void SharedPreferenceSerializer::AddSharedPrefCmdLineArgs(
   procHost.AddHandleToShare(prefsHandle);
   procHost.AddHandleToShare(GetPrefMapHandle().get());
   aExtraOpts.push_back("-prefsHandle");
-  aExtraOpts.push_back(formatPtrArg(prefsHandle).get());
+  aExtraOpts.push_back(name2.get());
   aExtraOpts.push_back("-prefMapHandle");
-  aExtraOpts.push_back(formatPtrArg(GetPrefMapHandle().get()).get());
+  aExtraOpts.push_back(name.get());
 #else
   // In contrast, Unix fds are per-process. So remap the fd to a fixed one that
   // will be used in the child.
@@ -88,6 +99,8 @@ void SharedPreferenceSerializer::AddSharedPrefCmdLineArgs(
   aExtraOpts.push_back(formatPtrArg(GetPrefLength()).get());
   aExtraOpts.push_back("-prefMapSize");
   aExtraOpts.push_back(formatPtrArg(GetPrefMapSize()).get());
+
+  return true;
 }
 
 #ifdef ANDROID
@@ -118,26 +131,15 @@ bool SharedPreferenceDeserializer::DeserializeFromSharedMemory(
     return uintptr_t(strtoull(aArg, &aArg, 10));
   };
 
+  //MessageBoxW(NULL,L"DeserializeFromSharedMemory",L"Test",0);
+  //MessageBoxW(NULL,(LPCTSTR)NS_ConvertUTF8toUTF16(aPrefsHandleStr).get(),L"Test",0);
+
 #ifdef XP_WIN
-  auto parseHandleArg = [&](char*& aArg) {
-    return HANDLE(parseUIntPtrArg(aArg));
-  };
+  mPrefsHandle = Some(::OpenFileMapping(FILE_MAP_ALL_ACCESS, FALSE, (LPCTSTR)NS_ConvertUTF8toUTF16(aPrefsHandleStr).get()));
 
-  mPrefsHandle = Some(parseHandleArg(aPrefsHandleStr));
-  if (aPrefsHandleStr[0] != '\0') {
-    return false;
-  }
+  HANDLE handle=::OpenFileMapping(FILE_MAP_READ, FALSE, (LPCTSTR)NS_ConvertUTF8toUTF16(aPrefMapHandleStr).get());
 
-  // The FileDescriptor constructor will clone this handle when constructed,
-  // so store it in a UniquePlatformHandle to make sure the original gets
-  // closed.
-  FileDescriptor::UniquePlatformHandle handle(
-      parseHandleArg(aPrefMapHandleStr));
-  if (aPrefMapHandleStr[0] != '\0') {
-    return false;
-  }
-
-  mPrefMapHandle.emplace(handle.get());
+  mPrefMapHandle.emplace(handle);
 #endif
 
   mPrefsLen = Some(parseUIntPtrArg(aPrefsLenStr));

@@ -30,8 +30,12 @@ LookAndFeel::OperatingSystemVersion nsLookAndFeel::GetOperatingSystemVersion() {
     version = eOperatingSystemVersion_Windows10;
   } else if (IsWin8OrLater()) {
     version = eOperatingSystemVersion_Windows8;
-  } else {
+  } else if (IsWin7OrLater()) {
     version = eOperatingSystemVersion_Windows7;
+  } else if (IsVistaOrLater()) {
+    version = eOperatingSystemVersion_WindowsVista;
+  } else {
+    version = eOperatingSystemVersion_WindowsXP;
   }
 
   return version;
@@ -226,7 +230,7 @@ nsresult nsLookAndFeel::NativeGetColor(ColorID aID, nscolor& aColor) {
       idx = COLOR_HIGHLIGHT;
       break;
     case ColorID::MozMenubarhovertext:
-      if (!IsAppThemed()) {
+      if (!IsVistaOrLater() || !IsAppThemed()) {
         idx = nsUXThemeData::sFlatMenus ? COLOR_HIGHLIGHTTEXT : COLOR_MENUTEXT;
         break;
       }
@@ -581,13 +585,13 @@ nsresult nsLookAndFeel::GetIntImpl(IntID aID, int32_t& aResult) {
     case eIntID_SystemUsesDarkTheme:
       res = SystemWantsDarkTheme(aResult);
       break;
-    case eIntID_PrefersReducedMotion: {
+    /*case eIntID_PrefersReducedMotion: {
       BOOL enableAnimation = TRUE;
       ::SystemParametersInfoW(SPI_GETCLIENTAREAANIMATION, 0, &enableAnimation,
                               0);
       aResult = enableAnimation ? 0 : 1;
       break;
-    }
+    }*/
     case eIntID_PrimaryPointerCapabilities: {
       PointerCapabilities caps =
           widget::WinUtils::GetPrimaryPointerCapabilities();

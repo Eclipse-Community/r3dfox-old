@@ -77,17 +77,38 @@ class MOZ_STATIC_CLASS Win32SRWLock final {
 
 class MOZ_STATIC_CLASS Win32SRWLock final {
  public:
-  constexpr Win32SRWLock() : mLock(SRWLOCK_INIT) {}
+  Win32SRWLock() {
+    InitializeCriticalSection(&mCountLock);
+    InitializeCriticalSection(&mWriteLock);
+    mReaderCount = 0;
+  }
 
-  void LockShared() { ::AcquireSRWLockShared(&mLock); }
+  void LockShared() {
+    EnterCriticalSection(&mCountLock);
+    if (InterlockedIncrement(&mReaderCount) == 1) {
+      // first reader blocks writers by taking write lock
+      EnterCriticalSection(&mWriteLock);
+    }
+    LeaveCriticalSection(&mCountLock);
+  }
 
-  void UnlockShared() { ::ReleaseSRWLockShared(&mLock); }
+  void UnlockShared() {
+    EnterCriticalSection(&mCountLock);
+    if (InterlockedDecrement(&mReaderCount) == 0) {
+      // last reader releases write lock
+      LeaveCriticalSection(&mWriteLock);
+    }
+    LeaveCriticalSection(&mCountLock);
+  }
 
-  void LockExclusive() { ::AcquireSRWLockExclusive(&mLock); }
+  void LockExclusive() { EnterCriticalSection(&mWriteLock); }
 
-  void UnlockExclusive() { ::ReleaseSRWLockExclusive(&mLock); }
+  void UnlockExclusive() { LeaveCriticalSection(&mWriteLock); }
 
-  ~Win32SRWLock() = default;
+  ~Win32SRWLock() {
+    DeleteCriticalSection(&mCountLock);
+    DeleteCriticalSection(&mWriteLock);
+  }
 
   Win32SRWLock(const Win32SRWLock&) = delete;
   Win32SRWLock(Win32SRWLock&&) = delete;
@@ -95,7 +116,9 @@ class MOZ_STATIC_CLASS Win32SRWLock final {
   Win32SRWLock& operator=(Win32SRWLock&&) = delete;
 
  private:
-  SRWLOCK mLock;
+  CRITICAL_SECTION mCountLock; // protects reader count
+  CRITICAL_SECTION mWriteLock; // exclusive lock for writers (and held by readers collectively)
+  LONG mReaderCount;
 };
 
 #endif

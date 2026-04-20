@@ -107,6 +107,7 @@
 #  include <windows.h>
 #  include <intrin.h>
 #  include <math.h>
+#  include "mozilla/WindowsVersion.h"
 #  include "cairo/cairo-features.h"
 #  include "mozilla/WindowsDllBlocklist.h"
 #  include "mozilla/WinHeaderOnlyUtils.h"
@@ -174,7 +175,7 @@
 #ifdef XP_WIN
 #  include <process.h>
 #  include <shlobj.h>
-#  include "mozilla/WinDllServices.h"
+//#  include "mozilla/WinDllServices.h"
 #  include "nsThreadUtils.h"
 #  include <comdef.h>
 #  include <wbemidl.h>
@@ -1476,7 +1477,7 @@ nsresult XRE_GetBinaryPath(nsIFile** aResult) {
 typedef BOOL(WINAPI* SetProcessDEPPolicyFunc)(DWORD dwFlags);
 
 static void RegisterApplicationRestartChanged(const char* aPref, void* aData) {
-  DWORD cchCmdLine = 0;
+  /*DWORD cchCmdLine = 0;
   HRESULT rc = ::GetApplicationRestartSettings(::GetCurrentProcess(), nullptr,
                                                &cchCmdLine, nullptr);
   bool wasRegistered = false;
@@ -1510,7 +1511,7 @@ static void RegisterApplicationRestartChanged(const char* aPref, void* aData) {
     }
   } else if (wasRegistered) {
     ::UnregisterApplicationRestart();
-  }
+  }*/
 }
 
 #  if defined(MOZ_LAUNCHER_PROCESS)
@@ -3101,7 +3102,9 @@ int XREMain::XRE_mainInit(bool* aExitFlag) {
     // dwrite library and create a factory as early as possible so that the
     // FntCache service is ready by the time it's needed.
 
-    CreateThread(nullptr, 0, &InitDwriteBG, nullptr, 0, nullptr);
+    if (IsVistaOrLater()) {
+      CreateThread(nullptr, 0, &InitDwriteBG, nullptr, 0, nullptr);
+    }
   }
 #endif
 
@@ -4275,11 +4278,11 @@ nsresult XREMain::XRE_mainRun() {
   nsresult rv = NS_OK;
   NS_ASSERTION(mScopedXPCOM, "Scoped xpcom not initialized.");
 
-#if defined(XP_WIN)
+/*#if defined(XP_WIN)
   RefPtr<mozilla::DllServices> dllServices(mozilla::DllServices::Get());
   auto dllServicesDisable =
       MakeScopeExit([&dllServices]() { dllServices->DisableFull(); });
-#endif  // defined(XP_WIN)
+#endif  // defined(XP_WIN)*/
 
 #ifdef NS_FUNCTION_TIMER
   // initialize some common services, so we don't pay the cost for these at odd
@@ -4990,7 +4993,6 @@ bool BrowserTabsRemoteAutostart() {
     return gBrowserTabsRemoteAutostart;
   }
   gBrowserTabsRemoteAutostartInitialized = true;
-
   // If we're in the content process, we are running E10S.
   if (XRE_IsContentProcess()) {
     gBrowserTabsRemoteAutostart = true;

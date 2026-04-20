@@ -53,9 +53,9 @@ nsParentalControlsService::nsParentalControlsService()
 nsParentalControlsService::~nsParentalControlsService() {
   if (mPC) mPC->Release();
 
-  if (mProvider) {
+  /*if (mProvider) {
     EventUnregister(mProvider);
-  }
+  }*/
 }
 
 //------------------------------------------------------------------------
@@ -106,7 +106,8 @@ nsParentalControlsService::GetLoggingEnabled(bool* aResult) {
 NS_IMETHODIMP
 nsParentalControlsService::Log(int16_t aEntryType, bool blocked,
                                nsIURI* aSource, nsIFile* aTarget) {
-  if (!mEnabled) return NS_ERROR_NOT_AVAILABLE;
+  return NS_ERROR_NOT_AVAILABLE;
+  /*if (!mEnabled) return NS_ERROR_NOT_AVAILABLE;
 
   NS_ENSURE_ARG_POINTER(aSource);
 
@@ -133,7 +134,7 @@ nsParentalControlsService::Log(int16_t aEntryType, bool blocked,
       break;
   }
 
-  return NS_OK;
+  return NS_OK;*/
 }
 
 // Override a single URI
@@ -240,7 +241,8 @@ nsParentalControlsService::RequestURIOverrides(
 // Sends a file download event to the Vista Event Log
 void nsParentalControlsService::LogFileDownload(bool blocked, nsIURI* aSource,
                                                 nsIFile* aTarget) {
-  nsAutoCString curi;
+  return;
+  /*nsAutoCString curi;
 
   // Note, EventDataDescCreate is a macro defined in the headers, not a function
 
@@ -284,7 +286,7 @@ void nsParentalControlsService::LogFileDownload(bool blocked, nsIURI* aSource,
   }
 
   EventWrite(mProvider, &WPCEVENT_WEB_FILEDOWNLOAD, ARRAYSIZE(eventData),
-             eventData);
+             eventData);*/
 }
 
 NS_IMETHODIMP

@@ -26,11 +26,11 @@ namespace d3d11
 {
 HRESULT SetDebugName(ID3D11DeviceChild *resource, const char *name);
 
-template <typename T>
+/*template <typename T>
 HRESULT SetDebugName(angle::ComPtr<T> &resource, const char *name)
 {
     return SetDebugName(resource.Get(), name);
-}
+}*/
 }  // namespace d3d11
 
 namespace d3d

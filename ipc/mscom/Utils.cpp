@@ -33,16 +33,33 @@ namespace mozilla {
 namespace mscom {
 
 bool IsCOMInitializedOnCurrentThread() {
-  APTTYPE aptType;
+  return false;
+  /*APTTYPE aptType;
   APTTYPEQUALIFIER aptTypeQualifier;
+  struct oletls *info = COM_CurrentInfo();
   HRESULT hr = CoGetApartmentType(&aptType, &aptTypeQualifier);
-  return hr != CO_E_NOTINITIALIZED;
+  return hr != CO_E_NOTINITIALIZED;*/
 }
 
 bool IsCurrentThreadMTA() {
+  // We don't use RefPtr for token because CoGetContextToken does *not*
+  // increment its refcount!
+  IUnknown* token = nullptr;
+  HRESULT hr =
+    CoGetContextToken(reinterpret_cast<ULONG_PTR*>(&token));
+  if (FAILED(hr)) {
+    return false;
+  }
+
+  RefPtr<IComThreadingInfo> threadingInfo;
+  hr = token->QueryInterface(IID_IComThreadingInfo,
+                             getter_AddRefs(threadingInfo));
+  if (FAILED(hr)) {
+    return false;
+  }
+
   APTTYPE aptType;
-  APTTYPEQUALIFIER aptTypeQualifier;
-  HRESULT hr = CoGetApartmentType(&aptType, &aptTypeQualifier);
+  hr = threadingInfo->GetCurrentApartmentType(&aptType);
   if (FAILED(hr)) {
     return false;
   }

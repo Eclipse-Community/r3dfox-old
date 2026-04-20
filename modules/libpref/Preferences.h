@@ -563,7 +563,7 @@ class Preferences final : public nsIPrefService,
   static void SerializePreferences(nsCString& aStr);
   static void DeserializePreferences(char* aStr, size_t aPrefsLen);
 
-  static mozilla::ipc::FileDescriptor EnsureSnapshot(size_t* aSize);
+  static mozilla::ipc::FileDescriptor EnsureSnapshot(size_t* aSize, nsAutoCString& aName);
   static void InitSnapshot(const mozilla::ipc::FileDescriptor&, size_t aSize);
 
   // When a single pref is changed in the parent process, these methods are

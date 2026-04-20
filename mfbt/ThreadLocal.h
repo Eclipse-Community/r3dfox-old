@@ -9,7 +9,20 @@
 #ifndef mozilla_ThreadLocal_h
 #define mozilla_ThreadLocal_h
 
-#if !defined(XP_WIN)
+#if defined(XP_WIN)
+// This file will get included in any file that wants to add a profiler mark.
+// In order to not bring <windows.h> together we could include windef.h and
+// winbase.h which are sufficient to get the prototypes for the Tls* functions.
+// # include <windef.h>
+// # include <winbase.h>
+// Unfortunately, even including these headers causes us to add a bunch of ugly
+// stuff to our namespace e.g #define CreateEvent CreateEventW
+extern "C" {
+__declspec(dllimport) void* __stdcall TlsGetValue(unsigned long);
+__declspec(dllimport) int __stdcall TlsSetValue(unsigned long, void*);
+__declspec(dllimport) unsigned long __stdcall TlsAlloc();
+}
+#else
 #  include <pthread.h>
 #endif
 
@@ -92,15 +105,15 @@ struct Helper<S*> {
  * TLS_OUT_OF_INDEXES is a #define that is used to detect whether
  * an appropriate header has been included prior to this file
  */
-#  if defined(TLS_OUT_OF_INDEXES)
+//#  if defined(TLS_OUT_OF_INDEXES)
 /* Despite not being used for MOZ_THREAD_LOCAL, we expose an implementation for
  * Windows for cases where it's not desirable to use thread_local */
 template <typename T>
 class ThreadLocalKeyStorage {
  public:
-  ThreadLocalKeyStorage() : mKey(TLS_OUT_OF_INDEXES) {}
+  ThreadLocalKeyStorage() : mKey(0xFFFFFFFFUL) {}
 
-  inline bool initialized() const { return mKey != TLS_OUT_OF_INDEXES; }
+  inline bool initialized() const { return mKey != 0xFFFFFFFFUL; }
 
   inline void init() { mKey = TlsAlloc(); }
 
@@ -118,7 +131,7 @@ class ThreadLocalKeyStorage {
  private:
   unsigned long mKey;
 };
-#  endif
+//#  endif
 #else
 template <typename T>
 class ThreadLocalKeyStorage {
@@ -212,7 +225,7 @@ inline void ThreadLocal<T, Storage>::set(const T aValue) {
   }
 }
 
-#if (defined(XP_WIN) || defined(MACOSX_HAS_THREAD_LOCAL)) && \
+/*#if (defined(XP_WIN) || defined(MACOSX_HAS_THREAD_LOCAL)) && \
     !defined(__MINGW32__)
 #  define MOZ_THREAD_LOCAL(TYPE)                 \
     thread_local ::mozilla::detail::ThreadLocal< \
@@ -221,11 +234,11 @@ inline void ThreadLocal<T, Storage>::set(const T aValue) {
 #  define MOZ_THREAD_LOCAL(TYPE)             \
     __thread ::mozilla::detail::ThreadLocal< \
         TYPE, ::mozilla::detail::ThreadLocalNativeStorage>
-#else
+#else*/
 #  define MOZ_THREAD_LOCAL(TYPE)         \
     ::mozilla::detail::ThreadLocal<TYPE, \
                                    ::mozilla::detail::ThreadLocalKeyStorage>
-#endif
+//#endif
 
 }  // namespace detail
 }  // namespace mozilla

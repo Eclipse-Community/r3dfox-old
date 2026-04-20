@@ -16,6 +16,7 @@
 #  include <pthread.h>
 #endif
 
+
 namespace mozilla {
 
 namespace detail {
@@ -47,7 +48,7 @@ class MutexImpl {
   void mutexLock();
   bool mutexTryLock();
 
-  PlatformData* platformData();
+  //PlatformData* platformData();
 
 #if !defined(XP_WIN)
   void* platformData_[sizeof(pthread_mutex_t) / sizeof(void*)];
@@ -63,6 +64,7 @@ class MutexImpl {
       averageSpins;
 #  endif
 #else
+  PlatformData* platformData;
   void* platformData_[6];
 #endif
 

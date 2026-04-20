@@ -20,7 +20,7 @@ EXPORTS.mozilla.mscom += [
 ]
 
 DIRS += [
-    'mozglue',
+#    'mozglue',
 ]
 
 SOURCES += [

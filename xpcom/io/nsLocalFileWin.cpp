@@ -7,6 +7,7 @@
 #include "mozilla/ArrayUtils.h"
 #include "mozilla/DebugOnly.h"
 #include "mozilla/UniquePtrExtensions.h"
+#include "mozilla/WindowsVersion.h"
 
 #include "nsCOMPtr.h"
 #include "nsAutoPtr.h"
@@ -1704,12 +1705,13 @@ nsresult nsLocalFile::CopySingleFile(nsIFile* aSourceFile, nsIFile* aDestParent,
     // COPY_FILE_NO_BUFFERING when we have a remote drive.
     DWORD dwCopyFlags = COPY_FILE_ALLOW_DECRYPTED_DESTINATION;
     bool path1Remote, path2Remote;
-    if (!IsRemoteFilePath(filePath.get(), path1Remote) ||
-        !IsRemoteFilePath(destPath.get(), path2Remote) || path1Remote ||
-        path2Remote) {
-      dwCopyFlags |= COPY_FILE_NO_BUFFERING;
+    if (IsVistaOrLater()) {
+      if (!IsRemoteFilePath(filePath.get(), path1Remote) ||
+          !IsRemoteFilePath(destPath.get(), path2Remote) || path1Remote ||
+          path2Remote) {
+        dwCopyFlags |= COPY_FILE_NO_BUFFERING;
+      }
     }
-
     copyOK = ::CopyFileExW(filePath.get(), destPath.get(), nullptr, nullptr,
                            nullptr, dwCopyFlags);
 

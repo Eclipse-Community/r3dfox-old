@@ -231,6 +231,9 @@ bool a11y::IsHandlerRegistered() {
 
 static bool GetInstantiatorExecutable(const DWORD aPid,
                                       nsIFile** aOutClientExe) {
+
+return false;
+
   nsAutoHandle callingProcess(
       ::OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, FALSE, aPid));
   if (!callingProcess) {
@@ -242,9 +245,9 @@ static bool GetInstantiatorExecutable(const DWORD aPid,
 
   while (true) {
     buf = MakeUnique<wchar_t[]>(bufLen);
-    if (::QueryFullProcessImageName(callingProcess, 0, buf.get(), &bufLen)) {
-      break;
-    }
+    //if (::QueryFullProcessImageName(callingProcess, 0, buf.get(), &bufLen)) {
+    //  break;
+    //}
 
     DWORD lastError = ::GetLastError();
     MOZ_ASSERT(lastError == ERROR_INSUFFICIENT_BUFFER);

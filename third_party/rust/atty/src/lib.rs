@@ -108,7 +108,8 @@ unsafe fn msys_tty_on(fd: DWORD) -> bool {
     use std::slice;
 
     use winapi::ctypes::c_void;
-    use winapi::um::winbase::GetFileInformationByHandleEx;
+    use winapi::um::ntifs::IO_STATUS_BLOCK;
+    use winapi::um::ntifs::NtQueryInformationFile;
     use winapi::um::fileapi::FILE_NAME_INFO;
     use winapi::um::minwinbase::FileNameInfo;
     use winapi::um::processenv::GetStdHandle;
@@ -116,13 +117,17 @@ unsafe fn msys_tty_on(fd: DWORD) -> bool {
 
     let size = mem::size_of::<FILE_NAME_INFO>();
     let mut name_info_bytes = vec![0u8; size + MAX_PATH * mem::size_of::<WCHAR>()];
-    let res = GetFileInformationByHandleEx(
+
+    let mut io: IO_STATUS_BLOCK = mem::zeroed();
+
+    let res = NtQueryInformationFile(
         GetStdHandle(fd),
-        FileNameInfo,
+        &mut io as *mut _ as *mut _,
         &mut *name_info_bytes as *mut _ as *mut c_void,
         name_info_bytes.len() as u32,
+        9,
     );
-    if res == 0 {
+    if res != 0 {
         return false;
     }
     let name_info: &FILE_NAME_INFO = &*(name_info_bytes.as_ptr() as *const FILE_NAME_INFO);

@@ -19,6 +19,9 @@
 #include "base/win_util.h"
 
 #include <algorithm>
+#include "prenv.h"
+
+#include "mozilla/WindowsVersion.h"
 
 namespace {
 
@@ -322,30 +325,33 @@ bool LaunchApp(const std::wstring& cmdline, const LaunchOptions& options,
     handlesToInherit.push_back(h);
   }
 
-  // setup our handle array first - if we end up with no handles that can
-  // be inherited we can avoid trying to do the ThreadAttributeList dance...
   HANDLE stdOut = ::GetStdHandle(STD_OUTPUT_HANDLE);
   HANDLE stdErr = ::GetStdHandle(STD_ERROR_HANDLE);
 
-  if (IsInheritableHandle(stdOut)) handlesToInherit.push_back(stdOut);
-  if (stdErr != stdOut && IsInheritableHandle(stdErr))
-    handlesToInherit.push_back(stdErr);
+  // Don't even bother trying pre-Vista...
+  if (mozilla::IsVistaOrLater()) {
+    // setup our handle array first - if we end up with no handles that can
+    // be inherited we can avoid trying to do the ThreadAttributeList dance...
+    if (IsInheritableHandle(stdOut)) handlesToInherit.push_back(stdOut);
+    if (stdErr != stdOut && IsInheritableHandle(stdErr))
+      handlesToInherit.push_back(stdErr);
 
-  if (!handlesToInherit.empty()) {
-    lpAttributeList = CreateThreadAttributeList(handlesToInherit.data(),
+    if (!handlesToInherit.empty()) {
+      lpAttributeList = CreateThreadAttributeList(handlesToInherit.data(),
                                                 handlesToInherit.size());
-    if (lpAttributeList) {
-      // it's safe to inherit handles, so arrange for that...
-      startup_info.cb = sizeof(startup_info_ex);
-      startup_info.dwFlags |= STARTF_USESTDHANDLES;
-      startup_info.hStdOutput = stdOut;
-      startup_info.hStdError = stdErr;
-      startup_info.hStdInput = INVALID_HANDLE_VALUE;
-      startup_info_ex.lpAttributeList = lpAttributeList;
-      dwCreationFlags |= EXTENDED_STARTUPINFO_PRESENT;
-      bInheritHandles = TRUE;
+      if (lpAttributeList) {
+        // it's safe to inherit handles, so arrange for that...
+        startup_info.cb = sizeof(startup_info_ex);
+        startup_info_ex.lpAttributeList = lpAttributeList;
+        dwCreationFlags |= EXTENDED_STARTUPINFO_PRESENT;
+      }
     }
   }
+  startup_info.dwFlags |= STARTF_USESTDHANDLES;
+  startup_info.hStdOutput = stdOut;
+  startup_info.hStdError = stdErr;
+  startup_info.hStdInput = INVALID_HANDLE_VALUE;
+  bInheritHandles = TRUE;
 
   dwCreationFlags |= CREATE_UNICODE_ENVIRONMENT;
   LPTCH original_environment = GetEnvironmentStrings();

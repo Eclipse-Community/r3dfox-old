@@ -157,6 +157,10 @@ using mozilla::startup::sChildProcessType;
 
 static NS_DEFINE_CID(kAppShellCID, NS_APPSHELL_CID);
 
+#ifdef XP_WIN
+static const wchar_t kShellLibraryName[] =  L"shell32.dll";
+#endif
+
 nsresult XRE_LockProfileDirectory(nsIFile* aDirectory,
                                   nsISupports** aLockObject) {
   nsCOMPtr<nsIProfileLock> lock;
@@ -298,10 +302,26 @@ XRE_SetRemoteExceptionHandler(const char* aPipe /*= 0*/)
 
 #if defined(XP_WIN)
 void SetTaskbarGroupId(const nsString& aId) {
-  if (FAILED(SetCurrentProcessExplicitAppUserModelID(aId.get()))) {
-    NS_WARNING(
-        "SetCurrentProcessExplicitAppUserModelID failed for child process.");
-  }
+    typedef HRESULT (WINAPI * SetCurrentProcessExplicitAppUserModelIDPtr)(PCWSTR AppID);
+
+    SetCurrentProcessExplicitAppUserModelIDPtr funcAppUserModelID = nullptr;
+
+    HMODULE hDLL = ::LoadLibraryW(kShellLibraryName);
+
+    funcAppUserModelID = (SetCurrentProcessExplicitAppUserModelIDPtr)
+                          GetProcAddress(hDLL, "SetCurrentProcessExplicitAppUserModelID");
+
+    if (!funcAppUserModelID) {
+        ::FreeLibrary(hDLL);
+        return;
+    }
+
+    if (FAILED(funcAppUserModelID(aId.get()))) {
+        NS_WARNING("SetCurrentProcessExplicitAppUserModelID failed for child process.");
+    }
+
+    if (hDLL)
+        ::FreeLibrary(hDLL);
 }
 #endif
 

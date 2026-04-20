@@ -34,6 +34,11 @@
 #include "Decoder.h"
 #include "DecodePool.h"
 
+#ifdef _WIN32_WINNT
+#undef _WIN32_WINNT
+#endif
+#define _WIN32_WINNT 0x0600
+
 // we need windows.h to read out registry information...
 #include <windows.h>
 #include <shellapi.h>
@@ -544,27 +549,41 @@ nsresult nsIconChannel::GetHIconFromFile(nsIFile* aLocalFile,
 nsresult nsIconChannel::GetStockHIcon(nsIMozIconURI* aIconURI, HICON* hIcon) {
   nsresult rv = NS_OK;
 
-  uint32_t desiredImageSize;
-  aIconURI->GetImageSize(&desiredImageSize);
-  nsAutoCString stockIcon;
-  aIconURI->GetStockIcon(stockIcon);
+  // We can only do this on Vista or above
+  HMODULE hShellDLL = ::LoadLibraryW(L"shell32.dll");
+  decltype(SHGetStockIconInfo)* pSHGetStockIconInfo =
+    (decltype(SHGetStockIconInfo)*) ::GetProcAddress(hShellDLL,
+                                                    "SHGetStockIconInfo");
 
-  SHSTOCKICONID stockIconID = GetStockIconIDForName(stockIcon);
-  if (stockIconID == SIID_INVALID) {
-    return NS_ERROR_NOT_AVAILABLE;
+  if (pSHGetStockIconInfo) {
+    uint32_t desiredImageSize;
+    aIconURI->GetImageSize(&desiredImageSize);
+    nsAutoCString stockIcon;
+    aIconURI->GetStockIcon(stockIcon);
+
+    SHSTOCKICONID stockIconID = GetStockIconIDForName(stockIcon);
+    if (stockIconID == SIID_INVALID) {
+      return NS_ERROR_NOT_AVAILABLE;
+    }
+
+    UINT infoFlags = SHGSI_ICON;
+    infoFlags |= GetSizeInfoFlag(desiredImageSize);
+
+    SHSTOCKICONINFO sii = {0};
+    sii.cbSize = sizeof(sii);
+    HRESULT hr = pSHGetStockIconInfo(stockIconID, infoFlags, &sii);
+
+    if (SUCCEEDED(hr)) {
+      *hIcon = sii.hIcon;
+    } else {
+      rv = NS_ERROR_FAILURE;
+    }
+  } else {
+    rv = NS_ERROR_NOT_AVAILABLE;
   }
 
-  UINT infoFlags = SHGSI_ICON;
-  infoFlags |= GetSizeInfoFlag(desiredImageSize);
-
-  SHSTOCKICONINFO sii = {0};
-  sii.cbSize = sizeof(sii);
-  HRESULT hr = SHGetStockIconInfo(stockIconID, infoFlags, &sii);
-
-  if (SUCCEEDED(hr)) {
-    *hIcon = sii.hIcon;
-  } else {
-    rv = NS_ERROR_FAILURE;
+  if (hShellDLL) {
+    ::FreeLibrary(hShellDLL);
   }
 
   return rv;

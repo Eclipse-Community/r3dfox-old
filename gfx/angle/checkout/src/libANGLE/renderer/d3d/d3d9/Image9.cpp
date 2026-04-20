@@ -562,12 +562,12 @@ angle::Result Image9::copyFromRTInternal(Context9 *context9,
 
     RenderTarget9 *renderTarget = GetAs<RenderTarget9>(source);
 
-    angle::ComPtr<IDirect3DSurface9> surface = renderTarget->getSurface();
+    IDirect3DSurface9 *surface = renderTarget->getSurface();
     ASSERT(surface);
 
     IDirect3DDevice9 *device = mRenderer->getDevice();
 
-    angle::ComPtr<IDirect3DSurface9> renderTargetData = nullptr;
+    IDirect3DSurface9 *renderTargetData = nullptr;
     D3DSURFACE_DESC description;
     surface->GetDesc(&description);
 
@@ -577,7 +577,7 @@ angle::Result Image9::copyFromRTInternal(Context9 *context9,
 
     ANGLE_TRY_HR(context9, hr, "Could not create matching destination surface");
 
-    hr = device->GetRenderTargetData(surface.Get(), renderTargetData.Get());
+    hr = device->GetRenderTargetData(surface, renderTargetData);
 
     ANGLE_TRY_HR(context9, hr, "GetRenderTargetData unexpectedly failed");
 

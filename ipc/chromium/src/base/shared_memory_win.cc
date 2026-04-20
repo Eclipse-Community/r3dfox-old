@@ -98,11 +98,11 @@ bool SharedMemory::IsHandleValid(const SharedMemoryHandle& handle) {
 // static
 SharedMemoryHandle SharedMemory::NULLHandle() { return NULL; }
 
-bool SharedMemory::Create(size_t size) {
+bool SharedMemory::Create(size_t size, const char* name) {
   DCHECK(mapped_file_ == NULL);
   read_only_ = false;
   mapped_file_ = CreateFileMapping(INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE,
-                                   0, static_cast<DWORD>(size), NULL);
+                                   0, static_cast<DWORD>(size), (LPCTSTR)NS_ConvertUTF8toUTF16(name).get());
   if (!mapped_file_) return false;
 
   max_size_ = size;

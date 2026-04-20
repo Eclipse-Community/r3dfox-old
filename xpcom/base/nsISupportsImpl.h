@@ -13,7 +13,7 @@
 #include "nsISupportsUtils.h"
 
 #if !defined(XPCOM_GLUE_AVOID_NSPR)
-#  include "prthread.h" /* needed for cargo-culting headers */
+#  include "nspr/prthread.h" /* needed for cargo-culting headers */
 #endif
 
 #include "nsDebug.h"
@@ -43,7 +43,7 @@ inline nsISupports* ToSupports(nsISupports* aSupports) { return aSupports; }
 
 #ifdef MOZ_THREAD_SAFETY_OWNERSHIP_CHECKS_SUPPORTED
 
-#  include "prthread.h" /* needed for thread-safety checks */
+#  include "nspr/prthread.h" /* needed for thread-safety checks */
 
 class nsAutoOwningThread {
  public:

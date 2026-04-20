@@ -519,7 +519,7 @@ static bool PrepPing(const PingThreadContext& aContext, const std::wstring& aId,
     aJson.BoolProperty("server_os", isServer);
   }
 
-  WCHAR localeName[LOCALE_NAME_MAX_LENGTH] = {};
+  /*WCHAR localeName[LOCALE_NAME_MAX_LENGTH] = {};
   int localeNameLen =
       ::GetUserDefaultLocaleName(localeName, mozilla::ArrayLength(localeName));
   if (localeNameLen) {
@@ -527,7 +527,8 @@ static bool PrepPing(const PingThreadContext& aContext, const std::wstring& aId,
     if (localeNameUtf8) {
       aJson.StringProperty("os_locale", localeNameUtf8.get());
     }
-  }
+  }*/
+  aJson.StringProperty("os_locale", "en");
 
   SYSTEM_INFO sysInfo;
   ::GetNativeSystemInfo(&sysInfo);

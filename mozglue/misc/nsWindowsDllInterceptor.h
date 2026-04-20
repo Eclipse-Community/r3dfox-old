@@ -19,10 +19,10 @@
 #include "mozilla/UniquePtr.h"
 #include "mozilla/Vector.h"
 #include "nsWindowsHelpers.h"
+#include "InitOnceExecOnceXP.h"
 
 #include <wchar.h>
 #include <windows.h>
-#include <winternl.h>
 
 #include "mozilla/interceptor/MMPolicies.h"
 #include "mozilla/interceptor/PatcherDetour.h"
@@ -119,17 +119,18 @@ class FuncHook final {
     LPVOID addHookOk;
     InitOnceContext ctx(this, &aInterceptor, aName, aHookDest, false);
 
-    return ::InitOnceExecuteOnce(&mInitOnce, &InitOnceCallback, &ctx,
+    return WinxpStuff::InitOnceExecOnceXP(&mInitOnce, &InitOnceCallback, &ctx,
                                  &addHookOk) &&
            addHookOk;
   }
 
   bool SetDetour(InterceptorT& aInterceptor, const char* aName,
                  FuncPtrT aHookDest) {
+
     LPVOID addHookOk;
     InitOnceContext ctx(this, &aInterceptor, aName, aHookDest, true);
 
-    return ::InitOnceExecuteOnce(&mInitOnce, &InitOnceCallback, &ctx,
+    return WinxpStuff::InitOnceExecOnceXP(&mInitOnce, &InitOnceCallback, &ctx,
                                  &addHookOk) &&
            addHookOk;
   }

@@ -153,7 +153,8 @@ LazyInstantiator::GetClientPid(const DWORD aClientTid) {
     return 0;
   }
 
-  return ::GetProcessIdOfThread(callingThread);
+  //return ::GetProcessIdOfThread(callingThread);
+  return 0;
 }
 
 #define ALL_VERSIONS ((unsigned long long)-1LL)

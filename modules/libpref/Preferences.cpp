@@ -93,6 +93,7 @@
 
 #ifdef XP_WIN
 #  include "windows.h"
+#include "mozilla/RandomNum.h"
 #endif
 
 using namespace mozilla;
@@ -3625,17 +3626,26 @@ void Preferences::DeserializePreferences(char* aStr, size_t aPrefsLen) {
 }
 
 /* static */
-FileDescriptor Preferences::EnsureSnapshot(size_t* aSize) {
+FileDescriptor Preferences::EnsureSnapshot(size_t* aSize, nsAutoCString& aName) {
   MOZ_ASSERT(XRE_IsParentProcess());
 
   if (!gSharedMap) {
     SharedPrefMapBuilder builder;
 
+    nsAutoCString name;
+    name.SetLength(sizeof("MSP_") + 16 * 2);
+    name.AssignLiteral("MSP_");
+    Maybe<uint64_t> randomNum = RandomUint64();
+    name.AppendPrintf("%016llx", *randomNum);
+    randomNum = RandomUint64();
+    name.AppendPrintf("%016llx", *randomNum);
+
     for (auto iter = gHashTable->iter(); !iter.done(); iter.next()) {
       iter.get()->AddToMap(builder);
     }
 
-    gSharedMap = new SharedPrefMap(std::move(builder));
+    gSharedMap = new SharedPrefMap(std::move(builder), name);
+    gSharedMap->NameMap=std::move(name);
 
     // Once we've built a snapshot of the database, there's no need to continue
     // storing dynamic copies of the preferences it contains. Once we reset the
@@ -3652,6 +3662,7 @@ FileDescriptor Preferences::EnsureSnapshot(size_t* aSize) {
     gPrefNameArena.Clear();
   }
 
+  aName=gSharedMap->NameMap;
   *aSize = gSharedMap->MapSize();
   return gSharedMap->CloneFileDescriptor();
 }

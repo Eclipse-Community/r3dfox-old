@@ -16,8 +16,14 @@
 using namespace mozilla;
 using namespace mozilla::widget;
 
+const wchar_t
+nsUXThemeData::kThemeLibraryName[] = L"uxtheme.dll";
+
 HANDLE
 nsUXThemeData::sThemes[eUXNumClasses];
+
+HMODULE
+nsUXThemeData::sThemeDLL = nullptr;
 
 const int NUM_COMMAND_BUTTONS = 3;
 SIZE nsUXThemeData::sCommandButtonMetrics[NUM_COMMAND_BUTTONS];
@@ -51,13 +57,18 @@ void nsUXThemeData::Invalidate() {
       ::SystemParametersInfo(SPI_GETFLATMENU, 0, &useFlat, 0) ? useFlat : false;
 }
 
-HANDLE
-nsUXThemeData::GetTheme(nsUXThemeClass cls) {
+HANDLE nsUXThemeData::GetTheme(nsUXThemeClass cls) {
   NS_ASSERTION(cls < eUXNumClasses, "Invalid theme class!");
   if (!sThemes[cls]) {
     sThemes[cls] = OpenThemeData(nullptr, GetClassName(cls));
   }
   return sThemes[cls];
+}
+
+HMODULE nsUXThemeData::GetThemeDLL() {
+  if (!sThemeDLL)
+    sThemeDLL = ::LoadLibraryW(kThemeLibraryName);
+  return sThemeDLL;
 }
 
 const wchar_t* nsUXThemeData::GetClassName(nsUXThemeClass cls) {
@@ -136,8 +147,10 @@ void nsUXThemeData::EnsureCommandButtonMetrics() {
   sCommandButtonMetrics[1].cy = sCommandButtonMetrics[2].cy =
       sCommandButtonMetrics[0].cy;
 
-  // Trigger a refresh on the next layout.
-  sTitlebarInfoPopulatedAero = sTitlebarInfoPopulatedThemed = false;
+  // Use system metrics for pre-vista, otherwise trigger a
+  // refresh on the next layout.
+  sTitlebarInfoPopulatedAero = sTitlebarInfoPopulatedThemed =
+    !IsVistaOrLater();
 }
 
 // static
@@ -166,9 +179,9 @@ void nsUXThemeData::UpdateTitlebarInfo(HWND aWnd) {
 
   if (!sTitlebarInfoPopulatedAero && nsUXThemeData::CheckForCompositor()) {
     RECT captionButtons;
-    if (SUCCEEDED(DwmGetWindowAttribute(aWnd, DWMWA_CAPTION_BUTTON_BOUNDS,
-                                        &captionButtons,
-                                        sizeof(captionButtons)))) {
+    if (SUCCEEDED(WinUtils::dwmGetWindowAttributePtr(aWnd, DWMWA_CAPTION_BUTTON_BOUNDS,
+                                                     &captionButtons,
+                                                     sizeof(captionButtons)))) {
       sCommandButtonBoxMetrics.cx =
           captionButtons.right - captionButtons.left - 3;
       sCommandButtonBoxMetrics.cy =
@@ -290,8 +303,8 @@ bool nsUXThemeData::IsHighContrastOn() { return sIsHighContrastOn; }
 // static
 bool nsUXThemeData::CheckForCompositor(bool aUpdateCache) {
   static BOOL sCachedValue = FALSE;
-  if (aUpdateCache) {
-    DwmIsCompositionEnabled(&sCachedValue);
+  if (aUpdateCache && WinUtils::dwmIsCompositionEnabledPtr) {
+    WinUtils::dwmIsCompositionEnabledPtr(&sCachedValue);
   }
   return sCachedValue;
 }
@@ -299,7 +312,7 @@ bool nsUXThemeData::CheckForCompositor(bool aUpdateCache) {
 // static
 void nsUXThemeData::UpdateNativeThemeInfo() {
   // Trigger a refresh of themed button metrics if needed
-  sTitlebarInfoPopulatedThemed = false;
+  sTitlebarInfoPopulatedThemed = !IsVistaOrLater();
 
   sIsDefaultWindowsTheme = false;
   sThemeId = LookAndFeel::eWindowsTheme_Generic;

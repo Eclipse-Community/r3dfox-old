@@ -6,6 +6,11 @@
 #if !defined(DXVA2Manager_h_)
 #  define DXVA2Manager_h_
 
+#ifdef WINVER
+#undef WINVER
+#endif
+#define WINVER 0x0610
+
 #  include "MediaInfo.h"
 #  include "WMF.h"
 #  include "mozilla/Mutex.h"

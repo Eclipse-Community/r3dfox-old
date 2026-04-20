@@ -64,7 +64,7 @@
 #ifdef ANGLE_ENABLE_WINDOWS_STORE
 #    include "libANGLE/renderer/d3d/d3d11/winrt/NativeWindow11WinRT.h"
 #else
-#    include "libANGLE/renderer/d3d/d3d11/converged/CompositorNativeWindow11.h"
+//#    include "libANGLE/renderer/d3d/d3d11/converged/CompositorNativeWindow11.h"
 #    include "libANGLE/renderer/d3d/d3d11/win32/NativeWindow11Win32.h"
 #endif
 
@@ -1193,10 +1193,10 @@ void Renderer11::generateDisplayExtensions(egl::DisplayExtensions *outExtensions
     outExtensions->robustResourceInitialization = true;
 
     // Compositor Native Window capabilies require WinVer >= 1803
-    if (CompositorNativeWindow11::IsSupportedWinRelease())
+    /*if (CompositorNativeWindow11::IsSupportedWinRelease())
     {
         outExtensions->windowsUIComposition = true;
-    }
+    }*/
 }
 
 angle::Result Renderer11::flush(Context11 *context11)
@@ -1251,8 +1251,8 @@ angle::Result Renderer11::finish(Context11 *context11)
 
 bool Renderer11::isValidNativeWindow(EGLNativeWindowType window) const
 {
-    static_assert(sizeof(ABI::Windows::UI::Composition::SpriteVisual *) == sizeof(HWND),
-                  "Pointer size must match Window Handle size");
+    /*static_assert(sizeof(ABI::Windows::UI::Composition::SpriteVisual *) == sizeof(HWND),
+                  "Pointer size must match Window Handle size");*/
 
 #ifdef ANGLE_ENABLE_WINDOWS_STORE
     return NativeWindow11WinRT::IsValidNativeWindow(window);
@@ -1262,7 +1262,7 @@ bool Renderer11::isValidNativeWindow(EGLNativeWindowType window) const
         return true;
     }
 
-    return CompositorNativeWindow11::IsValidNativeWindow(window);
+    return false;//CompositorNativeWindow11::IsValidNativeWindow(window);
 #endif
 }
 
@@ -1272,11 +1272,11 @@ NativeWindowD3D *Renderer11::createNativeWindow(EGLNativeWindowType window,
 {
     auto useWinUiComp = window != nullptr && !NativeWindow11Win32::IsValidNativeWindow(window);
 
-    if (useWinUiComp)
+    /*if (useWinUiComp)
     {
         return new CompositorNativeWindow11(window, config->alphaSize > 0);
     }
-    else
+    else*/
     {
 #ifdef ANGLE_ENABLE_WINDOWS_STORE
         UNUSED_VARIABLE(attribs);

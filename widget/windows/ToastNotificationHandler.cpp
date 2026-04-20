@@ -38,27 +38,27 @@ typedef ABI::Windows::Foundation::ITypedEventHandler<
 using namespace ABI::Windows::Data::Xml::Dom;
 using namespace ABI::Windows::Foundation;
 using namespace ABI::Windows::UI::Notifications;
-using namespace Microsoft::WRL;
-using namespace Microsoft::WRL::Wrappers;
+/*using namespace Microsoft::WRL;
+using namespace Microsoft::WRL::Wrappers;*/
 using namespace mozilla;
 
 NS_IMPL_ISUPPORTS(ToastNotificationHandler, nsIAlertNotificationImageListener)
 
 static bool SetNodeValueString(const nsString& aString, IXmlNode* node,
                                IXmlDocument* xml) {
-  ComPtr<IXmlText> inputText;
+  IXmlText* inputText;
   if (NS_WARN_IF(FAILED(xml->CreateTextNode(
           HStringReference(static_cast<const wchar_t*>(aString.get())).Get(),
           &inputText)))) {
     return false;
   }
-  ComPtr<IXmlNode> inputTextNode;
-  if (NS_WARN_IF(FAILED(inputText.As(&inputTextNode)))) {
+  IXmlNode* inputTextNode;
+  if (NS_WARN_IF(FAILED(&inputTextNode))) {
     return false;
   }
-  ComPtr<IXmlNode> appendedChild;
+  IXmlNode* appendedChild;
   if (NS_WARN_IF(
-          FAILED(node->AppendChild(inputTextNode.Get(), &appendedChild)))) {
+          FAILED(node->AppendChild(inputTextNode, &appendedChild)))) {
     return false;
   }
   return true;
@@ -78,7 +78,7 @@ static bool SetAttribute(IXmlElement* element, const HSTRING name,
 static bool AddActionNode(IXmlDocument* toastXml, IXmlNode* actionsNode,
                           const nsAString& actionTitle,
                           const nsAString& actionArgs) {
-  ComPtr<IXmlElement> action;
+  IXmlElement* action;
   HRESULT hr =
       toastXml->CreateElement(HStringReference(L"action").Get(), &action);
   if (NS_WARN_IF(FAILED(hr))) {
@@ -101,14 +101,15 @@ static bool AddActionNode(IXmlDocument* toastXml, IXmlNode* actionsNode,
   }
 
   // Add <action> to <actions>
-  ComPtr<IXmlNode> actionNode;
-  hr = action.As(&actionNode);
+  IXmlNode* actionNode;
+  //hr = action.As(&actionNode);
+  return false;
   if (NS_WARN_IF(FAILED(hr))) {
     return false;
   }
 
-  ComPtr<IXmlNode> appendedChild;
-  hr = actionsNode->AppendChild(actionNode.Get(), &appendedChild);
+  IXmlNode* appendedChild;
+  hr = actionsNode->AppendChild(actionNode, &appendedChild);
   if (NS_WARN_IF(FAILED(hr))) {
     return false;
   }
@@ -116,9 +117,9 @@ static bool AddActionNode(IXmlDocument* toastXml, IXmlNode* actionsNode,
   return true;
 }
 
-static ComPtr<IToastNotificationManagerStatics>
+static IToastNotificationManagerStatics*
 GetToastNotificationManagerStatics() {
-  ComPtr<IToastNotificationManagerStatics> toastNotificationManagerStatics;
+  IToastNotificationManagerStatics* toastNotificationManagerStatics;
   if (NS_WARN_IF(FAILED(GetActivationFactory(
           HStringReference(
               RuntimeClass_Windows_UI_Notifications_ToastNotificationManager)
@@ -149,12 +150,12 @@ ToastNotificationHandler::~ToastNotificationHandler() {
   }
 }
 
-ComPtr<IXmlDocument> ToastNotificationHandler::InitializeXmlForTemplate(
+IXmlDocument* ToastNotificationHandler::InitializeXmlForTemplate(
     ToastTemplateType templateType) {
-  ComPtr<IToastNotificationManagerStatics> toastNotificationManagerStatics =
+  IToastNotificationManagerStatics* toastNotificationManagerStatics =
       GetToastNotificationManagerStatics();
 
-  ComPtr<IXmlDocument> toastXml;
+  RefPtr<IXmlDocument> toastXml;
   toastNotificationManagerStatics->GetTemplateContent(templateType, &toastXml);
 
   return toastXml;
@@ -182,7 +183,7 @@ bool ToastNotificationHandler::ShowAlert() {
                   : ToastTemplateType::ToastTemplateType_ToastText04;
   }
 
-  ComPtr<IXmlDocument> toastXml = InitializeXmlForTemplate(toastTemplate);
+  RefPtr<IXmlDocument> toastXml = InitializeXmlForTemplate(toastTemplate);
   if (!toastXml) {
     return false;
   }
@@ -190,41 +191,42 @@ bool ToastNotificationHandler::ShowAlert() {
   HRESULT hr;
 
   if (mHasImage) {
-    ComPtr<IXmlNodeList> toastImageElements;
+    IXmlNodeList* toastImageElements;
     hr = toastXml->GetElementsByTagName(HStringReference(L"image").Get(),
                                         &toastImageElements);
     if (NS_WARN_IF(FAILED(hr))) {
       return false;
     }
-    ComPtr<IXmlNode> imageNode;
+    IXmlNode* imageNode;
     hr = toastImageElements->Item(0, &imageNode);
     if (NS_WARN_IF(FAILED(hr))) {
       return false;
     }
-    ComPtr<IXmlElement> image;
-    hr = imageNode.As(&image);
+    IXmlElement* image;
+    //hr = imageNode.As(&image);
+    return false;
     if (NS_WARN_IF(FAILED(hr))) {
       return false;
     }
-    if (NS_WARN_IF(!SetAttribute(image.Get(), HStringReference(L"src").Get(),
+    if (NS_WARN_IF(!SetAttribute(image, HStringReference(L"src").Get(),
                                  mImageUri))) {
       return false;
     }
   }
 
-  ComPtr<IXmlNodeList> toastTextElements;
+  IXmlNodeList* toastTextElements;
   hr = toastXml->GetElementsByTagName(HStringReference(L"text").Get(),
                                       &toastTextElements);
   if (NS_WARN_IF(FAILED(hr))) {
     return false;
   }
 
-  ComPtr<IXmlNode> titleTextNodeRoot;
+  IXmlNode* titleTextNodeRoot;
   hr = toastTextElements->Item(0, &titleTextNodeRoot);
   if (NS_WARN_IF(FAILED(hr))) {
     return false;
   }
-  ComPtr<IXmlNode> msgTextNodeRoot;
+  IXmlNode* msgTextNodeRoot;
   hr = toastTextElements->Item(1, &msgTextNodeRoot);
   if (NS_WARN_IF(FAILED(hr))) {
     return false;
@@ -239,27 +241,28 @@ bool ToastNotificationHandler::ShowAlert() {
     return false;
   }
 
-  ComPtr<IXmlNodeList> toastElements;
+  IXmlNodeList* toastElements;
   hr = toastXml->GetElementsByTagName(HStringReference(L"toast").Get(),
                                       &toastElements);
   if (NS_WARN_IF(FAILED(hr))) {
     return false;
   }
 
-  ComPtr<IXmlNode> toastNodeRoot;
+  IXmlNode* toastNodeRoot;
   hr = toastElements->Item(0, &toastNodeRoot);
   if (NS_WARN_IF(FAILED(hr))) {
     return false;
   }
 
-  ComPtr<IXmlElement> actions;
+  IXmlElement* actions;
   hr = toastXml->CreateElement(HStringReference(L"actions").Get(), &actions);
   if (NS_WARN_IF(FAILED(hr))) {
     return false;
   }
 
-  ComPtr<IXmlNode> actionsNode;
-  hr = actions.As(&actionsNode);
+  IXmlNode* actionsNode;
+  //hr = actions.As(&actionsNode);
+  return false;
   if (NS_WARN_IF(FAILED(hr))) {
     return false;
   }
@@ -280,7 +283,7 @@ bool ToastNotificationHandler::ShowAlert() {
   if (!mHostPort.IsEmpty()) {
     const char16_t* formatStrings[] = {mHostPort.get()};
 
-    ComPtr<IXmlNode> urlTextNodeRoot;
+    IXmlNode* urlTextNodeRoot;
     hr = toastTextElements->Item(2, &urlTextNodeRoot);
     if (NS_WARN_IF(FAILED(hr))) {
       return false;
@@ -296,8 +299,8 @@ bool ToastNotificationHandler::ShowAlert() {
     }
 
     if (IsWin10AnniversaryUpdateOrLater()) {
-      ComPtr<IXmlElement> placementText;
-      hr = urlTextNodeRoot.As(&placementText);
+      IXmlElement* placementText;
+      //hr = urlTextNodeRoot.As(&placementText);
       if (SUCCEEDED(hr)) {
         // placement is supported on Windows 10 Anniversary Update or later
         SetAttribute(placementText.Get(), HStringReference(L"placement").Get(),
@@ -319,7 +322,7 @@ bool ToastNotificationHandler::ShowAlert() {
   AddActionNode(toastXml.Get(), actionsNode.Get(), settingsButtonTitle,
                 NS_LITERAL_STRING("settings"));
 
-  ComPtr<IXmlNode> appendedChild;
+  IXmlNode* appendedChild;
   hr = toastNodeRoot->AppendChild(actionsNode.Get(), &appendedChild);
   if (NS_WARN_IF(FAILED(hr))) {
     return false;
@@ -330,7 +333,7 @@ bool ToastNotificationHandler::ShowAlert() {
 
 bool ToastNotificationHandler::CreateWindowsNotificationFromXml(
     IXmlDocument* aXml) {
-  ComPtr<IToastNotificationFactory> factory;
+  RefPtr<IToastNotificationFactory> factory;
   HRESULT hr = GetActivationFactory(
       HStringReference(RuntimeClass_Windows_UI_Notifications_ToastNotification)
           .Get(),
@@ -376,7 +379,7 @@ bool ToastNotificationHandler::CreateWindowsNotificationFromXml(
     return false;
   }
 
-  ComPtr<IToastNotificationManagerStatics> toastNotificationManagerStatics =
+  IToastNotificationManagerStatics* toastNotificationManagerStatics =
       GetToastNotificationManagerStatics();
   if (NS_WARN_IF(!toastNotificationManagerStatics)) {
     return false;
@@ -413,7 +416,7 @@ ToastNotificationHandler::OnActivate(IToastNotification* notification,
   if (mAlertListener) {
     nsAutoString argString;
     if (inspectable) {
-      ComPtr<IToastActivatedEventArgs> eventArgs;
+      IToastActivatedEventArgs* eventArgs;
       HRESULT hr = inspectable->QueryInterface(
           __uuidof(IToastActivatedEventArgs), (void**)&eventArgs);
       if (SUCCEEDED(hr)) {

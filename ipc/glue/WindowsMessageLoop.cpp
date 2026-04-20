@@ -19,6 +19,7 @@
 #include "mozilla/ArrayUtils.h"
 #include "mozilla/ipc/ProtocolUtils.h"
 #include "mozilla/PaintTracker.h"
+#include "mozilla/WindowsVersion.h"
 
 using namespace mozilla;
 using namespace mozilla::ipc;
@@ -926,7 +927,7 @@ bool MessageChannel::WaitForSyncNotify(bool aHandleWindowsMessages) {
   }
 
 #if defined(ACCESSIBILITY)
-  if (mFlags & REQUIRE_A11Y_REENTRY) {
+  if (IsVistaOrLater() && (mFlags & REQUIRE_A11Y_REENTRY)) {
     MOZ_ASSERT(!(mFlags & REQUIRE_DEFERRED_MESSAGE_PROTECTION));
     return WaitForSyncNotifyWithA11yReentry();
   }

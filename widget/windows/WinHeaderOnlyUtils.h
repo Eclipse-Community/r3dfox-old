@@ -35,7 +35,7 @@ typedef struct _FILE_ID_INFO {
   FILE_ID_128 FileId;
 } FILE_ID_INFO;
 
-#  define FileIdInfo ((FILE_INFO_BY_HANDLE_CLASS)18)
+//#  define FileIdInfo ((FILE_INFO_BY_HANDLE_CLASS)18)
 
 #endif  // _WIN32_WINNT < _WIN32_WINNT_WIN8
 
@@ -317,14 +317,14 @@ class FileUniqueId final {
 
  private:
   void GetId(const nsAutoHandle& aFile) {
-    if (IsWin8OrLater()) {
+    /*if (IsWin8OrLater()) {
       if (::GetFileInformationByHandleEx(aFile.get(), FileIdInfo, &mId,
                                          sizeof(mId))) {
         return;
       }
       // Only NTFS and ReFS support FileIdInfo. So we have to fallback if
       // GetFileInformationByHandleEx failed.
-    }
+    }*/
 
     BY_HANDLE_FILE_INFORMATION info = {};
     if (!::GetFileInformationByHandle(aFile.get(), &info)) {

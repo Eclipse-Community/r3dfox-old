@@ -110,7 +110,7 @@ class Blit9 : angle::NonCopyable
     angle::Result copySurfaceToTexture(Context9 *context9,
                                        IDirect3DSurface9 *surface,
                                        const RECT &sourceRect,
-                                       angle::ComPtr<IDirect3DBaseTexture9> *outTexture);
+                                       IDirect3DBaseTexture9 **outTexture);
     void setViewportAndShaderConstants(const RECT &sourceRect,
                                        const gl::Extents &sourceSize,
                                        const RECT &destRect,

@@ -62,7 +62,7 @@ class SharedMemory {
 
   // Creates a shared memory segment.
   // Returns true on success, false on failure.
-  bool Create(size_t size);
+  bool Create(size_t size, const char* name = nullptr);
 
   // Maps the shared memory into the caller's address space.
   // Returns true on success, false otherwise.  The memory address

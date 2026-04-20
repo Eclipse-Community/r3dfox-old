@@ -14,11 +14,7 @@
 #include "nsProxyRelease.h"
 
 static void InitializeCS(CRITICAL_SECTION& aCS) {
-  DWORD flags = 0;
-#if defined(RELEASE_OR_BETA)
-  flags |= CRITICAL_SECTION_NO_DEBUG_INFO;
-#endif
-  InitializeCriticalSectionEx(&aCS, 4000, flags);
+  InitializeCriticalSectionAndSpinCount(&aCS, 4000);
 }
 
 namespace mozilla {

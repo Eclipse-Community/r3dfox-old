@@ -394,12 +394,7 @@ static CRITICAL_SECTION sMutex;
 
 static CRITICAL_SECTION* GetMutex() {
   static CRITICAL_SECTION& mutex = []() -> CRITICAL_SECTION& {
-#if defined(RELEASE_OR_BETA)
-    DWORD flags = CRITICAL_SECTION_NO_DEBUG_INFO;
-#else
-    DWORD flags = 0;
-#endif
-    InitializeCriticalSectionEx(&UseGetMutexForAccess::sMutex, 4000, flags);
+    InitializeCriticalSectionAndSpinCount(&UseGetMutexForAccess::sMutex, 4000);
 #if !defined(MOZILLA_INTERNAL_API)
     atexit([]() { DeleteCriticalSection(&UseGetMutexForAccess::sMutex); });
 #endif

@@ -53,10 +53,9 @@ bool RDDProcessHost::Launch(StringVector aExtraOpts) {
   MOZ_ASSERT(!mRDDChild);
 
   mPrefSerializer = MakeUnique<ipc::SharedPreferenceSerializer>();
-  if (!mPrefSerializer->SerializeToSharedMemory()) {
+  if (!mPrefSerializer->SerializeToSharedMemory(*this, aExtraOpts)) {
     return false;
   }
-  mPrefSerializer->AddSharedPrefCmdLineArgs(*this, aExtraOpts);
 
 #if defined(XP_WIN) && defined(MOZ_SANDBOX)
   mSandboxLevel = Preferences::GetInt("security.sandbox.rdd.level");

@@ -2012,22 +2012,10 @@ uloc_getLCID(const char* localeID)
 {
     UErrorCode status = U_ZERO_ERROR;
     char       langID[ULOC_FULLNAME_CAPACITY];
-    uint32_t   lcid = 0;
 
     /* Check for incomplete id. */
     if (!localeID || uprv_strlen(localeID) < 2) {
         return 0;
-    }
-
-    // First, attempt Windows platform lookup if available, but fall
-    // through to catch any special cases (ICU vs Windows name differences).
-    lcid = uprv_convertToLCIDPlatform(localeID, &status);
-    if (U_FAILURE(status)) {
-        return 0;
-    }
-    if (lcid > 0) {
-        // Windows found an LCID, return that
-        return lcid;
     }
 
     uloc_getLanguage(localeID, langID, sizeof(langID), &status);

@@ -8,7 +8,7 @@
 
 #include <windows.ui.notifications.h>
 #include <windows.data.xml.dom.h>
-#include <wrl.h>
+//#include <wrl.h>
 #include "imgIContainer.h"
 #include "nsCOMPtr.h"
 #include "nsIAlertsService.h"
@@ -59,8 +59,10 @@ class ToastNotificationHandler final
       IToastFailedEventArgs;
   typedef ABI::Windows::UI::Notifications::ToastTemplateType ToastTemplateType;
 
-  Microsoft::WRL::ComPtr<IToastNotification> mNotification;
-  Microsoft::WRL::ComPtr<IToastNotifier> mNotifier;
+  /*Microsoft::WRL::ComPtr<IToastNotification> mNotification;
+  Microsoft::WRL::ComPtr<IToastNotifier> mNotifier;*/
+  RefPtr<IToastNotification> mNotification;
+  RefPtr<IToastNotifier> mNotifier;
 
   RefPtr<ToastNotification> mBackend;
 
@@ -87,8 +89,11 @@ class ToastNotificationHandler final
   nsresult OnWriteBitmapSuccess();
 
   bool CreateWindowsNotificationFromXml(IXmlDocument* aToastXml);
-  Microsoft::WRL::ComPtr<IXmlDocument> InitializeXmlForTemplate(
+  /*Microsoft::WRL::ComPtr<IXmlDocument> InitializeXmlForTemplate(
+      ToastTemplateType templateType);*/
+  RefPtr<IXmlDocument> InitializeXmlForTemplate(
       ToastTemplateType templateType);
+
 
   HRESULT OnActivate(IToastNotification* notification,
                      IInspectable* inspectable);

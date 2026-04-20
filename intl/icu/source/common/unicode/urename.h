@@ -1304,7 +1304,7 @@
 #define uprv_compareInvEbcdic U_ICU_ENTRY_POINT_RENAME(uprv_compareInvEbcdic)
 #define uprv_compareInvEbcdicAsAscii U_ICU_ENTRY_POINT_RENAME(uprv_compareInvEbcdicAsAscii)
 #define uprv_convertToLCID U_ICU_ENTRY_POINT_RENAME(uprv_convertToLCID)
-#define uprv_convertToLCIDPlatform U_ICU_ENTRY_POINT_RENAME(uprv_convertToLCIDPlatform)
+//#define uprv_convertToLCIDPlatform U_ICU_ENTRY_POINT_RENAME(uprv_convertToLCIDPlatform)
 #define uprv_convertToPosix U_ICU_ENTRY_POINT_RENAME(uprv_convertToPosix)
 #define uprv_copyAscii U_ICU_ENTRY_POINT_RENAME(uprv_copyAscii)
 #define uprv_copyEbcdic U_ICU_ENTRY_POINT_RENAME(uprv_copyEbcdic)

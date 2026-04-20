@@ -15,6 +15,26 @@
 
 #ifndef XP_WIN
 #  include <pthread.h>
+#else
+#  include <windows.h>
+typedef struct _RTL_RWLOCK {
+   RTL_CRITICAL_SECTION rtlCS;
+
+   HANDLE hSharedReleaseSemaphore;
+   UINT   uSharedWaiters;
+
+   HANDLE hExclusiveReleaseSemaphore;
+   UINT   uExclusiveWaiters;
+
+   INT    iNumberActive;
+   HANDLE hOwningThreadId;
+   DWORD  dwTimeoutBoost;
+   PVOID  pDebugInfo;
+} RTL_RWLOCK, *LPRTL_RWLOCK;
+
+typedef void(__stdcall *RtlManagePtr)(LPRTL_RWLOCK);
+typedef BYTE(__stdcall *RtlOperatePtr)(LPRTL_RWLOCK, BYTE);
+
 #endif
 
 namespace mozilla {
@@ -45,13 +65,7 @@ class RWLock : public BlockingResourceBase {
  public:
   explicit RWLock(const char* aName);
 
-  // Windows rwlocks don't need any special handling to be destroyed, but
-  // POSIX ones do.
-#ifdef XP_WIN
-  ~RWLock() = default;
-#else
   ~RWLock();
-#endif
 
 #ifdef DEBUG
   bool LockedForWritingByCurrentThread();
@@ -76,18 +90,22 @@ class RWLock : public BlockingResourceBase {
   RWLock(const RWLock&) = delete;
   RWLock& operator=(const RWLock&) = delete;
 
-#ifndef XP_WIN
-  pthread_rwlock_t mRWLock;
-#else
-  // SRWLock is pointer-sized.  We declare it in such a fashion here to
-  // avoid pulling in windows.h wherever this header is used.
-  void* mRWLock;
-#endif
-
 #ifdef DEBUG
   // We record the owning thread for write locks only.
   PRThread* mOwningThread;
 #endif
+
+#ifndef XP_WIN
+  pthread_rwlock_t mRWLock;
+#else
+  HMODULE hModule;
+  RtlManagePtr RtlDelete;
+  RtlManagePtr RtlRelease;
+  RtlOperatePtr RtlAcquireExclusive;
+  RtlOperatePtr RtlAcquireShared;
+  RTL_RWLOCK rtlRWLock;
+#endif
+
 };
 
 // Read lock and unlock a RWLock with RAII semantics.  Much preferred to bare

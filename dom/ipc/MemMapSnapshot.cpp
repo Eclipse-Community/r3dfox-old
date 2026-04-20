@@ -15,8 +15,6 @@
 #include "nsIFile.h"
 
 #ifdef XP_WIN
-#  include "mozilla/RandomNum.h"
-#  include "mozilla/WindowsVersion.h"
 #  include "nsDebug.h"
 #  include "nsString.h"
 #  include <windows.h>
@@ -32,27 +30,11 @@ using loader::AutoMemMap;
 
 namespace ipc {
 
-Result<Ok, nsresult> MemMapSnapshot::Init(size_t aSize) {
+Result<Ok, nsresult> MemMapSnapshot::Init(size_t aSize, const char* aName) {
   MOZ_ASSERT(!mInitialized);
-
-  MOZ_TRY(Create(aSize));
-
-  mInitialized = true;
-  return Ok();
-}
-
-Result<Ok, nsresult> MemMapSnapshot::Finalize(AutoMemMap& aMem) {
-  MOZ_ASSERT(mInitialized);
-
-  MOZ_TRY(Freeze(aMem));
-
-  mInitialized = false;
-  return Ok();
-}
 
 #if defined(XP_WIN)
 
-Result<Ok, nsresult> MemMapSnapshot::Create(size_t aSize) {
   SECURITY_ATTRIBUTES sa;
   SECURITY_DESCRIPTOR sd;
   ACL dacl;
@@ -68,43 +50,17 @@ Result<Ok, nsresult> MemMapSnapshot::Create(size_t aSize) {
     return Err(NS_ERROR_FAILURE);
   }
 
-  nsAutoStringN<sizeof("MozSharedMem_") + 16 * 4> name;
-  if (!IsWin8Point1OrLater()) {
-    name.AssignLiteral("MozSharedMem_");
-    for (size_t i = 0; i < 4; ++i) {
-      Maybe<uint64_t> randomNum = RandomUint64();
-      if (NS_WARN_IF(randomNum.isNothing())) {
-        return Err(NS_ERROR_UNEXPECTED);
-      }
-      name.AppendPrintf("%016llx", *randomNum);
-    }
-  }
-
   HANDLE handle =
-      CreateFileMapping(INVALID_HANDLE_VALUE, &sa, PAGE_READWRITE, 0,
-                        DWORD(aSize), name.IsEmpty() ? nullptr : name.get());
+      //CreateFileMapping(INVALID_HANDLE_VALUE, &sa, PAGE_READWRITE, 0,
+      CreateFileMapping(INVALID_HANDLE_VALUE, NULL, PAGE_READWRITE, 0,
+                        DWORD(aSize), (LPCTSTR)NS_ConvertUTF8toUTF16(aName).get());
 
   if (!handle) {
     return Err(NS_ERROR_FAILURE);
   }
 
   mFile.emplace(handle);
-  return mMem.initWithHandle(mFile.ref(), aSize, PR_PROT_READWRITE);
-}
-
-Result<Ok, nsresult> MemMapSnapshot::Freeze(AutoMemMap& aMem) {
-  auto orig = mFile.ref().ClonePlatformHandle();
-  mFile.reset();
-
-  HANDLE handle;
-  if (!::DuplicateHandle(
-          GetCurrentProcess(), orig.release(), GetCurrentProcess(), &handle,
-          GENERIC_READ | FILE_MAP_READ, false, DUPLICATE_CLOSE_SOURCE)) {
-    return Err(NS_ERROR_FAILURE);
-  }
-
-  return aMem.initWithHandle(FileDescriptor(handle), mMem.size());
-}
+  MOZ_TRY(mMem.initWithHandle(mFile.ref(), aSize, PR_PROT_READWRITE));
 
 #elif defined(XP_UNIX)
 
@@ -122,8 +78,41 @@ Result<Ok, nsresult> MemMapSnapshot::Create(size_t aSize) {
   MOZ_TRY(mMem.init(FILEToFileDescriptor(fd), PR_PROT_READWRITE));
 
   mPath.Assign(path.value().data(), path.value().length());
+
+#endif
+
+  mInitialized = true;
+
   return Ok();
 }
+
+Result<Ok, nsresult> MemMapSnapshot::Finalize(AutoMemMap& aMem) {
+  MOZ_ASSERT(mInitialized);
+
+  MOZ_TRY(Freeze(aMem));
+
+  mInitialized = false;
+
+  return Ok();
+}
+
+#if defined(XP_WIN)
+
+Result<Ok, nsresult> MemMapSnapshot::Freeze(AutoMemMap& aMem) {
+  auto orig = mFile.ref().ClonePlatformHandle();
+  mFile.reset();
+
+  HANDLE handle;
+  if (!::DuplicateHandle(
+          GetCurrentProcess(), orig.release(), GetCurrentProcess(), &handle,
+          GENERIC_READ | FILE_MAP_READ, false, DUPLICATE_CLOSE_SOURCE)) {
+    return Err(NS_ERROR_FAILURE);
+  }
+
+  return aMem.initWithHandle(FileDescriptor(handle), mMem.size());
+}
+
+#elif defined(XP_UNIX)
 
 Result<Ok, nsresult> MemMapSnapshot::Freeze(AutoMemMap& aMem) {
   // Delete the shm file after we're done here, whether we succeed or not. The

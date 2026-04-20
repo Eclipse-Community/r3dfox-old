@@ -34,7 +34,7 @@ mozilla::Atomic<AutoEnterOOMUnsafeRegion*> AutoEnterOOMUnsafeRegion::owner_;
 namespace oom {
 
 JS_PUBLIC_DATA FailureSimulator simulator;
-static MOZ_THREAD_LOCAL(uint32_t) threadType;
+static JS_PUBLIC_DATA MOZ_THREAD_LOCAL(uint32_t) threadType;
 
 bool InitThreadType() { return threadType.init(); }
 

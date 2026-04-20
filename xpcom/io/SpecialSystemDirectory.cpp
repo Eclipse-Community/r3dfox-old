@@ -19,6 +19,9 @@
 #  include <shlobj.h>
 #  include <knownfolders.h>
 #  include <guiddef.h>
+#  include "mozilla/WindowsVersion.h"
+
+using mozilla::IsWin7OrLater;
 
 #elif defined(XP_UNIX)
 
@@ -49,13 +52,32 @@
 
 #if defined(XP_WIN)
 
+typedef HRESULT (WINAPI* nsGetKnownFolderPath)(GUID& rfid,
+                                               DWORD dwFlags,
+                                               HANDLE hToken,
+                                               PWSTR* ppszPath);
+
+static nsGetKnownFolderPath gGetKnownFolderPath = nullptr;
+
+void
+StartupSpecialSystemDirectory()
+{
+  // SHGetKnownFolderPath is only available on Windows Vista
+  // so that we need to use GetProcAddress to get the pointer.
+  HMODULE hShell32DLLInst = GetModuleHandleW(L"shell32.dll");
+  if (hShell32DLLInst) {
+    gGetKnownFolderPath = (nsGetKnownFolderPath)
+      GetProcAddress(hShell32DLLInst, "SHGetKnownFolderPath");
+  }
+}
+
 static nsresult GetKnownFolder(GUID* aGuid, nsIFile** aFile) {
-  if (!aGuid) {
+  if (!aGuid || !gGetKnownFolderPath) {
     return NS_ERROR_FAILURE;
   }
 
   PWSTR path = nullptr;
-  SHGetKnownFolderPath(*aGuid, 0, nullptr, &path);
+  gGetKnownFolderPath(*aGuid, 0, nullptr, &path);
 
   if (!path) {
     return NS_ERROR_FAILURE;
@@ -110,12 +132,19 @@ __inline HRESULT SHLoadLibraryFromKnownFolder(REFKNOWNFOLDERID aFolderId,
 
 #  if defined(MOZ_THUNDERBIRD) || defined(MOZ_SUITE)
 /*
- * Return the default save-to location for the Windows Library passed in
- * through aFolderId.
+ * Check to see if we're on Win7 and up, and if so, returns the default
+ * save-to location for the Windows Library passed in through aFolderId.
+ * Otherwise falls back on pre-win7 GetWindowsFolder.
  */
 static nsresult GetLibrarySaveToPath(int aFallbackFolderId,
                                      REFKNOWNFOLDERID aFolderId,
                                      nsIFile** aFile) {
+
+  // Skip off checking for library support if the os is Vista or lower.
+  if (!IsWin7OrLater()) {
+    return GetWindowsFolder(aFallbackFolderId, aFile);
+  }
+
   RefPtr<IShellLibrary> shellLib;
   RefPtr<IShellItem> savePath;
   SHLoadLibraryFromKnownFolder(aFolderId, STGM_READ, IID_IShellLibrary,

@@ -50,7 +50,7 @@
 #ifdef XP_WIN
 #  include "mozilla/ScopeExit.h"
 #  include "mozilla/widget/AudioSession.h"
-#  include "mozilla/WinDllServices.h"
+//#  include "mozilla/WinDllServices.h"
 #  include <windows.h>
 #  if defined(MOZ_SANDBOX)
 #    include "sandboxBroker.h"
@@ -1337,9 +1337,9 @@ int XRE_XPCShellMain(int argc, char** argv, char** envp,
     AutoAudioSession audioSession;
 
     // Ensure that DLL Services are running
-    RefPtr<DllServices> dllSvc(DllServices::Get());
+    /*RefPtr<DllServices> dllSvc(DllServices::Get());
     auto dllServicesDisable =
-        MakeScopeExit([&dllSvc]() { dllSvc->DisableFull(); });
+        MakeScopeExit([&dllSvc]() { dllSvc->DisableFull(); });*/
 
 #  if defined(MOZ_SANDBOX)
     // Required for sandboxed child processes.

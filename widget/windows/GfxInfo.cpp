@@ -217,17 +217,18 @@ static nsresult GetKeyValue(const WCHAR* keyLocation, const WCHAR* keyName,
 static nsresult GetKeyValues(const WCHAR* keyLocation, const WCHAR* keyName,
                              nsTArray<nsString>& destStrings) {
   // First ask for the size of the value
+return NS_ERROR_FAILURE;
   DWORD size;
-  LONG rv = RegGetValueW(HKEY_LOCAL_MACHINE, keyLocation, keyName,
-                         RRF_RT_REG_MULTI_SZ, nullptr, nullptr, &size);
+  LONG rv;// = RegGetValueW(HKEY_LOCAL_MACHINE, keyLocation, keyName,
+//                         RRF_RT_REG_MULTI_SZ, nullptr, nullptr, &size);
   if (rv != ERROR_SUCCESS) {
     return NS_ERROR_FAILURE;
   }
 
   // Create a buffer with the proper size and retrieve the value
   WCHAR* wCharValue = new WCHAR[size / sizeof(WCHAR)];
-  rv = RegGetValueW(HKEY_LOCAL_MACHINE, keyLocation, keyName,
-                    RRF_RT_REG_MULTI_SZ, nullptr, (LPBYTE)wCharValue, &size);
+//  rv = RegGetValueW(HKEY_LOCAL_MACHINE, keyLocation, keyName,
+//                    RRF_RT_REG_MULTI_SZ, nullptr, (LPBYTE)wCharValue, &size);
   if (rv != ERROR_SUCCESS) {
     delete[] wCharValue;
     return NS_ERROR_FAILURE;

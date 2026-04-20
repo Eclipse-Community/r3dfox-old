@@ -13,28 +13,28 @@
 #include "MutexPlatformData_windows.h"
 
 mozilla::detail::MutexImpl::MutexImpl(recordreplay::Behavior aRecorded) {
-  InitializeSRWLock(&platformData()->lock);
+  platformData = reinterpret_cast<PlatformData*>(platformData_);
+  BOOL r;
+  r = InitializeCriticalSectionAndSpinCount(&platformData->criticalSection,1500);
+  MOZ_RELEASE_ASSERT(r);
 }
 
-mozilla::detail::MutexImpl::~MutexImpl() {}
+mozilla::detail::MutexImpl::~MutexImpl() {
+  if (!platformData_)
+    return;
+  DeleteCriticalSection(&platformData->criticalSection);
+}
 
 void mozilla::detail::MutexImpl::lock() {
-  AcquireSRWLockExclusive(&platformData()->lock);
+  EnterCriticalSection(&platformData->criticalSection);
 }
 
 bool mozilla::detail::MutexImpl::tryLock() { return mutexTryLock(); }
 
 bool mozilla::detail::MutexImpl::mutexTryLock() {
-  return !!TryAcquireSRWLockExclusive(&platformData()->lock);
+  return !!TryEnterCriticalSection(&platformData->criticalSection);
 }
 
 void mozilla::detail::MutexImpl::unlock() {
-  ReleaseSRWLockExclusive(&platformData()->lock);
-}
-
-mozilla::detail::MutexImpl::PlatformData*
-mozilla::detail::MutexImpl::platformData() {
-  static_assert(sizeof(platformData_) >= sizeof(PlatformData),
-                "platformData_ is too small");
-  return reinterpret_cast<PlatformData*>(platformData_);
+  LeaveCriticalSection(&platformData->criticalSection);
 }

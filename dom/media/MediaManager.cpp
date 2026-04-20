@@ -2063,7 +2063,7 @@ media::Parent<media::NonE10s>* MediaManager::GetNonE10sParent() {
 /* static */
 void MediaManager::StartupInit() {
 #ifdef WIN32
-  if (!IsWin8OrLater()) {
+  if (IsVistaOrLater() && !IsWin8OrLater()) {
     // Bug 1107702 - Older Windows fail in GetAdaptersInfo (and others) if the
     // first(?) call occurs after the process size is over 2GB (kb/2588507).
     // Attempt to 'prime' the pump by making a call at startup.

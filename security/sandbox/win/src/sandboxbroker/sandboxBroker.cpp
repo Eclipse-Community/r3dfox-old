@@ -280,7 +280,19 @@ bool SandboxBroker::LaunchApp(const wchar_t* aPath, const wchar_t* aArguments,
   // process).
   nsModuleHandle moduleHandle;
   HMODULE realBase = nullptr;
-  if (XRE_GetChildProcBinPathType(aProcessType) == BinPathType::Self) {
+
+#if defined(MOZ_THUNDERBIRD) || !defined(MOZ_LAUNCHER_PROCESS)
+  // Without the launcher process, mInitDllBlocklistOOP is null, so InitDllBlocklistOOP would
+  // hit MOZ_RELEASE_ASSERT.
+  constexpr bool isThunderbird = true;
+  constexpr bool disableDllBlocklistOOP = true;
+#else
+  constexpr bool isThunderbird = false;
+  constexpr bool disableDllBlocklistOOP = false;
+#endif
+
+  if (!disableDllBlocklistOOP &&
+      XRE_GetChildProcBinPathType(aProcessType) == BinPathType::Self) {
     // We use GetModuleHandleEx here so that we increment the module's refcount
     HMODULE ourExe;
     if (::GetModuleHandleExW(0, nullptr, &ourExe)) {

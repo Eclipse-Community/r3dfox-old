@@ -70,15 +70,23 @@ if CONFIG['CC_TYPE'] == 'clang-cl':
 if CONFIG['OS_ARCH'] == 'WINNT':
     RCINCLUDE = 'splash.rc'
     DEFINES['MOZ_PHOENIX'] = True
-    DIRS += [
-        'winlauncher',
-    ]
-    USE_LIBS += [
-        'winlauncher',
-    ]
-    LOCAL_INCLUDES += [
-        '/browser/app/winlauncher',
-    ]
+    if CONFIG["MOZ_LAUNCHER_PROCESS"]:
+        DIRS += [
+            "winlauncher",
+        ]
+        USE_LIBS += [
+            "winlauncher",
+        ]
+        LOCAL_INCLUDES += [
+            "/browser/app/winlauncher",
+        ]
+    else:
+        # Build libraries required for non-launcher build.
+        OS_LIBS += [
+            "ntdll",
+            "user32",
+            "version",
+        ]
     DELAYLOAD_DLLS += [
         'oleaut32.dll',
         'ole32.dll',

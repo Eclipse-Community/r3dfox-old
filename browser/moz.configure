@@ -10,6 +10,10 @@ imply_option('MOZ_SERVICES_SYNC', True)
 imply_option('MOZ_DEDICATED_PROFILES', True)
 imply_option('MOZ_BLOCK_PROFILE_DOWNGRADE', True)
 
+# We want to disable the pre-XUL launcher for now, as it won't look good with the browser UI.
+# If we choose to enable the launcher at a later date, then this can be re-enabled.
+imply_option("--enable-launcher-process", False)
+
 with only_when(target_is_linux & compile_environment):
     option(env='MOZ_NO_PIE_COMPAT',
            help='Enable non-PIE wrapper')

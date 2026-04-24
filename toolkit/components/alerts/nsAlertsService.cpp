@@ -155,7 +155,7 @@ bool nsAlertsService::ShouldShowAlert() {
 
 
   if (pSHQueryUserNotificationState) {
-    MOZ_QUERY_USER_NOTIFICATION_STATE qstate;
+    QUERY_USER_NOTIFICATION_STATE qstate;
     if (SUCCEEDED(pSHQueryUserNotificationState(&qstate))) {
       if (qstate != QUNS_ACCEPTS_NOTIFICATIONS) {
         result = false;

@@ -269,10 +269,10 @@ SandboxTest::StartTests(const nsTArray<nsCString>& aProcessesList) {
                   }
                   return processPromise->Reject(NS_ERROR_FAILURE, __func__);
                 },
-                [processPromise](LaunchError const&) {
+                [processPromise](nsresult aError) {
                   MOZ_ASSERT_UNREACHABLE(
                       "SandboxTest; failure to get Utility process");
-                  return processPromise->Reject(NS_ERROR_FAILURE, __func__);
+                  return processPromise->Reject(aError, __func__);
                 });
         break;
       }

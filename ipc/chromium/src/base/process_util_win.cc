@@ -262,8 +262,7 @@ Result<Ok, LaunchError> LaunchApp(const std::wstring& cmdline,
     if (SetHandleInformation(h, HANDLE_FLAG_INHERIT, HANDLE_FLAG_INHERIT) ==
         0) {
       MOZ_DIAGNOSTIC_ASSERT(false, "SetHandleInformation failed");
-      return Err(
-          LaunchError::FromWin32Error("SetHandleInformation", GetLastError()));
+      return Err(LaunchError("SetHandleInformation", GetLastError()));
     }
     handlesToInherit.push_back(h);
   }
@@ -313,7 +312,7 @@ Result<Ok, LaunchError> LaunchApp(const std::wstring& cmdline,
   if (lpAttributeList) FreeThreadAttributeList(lpAttributeList);
   if (!createdOK) {
     DLOG(WARNING) << "CreateProcess Failed: " << GetLastError();
-    return Err(LaunchError::FromWin32Error("CreateProcess", GetLastError()));
+    return Err(LaunchError("CreateProcess", GetLastError()));
   }
 
   gProcessLog.print("==> process %d launched child process %d (%S)\n",

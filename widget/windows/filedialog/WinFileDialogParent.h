@@ -21,13 +21,10 @@
 
 namespace mozilla::widget::filedialog {
 
-class WinFileDialogParent final : private PWinFileDialogParent {
+class WinFileDialogParent : public PWinFileDialogParent {
  public:
   using UtilityActorName = ::mozilla::UtilityActorName;
   NS_INLINE_DECL_THREADSAFE_REFCOUNTING(WinFileDialogParent, override);
-
-  using ShowFileDialogPromise = Promise<Maybe<Results>>;
-  using ShowFolderDialogPromise = Promise<Maybe<nsString>>;
 
  public:
   WinFileDialogParent();
@@ -37,16 +34,6 @@ class WinFileDialogParent final : private PWinFileDialogParent {
   UtilityActorName GetActorName() {
     return UtilityActorName::WindowsFileDialog;
   }
-
-  bool CanSend() const { return PWinFileDialogParent::CanSend(); }
-  void Close() { return PWinFileDialogParent::Close(); }
-
-  [[nodiscard]] RefPtr<ShowFileDialogPromise> ShowFileDialogImpl(
-      HWND parent, const FileDialogType& type,
-      mozilla::Span<Command const> commands);
-
-  [[nodiscard]] RefPtr<ShowFolderDialogPromise> ShowFolderDialogImpl(
-      HWND parent, mozilla::Span<Command const> commands);
 
  private:
   ~WinFileDialogParent();

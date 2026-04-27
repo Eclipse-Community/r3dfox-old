@@ -99,7 +99,7 @@ TEST_F(UtilityProcess, LaunchProcess) {
 
             done = true;
           },
-          [&](LaunchError const&) {
+          [&](nsresult aError) mutable {
             EXPECT_TRUE(false);
             done = true;
           });
@@ -131,7 +131,7 @@ TEST_F(UtilityProcess, DestroyProcess) {
             EXPECT_TRUE(true);
             done = true;
           },
-          [&](LaunchError const&) {
+          [&](nsresult aError) {
             EXPECT_TRUE(false);
             done = true;
           });

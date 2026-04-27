@@ -40,17 +40,15 @@ class UtilityProcessManager final : public UtilityProcessHost::Listener {
 
  public:
   template <typename T>
-  using LaunchPromise = MozPromise<T, LaunchError, true>;
-  template <typename T>
-  using SharedLaunchPromise = MozPromise<T, LaunchError, false>;
+  using Promise = MozPromise<T, nsresult, true>;
 
   using StartRemoteDecodingUtilityPromise =
-      LaunchPromise<Endpoint<PRemoteDecoderManagerChild>>;
+      Promise<Endpoint<PRemoteDecoderManagerChild>>;
   using JSOraclePromise = GenericNonExclusivePromise;
 
 #ifdef XP_WIN
-  using WindowsUtilsPromise = LaunchPromise<RefPtr<dom::WindowsUtilsParent>>;
-  using WinFileDialogPromise = LaunchPromise<widget::filedialog::ProcessProxy>;
+  using WindowsUtilsPromise = Promise<RefPtr<dom::WindowsUtilsParent>>;
+  using WinFileDialogPromise = Promise<widget::filedialog::ProcessProxy>;
 #endif
 
   static RefPtr<UtilityProcessManager> GetSingleton();
@@ -58,11 +56,11 @@ class UtilityProcessManager final : public UtilityProcessHost::Listener {
   static RefPtr<UtilityProcessManager> GetIfExists();
 
   // Launch a new Utility process asynchronously
-  RefPtr<SharedLaunchPromise<Ok>> LaunchProcess(SandboxingKind aSandbox);
+  RefPtr<GenericNonExclusivePromise> LaunchProcess(SandboxingKind aSandbox);
 
   template <typename Actor>
-  RefPtr<LaunchPromise<Ok>> StartUtility(RefPtr<Actor> aActor,
-                                         SandboxingKind aSandbox);
+  RefPtr<GenericNonExclusivePromise> StartUtility(RefPtr<Actor> aActor,
+                                                  SandboxingKind aSandbox);
 
   RefPtr<StartRemoteDecodingUtilityPromise> StartProcessForRemoteMediaDecoding(
       base::ProcessId aOtherProcess, dom::ContentParentId aChildId,
@@ -204,11 +202,11 @@ class UtilityProcessManager final : public UtilityProcessHost::Listener {
    public:
     NS_INLINE_DECL_THREADSAFE_REFCOUNTING(ProcessFields);
 
-    explicit ProcessFields(SandboxingKind aSandbox) : mSandbox(aSandbox) {};
+    explicit ProcessFields(SandboxingKind aSandbox) : mSandbox(aSandbox){};
 
     // Promise will be resolved when this Utility process has been fully started
     // and configured. Only accessed on the main thread.
-    RefPtr<SharedLaunchPromise<Ok>> mLaunchPromise;
+    RefPtr<GenericNonExclusivePromise> mLaunchPromise;
 
     uint32_t mNumProcessAttempts = 0;
     uint32_t mNumUnexpectedCrashes = 0;

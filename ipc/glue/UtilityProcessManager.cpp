@@ -140,26 +140,25 @@ RefPtr<UtilityProcessManager::ProcessFields> UtilityProcessManager::GetProcess(
   return mProcesses[aSandbox];
 }
 
-RefPtr<UtilityProcessManager::SharedLaunchPromise<Ok>>
-UtilityProcessManager::LaunchProcess(SandboxingKind aSandbox) {
+RefPtr<GenericNonExclusivePromise> UtilityProcessManager::LaunchProcess(
+    SandboxingKind aSandbox) {
   LOGD("[%p] UtilityProcessManager::LaunchProcess SandboxingKind=%" PRIu64,
        this, aSandbox);
-  using RetPromise = SharedLaunchPromise<Ok>;
 
   MOZ_ASSERT(NS_IsMainThread());
 
   if (IsShutdown()) {
     NS_WARNING("Reject early LaunchProcess() for Shutdown");
-    return RetPromise::CreateAndReject(
-        LaunchError("UPM::LaunchProcess(): IsShutdown()"), __func__);
+    return GenericNonExclusivePromise::CreateAndReject(NS_ERROR_NOT_AVAILABLE,
+                                                       __func__);
   }
 
   RefPtr<ProcessFields> p = GetProcess(aSandbox);
   if (p && p->mNumProcessAttempts) {
     // We failed to start the Utility process earlier, abort now.
     NS_WARNING("Reject LaunchProcess() for earlier mNumProcessAttempts");
-    return RetPromise::CreateAndReject(
-        LaunchError("UPM::LaunchProcess(): p->mNumProcessAttempts"), __func__);
+    return GenericNonExclusivePromise::CreateAndReject(NS_ERROR_NOT_AVAILABLE,
+                                                       __func__);
   }
 
   if (p && p->mLaunchPromise && p->mProcess) {
@@ -182,30 +181,27 @@ UtilityProcessManager::LaunchProcess(SandboxingKind aSandbox) {
     p->mNumProcessAttempts++;
     DestroyProcess(aSandbox);
     NS_WARNING("Reject LaunchProcess() for mNumProcessAttempts++");
-    return RetPromise::CreateAndReject(
-        LaunchError("UPM::LaunchProcess(): mNumProcessAttempts++"), __func__);
+    return GenericNonExclusivePromise::CreateAndReject(NS_ERROR_NOT_AVAILABLE,
+                                                       __func__);
   }
 
   RefPtr<UtilityProcessManager> self = this;
   p->mLaunchPromise = p->mProcess->LaunchPromise()->Then(
       GetMainThreadSerialEventTarget(), __func__,
-      [self, p, aSandbox](Ok) -> RefPtr<RetPromise> {
+      [self, p, aSandbox](bool) {
         if (self->IsShutdown()) {
           NS_WARNING(
               "Reject LaunchProcess() after LaunchPromise() for Shutdown");
-          return RetPromise::CreateAndReject(
-              LaunchError("UPM::LaunchProcess(): post-await IsShutdown()"),
-              __func__);
+          return GenericNonExclusivePromise::CreateAndReject(
+              NS_ERROR_NOT_AVAILABLE, __func__);
         }
 
         if (self->IsProcessDestroyed(aSandbox)) {
           NS_WARNING(
               "Reject LaunchProcess() after LaunchPromise() for destroyed "
               "process");
-          return RetPromise::CreateAndReject(
-              LaunchError(
-                  "UPM::LaunchProcess(): post-await IsProcessDestroyed()"),
-              __func__);
+          return GenericNonExclusivePromise::CreateAndReject(
+              NS_ERROR_NOT_AVAILABLE, __func__);
         }
 
         p->mProcessParent = p->mProcess->GetActor();
@@ -221,26 +217,23 @@ UtilityProcessManager::LaunchProcess(SandboxingKind aSandbox) {
         CrashReporter::RecordAnnotationCString(
             CrashReporter::Annotation::UtilityProcessStatus, "Running");
 
-        return RetPromise::CreateAndResolve(Ok{}, __func__);
+        return GenericNonExclusivePromise::CreateAndResolve(true, __func__);
       },
-      [self, p, aSandbox](LaunchError error) {
+      [self, p, aSandbox](nsresult aError) {
         if (GetSingleton()) {
           p->mNumProcessAttempts++;
           self->DestroyProcess(aSandbox);
         }
         NS_WARNING("Reject LaunchProcess() for LaunchPromise() rejection");
-        return RetPromise::CreateAndReject(std::move(error), __func__);
+        return GenericNonExclusivePromise::CreateAndReject(aError, __func__);
       });
 
   return p->mLaunchPromise;
 }
 
 template <typename Actor>
-RefPtr<UtilityProcessManager::LaunchPromise<Ok>>
-UtilityProcessManager::StartUtility(RefPtr<Actor> aActor,
-                                    SandboxingKind aSandbox) {
-  using RetPromise = LaunchPromise<Ok>;
-
+RefPtr<GenericNonExclusivePromise> UtilityProcessManager::StartUtility(
+    RefPtr<Actor> aActor, SandboxingKind aSandbox) {
   LOGD(
       "[%p] UtilityProcessManager::StartUtility actor=%p "
       "SandboxingKind=%" PRIu64,
@@ -250,8 +243,8 @@ UtilityProcessManager::StartUtility(RefPtr<Actor> aActor,
 
   if (!aActor) {
     MOZ_ASSERT(false, "Actor singleton failure");
-    return RetPromise::CreateAndReject(
-        LaunchError("UPM::StartUtility: aActor is null"), __func__);
+    return GenericNonExclusivePromise::CreateAndReject(NS_ERROR_FAILURE,
+                                                       __func__);
   }
 
   if (aActor->CanSend()) {
@@ -263,19 +256,19 @@ UtilityProcessManager::StartUtility(RefPtr<Actor> aActor,
         MarkerOptions(MarkerTiming::InstantNow()),
         nsPrintfCString("SandboxingKind=%" PRIu64 " aActor->CanSend()",
                         aSandbox));
-    return RetPromise::CreateAndResolve(Ok{}, __func__);
+    return GenericNonExclusivePromise::CreateAndResolve(true, __func__);
   }
 
   RefPtr<UtilityProcessManager> self = this;
   return LaunchProcess(aSandbox)->Then(
       GetMainThreadSerialEventTarget(), __func__,
-      [self, aActor, aSandbox, utilityStart]() -> RefPtr<RetPromise> {
+      [self, aActor, aSandbox, utilityStart]() {
         RefPtr<UtilityProcessParent> utilityParent =
             self->GetProcessParent(aSandbox);
         if (!utilityParent) {
           NS_WARNING("Missing parent in StartUtility");
-          return RetPromise::CreateAndReject(
-              LaunchError("UPM::GetProcessParent"), __func__);
+          return GenericNonExclusivePromise::CreateAndReject(NS_ERROR_FAILURE,
+                                                             __func__);
         }
 
         // It is possible if multiple processes concurrently request a utility
@@ -290,8 +283,7 @@ UtilityProcessManager::StartUtility(RefPtr<Actor> aActor,
           nsresult rv = aActor->BindToUtilityProcess(utilityParent);
           if (NS_FAILED(rv)) {
             MOZ_ASSERT(false, "Protocol endpoints failure");
-            return RetPromise::CreateAndReject(
-                LaunchError("BindToUtilityProcess", rv), __func__);
+            return GenericNonExclusivePromise::CreateAndReject(rv, __func__);
           }
 
           MOZ_DIAGNOSTIC_ASSERT(aActor->CanSend(), "IPC established for actor");
@@ -302,9 +294,9 @@ UtilityProcessManager::StartUtility(RefPtr<Actor> aActor,
             "UtilityProcessManager::StartUtility", IPC,
             MarkerOptions(MarkerTiming::IntervalUntilNowFrom(utilityStart)),
             nsPrintfCString("SandboxingKind=%" PRIu64 " Resolve", aSandbox));
-        return RetPromise::CreateAndResolve(Ok{}, __func__);
+        return GenericNonExclusivePromise::CreateAndResolve(true, __func__);
       },
-      [self, aSandbox, utilityStart](LaunchError const& error) {
+      [self, aSandbox, utilityStart](nsresult aError) {
         NS_WARNING("Reject StartUtility() for LaunchProcess() rejection");
         if (!self->IsShutdown()) {
           NS_WARNING("Reject StartUtility() when !IsShutdown()");
@@ -313,7 +305,7 @@ UtilityProcessManager::StartUtility(RefPtr<Actor> aActor,
             "UtilityProcessManager::StartUtility", IPC,
             MarkerOptions(MarkerTiming::IntervalUntilNowFrom(utilityStart)),
             nsPrintfCString("SandboxingKind=%" PRIu64 " Reject", aSandbox));
-        return RetPromise::CreateAndReject(error, __func__);
+        return GenericNonExclusivePromise::CreateAndReject(aError, __func__);
       });
 }
 
@@ -321,8 +313,6 @@ RefPtr<UtilityProcessManager::StartRemoteDecodingUtilityPromise>
 UtilityProcessManager::StartProcessForRemoteMediaDecoding(
     base::ProcessId aOtherProcess, dom::ContentParentId aChildId,
     SandboxingKind aSandbox) {
-  using RetPromise = StartRemoteDecodingUtilityPromise;
-
   // Not supported kinds.
   if (aSandbox != SandboxingKind::GENERIC_UTILITY
 #ifdef MOZ_APPLEMEDIA
@@ -335,8 +325,8 @@ UtilityProcessManager::StartProcessForRemoteMediaDecoding(
       && aSandbox != SandboxingKind::MF_MEDIA_ENGINE_CDM
 #endif
   ) {
-    return RetPromise::CreateAndReject(
-        LaunchError("Start...MediaDecoding: bad sandbox type"), __func__);
+    return StartRemoteDecodingUtilityPromise::CreateAndReject(NS_ERROR_FAILURE,
+                                                              __func__);
   }
   TimeStamp remoteDecodingStart = TimeStamp::Now();
 
@@ -353,42 +343,41 @@ UtilityProcessManager::StartProcessForRemoteMediaDecoding(
                 self->GetProcessParent(aSandbox);
             if (!parent) {
               NS_WARNING("UtilityAudioDecoderParent lost in the middle");
-              return RetPromise::CreateAndReject(
-                  LaunchError("Start...MediaDecoding: parent lost"), __func__);
+              return StartRemoteDecodingUtilityPromise::CreateAndReject(
+                  NS_ERROR_FAILURE, __func__);
             }
 
             if (!uadc->CanSend()) {
               NS_WARNING("UtilityAudioDecoderChild lost in the middle");
-              return RetPromise::CreateAndReject(
-                  LaunchError("Start...MediaDecoding: child lost"), __func__);
+              return StartRemoteDecodingUtilityPromise::CreateAndReject(
+                  NS_ERROR_FAILURE, __func__);
             }
 
             base::ProcessId process = parent->OtherPid();
 
             Endpoint<PRemoteDecoderManagerChild> childPipe;
             Endpoint<PRemoteDecoderManagerParent> parentPipe;
-            if (nsresult const rv = PRemoteDecoderManager::CreateEndpoints(
-                    process, aOtherProcess, &parentPipe, &childPipe);
-                NS_FAILED(rv)) {
+            nsresult rv = PRemoteDecoderManager::CreateEndpoints(
+                process, aOtherProcess, &parentPipe, &childPipe);
+            if (NS_FAILED(rv)) {
               MOZ_ASSERT(false, "Could not create content remote decoder");
-              return RetPromise::CreateAndReject(
-                  LaunchError("PRemoteDecoderManager::CreateEndpoints", rv),
-                  __func__);
+              return StartRemoteDecodingUtilityPromise::CreateAndReject(
+                  rv, __func__);
             }
 
             if (!uadc->SendNewContentRemoteDecoderManager(std::move(parentPipe),
                                                           aChildId)) {
               MOZ_ASSERT(false, "SendNewContentRemoteDecoderManager failure");
-              return RetPromise::CreateAndReject(
-                  LaunchError("UADC::SendNewCRDM"), __func__);
+              return StartRemoteDecodingUtilityPromise::CreateAndReject(
+                  NS_ERROR_FAILURE, __func__);
             }
 
 #ifdef MOZ_WMF_MEDIA_ENGINE
             if (aSandbox == SandboxingKind::MF_MEDIA_ENGINE_CDM &&
                 !uadc->CreateVideoBridge()) {
               MOZ_ASSERT(false, "Failed to create video bridge");
-              return RetPromise::CreateAndReject(
-                  LaunchError("UADC::CreateVideoBridge"), __func__);
+              return StartRemoteDecodingUtilityPromise::CreateAndReject(
+                  NS_ERROR_FAILURE, __func__);
             }
 #endif
             PROFILER_MARKER_TEXT(
@@ -397,9 +386,10 @@ UtilityProcessManager::StartProcessForRemoteMediaDecoding(
                 MarkerOptions(
                     MarkerTiming::IntervalUntilNowFrom(remoteDecodingStart)),
                 "Resolve"_ns);
-            return RetPromise::CreateAndResolve(std::move(childPipe), __func__);
+            return StartRemoteDecodingUtilityPromise::CreateAndResolve(
+                std::move(childPipe), __func__);
           },
-          [self, remoteDecodingStart](LaunchError&& error) {
+          [self, remoteDecodingStart](nsresult aError) {
             NS_WARNING(
                 "Reject StartProcessForRemoteMediaDecoding() for "
                 "StartUtility() rejection");
@@ -409,21 +399,14 @@ UtilityProcessManager::StartProcessForRemoteMediaDecoding(
                 MarkerOptions(
                     MarkerTiming::IntervalUntilNowFrom(remoteDecodingStart)),
                 "Reject"_ns);
-            return RetPromise::CreateAndReject(std::move(error), __func__);
+            return StartRemoteDecodingUtilityPromise::CreateAndReject(aError,
+                                                                      __func__);
           });
 }
 
 RefPtr<UtilityProcessManager::JSOraclePromise>
 UtilityProcessManager::StartJSOracle(dom::JSOracleParent* aParent) {
-  using RetPromise = JSOraclePromise;
-  return StartUtility(RefPtr{aParent}, SandboxingKind::GENERIC_UTILITY)
-      ->Then(
-          GetCurrentSerialEventTarget(), __func__,
-          []() { return RetPromise::CreateAndResolve(true, __func__); },
-          [](LaunchError const&) {
-            return RetPromise::CreateAndReject(NS_ERROR_NOT_AVAILABLE,
-                                               __func__);
-          });
+  return StartUtility(RefPtr{aParent}, SandboxingKind::GENERIC_UTILITY);
 }
 
 #ifdef XP_WIN
@@ -446,9 +429,8 @@ UtilityProcessManager::GetWindowsUtilsPromise() {
           [self, wup, windowsUtilsStart]() {
             if (!wup->CanSend()) {
               MOZ_ASSERT(false, "WindowsUtilsParent can't send");
-              return WindowsUtilsPromise::CreateAndReject(
-                  LaunchError("GetWindowsUtilsPromise: !wup->CanSend()"),
-                  __func__);
+              return WindowsUtilsPromise::CreateAndReject(NS_ERROR_FAILURE,
+                                                          __func__);
             }
             PROFILER_MARKER_TEXT(
                 "UtilityProcessManager::GetWindowsUtilsPromise", OTHER,
@@ -457,15 +439,14 @@ UtilityProcessManager::GetWindowsUtilsPromise() {
                 "Resolve"_ns);
             return WindowsUtilsPromise::CreateAndResolve(wup, __func__);
           },
-          [self, windowsUtilsStart](LaunchError&& error) {
+          [self, windowsUtilsStart](nsresult aError) {
             NS_WARNING("StartUtility rejected promise for PWindowsUtils");
             PROFILER_MARKER_TEXT(
                 "UtilityProcessManager::GetWindowsUtilsPromise", OTHER,
                 MarkerOptions(
                     MarkerTiming::IntervalUntilNowFrom(windowsUtilsStart)),
                 "Reject"_ns);
-            return WindowsUtilsPromise::CreateAndReject(std::move(error),
-                                                        __func__);
+            return WindowsUtilsPromise::CreateAndReject(aError, __func__);
           });
 }
 
@@ -473,7 +454,7 @@ void UtilityProcessManager::ReleaseWindowsUtils() { mWindowsUtils = nullptr; }
 
 RefPtr<UtilityProcessManager::WinFileDialogPromise>
 UtilityProcessManager::CreateWinFileDialogActor() {
-  using RetPromise = WinFileDialogPromise;
+  using Promise = WinFileDialogPromise;
   TimeStamp startTime = TimeStamp::Now();
   auto wfdp = MakeRefPtr<widget::filedialog::WinFileDialogParent>();
 
@@ -484,20 +465,19 @@ UtilityProcessManager::CreateWinFileDialogActor() {
             LOGD("CreateWinFileDialogAsync() resolve: wfdp = [%p]", wfdp.get());
             if (!wfdp->CanSend()) {
               MOZ_ASSERT(false, "WinFileDialogParent can't send");
-              return RetPromise::CreateAndReject(
-                  LaunchError("CreateWinFileDialogActor: !wfdp->CanSend()"),
-                  __PRETTY_FUNCTION__);
+              return Promise::CreateAndReject(NS_ERROR_FAILURE,
+                                              __PRETTY_FUNCTION__);
             }
             PROFILER_MARKER_TEXT(
                 "UtilityProcessManager::CreateWinFileDialogAsync", OTHER,
                 MarkerOptions(MarkerTiming::IntervalUntilNowFrom(startTime)),
                 "Resolve"_ns);
 
-            return RetPromise::CreateAndResolve(
+            return Promise::CreateAndResolve(
                 widget::filedialog::ProcessProxy(std::move(wfdp)),
                 __PRETTY_FUNCTION__);
           },
-          [self = RefPtr(this), startTime](LaunchError&& error) {
+          [self = RefPtr(this), startTime](nsresult error) {
             LOGD("CreateWinFileDialogAsync() reject");
             if (!self->IsShutdown()) {
               MOZ_ASSERT_UNREACHABLE("failure when starting file-dialog actor");
@@ -507,8 +487,7 @@ UtilityProcessManager::CreateWinFileDialogActor() {
                 MarkerOptions(MarkerTiming::IntervalUntilNowFrom(startTime)),
                 "Reject"_ns);
 
-            return RetPromise::CreateAndReject(std::move(error),
-                                               __PRETTY_FUNCTION__);
+            return Promise::CreateAndReject(error, __PRETTY_FUNCTION__);
           });
 }
 

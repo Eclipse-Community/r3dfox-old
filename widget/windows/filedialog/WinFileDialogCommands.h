@@ -33,13 +33,6 @@ struct PromiseInfo {
   using Promise = MozPromise<T, E, B>;
 };
 
-template <typename P>
-auto DestructurePromiseImpl(P&&) {
-  // Debugging hint: A type in the instantiation chain (here named `P`) was
-  // expected to be a `RefPtr<MozPromise<...>>`, but was some other type.
-  static_assert(false, "expected P = RefPtr<MozPromise< ... >>");
-}
-
 template <typename T, typename E, bool B>
 auto DestructurePromiseImpl(RefPtr<MozPromise<T, E, B>>&&)
     -> PromiseInfo<T, E, B>;
@@ -53,13 +46,6 @@ struct ResultInfo {
   using OkT = T;
   using ErrorT = E;
 };
-
-template <typename R>
-auto DestructureResultImpl(R&&) {
-  // Debugging hint: A type in the instantiation chain (here named `R`) was
-  // expected to be a `mozilla::Result<...>`, but was some other type.
-  static_assert(false, "expected R = mozilla::Result< ... >");
-}
 
 template <typename T, typename E>
 auto DestructureResultImpl(mozilla::Result<T, E>&&) -> ResultInfo<T, E>;

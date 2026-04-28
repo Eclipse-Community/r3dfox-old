@@ -667,21 +667,6 @@ option(
 )
 
 
-@depends(
-    "WINSYSROOT",
-    bootstrap_path(
-        "vs",
-        when=depends("WINSYSROOT", when=is_windows)(lambda x: not x),
-    ),
-    when=is_windows,
-)
-def winsysroot(winsysroot, bootstrapped):
-    if bootstrapped:
-        return bootstrapped
-    if winsysroot:
-        return winsysroot[0]
-
-
 option(
     env="VC_PATH",
     nargs=1,
@@ -694,7 +679,7 @@ option(
     host,
     build_environment,
     "VC_PATH",
-    winsysroot,
+    "WINSYSROOT",
     when=is_windows,
 )
 @imports("os")
@@ -703,7 +688,7 @@ def vc_compiler_paths_for_version(host, env, vc_path, winsysroot):
     if winsysroot:
         if vc_path:
             die("WINSYSROOT and VC_PATH cannot be set together.")
-        base_vc_path = os.path.join(winsysroot, "VC", "Tools", "MSVC")
+        base_vc_path = os.path.join(winsysroot[0], "VC", "Tools", "MSVC")
         versions = os.listdir(base_vc_path)
         vc_path = [os.path.join(base_vc_path, str(max(Version(v) for v in versions)))]
     if vc_path:
@@ -719,8 +704,8 @@ def vc_compiler_paths_for_version(host, env, vc_path, winsysroot):
     # Choose the newest version.
     path = all_versions[-1][1]
     host_dir = {
-        "x86_64": "Hostx64",
-        "x86": "Hostx86",
+        "x86_64": "HostX64",
+        "x86": "HostX86",
     }.get(host.cpu)
     if host_dir:
         path = os.path.join(path, "bin", host_dir)
@@ -1328,7 +1313,6 @@ def compiler(
         android_version,
         vc_compiler_version,
         multiarch_dir,
-        winsysroot,
         host,
     )
     @checking("whether %s can be used" % what, lambda x: bool(x))
@@ -1346,7 +1330,6 @@ def compiler(
         android_version,
         vc_compiler_version,
         multiarch_dir,
-        winsysroot,
         host,
     ):
         wrapper = list(compiler_wrapper or ())
@@ -1483,25 +1466,6 @@ def compiler(
                     "Only clang-cl 9.0 or newer is supported (found version %s)"
                     % info.version
                 )
-            if winsysroot and host.os != "WINNT":
-                overlay = os.path.join(winsysroot, "overlay.yaml")
-                if os.path.exists(overlay):
-                    overlay_flags = ["-Xclang", "-ivfsoverlay", "-Xclang", overlay]
-                    if info.version >= "16.0" or (
-                        # clang-cl 15 normally doesn't support the root-relative
-                        # overlay we use, but the bootstrapped clang-cl 15 is patched
-                        # to support it, so check we're using a patched version.
-                        info.version >= "15.0"
-                        and try_preprocess(
-                            configure_cache,
-                            [compiler] + flags + overlay_flags,
-                            language,
-                            "",
-                            onerror=lambda: False,
-                            wrapper=wrapper,
-                        )
-                    ):
-                        flags.extend(overlay_flags)
 
         if (info.type, host_or_target.abi) in (
             ("clang", "msvc"),

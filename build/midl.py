@@ -2,7 +2,6 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-import functools
 import os
 import shutil
 import subprocess
@@ -26,20 +25,11 @@ def relativize(path, base=None):
     return os.path.relpath(path, base)
 
 
-@functools.lru_cache(maxsize=None)
-def files_in(path):
-    return {p.lower(): os.path.join(path, p) for p in os.listdir(path)}
-
-
 def search_path(paths, path):
     for p in paths:
         f = os.path.join(p, path)
         if os.path.isfile(f):
             return f
-        # try an case-insensitive match
-        maybe_match = files_in(p).get(path.lower())
-        if maybe_match:
-            return maybe_match
     raise RuntimeError(f"Cannot find {path}")
 
 
@@ -100,15 +90,8 @@ def preprocess(base, input, flags):
         input = search_path(includes, input)
         # If there is a .acf file corresponding to the .idl we're processing,
         # we also want to preprocess that file because midl might look for it too.
-        if input.lower().endswith(".idl"):
-            try:
-                acf = search_path(
-                    [os.path.dirname(input)], os.path.basename(input)[:-4] + ".acf"
-                )
-                if acf:
-                    queue.append(acf)
-            except RuntimeError:
-                pass
+        if input.endswith(".idl") and os.path.exists(input[:-4] + ".acf"):
+            queue.append(input[:-4] + ".acf")
         command = preprocessor + [input]
         preprocessed = os.path.join(base, os.path.basename(input))
         subprocess.run(command, stdout=open(preprocessed, "wb"), check=True)

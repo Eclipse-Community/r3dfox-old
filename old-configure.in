@@ -359,6 +359,8 @@ case "$target" in
           # avoids problems in Windows tools that don't like forward-slashes.
           MOZ_DEBUG_LDFLAGS="$MOZ_DEBUG_LDFLAGS -PDBALTPATH:%_PDB%"
         fi
+        # Add a couple flags to silence some warns.
+        CXXFLAGS="$CXXFLAGS -Wno-thread-safety-attributes -Wno-tautological-type-limit-compare"
         MOZ_OPTIMIZE_FLAGS='-O2'
         MOZ_FIX_LINK_PATHS=
         LDFLAGS="$LDFLAGS -LARGEADDRESSAWARE"

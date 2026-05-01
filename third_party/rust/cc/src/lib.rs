@@ -56,11 +56,12 @@
 #![allow(deprecated)]
 #![deny(missing_docs)]
 
-use std::collections::HashMap;
+use std::collections::{hash_map, HashMap};
 use std::env;
 use std::ffi::{OsStr, OsString};
 use std::fmt::{self, Display, Formatter};
 use std::fs;
+use std::hash::Hasher;
 use std::io::{self, BufRead, BufReader, Read, Write};
 use std::path::{Component, Path, PathBuf};
 use std::process::{Child, Command, Stdio};
@@ -1023,7 +1024,24 @@ impl Build {
 
         let mut objects = Vec::new();
         for file in self.files.iter() {
-            let obj = dst.join(file).with_extension("o");
+            let obj = if file.has_root() {
+                // If `file` is an absolute path, prefix the `basename`
+                // with the `dirname`'s hash to ensure name uniqueness.
+                let basename = file
+                    .file_name()
+                    .ok_or_else(|| Error::new(ErrorKind::InvalidArgument, "file_name() failure"))?
+                    .to_string_lossy();
+                let dirname = file
+                    .parent()
+                    .ok_or_else(|| Error::new(ErrorKind::InvalidArgument, "parent() failure"))?
+                    .to_string_lossy();
+                let mut hasher = hash_map::DefaultHasher::new();
+                hasher.write(dirname.to_string().as_bytes());
+                dst.join(format!("{:016x}-{}", hasher.finish(), basename))
+                    .with_extension("o")
+            } else {
+                dst.join(file).with_extension("o")
+            };
             let obj = if !obj.starts_with(&dst) {
                 dst.join(obj.file_name().ok_or_else(|| {
                     Error::new(ErrorKind::IOError, "Getting object file details failed.")
@@ -1339,12 +1357,14 @@ impl Build {
     }
 
     fn compile_object(&self, obj: &Object) -> Result<(), Error> {
-        let is_asm = is_asm(&obj.src);
+        let asm_ext = AsmFileExt::from_path(&obj.src);
+        let is_asm = asm_ext.is_some();
         let target = self.get_target()?;
         let msvc = target.contains("msvc");
         let compiler = self.try_get_compiler()?;
         let clang = compiler.family == ToolFamily::Clang;
-        let (mut cmd, name) = if msvc && is_asm {
+
+        let (mut cmd, name) = if msvc && asm_ext == Some(AsmFileExt::DotAsm) {
             self.msvc_macro_assembler()?
         } else {
             let mut cmd = compiler.to_command();
@@ -1367,7 +1387,7 @@ impl Build {
         if !msvc || !is_asm || !is_arm {
             cmd.arg("-c");
         }
-        if self.cuda && self.files.len() > 1 {
+        if self.cuda && self.cuda_file_count() > 1 {
             cmd.arg("--device-c");
         }
         if is_asm {
@@ -1690,7 +1710,7 @@ impl Build {
                             cmd.args.push("--target=aarch64-unknown-windows-gnu".into())
                         }
                     } else {
-                        cmd.args.push(format!("--target={}", target).into());
+                        cmd.push_cc_arg(format!("--target={}", target).into());
                     }
                 }
             }
@@ -2035,7 +2055,7 @@ impl Build {
             self.assemble_progressive(dst, chunk)?;
         }
 
-        if self.cuda {
+        if self.cuda && self.cuda_file_count() > 0 {
             // Link the device-side code and add it to the target library,
             // so that non-CUDA linker can link the final binary.
 
@@ -2645,10 +2665,29 @@ impl Build {
 
             "emar".to_string()
         } else if target.contains("msvc") {
-            match windows_registry::find(&target, "lib.exe") {
-                Some(t) => return Ok((t, "lib.exe".to_string())),
-                None => "lib.exe".to_string(),
+            let compiler = self.get_base_compiler()?;
+            let mut lib = String::new();
+            if compiler.family == (ToolFamily::Msvc { clang_cl: true }) {
+                // See if there is 'llvm-lib' next to 'clang-cl'
+                // Another possibility could be to see if there is 'clang'
+                // next to 'clang-cl' and use 'search_programs()' to locate
+                // 'llvm-lib'. This is because 'clang-cl' doesn't support
+                // the -print-search-dirs option.
+                if let Some(mut cmd) = which(&compiler.path) {
+                    cmd.pop();
+                    cmd.push("llvm-lib.exe");
+                    if let Some(llvm_lib) = which(&cmd) {
+                        lib = llvm_lib.to_str().unwrap().to_owned();
+                    }
+                }
             }
+            if lib.is_empty() {
+                lib = match windows_registry::find(&target, "lib.exe") {
+                    Some(t) => return Ok((t, "lib.exe".to_string())),
+                    None => "lib.exe".to_string(),
+                }
+            }
+            lib
         } else if target.contains("illumos") {
             // The default 'ar' on illumos uses a non-standard flags,
             // but the OS comes bundled with a GNU-compatible variant.
@@ -3009,6 +3048,13 @@ impl Build {
         let ret: OsString = sdk_path.trim().into();
         cache.insert(sdk.into(), ret.clone());
         Ok(ret)
+    }
+
+    fn cuda_file_count(&self) -> usize {
+        self.files
+            .iter()
+            .filter(|file| file.extension() == Some(OsStr::new("cu")))
+            .count()
     }
 }
 
@@ -3496,14 +3542,27 @@ fn which(tool: &Path) -> Option<PathBuf> {
     })
 }
 
-/// Check if the file's extension is either "asm" or "s", case insensitive.
-fn is_asm(file: &Path) -> bool {
-    if let Some(ext) = file.extension() {
-        if let Some(ext) = ext.to_str() {
-            let ext = ext.to_lowercase();
-            return ext == "asm" || ext == "s";
-        }
-    }
+#[derive(Clone, Copy, PartialEq)]
+enum AsmFileExt {
+    /// `.asm` files. On MSVC targets, we assume these should be passed to MASM
+    /// (`ml{,64}.exe`).
+    DotAsm,
+    /// `.s` or `.S` files, which do not have the special handling on MSVC targets.
+    DotS,
+}
 
-    false
+impl AsmFileExt {
+    fn from_path(file: &Path) -> Option<Self> {
+        if let Some(ext) = file.extension() {
+            if let Some(ext) = ext.to_str() {
+                let ext = ext.to_lowercase();
+                match &*ext {
+                    "asm" => return Some(AsmFileExt::DotAsm),
+                    "s" => return Some(AsmFileExt::DotS),
+                    _ => return None,
+                }
+            }
+        }
+        None
+    }
 }

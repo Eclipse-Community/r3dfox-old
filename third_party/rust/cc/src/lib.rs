@@ -2043,35 +2043,59 @@ impl Build {
         // create on the first iteration instead of appending.
         let _ = fs::remove_file(&dst);
 
-        // Add objects to the archive in limited-length batches. This helps keep
-        // the length of the command line within a reasonable length to avoid
-        // blowing system limits on limiting platforms like Windows.
-        let objs: Vec<_> = objs
-            .iter()
-            .map(|o| o.dst.clone())
-            .chain(self.objects.clone())
-            .collect();
-        for chunk in objs.chunks(100) {
-            self.assemble_progressive(dst, chunk)?;
-        }
-
-        if self.cuda && self.cuda_file_count() > 0 {
-            // Link the device-side code and add it to the target library,
-            // so that non-CUDA linker can link the final binary.
-
-            let out_dir = self.get_out_dir()?;
-            let dlink = out_dir.join(lib_name.to_owned() + "_dlink.o");
-            let mut nvcc = self.get_compiler().to_command();
-            nvcc.arg("--device-link")
-                .arg("-o")
-                .arg(dlink.clone())
-                .arg(dst);
-            run(&mut nvcc, "nvcc")?;
-            self.assemble_progressive(dst, &[dlink])?;
-        }
-
+        let objects: Vec<_> = objs.iter().map(|obj| obj.dst.clone()).collect();
         let target = self.get_target()?;
         if target.contains("msvc") {
+            let (mut cmd, program) = self.get_ar()?;
+            let mut out = OsString::from("-out:");
+            out.push(dst);
+            cmd.arg(out).arg("-nologo");
+            for flag in self.ar_flags.iter() {
+                cmd.arg(flag);
+            }
+
+            // Similar to https://github.com/rust-lang/rust/pull/47507
+            // and https://github.com/rust-lang/rust/pull/48548
+            let estimated_command_line_len = objects
+                .iter()
+                .chain(&self.objects)
+                .map(|a| a.as_os_str().len())
+                .sum::<usize>();
+            if estimated_command_line_len > 1024 * 6 {
+                let mut args = String::from("\u{FEFF}"); // BOM
+                for arg in objects.iter().chain(&self.objects) {
+                    args.push('"');
+                    for c in arg.to_str().unwrap().chars() {
+                        if c == '"' {
+                            args.push('\\')
+                        }
+                        args.push(c)
+                    }
+                    args.push('"');
+                    args.push('\n');
+                }
+
+                let mut utf16le = Vec::new();
+                for code_unit in args.encode_utf16() {
+                    utf16le.push(code_unit as u8);
+                    utf16le.push((code_unit >> 8) as u8);
+                }
+
+                let mut args_file = OsString::from(dst);
+                args_file.push(".args");
+                fs::File::create(&args_file)
+                    .unwrap()
+                    .write_all(&utf16le)
+                    .unwrap();
+
+                let mut args_file_arg = OsString::from("@");
+                args_file_arg.push(args_file);
+                cmd.arg(args_file_arg);
+            } else {
+                cmd.args(&objects).args(&self.objects);
+            }
+            run(&mut cmd, &program)?;
+
             // The Rust compiler will look for libfoo.a and foo.lib, but the
             // MSVC linker will also be passed foo.lib, so be sure that both
             // exist for now.
@@ -2090,35 +2114,6 @@ impl Build {
                     ));
                 }
             };
-        } else {
-            // Non-msvc targets (those using `ar`) need a separate step to add
-            // the symbol table to archives since our construction command of
-            // `cq` doesn't add it for us.
-            let (mut ar, cmd) = self.get_ar()?;
-            run(ar.arg("s").arg(dst), &cmd)?;
-        }
-
-        Ok(())
-    }
-
-    fn assemble_progressive(&self, dst: &Path, objs: &[PathBuf]) -> Result<(), Error> {
-        let target = self.get_target()?;
-
-        if target.contains("msvc") {
-            let (mut cmd, program) = self.get_ar()?;
-            let mut out = OsString::from("-out:");
-            out.push(dst);
-            cmd.arg(out).arg("-nologo");
-            for flag in self.ar_flags.iter() {
-                cmd.arg(flag);
-            }
-            // If the library file already exists, add the library name
-            // as an argument to let lib.exe know we are appending the objs.
-            if dst.exists() {
-                cmd.arg(dst);
-            }
-            cmd.args(objs);
-            run(&mut cmd, &program)?;
         } else {
             let (mut ar, cmd) = self.get_ar()?;
 
@@ -2148,7 +2143,7 @@ impl Build {
             for flag in self.ar_flags.iter() {
                 ar.arg(flag);
             }
-            run(ar.arg("cq").arg(dst).args(objs), &cmd)?;
+            run(ar.arg("cqs").arg(dst).args(&objects).args(&self.objects), &cmd,)?;
         }
 
         Ok(())

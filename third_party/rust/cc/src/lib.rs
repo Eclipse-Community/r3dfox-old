@@ -34,9 +34,6 @@
 //!
 //! Cargo will also set this environment variable when executed with the `-jN` flag.
 //!
-//! If `NUM_JOBS` is not set, the `RAYON_NUM_THREADS` environment variable can
-//! also specify the build parallelism.
-//!
 //! # Examples
 //!
 //! Use the `Build` struct to compile `src/foo.c`:
@@ -56,17 +53,20 @@
 #![allow(deprecated)]
 #![deny(missing_docs)]
 
+use std::borrow::Cow;
 use std::collections::{hash_map, HashMap};
 use std::env;
 use std::ffi::{OsStr, OsString};
 use std::fmt::{self, Display, Formatter};
-use std::fs;
+use std::fs::{self, File};
 use std::hash::Hasher;
 use std::io::{self, BufRead, BufReader, Read, Write};
 use std::path::{Component, Path, PathBuf};
 use std::process::{Child, Command, Stdio};
 use std::sync::{Arc, Mutex};
 use std::thread::{self, JoinHandle};
+
+mod os_pipe;
 
 // These modules are all glue to support reading the MSVC version from
 // the registry and from COM interfaces
@@ -81,6 +81,8 @@ mod com;
 mod setup_config;
 #[cfg(windows)]
 mod vs_instances;
+#[cfg(windows)]
+mod windows_sys;
 
 pub mod windows_registry;
 
@@ -126,7 +128,7 @@ pub struct Build {
     warnings_into_errors: bool,
     warnings: Option<bool>,
     extra_warnings: Option<bool>,
-    env_cache: Arc<Mutex<HashMap<String, Option<String>>>>,
+    env_cache: Arc<Mutex<HashMap<String, Option<Arc<str>>>>>,
     apple_sdk_root_cache: Arc<Mutex<HashMap<String, OsString>>>,
     emit_rerun_if_env_changed: bool,
 }
@@ -154,21 +156,21 @@ pub struct Error {
     /// Describes the kind of error that occurred.
     kind: ErrorKind,
     /// More explanation of error that occurred.
-    message: String,
+    message: Cow<'static, str>,
 }
 
 impl Error {
-    fn new(kind: ErrorKind, message: &str) -> Error {
+    fn new(kind: ErrorKind, message: impl Into<Cow<'static, str>>) -> Error {
         Error {
-            kind: kind,
-            message: message.to_owned(),
+            kind,
+            message: message.into(),
         }
     }
 }
 
 impl From<io::Error> for Error {
     fn from(e: io::Error) -> Error {
-        Error::new(ErrorKind::IOError, &format!("{}", e))
+        Error::new(ErrorKind::IOError, format!("{}", e))
     }
 }
 
@@ -521,12 +523,14 @@ impl Build {
         let mut cmd = compiler.to_command();
         let is_arm = target.contains("aarch64") || target.contains("arm");
         let clang = compiler.family == ToolFamily::Clang;
+        let gnu = compiler.family == ToolFamily::Gnu;
         command_add_output_file(
             &mut cmd,
             &obj,
             self.cuda,
             target.contains("msvc"),
             clang,
+            gnu,
             false,
             is_arm,
         );
@@ -560,6 +564,35 @@ impl Build {
     pub fn flag_if_supported(&mut self, flag: &str) -> &mut Build {
         self.flags_supported.push(flag.into());
         self
+    }
+
+    /// Add flags from the specified environment variable.
+    ///
+    /// Normally the `cc` crate will consult with the standard set of environment
+    /// variables (such as `CFLAGS` and `CXXFLAGS`) to construct the compiler invocation. Use of
+    /// this method provides additional levers for the end user to use when configuring the build
+    /// process.
+    ///
+    /// Just like the standard variables, this method will search for an environment variable with
+    /// appropriate target prefixes, when appropriate.
+    ///
+    /// # Examples
+    ///
+    /// This method is particularly beneficial in introducing the ability to specify crate-specific
+    /// flags.
+    ///
+    /// ```no_run
+    /// cc::Build::new()
+    ///     .file("src/foo.c")
+    ///     .try_flags_from_environment(concat!(env!("CARGO_PKG_NAME"), "_CFLAGS"))
+    ///     .expect("the environment variable must be specified and UTF-8")
+    ///     .compile("foo");
+    /// ```
+    ///
+    pub fn try_flags_from_environment(&mut self, environ_key: &str) -> Result<&mut Build, Error> {
+        let flags = self.envflags(environ_key)?;
+        self.flags.extend(flags.into_iter().map(Into::into));
+        Ok(self)
     }
 
     /// Set the `-shared` flag.
@@ -632,6 +665,12 @@ impl Build {
     ///
     /// The other `cpp_*` options will only become active if this is set to
     /// `true`.
+    ///
+    /// The name of the C++ standard library to link is decided by:
+    /// 1. If [cpp_link_stdlib](Build::cpp_link_stdlib) is set, use its value.
+    /// 2. Else if the `CXXSTDLIB` environment variable is set, use its value.
+    /// 3. Else the default is `libc++` for OS X and BSDs, `libc++_shared` for Android,
+    /// `None` for MSVC and `libstdc++` for anything else.
     pub fn cpp(&mut self, cpp: bool) -> &mut Build {
         self.cpp = cpp;
         self
@@ -639,10 +678,12 @@ impl Build {
 
     /// Set CUDA C++ support.
     ///
-    /// Enabling CUDA will pass the detected C/C++ toolchain as an argument to
-    /// the CUDA compiler, NVCC. NVCC itself accepts some limited GNU-like args;
-    /// any other arguments for the C/C++ toolchain will be redirected using
-    /// "-Xcompiler" flags.
+    /// Enabling CUDA will invoke the CUDA compiler, NVCC. While NVCC accepts
+    /// the most common compiler flags, e.g. `-std=c++17`, some project-specific
+    /// flags might have to be prefixed with "-Xcompiler" flag, for example as
+    /// `.flag("-Xcompiler").flag("-fpermissive")`. See the documentation for
+    /// `nvcc`, the CUDA compiler driver, at https://docs.nvidia.com/cuda/cuda-compiler-driver-nvcc/
+    /// for more information.
     ///
     /// If enabled, this also implicitly enables C++ support.
     pub fn cuda(&mut self, cuda: bool) -> &mut Build {
@@ -738,8 +779,6 @@ impl Build {
     /// Set the standard library to link against when compiling with C++
     /// support.
     ///
-    /// See [`get_cpp_link_stdlib`](cc::Build::get_cpp_link_stdlib) documentation
-    /// for the default value.
     /// If the `CXXSTDLIB` environment variable is set, its value will
     /// override the default value, but not the value explicitly set by calling
     /// this function.
@@ -1075,8 +1114,11 @@ impl Build {
 
             objects.push(Object::new(file.to_path_buf(), obj));
         }
-        self.compile_objects(&objects)?;
-        self.assemble(lib_name, &dst.join(gnu_lib_name), &objects)?;
+
+        let print = PrintThread::new()?;
+
+        self.compile_objects(&objects, &print)?;
+        self.assemble(lib_name, &dst.join(gnu_lib_name), &objects, &print)?;
 
         if self.get_target()?.contains("msvc") {
             let compiler = self.get_base_compiler()?;
@@ -1092,7 +1134,7 @@ impl Build {
                 });
 
             if let Some(atlmfc_lib) = atlmfc_lib {
-                self.print(&format!(
+                self.print(&format_args!(
                     "cargo:rustc-link-search=native={}",
                     atlmfc_lib.display()
                 ));
@@ -1100,17 +1142,23 @@ impl Build {
         }
 
         if self.link_lib_modifiers.is_empty() {
-            self.print(&format!("cargo:rustc-link-lib=static={}", lib_name));
+            self.print(&format_args!("cargo:rustc-link-lib=static={}", lib_name));
         } else {
             let m = self.link_lib_modifiers.join(",");
-            self.print(&format!("cargo:rustc-link-lib=static:{}={}", m, lib_name));
+            self.print(&format_args!(
+                "cargo:rustc-link-lib=static:{}={}",
+                m, lib_name
+            ));
         }
-        self.print(&format!("cargo:rustc-link-search=native={}", dst.display()));
+        self.print(&format_args!(
+            "cargo:rustc-link-search=native={}",
+            dst.display()
+        ));
 
         // Add specific C++ libraries, if enabled.
         if self.cpp {
             if let Some(stdlib) = self.get_cpp_link_stdlib()? {
-                self.print(&format!("cargo:rustc-link-lib={}", stdlib));
+                self.print(&format_args!("cargo:rustc-link-lib={}", stdlib));
             }
         }
 
@@ -1119,7 +1167,7 @@ impl Build {
             None => "none",
         };
         if cudart != "none" {
-            if let Some(nvcc) = which(&self.get_compiler().path) {
+            if let Some(nvcc) = which(&self.get_compiler().path, None) {
                 // Try to figure out the -L search path. If it fails,
                 // it's on user to specify one by passing it through
                 // RUSTFLAGS environment variable.
@@ -1211,9 +1259,17 @@ impl Build {
     }
 
     #[cfg(feature = "parallel")]
-    fn compile_objects<'me>(&'me self, objs: &[Object]) -> Result<(), Error> {
-        use std::sync::atomic::{AtomicBool, Ordering::SeqCst};
-        use std::sync::Once;
+    fn compile_objects(&self, objs: &[Object], print: &PrintThread) -> Result<(), Error> {
+        use std::sync::{mpsc::channel, Once};
+
+        if objs.len() <= 1 {
+            for obj in objs {
+                let (mut cmd, name) = self.create_compile_object_cmd(obj)?;
+                run(&mut cmd, &name, print)?;
+            }
+
+            return Ok(());
+        }
 
         // Limit our parallelism globally with a jobserver. Start off by
         // releasing our own token for this process so we can have a bit of an
@@ -1221,7 +1277,8 @@ impl Build {
         // on Windows with the main implicit token, so we just have a bit extra
         // parallelism for a bit and don't reacquire later.
         let server = jobserver();
-        let reacquire = server.release_raw().is_ok();
+        // Reacquire our process's token on drop
+        let _reacquire = server.release_raw().ok().map(|_| JobserverToken(server));
 
         // When compiling objects in parallel we do a few dirty tricks to speed
         // things up:
@@ -1235,75 +1292,38 @@ impl Build {
         //   Note that this jobserver is cached globally so we only used one per
         //   process and only worry about creating it once.
         //
-        // * Next we use a raw `thread::spawn` per thread to actually compile
-        //   objects in parallel. We only actually spawn a thread after we've
-        //   acquired a token to perform some work
-        //
-        // * Finally though we want to keep the dependencies of this crate
-        //   pretty light, so we avoid using a safe abstraction like `rayon` and
-        //   instead rely on some bits of `unsafe` code. We know that this stack
-        //   frame persists while everything is compiling so we use all the
-        //   stack-allocated objects without cloning/reallocating. We use a
-        //   transmute to `State` with a `'static` lifetime to persist
-        //   everything we need across the boundary, and the join-on-drop
-        //   semantics of `JoinOnDrop` should ensure that our stack frame is
-        //   alive while threads are alive.
+        // * Next we use spawn the process to actually compile objects in
+        //   parallel after we've acquired a token to perform some work
         //
         // With all that in mind we compile all objects in a loop here, after we
         // acquire the appropriate tokens, Once all objects have been compiled
-        // we join on all the threads and propagate the results of compilation.
-        //
-        // Note that as a slight optimization we try to break out as soon as
-        // possible as soon as any compilation fails to ensure that errors get
-        // out to the user as fast as possible.
-        let error = AtomicBool::new(false);
-        let mut threads = Vec::new();
+        // we wait on all the processes and propagate the results of compilation.
+
+        let (tx, rx) = channel::<(_, String, KillOnDrop, _)>();
+
+        // Since jobserver::Client::acquire can block, waiting
+        // must be done in parallel so that acquire won't block forever.
+        let wait_thread = thread::Builder::new().spawn(move || {
+            for (cmd, program, mut child, _token) in rx {
+                wait_on_child(&cmd, &program, &mut child.0)?;
+            }
+
+            Ok(())
+        })?;
+
         for obj in objs {
-            if error.load(SeqCst) {
+            let (mut cmd, program) = self.create_compile_object_cmd(obj)?;
+            let token = server.acquire()?;
+
+            let child = spawn(&mut cmd, &program, print.pipe_writer_cloned()?.unwrap())?;
+
+            if tx.send((cmd, program, KillOnDrop(child), token)).is_err() {
                 break;
             }
-            let token = server.acquire()?;
-            let state = State {
-                build: self,
-                obj,
-                error: &error,
-            };
-            let state = unsafe { std::mem::transmute::<State, State<'static>>(state) };
-            let thread = thread::spawn(|| {
-                let state: State<'me> = state; // erase the `'static` lifetime
-                let result = state.build.compile_object(state.obj);
-                if result.is_err() {
-                    state.error.store(true, SeqCst);
-                }
-                drop(token); // make sure our jobserver token is released after the compile
-                return result;
-            });
-            threads.push(JoinOnDrop(Some(thread)));
         }
+        drop(tx);
 
-        for mut thread in threads {
-            if let Some(thread) = thread.0.take() {
-                thread.join().expect("thread should not panic")?;
-            }
-        }
-
-        // Reacquire our process's token before we proceed, which we released
-        // before entering the loop above.
-        if reacquire {
-            server.acquire_raw()?;
-        }
-
-        return Ok(());
-
-        /// Shared state from the parent thread to the child thread. This
-        /// package of pointers is temporarily transmuted to a `'static`
-        /// lifetime to cross the thread boundary and then once the thread is
-        /// running we erase the `'static` to go back to an anonymous lifetime.
-        struct State<'a> {
-            build: &'a Build,
-            obj: &'a Object,
-            error: &'a AtomicBool,
-        }
+        return wait_thread.join().expect("wait_thread panics");
 
         /// Returns a suitable `jobserver::Client` used to coordinate
         /// parallelism between build scripts.
@@ -1350,32 +1370,42 @@ impl Build {
             return client;
         }
 
-        struct JoinOnDrop(Option<thread::JoinHandle<Result<(), Error>>>);
+        struct KillOnDrop(Child);
 
-        impl Drop for JoinOnDrop {
+        impl Drop for KillOnDrop {
             fn drop(&mut self) {
-                if let Some(thread) = self.0.take() {
-                    drop(thread.join());
-                }
+                let child = &mut self.0;
+
+                child.kill().ok();
+            }
+        }
+
+        struct JobserverToken(&'static jobserver::Client);
+        impl Drop for JobserverToken {
+            fn drop(&mut self) {
+                let _ = self.0.acquire_raw();
             }
         }
     }
 
     #[cfg(not(feature = "parallel"))]
-    fn compile_objects(&self, objs: &[Object]) -> Result<(), Error> {
+    fn compile_objects(&self, objs: &[Object], print: &PrintThread) -> Result<(), Error> {
         for obj in objs {
-            self.compile_object(obj)?;
+            let (mut cmd, name) = self.create_compile_object_cmd(obj)?;
+            run(&mut cmd, &name, print)?;
         }
+
         Ok(())
     }
 
-    fn compile_object(&self, obj: &Object) -> Result<(), Error> {
+    fn create_compile_object_cmd(&self, obj: &Object) -> Result<(Command, String), Error> {
         let asm_ext = AsmFileExt::from_path(&obj.src);
         let is_asm = asm_ext.is_some();
         let target = self.get_target()?;
         let msvc = target.contains("msvc");
         let compiler = self.try_get_compiler()?;
         let clang = compiler.family == ToolFamily::Clang;
+        let gnu = compiler.family == ToolFamily::Gnu;
 
         let (mut cmd, name) = if msvc && asm_ext == Some(AsmFileExt::DotAsm) {
             self.msvc_macro_assembler()?
@@ -1395,7 +1425,9 @@ impl Build {
             )
         };
         let is_arm = target.contains("aarch64") || target.contains("arm");
-        command_add_output_file(&mut cmd, &obj.dst, self.cuda, msvc, clang, is_asm, is_arm);
+        command_add_output_file(
+            &mut cmd, &obj.dst, self.cuda, msvc, clang, gnu, is_asm, is_arm,
+        );
         // armasm and armasm64 don't requrie -c option
         if !msvc || !is_asm || !is_arm {
             cmd.arg("-c");
@@ -1418,8 +1450,7 @@ impl Build {
             self.fix_env_for_apple_os(&mut cmd)?;
         }
 
-        run(&mut cmd, &name)?;
-        Ok(())
+        Ok((cmd, name))
     }
 
     /// This will return a result instead of panicing; see expand() for the complete description.
@@ -1500,7 +1531,6 @@ impl Build {
         let target = self.get_target()?;
 
         let mut cmd = self.get_base_compiler()?;
-        let envflags = self.envflags(if self.cpp { "CXXFLAGS" } else { "CFLAGS" });
 
         // Disable default flag generation via `no_default_flags` or environment variable
         let no_defaults = self.no_default_flags || self.getenv("CRATE_CC_NO_DEFAULTS").is_some();
@@ -1511,8 +1541,10 @@ impl Build {
             println!("Info: default compiler flags are disabled");
         }
 
-        for arg in envflags {
-            cmd.push_cc_arg(arg.into());
+        if let Ok(flags) = self.envflags(if self.cpp { "CXXFLAGS" } else { "CFLAGS" }) {
+            for arg in flags {
+                cmd.push_cc_arg(arg.into());
+            }
         }
 
         for directory in self.include_directories.iter() {
@@ -1584,9 +1616,8 @@ impl Build {
                     Some(true) => "-MT",
                     Some(false) => "-MD",
                     None => {
-                        let features = self
-                            .getenv("CARGO_CFG_TARGET_FEATURE")
-                            .unwrap_or(String::new());
+                        let features = self.getenv("CARGO_CFG_TARGET_FEATURE");
+                        let features = features.as_deref().unwrap_or_default();
                         if features.contains("crt-static") {
                             "-MT"
                         } else {
@@ -1611,6 +1642,13 @@ impl Build {
                     cmd.push_opt_unless_duplicate("-Os".into());
                 } else {
                     cmd.push_opt_unless_duplicate(format!("-O{}", opt_level).into());
+                }
+
+                if cmd.family == ToolFamily::Clang && target.contains("windows") {
+                    // Disambiguate mingw and msvc on Windows. Problem is that
+                    // depending on the origin clang can default to a mismatchig
+                    // run-time.
+                    cmd.push_cc_arg(format!("--target={}", target).into());
                 }
 
                 if cmd.family == ToolFamily::Clang && target.contains("android") {
@@ -1720,6 +1758,30 @@ impl Build {
                         } else if target.contains("aarch64") {
                             cmd.args.push("--target=aarch64-unknown-windows-gnu".into())
                         }
+                    } else if target.ends_with("-freebsd") {
+                        // FreeBSD only supports C++11 and above when compiling against libc++
+                        // (available from FreeBSD 10 onwards). Under FreeBSD, clang uses libc++ by
+                        // default on FreeBSD 10 and newer unless `--target` is manually passed to
+                        // the compiler, in which case its default behavior differs:
+                        // * If --target=xxx-unknown-freebsdX(.Y) is specified and X is greater than
+                        //   or equal to 10, clang++ uses libc++
+                        // * If --target=xxx-unknown-freebsd is specified (without a version),
+                        //   clang++ cannot assume libc++ is available and reverts to a default of
+                        //   libstdc++ (this behavior was changed in llvm 14).
+                        //
+                        // This breaks C++11 (or greater) builds if targeting FreeBSD with the
+                        // generic xxx-unknown-freebsd triple on clang 13 or below *without*
+                        // explicitly specifying that libc++ should be used.
+                        // When cross-compiling, we can't infer from the rust/cargo target triple
+                        // which major version of FreeBSD we are targeting, so we need to make sure
+                        // that libc++ is used (unless the user has explicitly specified otherwise).
+                        // There's no compelling reason to use a different approach when compiling
+                        // natively.
+                        if self.cpp && self.cpp_set_stdlib.is_none() {
+                            cmd.push_cc_arg("-stdlib=libc++".into());
+                        }
+
+                        cmd.push_cc_arg(format!("--target={}", target).into());
                     } else {
                         cmd.push_cc_arg(format!("--target={}", target).into());
                     }
@@ -1782,9 +1844,8 @@ impl Build {
                 }
 
                 if self.static_flag.is_none() {
-                    let features = self
-                        .getenv("CARGO_CFG_TARGET_FEATURE")
-                        .unwrap_or(String::new());
+                    let features = self.getenv("CARGO_CFG_TARGET_FEATURE");
+                    let features = features.as_deref().unwrap_or_default();
                     if features.contains("crt-static") {
                         cmd.args.push("-static".into());
                     }
@@ -1944,6 +2005,9 @@ impl Build {
                         } else if target.contains("freebsd") && arch.starts_with("64") {
                             cmd.args.push(("-march=rv64gc").into());
                             cmd.args.push("-mabi=lp64d".into());
+                        } else if target.contains("netbsd") && arch.starts_with("64") {
+                            cmd.args.push(("-march=rv64gc").into());
+                            cmd.args.push("-mabi=lp64d".into());
                         } else if target.contains("openbsd") && arch.starts_with("64") {
                             cmd.args.push(("-march=rv64gc").into());
                             cmd.args.push("-mabi=lp64d".into());
@@ -1995,7 +2059,7 @@ impl Build {
 
     fn has_flags(&self) -> bool {
         let flags_env_var_name = if self.cpp { "CXXFLAGS" } else { "CFLAGS" };
-        let flags_env_var_value = self.get_var(flags_env_var_name);
+        let flags_env_var_value = self.getenv_with_target_prefixes(flags_env_var_name);
         if let Ok(_) = flags_env_var_value {
             true
         } else {
@@ -2049,21 +2113,27 @@ impl Build {
         Ok((cmd, tool.to_string()))
     }
 
-    fn assemble(&self, lib_name: &str, dst: &Path, objs: &[Object]) -> Result<(), Error> {
+    fn assemble(
+        &self,
+        lib_name: &str,
+        dst: &Path,
+        objs: &[Object],
+        print: &PrintThread,
+    ) -> Result<(), Error> {
         // Delete the destination if it exists as we want to
         // create on the first iteration instead of appending.
-        let _ = fs::remove_file(&dst);
+        let _ = fs::remove_file(dst);
 
         // Add objects to the archive in limited-length batches. This helps keep
         // the length of the command line within a reasonable length to avoid
         // blowing system limits on limiting platforms like Windows.
         let objs: Vec<_> = objs
             .iter()
-            .map(|o| o.dst.clone())
-            .chain(self.objects.iter().map(|path| (**path).to_owned()))
+            .map(|o| o.dst.as_path())
+            .chain(self.objects.iter().map(std::ops::Deref::deref))
             .collect();
         for chunk in objs.chunks(100) {
-            self.assemble_progressive(dst, chunk)?;
+            self.assemble_progressive(dst, chunk, print)?;
         }
 
         if self.cuda && self.cuda_file_count() > 0 {
@@ -2073,12 +2143,9 @@ impl Build {
             let out_dir = self.get_out_dir()?;
             let dlink = out_dir.join(lib_name.to_owned() + "_dlink.o");
             let mut nvcc = self.get_compiler().to_command();
-            nvcc.arg("--device-link")
-                .arg("-o")
-                .arg(dlink.clone())
-                .arg(dst);
-            run(&mut nvcc, "nvcc")?;
-            self.assemble_progressive(dst, &[dlink])?;
+            nvcc.arg("--device-link").arg("-o").arg(&dlink).arg(dst);
+            run(&mut nvcc, "nvcc", print)?;
+            self.assemble_progressive(dst, &[dlink.as_path()], print)?;
         }
 
         let target = self.get_target()?;
@@ -2110,13 +2177,18 @@ impl Build {
             // NOTE: We add `s` even if flags were passed using $ARFLAGS/ar_flag, because `s`
             // here represents a _mode_, not an arbitrary flag. Further discussion of this choice
             // can be seen in https://github.com/rust-lang/cc-rs/pull/763.
-            run(ar.arg("s").arg(dst), &cmd)?;
+            run(ar.arg("s").arg(dst), &cmd, print)?;
         }
 
         Ok(())
     }
 
-    fn assemble_progressive(&self, dst: &Path, objs: &[PathBuf]) -> Result<(), Error> {
+    fn assemble_progressive(
+        &self,
+        dst: &Path,
+        objs: &[&Path],
+        print: &PrintThread,
+    ) -> Result<(), Error> {
         let target = self.get_target()?;
 
         if target.contains("msvc") {
@@ -2137,7 +2209,7 @@ impl Build {
                 cmd.arg(dst);
             }
             cmd.args(objs);
-            run(&mut cmd, &program)?;
+            run(&mut cmd, &program, print)?;
         } else {
             let (mut ar, cmd, _any_flags) = self.get_ar()?;
 
@@ -2168,7 +2240,7 @@ impl Build {
             // NOTE: We add cq here regardless of whether $ARFLAGS/ar_flag have been used because
             // it dictates the _mode_ ar runs in, which the setter of $ARFLAGS/ar_flag can't
             // dictate. See https://github.com/rust-lang/cc-rs/pull/763 for further discussion.
-            run(ar.arg("cq").arg(dst).args(objs), &cmd)?;
+            run(ar.arg("cq").arg(dst).args(objs), &cmd, print)?;
         }
 
         Ok(())
@@ -2204,7 +2276,7 @@ impl Build {
         let arch = target.split('-').nth(0).ok_or_else(|| {
             Error::new(
                 ErrorKind::ArchitectureInvalid,
-                format!("Unknown architecture for {} target.", os).as_str(),
+                format!("Unknown architecture for {} target.", os),
             )
         })?;
 
@@ -2254,7 +2326,7 @@ impl Build {
                 _ => {
                     return Err(Error::new(
                         ErrorKind::ArchitectureInvalid,
-                        format!("Unknown architecture for {} target.", os).as_str(),
+                        format!("Unknown architecture for {} target.", os),
                     ));
                 }
             }
@@ -2296,7 +2368,7 @@ impl Build {
             ArchSpec::Catalyst(_) => "macosx".to_owned(),
         };
 
-        self.print(&format!("Detecting {} SDK path for {}", os, sdk));
+        self.print(&format_args!("Detecting {} SDK path for {}", os, sdk));
         let sdk_path = if let Some(sdkroot) = env::var_os("SDKROOT") {
             sdkroot
         } else {
@@ -2325,6 +2397,7 @@ impl Build {
         }
         let host = self.get_host()?;
         let target = self.get_target()?;
+        let target = &*target;
         let (env, msvc, gnu, traditional, clang) = if self.cpp {
             ("CXX", "cl.exe", "g++", "c++", "clang++")
         } else {
@@ -2356,7 +2429,7 @@ impl Build {
                 // semi-buggy build scripts which are shared in
                 // makefiles/configure scripts (where spaces are far more
                 // lenient)
-                let mut t = Tool::with_clang_driver(PathBuf::from(tool.trim()), driver_mode);
+                let mut t = Tool::with_clang_driver(tool, driver_mode);
                 if let Some(cc_wrapper) = wrapper {
                     t.cc_wrapper_path = Some(PathBuf::from(cc_wrapper));
                 }
@@ -2416,7 +2489,7 @@ impl Build {
                     format!("arm-kmc-eabi-{}", gnu)
                 } else if target.starts_with("aarch64-kmc-solid_") {
                     format!("aarch64-kmc-elf-{}", gnu)
-                } else if self.get_host()? != target {
+                } else if &*self.get_host()? != target {
                     let prefix = self.prefix_for_target(&target);
                     match prefix {
                         Some(prefix) => {
@@ -2442,11 +2515,11 @@ impl Build {
                 tool.args.is_empty(),
                 "CUDA compilation currently assumes empty pre-existing args"
             );
-            let nvcc = match self.get_var("NVCC") {
-                Err(_) => "nvcc".into(),
-                Ok(nvcc) => nvcc,
+            let nvcc = match self.getenv_with_target_prefixes("NVCC") {
+                Err(_) => PathBuf::from("nvcc"),
+                Ok(nvcc) => PathBuf::from(&*nvcc),
             };
-            let mut nvcc_tool = Tool::with_features(PathBuf::from(nvcc), None, self.cuda);
+            let mut nvcc_tool = Tool::with_features(nvcc, None, self.cuda);
             nvcc_tool
                 .args
                 .push(format!("-ccbin={}", tool.path.display()).into());
@@ -2511,35 +2584,11 @@ impl Build {
             }
         }
 
-        Ok(tool)
-    }
-
-    fn get_var(&self, var_base: &str) -> Result<String, Error> {
-        let target = self.get_target()?;
-        let host = self.get_host()?;
-        let kind = if host == target { "HOST" } else { "TARGET" };
-        let target_u = target.replace("-", "_");
-        let res = self
-            .getenv(&format!("{}_{}", var_base, target))
-            .or_else(|| self.getenv(&format!("{}_{}", var_base, target_u)))
-            .or_else(|| self.getenv(&format!("{}_{}", kind, var_base)))
-            .or_else(|| self.getenv(var_base));
-
-        match res {
-            Some(res) => Ok(res),
-            None => Err(Error::new(
-                ErrorKind::EnvVarNotFound,
-                &format!("Could not find environment variable {}.", var_base),
-            )),
+        if target.contains("msvc") && tool.family == ToolFamily::Gnu {
+            println!("cargo:warning=GNU compiler is not supported for this target");
         }
-    }
 
-    fn envflags(&self, name: &str) -> Vec<String> {
-        self.get_var(name)
-            .unwrap_or(String::new())
-            .split_ascii_whitespace()
-            .map(|slice| slice.to_string())
-            .collect()
+        Ok(tool)
     }
 
     /// Returns a fallback `cc_compiler_wrapper` by introspecting `RUSTC_WRAPPER`
@@ -2561,8 +2610,8 @@ impl Build {
     }
 
     /// Returns compiler path, optional modifier name from whitelist, and arguments vec
-    fn env_tool(&self, name: &str) -> Option<(String, Option<String>, Vec<String>)> {
-        let tool = match self.get_var(name) {
+    fn env_tool(&self, name: &str) -> Option<(PathBuf, Option<String>, Vec<String>)> {
+        let tool = match self.getenv_with_target_prefixes(name) {
             Ok(tool) => tool,
             Err(_) => return None,
         };
@@ -2570,8 +2619,8 @@ impl Build {
         // If this is an exact path on the filesystem we don't want to do any
         // interpretation at all, just pass it on through. This'll hopefully get
         // us to support spaces-in-paths.
-        if Path::new(&tool).exists() {
-            return Some((tool, None, Vec::new()));
+        if Path::new(&*tool).exists() {
+            return Some((PathBuf::from(&*tool), None, Vec::new()));
         }
 
         // Ok now we want to handle a couple of scenarios. We'll assume from
@@ -2610,7 +2659,7 @@ impl Build {
         if known_wrappers.contains(&file_stem) {
             if let Some(compiler) = parts.next() {
                 return Some((
-                    compiler.to_string(),
+                    compiler.into(),
                     Some(maybe_wrapper.to_string()),
                     parts.map(|s| s.to_string()).collect(),
                 ));
@@ -2618,7 +2667,7 @@ impl Build {
         }
 
         Some((
-            maybe_wrapper.to_string(),
+            maybe_wrapper.into(),
             Self::rustc_wrapper_fallback(),
             parts.map(|s| s.to_string()).collect(),
         ))
@@ -2633,11 +2682,11 @@ impl Build {
         match &self.cpp_link_stdlib {
             Some(s) => Ok(s.as_ref().map(|s| (*s).to_string())),
             None => {
-                if let Ok(stdlib) = self.get_var("CXXSTDLIB") {
+                if let Ok(stdlib) = self.getenv_with_target_prefixes("CXXSTDLIB") {
                     if stdlib.is_empty() {
                         Ok(None)
                     } else {
-                        Ok(Some(stdlib))
+                        Ok(Some(stdlib.to_string()))
                     }
                 } else {
                     let target = self.get_target()?;
@@ -2648,6 +2697,8 @@ impl Build {
                     } else if target.contains("freebsd") {
                         Ok(Some("c++".to_string()))
                     } else if target.contains("openbsd") {
+                        Ok(Some("c++".to_string()))
+                    } else if target.contains("aix") {
                         Ok(Some("c++".to_string()))
                     } else if target.contains("android") {
                         Ok(Some("c++_shared".to_string()))
@@ -2694,9 +2745,11 @@ impl Build {
 
     fn try_get_archiver_and_flags(&self) -> Result<(Command, String, bool), Error> {
         let (mut cmd, name) = self.get_base_archiver()?;
-        let flags = self.envflags("ARFLAGS");
-        let mut any_flags = !flags.is_empty();
-        cmd.args(flags);
+        let mut any_flags = false;
+        if let Ok(flags) = self.envflags("ARFLAGS") {
+            any_flags = any_flags | !flags.is_empty();
+            cmd.args(flags);
+        }
         for flag in &self.ar_flags {
             any_flags = true;
             cmd.arg(&**flag);
@@ -2739,7 +2792,9 @@ impl Build {
     /// see [`get_ranlib()`] for the complete description.
     pub fn try_get_ranlib(&self) -> Result<Command, Error> {
         let mut cmd = self.get_base_ranlib()?;
-        cmd.args(self.envflags("RANLIBFLAGS"));
+        if let Ok(flags) = self.envflags("RANLIBFLAGS") {
+            cmd.args(flags);
+        }
         Ok(cmd)
     }
 
@@ -2773,6 +2828,20 @@ impl Build {
                         name = format!("em{}", tool);
                         Some(self.cmd(&name))
                     }
+                } else if target.starts_with("wasm32") {
+                    // Formally speaking one should be able to use this approach,
+                    // parsing -print-search-dirs output, to cover all clang targets,
+                    // including Android SDKs and other cross-compilation scenarios...
+                    // And even extend it to gcc targets by seaching for "ar" instead
+                    // of "llvm-ar"...
+                    let compiler = self.get_base_compiler().ok()?;
+                    if compiler.family == ToolFamily::Clang {
+                        name = format!("llvm-{}", tool);
+                        search_programs(&mut self.cmd(&compiler.path), &name)
+                            .map(|name| self.cmd(&name))
+                    } else {
+                        None
+                    }
                 } else {
                     None
                 }
@@ -2799,10 +2868,10 @@ impl Build {
                         // next to 'clang-cl' and use 'search_programs()' to locate
                         // 'llvm-lib'. This is because 'clang-cl' doesn't support
                         // the -print-search-dirs option.
-                        if let Some(mut cmd) = which(&compiler.path) {
+                        if let Some(mut cmd) = which(&compiler.path, None) {
                             cmd.pop();
                             cmd.push("llvm-lib.exe");
-                            if let Some(llvm_lib) = which(&cmd) {
+                            if let Some(llvm_lib) = which(&cmd, None) {
                                 lib = llvm_lib.to_str().unwrap().to_owned();
                             }
                         }
@@ -2906,6 +2975,7 @@ impl Build {
             ]), // explicit None if not found, so caller knows to fall back
             "i686-unknown-linux-musl" => Some("musl"),
             "i686-unknown-netbsd" => Some("i486--netbsdelf"),
+            "loongarch64-unknown-linux-gnu" => Some("loongarch64-linux-gnu"),
             "mips-unknown-linux-gnu" => Some("mips-linux-gnu"),
             "mips-unknown-linux-musl" => Some("mips-linux-musl"),
             "mipsel-unknown-linux-gnu" => Some("mipsel-linux-gnu"),
@@ -2956,6 +3026,7 @@ impl Build {
             "riscv32gc-unknown-linux-gnu" => Some("riscv32-linux-gnu"),
             "riscv64gc-unknown-linux-musl" => Some("riscv64-linux-musl"),
             "riscv32gc-unknown-linux-musl" => Some("riscv32-linux-musl"),
+            "riscv64gc-unknown-netbsd" => Some("riscv64--netbsd"),
             "s390x-unknown-linux-gnu" => Some("s390x-linux-gnu"),
             "sparc-unknown-linux-gnu" => Some("sparc-linux-gnu"),
             "sparc64-unknown-linux-gnu" => Some("sparc64-linux-gnu"),
@@ -3020,30 +3091,30 @@ impl Build {
             prefixes.first().map(|prefix| *prefix))
     }
 
-    fn get_target(&self) -> Result<String, Error> {
-        match self.target {
-            Some(ref t) => Ok((*t).to_string()),
-            None => Ok(self.getenv_unwrap("TARGET")?),
+    fn get_target(&self) -> Result<Arc<str>, Error> {
+        match &self.target {
+            Some(t) => Ok(t.clone()),
+            None => self.getenv_unwrap("TARGET"),
         }
     }
 
-    fn get_host(&self) -> Result<String, Error> {
+    fn get_host(&self) -> Result<Arc<str>, Error> {
         match &self.host {
-            Some(h) => Ok((**h).to_string()),
-            None => Ok(self.getenv_unwrap("HOST")?),
+            Some(h) => Ok(h.clone()),
+            None => self.getenv_unwrap("HOST"),
         }
     }
 
-    fn get_opt_level(&self) -> Result<String, Error> {
+    fn get_opt_level(&self) -> Result<Arc<str>, Error> {
         match &self.opt_level {
-            Some(ol) => Ok((**ol).to_string()),
-            None => Ok(self.getenv_unwrap("OPT_LEVEL")?),
+            Some(ol) => Ok(ol.clone()),
+            None => self.getenv_unwrap("OPT_LEVEL"),
         }
     }
 
     fn get_debug(&self) -> bool {
         self.debug.unwrap_or_else(|| match self.getenv("DEBUG") {
-            Some(s) => s != "false",
+            Some(s) => &*s != "false",
             None => false,
         })
     }
@@ -3071,19 +3142,22 @@ impl Build {
         self.force_frame_pointer.unwrap_or_else(|| self.get_debug())
     }
 
-    fn get_out_dir(&self) -> Result<PathBuf, Error> {
+    fn get_out_dir(&self) -> Result<Cow<'_, Path>, Error> {
         match &self.out_dir {
-            Some(p) => Ok((**p).into()),
-            None => Ok(env::var_os("OUT_DIR").map(PathBuf::from).ok_or_else(|| {
-                Error::new(
-                    ErrorKind::EnvVarNotFound,
-                    "Environment variable OUT_DIR not defined.",
-                )
-            })?),
+            Some(p) => Ok(Cow::Borrowed(&**p)),
+            None => env::var_os("OUT_DIR")
+                .map(PathBuf::from)
+                .map(Cow::Owned)
+                .ok_or_else(|| {
+                    Error::new(
+                        ErrorKind::EnvVarNotFound,
+                        "Environment variable OUT_DIR not defined.",
+                    )
+                }),
         }
     }
 
-    fn getenv(&self, v: &str) -> Option<String> {
+    fn getenv(&self, v: &str) -> Option<Arc<str>> {
         // Returns true for environment variables cargo sets for build scripts:
         // https://doc.rust-lang.org/cargo/reference/environment-variables.html#environment-variables-cargo-sets-for-build-scripts
         //
@@ -3103,25 +3177,53 @@ impl Build {
             return val.clone();
         }
         if self.emit_rerun_if_env_changed && !provided_by_cargo(v) {
-            self.print(&format!("cargo:rerun-if-env-changed={}", v));
+            self.print(&format_args!("cargo:rerun-if-env-changed={}", v));
         }
-        let r = env::var(v).ok();
-        self.print(&format!("{} = {:?}", v, r));
+        let r = env::var(v).ok().map(Arc::from);
+        self.print(&format_args!("{} = {:?}", v, r));
         cache.insert(v.to_string(), r.clone());
         r
     }
 
-    fn getenv_unwrap(&self, v: &str) -> Result<String, Error> {
+    fn getenv_unwrap(&self, v: &str) -> Result<Arc<str>, Error> {
         match self.getenv(v) {
             Some(s) => Ok(s),
             None => Err(Error::new(
                 ErrorKind::EnvVarNotFound,
-                &format!("Environment variable {} not defined.", v.to_string()),
+                format!("Environment variable {} not defined.", v),
             )),
         }
     }
 
-    fn print(&self, s: &str) {
+    fn getenv_with_target_prefixes(&self, var_base: &str) -> Result<Arc<str>, Error> {
+        let target = self.get_target()?;
+        let host = self.get_host()?;
+        let kind = if host == target { "HOST" } else { "TARGET" };
+        let target_u = target.replace("-", "_");
+        let res = self
+            .getenv(&format!("{}_{}", var_base, target))
+            .or_else(|| self.getenv(&format!("{}_{}", var_base, target_u)))
+            .or_else(|| self.getenv(&format!("{}_{}", kind, var_base)))
+            .or_else(|| self.getenv(var_base));
+
+        match res {
+            Some(res) => Ok(res),
+            None => Err(Error::new(
+                ErrorKind::EnvVarNotFound,
+                format!("Could not find environment variable {}.", var_base),
+            )),
+        }
+    }
+
+    fn envflags(&self, name: &str) -> Result<Vec<String>, Error> {
+        Ok(self
+            .getenv_with_target_prefixes(name)?
+            .split_ascii_whitespace()
+            .map(|slice| slice.to_string())
+            .collect())
+    }
+
+    fn print(&self, s: &dyn Display) {
         if self.cargo_metadata {
             println!("{}", s);
         }
@@ -3257,11 +3359,14 @@ impl Tool {
         self.removed_args.push(flag);
     }
 
-    /// Add a flag, and optionally prepend the NVCC wrapper flag "-Xcompiler".
+    /// Push an "exotic" flag to the end of the compiler's arguments list.
     ///
-    /// Currently this is only used for compiling CUDA sources, since NVCC only
-    /// accepts a limited set of GNU-like flags, and the rest must be prefixed
-    /// with a "-Xcompiler" flag to get passed to the underlying C++ compiler.
+    /// Nvidia compiler accepts only the most common compiler flags like `-D`,
+    /// `-I`, `-c`, etc. Options meant specifically for the underlying
+    /// host C++ compiler have to be prefixed with '-Xcompiler`.
+    /// [Another possible future application for this function is passing
+    /// clang-specific flags to clang-cl, which otherwise accepts only
+    /// MSVC-specific options.]
     fn push_cc_arg(&mut self, flag: OsString) {
         if self.cuda {
             self.args.push("-Xcompiler".into());
@@ -3269,6 +3374,9 @@ impl Tool {
         self.args.push(flag);
     }
 
+    /// Checks if an argument or flag has already been specified or conflicts.
+    ///
+    /// Currently only checks optimization flags.
     fn is_duplicate_opt_arg(&self, flag: &OsString) -> bool {
         let flag = flag.to_str().unwrap();
         let mut chars = flag.chars();
@@ -3296,7 +3404,7 @@ impl Tool {
         return false;
     }
 
-    /// Don't push optimization arg if it conflicts with existing args
+    /// Don't push optimization arg if it conflicts with existing args.
     fn push_opt_unless_duplicate(&mut self, flag: OsString) {
         if self.is_duplicate_opt_arg(&flag) {
             println!("Info: Ignoring duplicate arg {:?}", &flag);
@@ -3409,21 +3517,19 @@ impl Tool {
     }
 }
 
-fn run(cmd: &mut Command, program: &str) -> Result<(), Error> {
-    let (mut child, print) = spawn(cmd, program)?;
+fn wait_on_child(cmd: &Command, program: &str, child: &mut Child) -> Result<(), Error> {
     let status = match child.wait() {
         Ok(s) => s,
-        Err(_) => {
+        Err(e) => {
             return Err(Error::new(
                 ErrorKind::ToolExecError,
-                &format!(
-                    "Failed to wait on spawned child process, command {:?} with args {:?}.",
-                    cmd, program
+                format!(
+                    "Failed to wait on spawned child process, command {:?} with args {:?}: {}.",
+                    cmd, program, e
                 ),
             ));
         }
     };
-    print.join().unwrap();
     println!("{}", status);
 
     if status.success() {
@@ -3431,7 +3537,7 @@ fn run(cmd: &mut Command, program: &str) -> Result<(), Error> {
     } else {
         Err(Error::new(
             ErrorKind::ToolExecError,
-            &format!(
+            format!(
                 "Command {:?} with args {:?} did not execute successfully (status code {}).",
                 cmd, program, status
             ),
@@ -3439,9 +3545,23 @@ fn run(cmd: &mut Command, program: &str) -> Result<(), Error> {
     }
 }
 
+fn run_inner(cmd: &mut Command, program: &str, pipe_writer: File) -> Result<(), Error> {
+    let mut child = spawn(cmd, program, pipe_writer)?;
+    wait_on_child(cmd, program, &mut child)
+}
+
+fn run(cmd: &mut Command, program: &str, print: &PrintThread) -> Result<(), Error> {
+    run_inner(cmd, program, print.pipe_writer_cloned()?.unwrap())?;
+
+    Ok(())
+}
+
 fn run_output(cmd: &mut Command, program: &str) -> Result<Vec<u8>, Error> {
     cmd.stdout(Stdio::piped());
-    let (mut child, print) = spawn(cmd, program)?;
+
+    let mut print = PrintThread::new()?;
+    let mut child = spawn(cmd, program, print.pipe_writer().take().unwrap())?;
+
     let mut stdout = vec![];
     child
         .stdout
@@ -3449,53 +3569,29 @@ fn run_output(cmd: &mut Command, program: &str) -> Result<Vec<u8>, Error> {
         .unwrap()
         .read_to_end(&mut stdout)
         .unwrap();
-    let status = match child.wait() {
-        Ok(s) => s,
-        Err(_) => {
-            return Err(Error::new(
-                ErrorKind::ToolExecError,
-                &format!(
-                    "Failed to wait on spawned child process, command {:?} with args {:?}.",
-                    cmd, program
-                ),
-            ));
-        }
-    };
-    print.join().unwrap();
-    println!("{}", status);
 
-    if status.success() {
-        Ok(stdout)
-    } else {
-        Err(Error::new(
-            ErrorKind::ToolExecError,
-            &format!(
-                "Command {:?} with args {:?} did not execute successfully (status code {}).",
-                cmd, program, status
-            ),
-        ))
-    }
+    wait_on_child(cmd, program, &mut child)?;
+
+    Ok(stdout)
 }
 
-fn spawn(cmd: &mut Command, program: &str) -> Result<(Child, JoinHandle<()>), Error> {
+fn spawn(cmd: &mut Command, program: &str, pipe_writer: File) -> Result<Child, Error> {
+    struct ResetStderr<'cmd>(&'cmd mut Command);
+
+    impl Drop for ResetStderr<'_> {
+        fn drop(&mut self) {
+            // Reset stderr to default to release pipe_writer so that print thread will
+            // not block forever.
+            self.0.stderr(Stdio::inherit());
+        }
+    }
+
     println!("running: {:?}", cmd);
 
-    // Capture the standard error coming from these programs, and write it out
-    // with cargo:warning= prefixes. Note that this is a bit wonky to avoid
-    // requiring the output to be UTF-8, we instead just ship bytes from one
-    // location to another.
-    match cmd.stderr(Stdio::piped()).spawn() {
-        Ok(mut child) => {
-            let stderr = BufReader::new(child.stderr.take().unwrap());
-            let print = thread::spawn(move || {
-                for line in stderr.split(b'\n').filter_map(|l| l.ok()) {
-                    print!("cargo:warning=");
-                    std::io::stdout().write_all(&line).unwrap();
-                    println!("");
-                }
-            });
-            Ok((child, print))
-        }
+    let cmd = ResetStderr(cmd);
+
+    match cmd.0.stderr(pipe_writer).spawn() {
+        Ok(child) => Ok(child),
         Err(ref e) if e.kind() == io::ErrorKind::NotFound => {
             let extra = if cfg!(windows) {
                 " (see https://github.com/rust-lang/cc-rs#compile-time-requirements \
@@ -3505,14 +3601,14 @@ fn spawn(cmd: &mut Command, program: &str) -> Result<(Child, JoinHandle<()>), Er
             };
             Err(Error::new(
                 ErrorKind::ToolNotFound,
-                &format!("Failed to find tool. Is `{}` installed?{}", program, extra),
+                format!("Failed to find tool. Is `{}` installed?{}", program, extra),
             ))
         }
-        Err(ref e) => Err(Error::new(
+        Err(e) => Err(Error::new(
             ErrorKind::ToolExecError,
-            &format!(
+            format!(
                 "Command {:?} with args {:?} failed to start: {:?}",
-                cmd, program, e
+                cmd.0, program, e
             ),
         )),
     }
@@ -3529,10 +3625,11 @@ fn command_add_output_file(
     cuda: bool,
     msvc: bool,
     clang: bool,
+    gnu: bool,
     is_asm: bool,
     is_arm: bool,
 ) {
-    if msvc && !clang && !cuda && !(is_asm && is_arm) {
+    if msvc && !clang && !gnu && !cuda && !(is_asm && is_arm) {
         let mut s = OsString::from("-Fo");
         s.push(&dst);
         cmd.arg(s);
@@ -3562,13 +3659,12 @@ static NEW_STANDALONE_ANDROID_COMPILERS: [&str; 4] = [
 fn android_clang_compiler_uses_target_arg_internally(clang_path: &Path) -> bool {
     if let Some(filename) = clang_path.file_name() {
         if let Some(filename_str) = filename.to_str() {
-            filename_str.contains("android")
-        } else {
-            false
+            if let Some(idx) = filename_str.rfind("-") {
+                return filename_str.split_at(idx).0.contains("android");
+            }
         }
-    } else {
-        false
     }
+    false
 }
 
 #[test]
@@ -3581,6 +3677,9 @@ fn test_android_clang_compiler_uses_target_arg_internally() {
             &PathBuf::from(format!("armv7a-linux-androideabi{}-clang++", version))
         ));
     }
+    assert!(!android_clang_compiler_uses_target_arg_internally(
+        &PathBuf::from("clang-i686-linux-android")
+    ));
     assert!(!android_clang_compiler_uses_target_arg_internally(
         &PathBuf::from("clang")
     ));
@@ -3638,7 +3737,9 @@ fn autodetect_android_compiler(target: &str, host: &str, gnu: &str, clang: &str)
 
 // Rust and clang/cc don't agree on how to name the target.
 fn map_darwin_target_from_rust_to_compiler_architecture(target: &str) -> Option<&'static str> {
-    if target.contains("x86_64") {
+    if target.contains("x86_64h") {
+        Some("x86_64h")
+    } else if target.contains("x86_64") {
         Some("x86_64")
     } else if target.contains("arm64e") {
         Some("arm64e")
@@ -3655,7 +3756,7 @@ fn map_darwin_target_from_rust_to_compiler_architecture(target: &str) -> Option<
     }
 }
 
-fn which(tool: &Path) -> Option<PathBuf> {
+fn which(tool: &Path, path_entries: Option<OsString>) -> Option<PathBuf> {
     fn check_exe(exe: &mut PathBuf) -> bool {
         let exe_ext = std::env::consts::EXE_EXTENSION;
         exe.exists() || (!exe_ext.is_empty() && exe.set_extension(exe_ext) && exe.exists())
@@ -3668,11 +3769,25 @@ fn which(tool: &Path) -> Option<PathBuf> {
     }
 
     // Loop through PATH entries searching for the |tool|.
-    let path_entries = env::var_os("PATH")?;
+    let path_entries = path_entries.or(env::var_os("PATH"))?;
     env::split_paths(&path_entries).find_map(|path_entry| {
         let mut exe = path_entry.join(tool);
         return if check_exe(&mut exe) { Some(exe) } else { None };
     })
+}
+
+// search for |prog| on 'programs' path in '|cc| -print-search-dirs' output
+fn search_programs(cc: &mut Command, prog: &str) -> Option<PathBuf> {
+    let search_dirs = run_output(cc.arg("-print-search-dirs"), "cc").ok()?;
+    // clang driver appears to be forcing UTF-8 output even on Windows,
+    // hence from_utf8 is assumed to be usable in all cases.
+    let search_dirs = std::str::from_utf8(&search_dirs).ok()?;
+    for dirs in search_dirs.split(|c| c == '\r' || c == '\n') {
+        if let Some(path) = dirs.strip_prefix("programs: =") {
+            return which(Path::new(prog), Some(OsString::from(path)));
+        }
+    }
+    None
 }
 
 #[derive(Clone, Copy, PartialEq)]
@@ -3697,5 +3812,60 @@ impl AsmFileExt {
             }
         }
         None
+    }
+}
+
+struct PrintThread {
+    handle: Option<JoinHandle<()>>,
+    pipe_writer: Option<File>,
+}
+
+impl PrintThread {
+    fn new() -> Result<Self, Error> {
+        let (pipe_reader, pipe_writer) = os_pipe::pipe()?;
+
+        // Capture the standard error coming from compilation, and write it out
+        // with cargo:warning= prefixes. Note that this is a bit wonky to avoid
+        // requiring the output to be UTF-8, we instead just ship bytes from one
+        // location to another.
+        let print = thread::spawn(move || {
+            let mut stderr = BufReader::with_capacity(4096, pipe_reader);
+            let mut line = String::with_capacity(20);
+            let mut stdout = io::stdout();
+
+            // read_line returns 0 on Eof
+            while stderr.read_line(&mut line).unwrap() != 0 {
+                writeln!(&mut stdout, "cargo:warning={}", line).ok();
+
+                // read_line does not clear the buffer
+                line.clear();
+            }
+        });
+
+        Ok(Self {
+            handle: Some(print),
+            pipe_writer: Some(pipe_writer),
+        })
+    }
+
+    fn pipe_writer(&mut self) -> &mut Option<File> {
+        &mut self.pipe_writer
+    }
+
+    fn pipe_writer_cloned(&self) -> Result<Option<File>, Error> {
+        self.pipe_writer
+            .as_ref()
+            .map(File::try_clone)
+            .transpose()
+            .map_err(From::from)
+    }
+}
+
+impl Drop for PrintThread {
+    fn drop(&mut self) {
+        // Drop pipe_writer first to avoid deadlock
+        self.pipe_writer.take();
+
+        self.handle.take().unwrap().join().unwrap();
     }
 }

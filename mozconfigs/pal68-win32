@@ -1,4 +1,4 @@
-ac_add_options --target=i686-mingw32
+ac_add_options --target=x86_64-mingw32
 
 ac_add_options --enable-optimize
 
@@ -29,5 +29,5 @@ ac_add_options --disable-sandbox # Bug 1230910
 
 ac_add_options --enable-proxy-bypass-protection
 
-WIN32_REDIST_DIR="${VCINSTALLDIR}/redist/x86/Microsoft.VC141.CRT"
-WIN_UCRT_REDIST_DIR="${WINDOWSSDKDIR}/Redist/ucrt/DLLs/r86"
+WIN32_REDIST_DIR="${VCINSTALLDIR}/redist/x64/Microsoft.VC141.CRT"
+WIN_UCRT_REDIST_DIR="${WINDOWSSDKDIR}/Redist/ucrt/DLLs/r64"

@@ -56,12 +56,11 @@
 #![allow(deprecated)]
 #![deny(missing_docs)]
 
-use std::collections::{hash_map, HashMap};
+use std::collections::HashMap;
 use std::env;
 use std::ffi::{OsStr, OsString};
 use std::fmt::{self, Display, Formatter};
 use std::fs;
-use std::hash::Hasher;
 use std::io::{self, BufRead, BufReader, Read, Write};
 use std::path::{Component, Path, PathBuf};
 use std::process::{Child, Command, Stdio};
@@ -98,7 +97,6 @@ pub struct Build {
     flags_supported: Vec<String>,
     known_flag_support_status: Arc<Mutex<HashMap<String, bool>>>,
     ar_flags: Vec<String>,
-    asm_flags: Vec<String>,
     no_default_flags: bool,
     files: Vec<PathBuf>,
     cpp: bool,
@@ -216,17 +214,13 @@ enum ToolFamily {
 
 impl ToolFamily {
     /// What the flag to request debug info for this family of tools look like
-    fn add_debug_flags(&self, cmd: &mut Tool, dwarf_version: Option<u32>) {
+    fn add_debug_flags(&self, cmd: &mut Tool) {
         match *self {
             ToolFamily::Msvc { .. } => {
                 cmd.push_cc_arg("-Z7".into());
             }
             ToolFamily::Gnu | ToolFamily::Clang => {
-                cmd.push_cc_arg(
-                    dwarf_version
-                        .map_or_else(|| "-g".into(), |v| format!("-gdwarf-{}", v))
-                        .into(),
-                );
+                cmd.push_cc_arg("-g".into());
             }
         }
     }
@@ -301,7 +295,6 @@ impl Build {
             flags_supported: Vec::new(),
             known_flag_support_status: Arc::new(Mutex::new(HashMap::new())),
             ar_flags: Vec::new(),
-            asm_flags: Vec::new(),
             no_default_flags: false,
             files: Vec::new(),
             shared_flag: None,
@@ -434,25 +427,6 @@ impl Build {
     /// ```
     pub fn ar_flag(&mut self, flag: &str) -> &mut Build {
         self.ar_flags.push(flag.to_string());
-        self
-    }
-
-    /// Add a flag that will only be used with assembly files.
-    ///
-    /// The flag will be applied to input files with either a `.s` or
-    /// `.asm` extension (case insensitive).
-    ///
-    /// # Example
-    ///
-    /// ```no_run
-    /// cc::Build::new()
-    ///     .asm_flag("-Wa,-defsym,abc=1")
-    ///     .file("src/foo.S")  // The asm flag will be applied here
-    ///     .file("src/bar.c")  // The asm flag will not be applied here
-    ///     .compile("foo");
-    /// ```
-    pub fn asm_flag(&mut self, flag: &str) -> &mut Build {
-        self.asm_flags.push(flag.to_string());
         self
     }
 
@@ -1024,24 +998,7 @@ impl Build {
 
         let mut objects = Vec::new();
         for file in self.files.iter() {
-            let obj = if file.has_root() {
-                // If `file` is an absolute path, prefix the `basename`
-                // with the `dirname`'s hash to ensure name uniqueness.
-                let basename = file
-                    .file_name()
-                    .ok_or_else(|| Error::new(ErrorKind::InvalidArgument, "file_name() failure"))?
-                    .to_string_lossy();
-                let dirname = file
-                    .parent()
-                    .ok_or_else(|| Error::new(ErrorKind::InvalidArgument, "parent() failure"))?
-                    .to_string_lossy();
-                let mut hasher = hash_map::DefaultHasher::new();
-                hasher.write(dirname.to_string().as_bytes());
-                dst.join(format!("{:016x}-{}", hasher.finish(), basename))
-                    .with_extension("o")
-            } else {
-                dst.join(file).with_extension("o")
-            };
+            let obj = dst.join(file).with_extension("o");
             let obj = if !obj.starts_with(&dst) {
                 dst.join(obj.file_name().ok_or_else(|| {
                     Error::new(ErrorKind::IOError, "Getting object file details failed.")
@@ -1357,14 +1314,12 @@ impl Build {
     }
 
     fn compile_object(&self, obj: &Object) -> Result<(), Error> {
-        let asm_ext = AsmFileExt::from_path(&obj.src);
-        let is_asm = asm_ext.is_some();
+        let is_asm = obj.src.extension().and_then(|s| s.to_str()) == Some("asm");
         let target = self.get_target()?;
         let msvc = target.contains("msvc");
         let compiler = self.try_get_compiler()?;
         let clang = compiler.family == ToolFamily::Clang;
-
-        let (mut cmd, name) = if msvc && asm_ext == Some(AsmFileExt::DotAsm) {
+        let (mut cmd, name) = if msvc && is_asm {
             self.msvc_macro_assembler()?
         } else {
             let mut cmd = compiler.to_command();
@@ -1387,13 +1342,10 @@ impl Build {
         if !msvc || !is_asm || !is_arm {
             cmd.arg("-c");
         }
-        if self.cuda && self.cuda_file_count() > 1 {
+        if self.cuda && self.files.len() > 1 {
             cmd.arg("--device-c");
         }
-        if is_asm {
-            cmd.args(&self.asm_flags);
-        }
-        if compiler.family == (ToolFamily::Msvc { clang_cl: true }) && !is_asm {
+        if compiler.family == (ToolFamily::Msvc { clang_cl: true }) {
             // #513: For `clang-cl`, separate flags/options from the input file.
             // When cross-compiling macOS -> Windows, this avoids interpreting
             // common `/Users/...` paths as the `/U` flag and triggering
@@ -1637,7 +1589,7 @@ impl Build {
                 cmd.args.push("-G".into());
             }
             let family = cmd.family;
-            family.add_debug_flags(cmd, self.get_dwarf_version());
+            family.add_debug_flags(cmd);
         }
 
         if self.get_force_frame_pointer() {
@@ -1710,7 +1662,7 @@ impl Build {
                             cmd.args.push("--target=aarch64-unknown-windows-gnu".into())
                         }
                     } else {
-                        cmd.push_cc_arg(format!("--target={}", target).into());
+                        cmd.args.push(format!("--target={}", target).into());
                     }
                 }
             }
@@ -2009,16 +1961,8 @@ impl Build {
             cmd.arg("-I").arg(directory);
         }
         if target.contains("aarch64") || target.contains("arm") {
-            if self.get_debug() {
-                cmd.arg("-g");
-            }
-
             println!("cargo:warning=The MSVC ARM assemblers do not support -D flags");
         } else {
-            if self.get_debug() {
-                cmd.arg("-Zi");
-            }
-
             for &(ref key, ref value) in self.definitions.iter() {
                 if let Some(ref value) = *value {
                     cmd.arg(&format!("-D{}={}", key, value));
@@ -2055,7 +1999,7 @@ impl Build {
             self.assemble_progressive(dst, chunk)?;
         }
 
-        if self.cuda && self.cuda_file_count() > 0 {
+        if self.cuda {
             // Link the device-side code and add it to the target library,
             // so that non-CUDA linker can link the final binary.
 
@@ -2283,7 +2227,7 @@ impl Build {
         /*
          * TODO we probably ultimately want the -fembed-bitcode-marker flag
          * but can't have it now because of an issue in LLVM:
-         * https://github.com/rust-lang/cc-rs/issues/301
+         * https://github.com/alexcrichton/cc-rs/issues/301
          * https://github.com/rust-lang/rust/pull/48896#comment-372192660
          */
         /*
@@ -2665,29 +2609,10 @@ impl Build {
 
             "emar".to_string()
         } else if target.contains("msvc") {
-            let compiler = self.get_base_compiler()?;
-            let mut lib = String::new();
-            if compiler.family == (ToolFamily::Msvc { clang_cl: true }) {
-                // See if there is 'llvm-lib' next to 'clang-cl'
-                // Another possibility could be to see if there is 'clang'
-                // next to 'clang-cl' and use 'search_programs()' to locate
-                // 'llvm-lib'. This is because 'clang-cl' doesn't support
-                // the -print-search-dirs option.
-                if let Some(mut cmd) = which(&compiler.path) {
-                    cmd.pop();
-                    cmd.push("llvm-lib.exe");
-                    if let Some(llvm_lib) = which(&cmd) {
-                        lib = llvm_lib.to_str().unwrap().to_owned();
-                    }
-                }
+            match windows_registry::find(&target, "lib.exe") {
+                Some(t) => return Ok((t, "lib.exe".to_string())),
+                None => "lib.exe".to_string(),
             }
-            if lib.is_empty() {
-                lib = match windows_registry::find(&target, "lib.exe") {
-                    Some(t) => return Ok((t, "lib.exe".to_string())),
-                    None => "lib.exe".to_string(),
-                }
-            }
-            lib
         } else if target.contains("illumos") {
             // The default 'ar' on illumos uses a non-standard flags,
             // but the OS comes bundled with a GNU-compatible variant.
@@ -2698,12 +2623,9 @@ impl Build {
             match self.prefix_for_target(&target) {
                 Some(p) => {
                     // GCC uses $target-gcc-ar, whereas binutils uses $target-ar -- try both.
-                    // Prefer -ar if it exists, as builds of `-gcc-ar` have been observed to be
-                    // outright broken (such as when targetting freebsd with `--disable-lto`
-                    // toolchain where the archiver attempts to load the LTO plugin anyway but
-                    // fails to find one).
+                    // Prefer -gcc-ar if it exists, since that matches what we'll use for $CC.
                     let mut ar = default_ar;
-                    for &infix in &["", "-gcc"] {
+                    for &infix in &["-gcc", ""] {
                         let target_ar = format!("{}{}-ar", p, infix);
                         if Command::new(&target_ar).output().is_ok() {
                             ar = target_ar;
@@ -2915,25 +2837,6 @@ impl Build {
         })
     }
 
-    fn get_dwarf_version(&self) -> Option<u32> {
-        // Tentatively matches the DWARF version defaults as of rustc 1.62.
-        let target = self.get_target().ok()?;
-        if target.contains("android")
-            || target.contains("apple")
-            || target.contains("dragonfly")
-            || target.contains("freebsd")
-            || target.contains("netbsd")
-            || target.contains("openbsd")
-            || target.contains("windows-gnu")
-        {
-            Some(2)
-        } else if target.contains("linux") {
-            Some(4)
-        } else {
-            None
-        }
-    }
-
     fn get_force_frame_pointer(&self) -> bool {
         self.force_frame_pointer.unwrap_or_else(|| self.get_debug())
     }
@@ -3048,13 +2951,6 @@ impl Build {
         let ret: OsString = sdk_path.trim().into();
         cache.insert(sdk.into(), ret.clone());
         Ok(ret)
-    }
-
-    fn cuda_file_count(&self) -> usize {
-        self.files
-            .iter()
-            .filter(|file| file.extension() == Some(OsStr::new("cu")))
-            .count()
     }
 }
 
@@ -3365,7 +3261,7 @@ fn spawn(cmd: &mut Command, program: &str) -> Result<(Child, JoinHandle<()>), Er
         }
         Err(ref e) if e.kind() == io::ErrorKind::NotFound => {
             let extra = if cfg!(windows) {
-                " (see https://github.com/rust-lang/cc-rs#compile-time-requirements \
+                " (see https://github.com/alexcrichton/cc-rs#compile-time-requirements \
                  for help)"
             } else {
                 ""
@@ -3540,29 +3436,4 @@ fn which(tool: &Path) -> Option<PathBuf> {
         let mut exe = path_entry.join(tool);
         return if check_exe(&mut exe) { Some(exe) } else { None };
     })
-}
-
-#[derive(Clone, Copy, PartialEq)]
-enum AsmFileExt {
-    /// `.asm` files. On MSVC targets, we assume these should be passed to MASM
-    /// (`ml{,64}.exe`).
-    DotAsm,
-    /// `.s` or `.S` files, which do not have the special handling on MSVC targets.
-    DotS,
-}
-
-impl AsmFileExt {
-    fn from_path(file: &Path) -> Option<Self> {
-        if let Some(ext) = file.extension() {
-            if let Some(ext) = ext.to_str() {
-                let ext = ext.to_lowercase();
-                match &*ext {
-                    "asm" => return Some(AsmFileExt::DotAsm),
-                    "s" => return Some(AsmFileExt::DotS),
-                    _ => return None,
-                }
-            }
-        }
-        None
-    }
 }

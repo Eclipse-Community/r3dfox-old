@@ -1961,8 +1961,16 @@ impl Build {
             cmd.arg("-I").arg(directory);
         }
         if target.contains("aarch64") || target.contains("arm") {
+            if self.get_debug() {
+                cmd.arg("-g");
+            }
+
             println!("cargo:warning=The MSVC ARM assemblers do not support -D flags");
         } else {
+            if self.get_debug() {
+                cmd.arg("-Zi");
+            }
+
             for &(ref key, ref value) in self.definitions.iter() {
                 if let Some(ref value) = *value {
                     cmd.arg(&format!("-D{}={}", key, value));
@@ -2227,7 +2235,7 @@ impl Build {
         /*
          * TODO we probably ultimately want the -fembed-bitcode-marker flag
          * but can't have it now because of an issue in LLVM:
-         * https://github.com/alexcrichton/cc-rs/issues/301
+         * https://github.com/rust-lang/cc-rs/issues/301
          * https://github.com/rust-lang/rust/pull/48896#comment-372192660
          */
         /*
@@ -2623,9 +2631,12 @@ impl Build {
             match self.prefix_for_target(&target) {
                 Some(p) => {
                     // GCC uses $target-gcc-ar, whereas binutils uses $target-ar -- try both.
-                    // Prefer -gcc-ar if it exists, since that matches what we'll use for $CC.
+                    // Prefer -ar if it exists, as builds of `-gcc-ar` have been observed to be
+                    // outright broken (such as when targetting freebsd with `--disable-lto`
+                    // toolchain where the archiver attempts to load the LTO plugin anyway but
+                    // fails to find one).
                     let mut ar = default_ar;
-                    for &infix in &["-gcc", ""] {
+                    for &infix in &["", "-gcc"] {
                         let target_ar = format!("{}{}-ar", p, infix);
                         if Command::new(&target_ar).output().is_ok() {
                             ar = target_ar;
@@ -3261,7 +3272,7 @@ fn spawn(cmd: &mut Command, program: &str) -> Result<(Child, JoinHandle<()>), Er
         }
         Err(ref e) if e.kind() == io::ErrorKind::NotFound => {
             let extra = if cfg!(windows) {
-                " (see https://github.com/alexcrichton/cc-rs#compile-time-requirements \
+                " (see https://github.com/rust-lang/cc-rs#compile-time-requirements \
                  for help)"
             } else {
                 ""

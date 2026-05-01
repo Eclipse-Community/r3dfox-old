@@ -1037,9 +1037,10 @@ impl Build {
 
         let mut objects = Vec::new();
         for file in self.files.iter() {
-            let obj = if file.has_root() {
-                // If `file` is an absolute path, prefix the `basename`
-                // with the `dirname`'s hash to ensure name uniqueness.
+            let obj = if file.has_root() || file.components().any(|x| x == Component::ParentDir) {
+                // If `file` is an absolute path or might not be usable directly as a suffix due to
+                // using "..", use the `basename` prefixed with the `dirname`'s hash to ensure name
+                // uniqueness.
                 let basename = file
                     .file_name()
                     .ok_or_else(|| Error::new(ErrorKind::InvalidArgument, "file_name() failure"))?
@@ -2864,23 +2865,14 @@ impl Build {
     }
 
     fn prefix_for_target(&self, target: &str) -> Option<String> {
-        // Put aside RUSTC_LINKER's prefix to be used as last resort
-        let rustc_linker = self.getenv("RUSTC_LINKER").unwrap_or("".to_string());
-        // let linker_prefix = rustc_linker.strip_suffix("-gcc"); // >=1.45.0
-        let linker_prefix = if rustc_linker.len() > 4 {
-            let (prefix, suffix) = rustc_linker.split_at(rustc_linker.len() - 4);
-            if suffix == "-gcc" {
-                Some(prefix)
-            } else {
-                None
-            }
-        } else {
-            None
-        };
+        // Put aside RUSTC_LINKER's prefix to be used as second choice, after CROSS_COMPILE
+        let linker_prefix = self
+            .getenv("RUSTC_LINKER")
+            .and_then(|var| var.strip_suffix("-gcc").map(str::to_string));
         // CROSS_COMPILE is of the form: "arm-linux-gnueabi-"
         let cc_env = self.getenv("CROSS_COMPILE");
         let cross_compile = cc_env.as_ref().map(|s| s.trim_end_matches('-').to_owned());
-        cross_compile.or(match &target[..] {
+        cross_compile.or(linker_prefix).or(match &target[..] {
             // Note: there is no `aarch64-pc-windows-gnu` target, only `-gnullvm`
             "aarch64-pc-windows-gnullvm" => Some("aarch64-w64-mingw32"),
             "aarch64-uwp-windows-gnu" => Some("aarch64-w64-mingw32"),
@@ -2994,7 +2986,7 @@ impl Build {
             ]), // explicit None if not found, so caller knows to fall back
             "x86_64-unknown-linux-musl" => Some("musl"),
             "x86_64-unknown-netbsd" => Some("x86_64--netbsd"),
-            _ => linker_prefix,
+            _ => None,
         }
         .map(|x| x.to_owned()))
     }

@@ -97,6 +97,7 @@ pub struct Build {
     flags_supported: Vec<String>,
     known_flag_support_status: Arc<Mutex<HashMap<String, bool>>>,
     ar_flags: Vec<String>,
+    asm_flags: Vec<String>,
     no_default_flags: bool,
     files: Vec<PathBuf>,
     cpp: bool,
@@ -214,13 +215,17 @@ enum ToolFamily {
 
 impl ToolFamily {
     /// What the flag to request debug info for this family of tools look like
-    fn add_debug_flags(&self, cmd: &mut Tool) {
+    fn add_debug_flags(&self, cmd: &mut Tool, dwarf_version: Option<u32>) {
         match *self {
             ToolFamily::Msvc { .. } => {
                 cmd.push_cc_arg("-Z7".into());
             }
             ToolFamily::Gnu | ToolFamily::Clang => {
-                cmd.push_cc_arg("-g".into());
+                cmd.push_cc_arg(
+                    dwarf_version
+                        .map_or_else(|| "-g".into(), |v| format!("-gdwarf-{}", v))
+                        .into(),
+                );
             }
         }
     }
@@ -295,6 +300,7 @@ impl Build {
             flags_supported: Vec::new(),
             known_flag_support_status: Arc::new(Mutex::new(HashMap::new())),
             ar_flags: Vec::new(),
+            asm_flags: Vec::new(),
             no_default_flags: false,
             files: Vec::new(),
             shared_flag: None,
@@ -427,6 +433,25 @@ impl Build {
     /// ```
     pub fn ar_flag(&mut self, flag: &str) -> &mut Build {
         self.ar_flags.push(flag.to_string());
+        self
+    }
+
+    /// Add a flag that will only be used with assembly files.
+    ///
+    /// The flag will be applied to input files with either a `.s` or
+    /// `.asm` extension (case insensitive).
+    ///
+    /// # Example
+    ///
+    /// ```no_run
+    /// cc::Build::new()
+    ///     .asm_flag("-Wa,-defsym,abc=1")
+    ///     .file("src/foo.S")  // The asm flag will be applied here
+    ///     .file("src/bar.c")  // The asm flag will not be applied here
+    ///     .compile("foo");
+    /// ```
+    pub fn asm_flag(&mut self, flag: &str) -> &mut Build {
+        self.asm_flags.push(flag.to_string());
         self
     }
 
@@ -1314,7 +1339,7 @@ impl Build {
     }
 
     fn compile_object(&self, obj: &Object) -> Result<(), Error> {
-        let is_asm = obj.src.extension().and_then(|s| s.to_str()) == Some("asm");
+        let is_asm = is_asm(&obj.src);
         let target = self.get_target()?;
         let msvc = target.contains("msvc");
         let compiler = self.try_get_compiler()?;
@@ -1344,6 +1369,9 @@ impl Build {
         }
         if self.cuda && self.files.len() > 1 {
             cmd.arg("--device-c");
+        }
+        if is_asm {
+            cmd.args(&self.asm_flags);
         }
         if compiler.family == (ToolFamily::Msvc { clang_cl: true }) && !is_asm {
             // #513: For `clang-cl`, separate flags/options from the input file.
@@ -1589,7 +1617,7 @@ impl Build {
                 cmd.args.push("-G".into());
             }
             let family = cmd.family;
-            family.add_debug_flags(cmd);
+            family.add_debug_flags(cmd, self.get_dwarf_version());
         }
 
         if self.get_force_frame_pointer() {
@@ -2848,6 +2876,25 @@ impl Build {
         })
     }
 
+    fn get_dwarf_version(&self) -> Option<u32> {
+        // Tentatively matches the DWARF version defaults as of rustc 1.62.
+        let target = self.get_target().ok()?;
+        if target.contains("android")
+            || target.contains("apple")
+            || target.contains("dragonfly")
+            || target.contains("freebsd")
+            || target.contains("netbsd")
+            || target.contains("openbsd")
+            || target.contains("windows-gnu")
+        {
+            Some(2)
+        } else if target.contains("linux") {
+            Some(4)
+        } else {
+            None
+        }
+    }
+
     fn get_force_frame_pointer(&self) -> bool {
         self.force_frame_pointer.unwrap_or_else(|| self.get_debug())
     }
@@ -3447,4 +3494,16 @@ fn which(tool: &Path) -> Option<PathBuf> {
         let mut exe = path_entry.join(tool);
         return if check_exe(&mut exe) { Some(exe) } else { None };
     })
+}
+
+/// Check if the file's extension is either "asm" or "s", case insensitive.
+fn is_asm(file: &Path) -> bool {
+    if let Some(ext) = file.extension() {
+        if let Some(ext) = ext.to_str() {
+            let ext = ext.to_lowercase();
+            return ext == "asm" || ext == "s";
+        }
+    }
+
+    false
 }

@@ -48,7 +48,7 @@ typedef /* [v1_enum] */
 //#include <shobjidl_core.h>
 #undef LogSeverity  // SetupAPI.h #defines this as DWORD
 
-#undef _COMDLG_FILTERSPEC
+#ifndef _COMDLG_FILTERSPEC
 typedef struct _COMDLG_FILTERSPEC
     {
     /* [string] */ LPCWSTR pszName;

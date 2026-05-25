@@ -31,6 +31,7 @@ if test "$OS_ARCH" = "WINNT"; then
   fi
 fi
 
+MOZ_RUST_MP4PARSE=1
 if test "$NIGHTLY_BUILD"; then
   MOZ_RUST_URLPARSE=1
 fi

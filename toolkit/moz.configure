@@ -75,8 +75,7 @@ include('../js/moz.configure')
 
 # Rust
 # ==============================================================
-include('../build/moz.configure/rust.configure',
-        when='--enable-compile-environment')
+include('../build/moz.configure/rust.configure')
 
 
 # L10N
@@ -553,14 +552,17 @@ simple_keyfile('Pocket API')
 option('--enable-stylo', nargs='?', choices=('build',),
        help='Include Stylo in the build and/or enable it at runtime')
 
-@depends('--enable-stylo', '--help')
-def stylo_config(value, _):
+@depends('--enable-stylo', '--enable-rust', '--help')
+def stylo_config(value, rust_enabled, _):
     build_stylo = None
     enable_stylo = None
 
     # If nothing is specified, default to building and enabling Stylo where it
     # is known to work.
-    if value.origin == 'default':
+    if not rust_enabled:
+        # Don't build stylo without rust enabled
+        build_stylo = None
+    elif value.origin == 'default':
         build_stylo = True
         enable_stylo = True
     elif len(value) and value[0] == 'build':
@@ -804,12 +806,14 @@ set_config('SERVO_TARGET_DIR', servo_target_dir)
 option('--enable-webrender', nargs='?', choices=('build',),
        help='Include WebRender in the build and/or enable it at runtime')
 
-@depends('--enable-webrender', milestone)
-def webrender(value, milestone):
+@depends('--enable-webrender', '--enable-rust', milestone)
+def webrender(value, rust_enabled, milestone):
     build_webrender = None
     enable_webrender = None
 
-    if value.origin == 'default':
+    if not rust_enabled:
+        build_webrender = None
+    elif value.origin == 'default':
         # if nothing is specified, default to just building on Nightly
         build_webrender = milestone.is_nightly
     elif len(value) and value[0] == 'build':

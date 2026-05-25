@@ -826,6 +826,7 @@ PDB_TARGET = target
 INSTALL_TARGETS += PDB
 endif
 
+ifdef MOZ_RUST
 cargo_host_flag := --target=$(RUST_HOST_TARGET)
 cargo_target_flag := --target=$(RUST_TARGET)
 
@@ -1038,6 +1039,7 @@ else
 force-cargo-host-program-check:
 	@true
 endif # HOST_RUST_PROGRAMS
+endif # MOZ_RUST
 
 $(SOBJS):
 	$(REPORT_BUILD)

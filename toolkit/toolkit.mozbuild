@@ -28,14 +28,11 @@ if CONFIG['COMPILE_ENVIRONMENT']:
         '/security',
     ]
 
-if CONFIG['ENABLE_TESTS']:
+if CONFIG['MOZ_RUST']:
     DIRS += [
         '/toolkit/library/gtest/rust',
+        '/toolkit/library/rust',
     ]
-
-DIRS += [
-    '/toolkit/library/rust',
-]
 
 if CONFIG['MOZ_SANDBOX']:
     DIRS += ['/security/sandbox']

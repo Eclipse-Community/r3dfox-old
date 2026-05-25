@@ -11,6 +11,7 @@
 #include "nsPluginsDir.h"
 #include "nsPluginHost.h"
 #include "nsIBlocklistService.h"
+#include "nsIPlatformCharset.h"
 #include "nsPluginLogging.h"
 #include "nsNPAPIPlugin.h"
 #include "nsCharSeparatedTokenizer.h"

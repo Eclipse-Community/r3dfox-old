@@ -88,8 +88,7 @@ include('../js/moz.configure')
 
 # Rust
 # ==============================================================
-include('../build/moz.configure/rust.configure',
-        when='--enable-compile-environment')
+include('../build/moz.configure/rust.configure')
 
 
 # L10N
@@ -623,13 +622,13 @@ id_and_secret_keyfile('Leanplum SDK')
 option('--enable-stylo', nargs='?', choices=('build',),
        help='Include Stylo in the build and/or enable it at runtime')
 
-@depends('--enable-stylo')
-def stylo_config(value):
+@depends('--enable-stylo', '--enable-rust')
+def stylo_config(value, rust_enabled):
     build_stylo = None
     enable_stylo = None
 
     # The default is to not build Stylo at all.
-    if value.origin == 'default':
+    if not rust_enabled or value.origin == 'default':
         pass
     elif value == 'build':
         build_stylo = True
@@ -769,12 +768,14 @@ set_config('SERVO_TARGET_DIR', servo_target_dir)
 option('--enable-webrender', nargs='?', choices=('build',),
        help='Include WebRender in the build and/or enable it at runtime')
 
-@depends('--enable-webrender', milestone)
-def webrender(value, milestone):
+@depends('--enable-webrender', '--enable-rust', milestone)
+def webrender(value, rust_enabled, milestone):
     build_webrender = None
     enable_webrender = None
 
-    if value.origin == 'default':
+    if not rust_enabled:
+        pass
+    elif value.origin == 'default':
         # if nothing is specified, default to just building on Nightly
         build_webrender = milestone.is_nightly
     elif value == 'build':

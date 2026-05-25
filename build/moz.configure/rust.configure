@@ -251,9 +251,6 @@ def rust_target_env_name(triple):
 # converting a string to uppercase.
 set_config('RUST_TARGET_ENV_NAME', rust_target_env_name)
 
-# This is used for putting source info into symbol files.
-set_config('RUSTC_COMMIT', depends(rustc_info)(lambda i: i.commit))
-
 # Until we remove all the other Rust checks in old-configure.
 add_old_configure_assignment('MOZ_RUST', rust_compiler)
 add_old_configure_assignment('RUSTC', rustc)

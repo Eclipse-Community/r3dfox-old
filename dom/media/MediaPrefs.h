@@ -186,7 +186,7 @@ private:
   // Hls
   DECL_MEDIA_PREF("media.hls.enabled",                        HLSEnabled, bool, false);
 
-#if !defined(RELEASE_OR_BETA)
+#if defined(MOZ_RUST_MP4PARSE) && !defined(RELEASE_OR_BETA)
   DECL_MEDIA_PREF("media.rust.test_mode",                     RustTestMode, bool, false);
 #endif
 

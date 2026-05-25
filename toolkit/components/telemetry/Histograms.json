@@ -8320,7 +8320,8 @@
     "expires_in_version": "60",
     "kind": "boolean",
     "bug_numbers": [1220885],
-    "description": "Whether the rust mp4 demuxer successfully parsed a stream segment."
+    "description": "Whether the rust mp4 demuxer successfully parsed a stream segment.",
+    "cpp_guard": "MOZ_RUST_MP4PARSE"
   },
   "MEDIA_RUST_MP4PARSE_ERROR_CODE": {
     "record_in_processes": ["main", "content"],
@@ -8329,7 +8330,8 @@
     "kind": "enumerated",
     "n_values": 32,
     "bug_numbers": [1238420],
-    "description": "The error code reported when an MP4 parse attempt has failed.0 = OK, 1 = bad argument, 2 = invalid data, 3 = unsupported, 4 = unexpected end of file, 5 = read error."
+    "description": "The error code reported when an MP4 parse attempt has failed.0 = OK, 1 = bad argument, 2 = invalid data, 3 = unsupported, 4 = unexpected end of file, 5 = read error.",
+    "cpp_guard": "MOZ_RUST_MP4PARSE"
   },
   "MEDIA_RUST_MP4PARSE_TRACK_MATCH_AUDIO": {
     "record_in_processes": ["main", "content"],
@@ -8337,7 +8339,8 @@
     "expires_in_version": "60",
     "kind": "boolean",
     "bug_numbers": [1231169],
-    "description": "Whether rust and stagefight mp4 parser audio track results match."
+    "description": "Whether rust and stagefight mp4 parser audio track results match.",
+    "cpp_guard": "MOZ_RUST_MP4PARSE"
   },
   "MEDIA_RUST_MP4PARSE_TRACK_MATCH_VIDEO": {
     "record_in_processes": ["main", "content"],
@@ -8345,7 +8348,8 @@
     "expires_in_version": "60",
     "kind": "boolean",
     "bug_numbers": [1231169],
-    "description": "Whether rust and stagefight mp4 parser video track results match."
+    "description": "Whether rust and stagefight mp4 parser video track results match.",
+    "cpp_guard": "MOZ_RUST_MP4PARSE"
   },
   "MEDIA_WMF_DECODE_ERROR": {
     "record_in_processes": ["main", "content", "gpu"],

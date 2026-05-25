@@ -858,6 +858,7 @@ nsStandardURL::BuildNormalizedSpec(const char *spec)
         if (!SegmentIs(spec, mScheme, "resource") &&
             !SegmentIs(spec, mScheme, "chrome")) {
             nsAutoCString ipString;
+#ifdef MOZ_RUST
             if (encHost.Length() > 0 &&
                 encHost.First() == '[' && encHost.Last() == ']' &&
                 ValidIPv6orHostname(encHost.get(), encHost.Length())) {
@@ -866,7 +867,9 @@ nsStandardURL::BuildNormalizedSpec(const char *spec)
                     return rv;
                 }
                 encHost = ipString;
-            } else if (NS_SUCCEEDED(NormalizeIPv4(encHost, ipString))) {
+            } else
+#endif
+            if (NS_SUCCEEDED(NormalizeIPv4(encHost, ipString))) {
                 encHost = ipString;
             }
         }
@@ -2112,6 +2115,7 @@ nsStandardURL::SetHost(const nsACString &input)
 
     if (!SegmentIs(mScheme, "resource") && !SegmentIs(mScheme, "chrome")) {
         nsAutoCString ipString;
+#ifdef MOZ_RUST
         if (hostBuf.Length() > 0 &&
             hostBuf.First() == '[' && hostBuf.Last() == ']' &&
             ValidIPv6orHostname(hostBuf.get(), hostBuf.Length())) {
@@ -2120,7 +2124,9 @@ nsStandardURL::SetHost(const nsACString &input)
                 return rv;
             }
             hostBuf = ipString;
-        } else if (NS_SUCCEEDED(NormalizeIPv4(hostBuf, ipString))) {
+        } else
+#endif
+        if (NS_SUCCEEDED(NormalizeIPv4(hostBuf, ipString))) {
           hostBuf = ipString;
         }
     }

@@ -13,7 +13,9 @@
 #include "MediaInfo.h"
 #include "MediaResult.h"
 #include "Stream.h"
+#ifdef MOZ_RUST_MP4PARSE
 #include "mp4parse.h"
+#endif // MOZ_RUST_MP4PARSE
 
 namespace mp4_demuxer {
 
@@ -82,6 +84,7 @@ public:
 
 private:
   UniquePtr<MP4MetadataStagefright> mStagefright;
+#ifdef MOZ_RUST_MP4PARSE
   UniquePtr<MP4MetadataRust> mRust;
   mutable bool mPreferRust;
   mutable bool mReportedAudioTrackTelemetry;
@@ -90,6 +93,7 @@ private:
   mutable bool mRustTestMode;
 #endif
   bool ShouldPreferRust() const;
+#endif // MOZ_RUST_MP4PARSE
 };
 
 } // namespace mp4_demuxer

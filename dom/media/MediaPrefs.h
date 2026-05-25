@@ -192,12 +192,15 @@ private:
   // Hls
   DECL_MEDIA_PREF("media.hls.enabled",                        HLSEnabled, bool, false);
 
-  // Both rust/stagefright will be enabled when this is true regardless of 'media.rust.mp4parser'.
+#if defined(MOZ_RUST_MP4PARSE) && !defined(RELEASE_OR_BETA)
   DECL_MEDIA_PREF("media.rust.test_mode",                     RustTestMode, bool, false);
+#endif
 
-  // True, it enables rust parser and fallback to stagefright if rust parser fails.
-  // False, it uses stagefright only.
+#if defined(MOZ_WIDGET_GTK)
   DECL_MEDIA_PREF("media.rust.mp4parser",                     EnableRustMP4Parser, bool, true);
+#else
+  DECL_MEDIA_PREF("media.rust.mp4parser",                     EnableRustMP4Parser, bool, false);
+#endif
 
   DECL_MEDIA_PREF("media.mp4.enabled",                        MP4Enabled, bool, false);
 

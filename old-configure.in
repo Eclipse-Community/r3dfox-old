@@ -187,11 +187,6 @@ case "$target" in
         MSVC_C_RUNTIME_DLL=vcruntime140.dll
         MSVC_CXX_RUNTIME_DLL=msvcp140.dll
 
-        MOZ_CHECK_HEADER(dia2.h, MSVC_HAS_DIA_SDK=1)
-        if test -n "$MSVC_HAS_DIA_SDK"; then
-            AC_DEFINE(MSVC_HAS_DIA_SDK)
-        fi
-
         if test "$_MSC_VER" -ge "1910"; then # VS2017+
             # C5038: Enable initializer list order warnings
             # The -w1#### flag treats warning C#### as if it was a warning level
@@ -229,7 +224,6 @@ case "$target" in
           WIN_UCRT_REDIST_DIR=`cd "$WIN_UCRT_REDIST_DIR" && pwd -W`
         fi
 
-        AC_SUBST(MSVC_HAS_DIA_SDK)
         AC_SUBST(MSVC_C_RUNTIME_DLL)
         AC_SUBST(MSVC_CXX_RUNTIME_DLL)
 
@@ -273,6 +267,7 @@ case "$target" in
         STL_FLAGS="-I${DIST}/stl_wrappers"
         CFLAGS="$CFLAGS -D_HAS_EXCEPTIONS=0"
         CXXFLAGS="$CXXFLAGS -D_HAS_EXCEPTIONS=0"
+
     else
         # Check w32api version
         _W32API_MAJOR_VERSION=`echo $W32API_VERSION | $AWK -F\. '{ print $1 }'`

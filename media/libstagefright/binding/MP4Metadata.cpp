@@ -768,7 +768,7 @@ MP4MetadataRust::Init()
   MOZ_LOG(gMP4MetadataLog, LogLevel::Debug, ("rust parser returned %d\n", rv));
   Telemetry::Accumulate(Telemetry::MEDIA_RUST_MP4PARSE_SUCCESS,
                         rv == mp4parse_status_OK);
-  if (rv != mp4parse_status_OK && rv != mp4parse_status_OOM) {
+  if (rv != mp4parse_status_OK) {
     MOZ_LOG(gMP4MetadataLog, LogLevel::Info, ("Rust mp4 parser fails to parse this stream."));
     MOZ_ASSERT(rv > 0);
     Telemetry::Accumulate(Telemetry::MEDIA_RUST_MP4PARSE_ERROR_CODE, rv);

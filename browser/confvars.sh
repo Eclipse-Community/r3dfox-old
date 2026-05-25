@@ -28,6 +28,8 @@ if test "$OS_ARCH" = "WINNT"; then
   fi
 fi
 
+MOZ_RUST_MP4PARSE=1
+
 # Enable building ./signmar and running libmar signature tests
 MOZ_ENABLE_SIGNMAR=1
 

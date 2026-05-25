@@ -4447,9 +4447,12 @@ XREMain::XRE_mainRun()
     PR_SetEnv(saved.release());
   }
 
+#ifdef MOZ_SANDBOX
   // Call SandboxBroker to cache directories needed for policy rules, this must
   // be called after mDirProvider.DoStartup as it needs the profile dir.
   SandboxBroker::CacheRulesDirectories();
+#endif
+
 #endif
 
   SaveStateForAppInitiatedRestart();

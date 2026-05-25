@@ -88,8 +88,7 @@ include('../js/moz.configure')
 
 # Rust
 # ==============================================================
-include('../build/moz.configure/rust.configure',
-        when='--enable-compile-environment')
+include('../build/moz.configure/rust.configure')
 
 
 # L10N
@@ -706,7 +705,7 @@ def webrender(value, milestone, target):
         pass
     elif value.origin == 'default':
         # if nothing is specified, default to just building on Nightly
-        build_webrender = milestone.is_nightly
+        pass
     elif value == 'build':
         # if explicitly set to 'build', then we build but don't enable
         build_webrender = True

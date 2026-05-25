@@ -11,7 +11,8 @@
 #include "nsString.h"
 #include "nsCOMPtr.h"
 #include "nsIOutputStream.h"
-#include "mozilla/Encoding.h"
+#include "nsIUnicodeEncoder.h"
+#include "nsIUnicodeDecoder.h"
 #include "nsIRequestObserver.h"
 #include "nsIStreamListener.h"
 #include "nsTArray.h"
@@ -24,6 +25,7 @@ public:
   nsJSONWriter();
   explicit nsJSONWriter(nsIOutputStream* aStream);
   virtual ~nsJSONWriter();
+  nsresult SetCharset(const char *aCharset);
   nsCOMPtr<nsIOutputStream> mStream;
   nsresult Write(const char16_t *aBuffer, uint32_t aLength);
   nsString mOutputString;
@@ -34,12 +36,10 @@ protected:
   char16_t *mBuffer;
   uint32_t mBufferCount;
   bool mDidWrite;
-  nsresult WriteToStream(nsIOutputStream* aStream,
-                         mozilla::Encoder* encoder,
-                         const char16_t* aBuffer,
-                         uint32_t aLength);
+  nsresult WriteToStream(nsIOutputStream *aStream, nsIUnicodeEncoder *encoder,
+                         const char16_t *aBuffer, uint32_t aLength);
 
-  mozilla::UniquePtr<mozilla::Encoder> mEncoder;
+  nsCOMPtr<nsIUnicodeEncoder> mEncoder;
 };
 
 class nsJSON : public nsIJSON
@@ -83,7 +83,8 @@ protected:
   bool mNeedsConverter;
   JSContext *mCx;
   JS::Value *mRootVal;
-  mozilla::UniquePtr<mozilla::Decoder> mDecoder;
+  nsCOMPtr<nsIUnicodeDecoder> mDecoder;
+  nsCString mSniffBuffer;
   nsTArray<char16_t> mBufferedChars;
   nsresult ProcessBytes(const char* aBuffer, uint32_t aByteLength);
   nsresult ConsumeConverted(const char* aBuffer, uint32_t aByteLength);

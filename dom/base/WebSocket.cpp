@@ -32,6 +32,7 @@
 #include "nsError.h"
 #include "nsIScriptObjectPrincipal.h"
 #include "nsIURL.h"
+#include "nsIUnicodeEncoder.h"
 #include "nsThreadUtils.h"
 #include "nsIPromptFactory.h"
 #include "nsIWindowWatcher.h"

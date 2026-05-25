@@ -86,9 +86,12 @@ private:
   UniquePtr<MP4MetadataStagefright> mStagefright;
 #ifdef MOZ_RUST_MP4PARSE
   UniquePtr<MP4MetadataRust> mRust;
-  mutable bool mDisableRust;
+  mutable bool mPreferRust;
   mutable bool mReportedAudioTrackTelemetry;
   mutable bool mReportedVideoTrackTelemetry;
+#ifndef RELEASE_OR_BETA
+  mutable bool mRustTestMode;
+#endif
   bool ShouldPreferRust() const;
 #endif // MOZ_RUST_MP4PARSE
 };

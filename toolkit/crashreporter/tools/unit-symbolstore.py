@@ -454,17 +454,13 @@ class TestFunctional(HelperMixin, unittest.TestCase):
                                         'crashreporter', 'tools',
                                         'symbolstore.py')
         if target_platform() == 'WINNT':
-            if buildconfig.substs['MSVC_HAS_DIA_SDK']:
-                self.dump_syms = os.path.join(buildconfig.topobjdir,
-                                              'dist', 'host', 'bin',
-                                              'dump_syms.exe')
-            else:
-                self.dump_syms = os.path.join(self.topsrcdir,
-                                              'toolkit',
-                                              'crashreporter',
-                                              'tools',
-                                              'win32',
-                                              'dump_syms_vc{_MSC_VER}.exe'.format(**buildconfig.substs))
+            # DIA SDK support disabled
+            self.dump_syms = os.path.join(self.topsrcdir,
+                                          'toolkit',
+                                          'crashreporter',
+                                          'tools',
+                                          'win32',
+                                          'dump_syms_vc{_MSC_VER}.exe'.format(**buildconfig.substs))
             self.target_bin = os.path.join(buildconfig.topobjdir,
                                            'browser',
                                            'app',

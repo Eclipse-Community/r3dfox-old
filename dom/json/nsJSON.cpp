@@ -92,11 +92,15 @@ nsJSON::Encode(JS::Handle<JS::Value> aValue, JSContext* cx, uint8_t aArgc,
 }
 
 static const char UTF8BOM[] = "\xEF\xBB\xBF";
+static const char UTF16LEBOM[] = "\xFF\xFE";
+static const char UTF16BEBOM[] = "\xFE\xFF";
 
 static nsresult CheckCharset(const char* aCharset)
 {
   // Check that the charset is permissible
-  if (!(strcmp(aCharset, "UTF-8") == 0)) {
+  if (!(strcmp(aCharset, "UTF-8") == 0 ||
+        strcmp(aCharset, "UTF-16LE") == 0 ||
+        strcmp(aCharset, "UTF-16BE") == 0)) {
     return NS_ERROR_INVALID_ARG;
   }
 
@@ -131,11 +135,18 @@ nsJSON::EncodeToStream(nsIOutputStream *aStream,
 
   uint32_t ignored;
   if (aWriteBOM) {
-    rv = aStream->Write(UTF8BOM, 3, &ignored);
+    if (strcmp(aCharset, "UTF-8") == 0)
+      rv = aStream->Write(UTF8BOM, 3, &ignored);
+    else if (strcmp(aCharset, "UTF-16LE") == 0)
+      rv = aStream->Write(UTF16LEBOM, 2, &ignored);
+    else if (strcmp(aCharset, "UTF-16BE") == 0)
+      rv = aStream->Write(UTF16BEBOM, 2, &ignored);
     NS_ENSURE_SUCCESS(rv, rv);
   }
 
   nsJSONWriter writer(bufferedStream);
+  rv = writer.SetCharset(aCharset);
+  NS_ENSURE_SUCCESS(rv, rv);
 
   if (aArgc == 0) {
     return NS_OK;

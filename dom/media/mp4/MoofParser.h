@@ -14,7 +14,6 @@
 #include "MediaResource.h"
 
 namespace mozilla {
-
 typedef int64_t Microseconds;
 
 class Box;
@@ -284,9 +283,7 @@ private:
   uint64_t mMaxRoundingError;
 };
 
-DDLoggedTypeDeclName(MoofParser);
-
-class MoofParser : public DecoderDoctorLifeLogger<MoofParser>
+class MoofParser
 {
 public:
   MoofParser(ByteStream* aSource, uint32_t aTrackId, bool aIsAudio)
@@ -298,7 +295,6 @@ public:
   {
     // Setting the mTrex.mTrackId to 0 is a nasty work around for calculating
     // the composition range for MSE. We need an array of tracks.
-    DDLINKCHILD("source", aSource);
   }
   bool RebuildFragmentedIndex(
     const mozilla::MediaByteRangeSet& aByteRanges);

@@ -26,12 +26,8 @@ class SourceBuffer;
 
 } // namespace dom
 
-DDLoggedTypeDeclNameAndBase(SourceBufferResource, MediaResource);
-
 // SourceBufferResource is not thread safe.
-class SourceBufferResource final
-  : public MediaResource
-  , public DecoderDoctorLifeLogger<SourceBufferResource>
+class SourceBufferResource final : public MediaResource
 {
 public:
   SourceBufferResource();

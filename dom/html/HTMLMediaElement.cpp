@@ -1734,7 +1734,6 @@ void HTMLMediaElement::ShutdownDecoder()
     mMediaSource->CompletePendingTransactions();
   }
   mDecoder->Shutdown();
-  DDUNLINKCHILD(mDecoder.get());
   mDecoder = nullptr;
 }
 
@@ -1787,8 +1786,6 @@ void HTMLMediaElement::AbortExistingLoads()
   RemoveMediaElementFromURITable();
   mLoadingSrc = nullptr;
   mLoadingSrcTriggeringPrincipal = nullptr;
-  DDLOG(DDLogCategory::Property, "loading_src", "");
-  DDUNLINKCHILD(mMediaSource.get());
   mMediaSource = nullptr;
 
   if (mNetworkState == nsIDOMHTMLMediaElement::NETWORK_LOADING ||
@@ -2061,11 +2058,7 @@ void HTMLMediaElement::SelectResource()
       RemoveMediaElementFromURITable();
       mLoadingSrc = uri;
       mLoadingSrcTriggeringPrincipal = mSrcAttrTriggeringPrincipal;
-      DDLOG(DDLogCategory::Property,
-            "loading_src",
-            nsCString(NS_ConvertUTF16toUTF8(src)));
       mMediaSource = mSrcMediaSource;
-      DDLINKCHILD("mediasource", mMediaSource.get());
       UpdatePreloadAction();
       if (mPreloadAction == HTMLMediaElement::PRELOAD_NONE &&
           !IsMediaStreamURI(mLoadingSrc) && !mMediaSource) {
@@ -2389,11 +2382,7 @@ void HTMLMediaElement::LoadFromSourceChildren()
     RemoveMediaElementFromURITable();
     mLoadingSrc = uri;
     mLoadingSrcTriggeringPrincipal = childSrc->GetSrcTriggeringPrincipal();
-    DDLOG(DDLogCategory::Property,
-          "loading_src",
-          nsCString(NS_ConvertUTF16toUTF8(src)));
     mMediaSource = childSrc->GetSrcMediaSource();
-    DDLINKCHILD("mediasource", mMediaSource.get());
     NS_ASSERTION(mNetworkState == nsIDOMHTMLMediaElement::NETWORK_LOADING,
                  "Network state should be loading");
 
@@ -4066,8 +4055,6 @@ HTMLMediaElement::HTMLMediaElement(already_AddRefed<mozilla::dom::NodeInfo>& aNo
   MOZ_ASSERT(mMainThreadEventTarget);
   MOZ_ASSERT(mAbstractMainThread);
 
-  DecoderDoctorLogger::LogConstruction(this);
-
   ErrorResult rv;
 
   double defaultVolume = Preferences::GetFloat("media.default_volume", 1.0);
@@ -4143,8 +4130,6 @@ HTMLMediaElement::~HTMLMediaElement()
   }
 
   WakeLockRelease();
-
-  DecoderDoctorLogger::LogDestruction(this);
 }
 
 void HTMLMediaElement::StopSuspendingAfterFirstFrame()
@@ -6110,8 +6095,6 @@ HTMLMediaElement::ChangeReadyState(nsMediaReadyState aState)
   LOG(LogLevel::Debug,
       ("%p Ready state changed to %s", this, gReadyStateToString[aState]));
 
-  DDLOG(DDLogCategory::Property, "ready_state", gReadyStateToString[aState]);
-
   if (mNetworkState == nsIDOMHTMLMediaElement::NETWORK_EMPTY) {
     return;
   }
@@ -6178,8 +6161,6 @@ void HTMLMediaElement::ChangeNetworkState(nsMediaNetworkState aState)
   nsMediaNetworkState oldState = mNetworkState;
   mNetworkState = aState;
   LOG(LogLevel::Debug, ("%p Network state changed to %s", this, gNetworkStateToString[aState]));
-  DDLOG(
-    DDLogCategory::Property, "network_state", gNetworkStateToString[aState]);
 
   if (oldState == nsIDOMHTMLMediaElement::NETWORK_LOADING) {
     // Stop progress notification when exiting NETWORK_LOADING.
@@ -6397,9 +6378,6 @@ HTMLMediaElement::DispatchAsyncEvent(const nsAString& aName)
 {
   LOG_EVENT(LogLevel::Debug, ("%p Queuing event %s", this,
             NS_ConvertUTF16toUTF8(aName).get()));
-  DDLOG(DDLogCategory::Event,
-        "HTMLMediaElement",
-        nsCString(NS_ConvertUTF16toUTF8(aName)));
 
   // Save events that occur while in the bfcache. These will be dispatched
   // if the page comes out of the bfcache.
@@ -6650,7 +6628,6 @@ void HTMLMediaElement::NotifyOwnerDocumentActivityChanged()
   // If the owning document has become inactive we should shutdown the CDM.
   if (!OwnerDoc()->IsCurrentActiveDocument() && mMediaKeys) {
       mMediaKeys->Shutdown();
-      DDUNLINKCHILD(mMediaKeys.get());
       mMediaKeys = nullptr;
       if (mDecoder) {
         ShutdownDecoder();
@@ -7552,7 +7529,6 @@ HTMLMediaElement::SetDecoder(MediaDecoder* aDecoder)
     ShutdownDecoder();
   }
   mDecoder = aDecoder;
-  DDLINKCHILD("decoder", mDecoder.get());
 }
 
 float

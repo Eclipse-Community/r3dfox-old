@@ -37,15 +37,11 @@ class ErrorResult;
 class MediaByteBuffer;
 template <typename T> class AsyncEventRunner;
 
-DDLoggedTypeName(dom::SourceBuffer);
-
 namespace dom {
 
 class TimeRanges;
 
-class SourceBuffer final
-  : public DOMEventTargetHelper
-  , public DecoderDoctorLifeLogger<SourceBuffer>
+class SourceBuffer final : public DOMEventTargetHelper
 {
 public:
   /** WebIDL Methods. */

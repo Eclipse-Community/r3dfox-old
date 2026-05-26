@@ -30,8 +30,6 @@ typedef OmxPromiseLayer::OmxCommandFailureHolder OmxCommandFailureHolder;
 typedef OmxPromiseLayer::BufferData BufferData;
 typedef OmxPromiseLayer::BUFFERLIST BUFFERLIST;
 
-DDLoggedTypeDeclNameAndBase(OmxDataDecoder, MediaDataDecoder);
-
 /* OmxDataDecoder is the major class which performs followings:
  *   1. Translate PDM function into OMX commands.
  *   2. Keeping the buffers between client and component.
@@ -58,9 +56,7 @@ DDLoggedTypeDeclNameAndBase(OmxDataDecoder, MediaDataDecoder);
  *
  *   OmxPlatformLayer acts as the OpenMAX IL core.
  */
-class OmxDataDecoder
-  : public MediaDataDecoder
-  , public DecoderDoctorLifeLogger<OmxDataDecoder>
+class OmxDataDecoder : public MediaDataDecoder
 {
 protected:
   virtual ~OmxDataDecoder();

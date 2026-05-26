@@ -10,21 +10,12 @@
 #include "mozilla/ArrayUtils.h"
 #include "MockMediaResource.h"
 
-class MockMP3MediaResource;
-class MockMP3StreamMediaResource;
-namespace mozilla {
-DDLoggedTypeNameAndBase(::MockMP3MediaResource, MockMediaResource);
-DDLoggedTypeNameAndBase(::MockMP3StreamMediaResource, MockMP3MediaResource);
-} // namespace mozilla
-
 using namespace mozilla;
 using media::TimeUnit;
 
+
 // Regular MP3 file mock resource.
-class MockMP3MediaResource
-  : public MockMediaResource
-  , public DecoderDoctorLifeLogger<MockMP3MediaResource>
-{
+class MockMP3MediaResource : public MockMediaResource {
 public:
   explicit MockMP3MediaResource(const char* aFileName)
     : MockMediaResource(aFileName)
@@ -35,10 +26,7 @@ protected:
 };
 
 // MP3 stream mock resource.
-class MockMP3StreamMediaResource
-  : public MockMP3MediaResource
-  , public DecoderDoctorLifeLogger<MockMP3StreamMediaResource>
-{
+class MockMP3StreamMediaResource : public MockMP3MediaResource {
 public:
   explicit MockMP3StreamMediaResource(const char* aFileName)
     : MockMP3MediaResource(aFileName)

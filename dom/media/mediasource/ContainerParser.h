@@ -17,9 +17,7 @@ namespace mozilla {
 class MediaByteBuffer;
 class SourceBufferResource;
 
-DDLoggedTypeDeclName(ContainerParser);
-
-class ContainerParser : public DecoderDoctorLifeLogger<ContainerParser>
+class ContainerParser
 {
 public:
   explicit ContainerParser(const MediaContainerType& aType);

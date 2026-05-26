@@ -31,7 +31,9 @@
     aDest.var = uval;                                                          \
   }
 
-namespace mozilla {
+using namespace mozilla;
+
+namespace mp4_demuxer {
 
 // Default scaling lists (per spec).
 // ITU H264:
@@ -1068,4 +1070,4 @@ H264::DecodeRecoverySEI(const mozilla::MediaByteBuffer* aSEI,
 #undef READUE
 #undef READSE
 
-} // namespace mozilla
+} // namespace mp4_demuxer

@@ -55,7 +55,7 @@ bool nsMIMEInfoAndroid::GetMimeInfoForMimeType(const nsACString& aMimeType,
 
   nsIHandlerApp* systemDefault = nullptr;
 
-  if (!IsUTF8(aMimeType)) return false;
+  if (!IsUTF8(aMimeType, true)) return false;
 
   NS_ConvertUTF8toUTF16 mimeType(aMimeType);
 

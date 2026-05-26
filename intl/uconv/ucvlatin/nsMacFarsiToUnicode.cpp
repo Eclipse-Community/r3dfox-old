@@ -5,7 +5,6 @@
 
 #include "nsUCConstructors.h"
 #include "nsMacFarsiToUnicode.h"
-#include "mozilla/Telemetry.h"
 
 using namespace mozilla;
 
@@ -20,7 +19,6 @@ nsMacFarsiToUnicodeConstructor(nsISupports *aOuter, REFNSIID aIID,
 #include "macfarsi.ut"
    };
 
-   Telemetry::Accumulate(Telemetry::DECODER_INSTANTIATED_MACFARSI, true);
    return CreateOneByteDecoder((uMappingTable*) &g_utMappingTable,
                                aOuter, aIID, aResult);
 }

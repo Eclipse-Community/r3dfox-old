@@ -48,6 +48,7 @@
 #include "nsStringBuffer.h"
 #include "mozilla/dom/Element.h"
 #include "mozilla/dom/ShadowRoot.h"
+#include "mozilla/dom/EncodingUtils.h"
 #include "nsLayoutUtils.h"
 #include "mozilla/ScopeExit.h"
 

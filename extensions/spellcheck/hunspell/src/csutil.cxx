@@ -102,10 +102,12 @@ struct unicode_info {
 
 #ifdef MOZILLA_CLIENT
 #include "nsCOMPtr.h"
+#include "nsIUnicodeEncoder.h"
+#include "nsIUnicodeDecoder.h"
 #include "nsUnicharUtils.h"
-#include "mozilla/Encoding.h"
+#include "mozilla/dom/EncodingUtils.h"
 
-using namespace mozilla;
+using mozilla::dom::EncodingUtils;
 #endif
 
 struct unicode_info2 {
@@ -2304,12 +2306,20 @@ struct cs_info* get_current_cs(const std::string& es) {
     ccs[i].cupper = i;
   }
 
-  auto encoding = Encoding::ForLabelNoReplacement(es);
-  if (!encoding) {
+  nsCOMPtr<nsIUnicodeEncoder> encoder;
+  nsCOMPtr<nsIUnicodeDecoder> decoder;
+
+  nsresult rv;
+
+  nsAutoCString label(es.c_str());
+  nsAutoCString encoding;
+  if (!EncodingUtils::FindEncodingForLabelNoReplacement(label, encoding)) {
     return ccs;
   }
-  auto encoder = encoding->NewEncoder();
-  auto decoder = encoding->NewDecoderWithoutBOMHandling();
+  encoder = EncodingUtils::EncoderForEncoding(encoding);
+  decoder = EncodingUtils::DecoderForEncoding(encoding);
+  encoder->SetOutputErrorBehavior(encoder->kOnError_Signal, nullptr, '?');
+  decoder->SetInputErrorBehavior(decoder->kOnError_Signal);
 
   for (unsigned int i = 0; i <= 0xff; ++i) {
     bool success = false;
@@ -2317,49 +2327,35 @@ struct cs_info* get_current_cs(const std::string& es) {
     // in this 1-byte character encoding.  Call our encoding/decoding
     // APIs separately for each byte since they may reject some of the
     // bytes, and we want to handle errors separately for each byte.
-    uint8_t lower, upper;
+    char lower, upper;
     do {
       if (i == 0)
         break;
-      uint8_t source = uint8_t(i);
-      char16_t uni[2];
-      char16_t uniCased;
-      uint8_t destination[4];
-      auto src1 = MakeSpan(&source, 1);
-      auto dst1 = MakeSpan(uni);
-      auto src2 = MakeSpan(&uniCased, 1);
-      auto dst2 = MakeSpan(destination);
+      const char source = char(i);
+      char16_t uni, uniCased;
+      int32_t charLength = 1, uniLength = 1;
 
-      uint32_t result;
-      size_t read;
-      size_t written;
-      Tie(result, read, written) =
-        decoder->DecodeToUTF16WithoutReplacement(src1, dst1, true);
-      if (result != kInputEmpty || read != 1 || written != 1) {
+      rv = decoder->Convert(&source, &charLength, &uni, &uniLength);
+      // Explicitly check NS_OK because we don't want to allow
+      // NS_OK_UDEC_MOREOUTPUT or NS_OK_UDEC_MOREINPUT.
+      if (rv != NS_OK || charLength != 1 || uniLength != 1)
         break;
-      }
+      uniCased = ToLowerCase(uni);
+      rv = encoder->Convert(&uniCased, &uniLength, &lower, &charLength);
+      // Explicitly check NS_OK because we don't want to allow
+      // NS_OK_UDEC_MOREOUTPUT or NS_OK_UDEC_MOREINPUT.
+      if (rv != NS_OK || charLength != 1 || uniLength != 1)
+        break;
 
-      uniCased = ToLowerCase(uni[0]);
-      Tie(result, read, written) =
-        encoder->EncodeFromUTF16WithoutReplacement(src2, dst2, true);
-      if (result != kInputEmpty || read != 1 || written != 1) {
+      uniCased = ToUpperCase(uni);
+      rv = encoder->Convert(&uniCased, &uniLength, &upper, &charLength);
+      // Explicitly check NS_OK because we don't want to allow
+      // NS_OK_UDEC_MOREOUTPUT or NS_OK_UDEC_MOREINPUT.
+      if (rv != NS_OK || charLength != 1 || uniLength != 1)
         break;
-      }
-      lower = destination[0];
-
-      uniCased = ToUpperCase(uni[0]);
-      Tie(result, read, written) =
-        encoder->EncodeFromUTF16WithoutReplacement(src2, dst2, true);
-      if (result != kInputEmpty || read != 1 || written != 1) {
-        break;
-      }
-      upper = destination[0];
 
       success = true;
     } while (0);
-
-    encoding->NewEncoderInto(*encoder);
-    encoding->NewDecoderWithoutBOMHandlingInto(*decoder);
 
     if (success) {
       ccs[i].cupper = upper;

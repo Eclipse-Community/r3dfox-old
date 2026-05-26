@@ -846,21 +846,29 @@ nsHtml5StreamParser::WriteStreamBytes(const uint8_t* aFromSegment,
     }
     mLastBuffer = (mLastBuffer->next = newBuf.forget());
   }
-  size_t totalRead = 0;
-  auto src = MakeSpan(aFromSegment, aCount);
+  int32_t totalByteCount = 0;
   for (;;) {
-    auto dst = mLastBuffer->TailAsSpan(NS_HTML5_STREAM_PARSER_READ_BUFFER_SIZE);
-    uint32_t result;
-    size_t read;
-    size_t written;
-    bool hadErrors;
-    Tie(result, read, written, hadErrors) =
-      mUnicodeDecoder->DecodeToUTF16(src, dst, false);
-    mHasHadErrors |= hadErrors;
-    src = src.From(read);
-    totalRead += read;
-    mLastBuffer->AdvanceEnd(written);
-    if (result == kOutputFull) {
+    int32_t end = mLastBuffer->getEnd();
+    int32_t byteCount = aCount - totalByteCount;
+    int32_t utf16Count = NS_HTML5_STREAM_PARSER_READ_BUFFER_SIZE - end;
+
+    NS_ASSERTION(utf16Count, "Trying to convert into a buffer with no free space!");
+    // byteCount may be zero to force the decoder to output a pending surrogate
+    // pair.
+
+    nsresult convResult = mUnicodeDecoder->Convert((const char*)aFromSegment, &byteCount, mLastBuffer->getBuffer() + end, &utf16Count);
+    MOZ_ASSERT(NS_SUCCEEDED(convResult));
+
+    end += utf16Count;
+    mLastBuffer->setEnd(end);
+    totalByteCount += byteCount;
+    aFromSegment += byteCount;
+
+    NS_ASSERTION(end <= NS_HTML5_STREAM_PARSER_READ_BUFFER_SIZE,
+        "The Unicode decoder wrote too much data.");
+    NS_ASSERTION(byteCount >= -1, "The decoder consumed fewer than -1 bytes.");
+
+    if (convResult == NS_PARTIAL_MORE_OUTPUT) {
       RefPtr<nsHtml5OwningUTF16Buffer> newBuf =
         nsHtml5OwningUTF16Buffer::FalliblyCreate(
           NS_HTML5_STREAM_PARSER_READ_BUFFER_SIZE);
@@ -872,9 +880,9 @@ nsHtml5StreamParser::WriteStreamBytes(const uint8_t* aFromSegment,
       // that doesn't fit in the output buffer. Loop back to push a zero-length
       // input to the decoder in that case.
     } else {
-      MOZ_ASSERT(totalRead == aCount,
-                 "The Unicode decoder consumed the wrong number of bytes.");
-      *aWriteCount = totalRead;
+      NS_ASSERTION(totalByteCount == (int32_t)aCount,
+          "The Unicode decoder consumed the wrong number of bytes.");
+      *aWriteCount = (uint32_t)totalByteCount;
       return NS_OK;
     }
   }
@@ -1537,7 +1545,7 @@ public:
 };
 
 void
-nsHtml5StreamParser::ContinueAfterScripts(nsHtml5Tokenizer* aTokenizer,
+nsHtml5StreamParser::ContinueAfterScripts(nsHtml5Tokenizer* aTokenizer, 
                                           nsHtml5TreeBuilder* aTreeBuilder,
                                           bool aLastWasCR)
 {
@@ -1558,7 +1566,8 @@ nsHtml5StreamParser::ContinueAfterScripts(nsHtml5Tokenizer* aTokenizer,
       return;
     }
     nsHtml5Speculation* speculation = mSpeculations.ElementAt(0);
-    if (aLastWasCR || !aTokenizer->isInDataState() ||
+    if (aLastWasCR || 
+        !aTokenizer->isInDataState() || 
         !aTreeBuilder->snapshotMatches(speculation->GetSnapshot())) {
       speculationFailed = true;
       // We've got a failed speculation :-(

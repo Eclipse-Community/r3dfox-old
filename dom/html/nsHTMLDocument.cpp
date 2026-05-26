@@ -351,8 +351,12 @@ nsHTMLDocument::TryCacheCharset(nsICachingChannel* aCachingChannel,
   if (NS_FAILED(rv) || cachedCharset.IsEmpty()) {
     return;
   }
+  // The replacement encoding is not ASCII-compatible.
+  if (cachedCharset.EqualsLiteral("replacement")) {
+    return;
+  }
   // The canonical names changed, so the cache may have an old name.
-  const Encoding* encoding = Encoding::ForLabelNoReplacement(cachedCharset);
+  const Encoding* encoding = Encoding::ForLabel(cachedCharset);
   if (!encoding) {
     return;
   }
@@ -732,6 +736,9 @@ nsHTMLDocument::StartDocumentLoad(const char* aCommand,
       if (NS_SUCCEEDED(rv)) {
         if (cachedSource > charsetSource) {
           auto cachedEncoding = Encoding::ForLabel(cachedCharset);
+          if (!cachedEncoding && cachedCharset.EqualsLiteral("replacement")) {
+            cachedEncoding = REPLACEMENT_ENCODING;
+          }
           if (cachedEncoding) {
             charsetSource = cachedSource;
             encoding = WrapNotNull(cachedEncoding);

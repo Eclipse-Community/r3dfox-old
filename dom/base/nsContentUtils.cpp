@@ -3283,12 +3283,9 @@ nsContentUtils::NewURIWithDocumentCharset(nsIURI** aResult,
                                           nsIDocument* aDocument,
                                           nsIURI* aBaseURI)
 {
-  if (aDocument) {
-    return NS_NewURI(aResult, aSpec,
-                     aDocument->GetDocumentCharacterSet(),
-                     aBaseURI, sIOService);
-  }
-  return NS_NewURI(aResult, aSpec, nullptr, aBaseURI, sIOService);
+  return NS_NewURI(aResult, aSpec,
+                   aDocument ? aDocument->GetDocumentCharacterSet().get() : nullptr,
+                   aBaseURI, sIOService);
 }
 
 // static

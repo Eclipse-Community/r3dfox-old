@@ -166,7 +166,9 @@ txMozillaTextOutput::createResultDocument(nsIDocument* aSourceDocument,
         const Encoding* encoding = Encoding::ForLabel(mOutputFormat.mEncoding);
         if (encoding) {
             mDocument->SetDocumentCharacterSetSource(kCharsetFromOtherComponent);
-            mDocument->SetDocumentCharacterSet(WrapNotNull(encoding));
+            nsAutoCString canonicalCharset;
+            encoding->Name(canonicalCharset);
+            mDocument->SetDocumentCharacterSet(canonicalCharset);
         }
     }
 

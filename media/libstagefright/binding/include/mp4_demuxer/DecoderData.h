@@ -66,9 +66,6 @@ public:
   void Update(const stagefright::MetaData* aMetaData,
               const char* aMimeType);
 
-  void Update(const Mp4parseTrackInfo* track,
-              const Mp4parseTrackAudioInfo* audio);
-
   virtual bool IsValid() const override;
 };
 
@@ -79,9 +76,6 @@ public:
 
   void Update(const stagefright::MetaData* aMetaData,
               const char* aMimeType);
-
-  void Update(const Mp4parseTrackInfo* track,
-              const Mp4parseTrackVideoInfo* video);
 
   virtual bool IsValid() const override;
 };

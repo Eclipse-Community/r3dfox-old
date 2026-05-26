@@ -1030,10 +1030,7 @@ nsHtml5TreeOpExecutor::PreloadStyle(const nsAString& aURL,
     referrerPolicy = styleReferrerPolicy;
   }
 
-  mDocument->PreloadStyle(uri,
-                          Encoding::ForLabel(aCharset),
-                          aCrossOrigin,
-                          referrerPolicy,
+  mDocument->PreloadStyle(uri, aCharset, aCrossOrigin, referrerPolicy,
                           aIntegrity);
 }
 

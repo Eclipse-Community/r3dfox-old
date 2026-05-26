@@ -93,7 +93,7 @@ public:
   // SheetLoadData for this stylesheet. It may be null in some cases.
   RefPtr<StyleSheetParsePromise>
   ParseSheet(css::Loader* aLoader,
-             Span<const uint8_t> aInput,
+             const nsAString& aInput,
              nsIURI* aSheetURI,
              nsIURI* aBaseURI,
              nsIPrincipal* aSheetPrincipal,

@@ -921,7 +921,7 @@ nsLayoutStylesheetCache::BuildPreferenceSheet(RefPtr<StyleSheet>* aSheet,
 
   static const uint32_t kPreallocSize = 1024;
 
-  nsCString sheetText;
+  nsString sheetText;
   sheetText.SetCapacity(kPreallocSize);
 
 #define NS_GET_R_G_B(color_) \
@@ -1005,7 +1005,7 @@ nsLayoutStylesheetCache::BuildPreferenceSheet(RefPtr<StyleSheet>* aSheet,
 
   if (sheet->IsGecko()) {
 #ifdef MOZ_OLD_STYLE
-    sheet->AsGecko()->ReparseSheet(NS_ConvertUTF8toUTF16(sheetText));
+    sheet->AsGecko()->ReparseSheet(sheetText);
 #else
     MOZ_CRASH("old style system disabled");
 #endif

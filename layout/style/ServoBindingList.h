@@ -48,13 +48,11 @@ SERVO_BINDING_FUNC(Servo_InvalidateStyleForDocStateChanges,
                    uint64_t aStatesChanged)
 
 // Styleset and Stylesheet management
-SERVO_BINDING_FUNC(Servo_StyleSheet_FromUTF8Bytes,
-                   RawServoStyleSheetContentsStrong,
+SERVO_BINDING_FUNC(Servo_StyleSheet_FromUTF8Bytes, RawServoStyleSheetContentsStrong,
                    mozilla::css::Loader* loader,
                    mozilla::ServoStyleSheet* gecko_stylesheet,
                    mozilla::css::SheetLoadData* load_data,
-                   const uint8_t* data,
-                   size_t data_len,
+                   const nsACString* data,
                    mozilla::css::SheetParsingMode parsing_mode,
                    RawGeckoURLExtraData* extra_data,
                    uint32_t line_number_offset,

@@ -1094,36 +1094,16 @@ nsTreeSanitizer::SanitizeStyleSheet(const nsAString& aOriginal,
   bool didSanitize = false;
   // Create a sheet to hold the parsed CSS
   RefPtr<StyleSheet> sheet;
-  if (aDocument->IsStyledByServo()) {
-    sheet = new ServoStyleSheet(mozilla::css::eAuthorSheetFeatures,
-                                CORS_NONE, aDocument->GetReferrerPolicy(),
-                                SRIMetadata());
-  } else {
-#ifdef MOZ_OLD_STYLE
     sheet = new CSSStyleSheet(mozilla::css::eAuthorSheetFeatures,
                               CORS_NONE, aDocument->GetReferrerPolicy());
-#else
-    MOZ_CRASH("old style system disabled");
-#endif
   }
   sheet->SetURIs(aDocument->GetDocumentURI(), nullptr, aBaseURI);
   sheet->SetPrincipal(aDocument->NodePrincipal());
-  if (aDocument->IsStyledByServo()) {
-    sheet->AsServo()->ParseSheetSync(
-      aDocument->CSSLoader(), NS_ConvertUTF16toUTF8(aOriginal),
-      aDocument->GetDocumentURI(), aBaseURI, aDocument->NodePrincipal(),
-      /* aLoadData = */ nullptr, 0, aDocument->GetCompatibilityMode());
-  } else {
-#ifdef MOZ_OLD_STYLE
     // Create the CSS parser, and parse the CSS text.
     nsCSSParser parser(nullptr, sheet->AsGecko());
     rv = parser.ParseSheet(aOriginal, aDocument->GetDocumentURI(),
                            aBaseURI, aDocument->NodePrincipal(),
                            /* aLoadData = */ nullptr, 0);
-#else
-    MOZ_CRASH("old style system disabled");
-#endif
-  }
   NS_ENSURE_SUCCESS(rv, true);
   // Mark the sheet as complete.
   MOZ_ASSERT(!sheet->HasForcedUniqueInner(),

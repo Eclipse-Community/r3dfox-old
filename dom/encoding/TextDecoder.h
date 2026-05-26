@@ -59,11 +59,11 @@ class TextDecoder final : public NonRefcountedDOMObject {
    * Performs initialization with a Gecko-canonical encoding name (as opposed
    * to a label.)
    *
-   * @param aEncoding    An Encoding object
+   * @param aEncoding    A Gecko-canonical encoding name
    * @param aFatal       indicates whether to throw an 'EncodingError'
    *                     exception or not when decoding.
    */
-  void InitWithEncoding(NotNull<const Encoding*> aEncoding, const bool aFatal);
+  void InitWithEncoding(const nsACString& aEncoding, const bool aFatal);
 
   /**
    * Return the encoding name.

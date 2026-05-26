@@ -6,12 +6,12 @@
 
 #include "mozilla/dom/FallbackEncoding.h"
 
-#include "mozilla/Encoding.h"
-#include "mozilla/intl/LocaleService.h"
+#include "mozilla/dom/EncodingUtils.h"
+#include "nsUConvPropertySearch.h"
 #include "mozilla/Preferences.h"
 #include "mozilla/Services.h"
 #include "nsIObserverService.h"
-#include "nsUConvPropertySearch.h"
+#include "mozilla/intl/LocaleService.h"
 
 using mozilla::intl::LocaleService;
 
@@ -50,12 +50,10 @@ void FallbackEncoding::Get(nsACString& aFallback) {
   Preferences::GetCString("intl.charset.fallback.override", override);
   // Don't let the user break things by setting the override to unreasonable
   // values via about:config
-  const Encoding* encoding = Encoding::ForLabel(override);
-  if (!encoding || !encoding->IsAsciiCompatible() ||
-      encoding == UTF_8_ENCODING) {
+  if (!EncodingUtils::FindEncodingForLabel(override, mFallback) ||
+      !EncodingUtils::IsAsciiCompatible(mFallback) ||
+      mFallback.EqualsLiteral("UTF-8")) {
     mFallback.Truncate();
-  } else {
-    encoding->Name(mFallback);
   }
 
   if (!mFallback.IsEmpty()) {

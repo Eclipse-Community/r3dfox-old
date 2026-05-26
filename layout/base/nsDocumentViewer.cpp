@@ -39,7 +39,7 @@
 #include "mozilla/a11y/DocAccessible.h"
 #endif
 #include "mozilla/BasicEvents.h"
-#include "mozilla/Encoding.h"
+#include "mozilla/dom/EncodingUtils.h"
 #include "mozilla/ErrorResult.h"
 #include "mozilla/Preferences.h"
 #include "mozilla/WeakPtr.h"
@@ -3159,18 +3159,15 @@ static void SetChildForceCharacterSet(nsIContentViewer* aChild,
 NS_IMETHODIMP
 nsDocumentViewer::SetForceCharacterSet(const nsACString& aForceCharacterSet) {
   // The empty string means no hint.
-  const Encoding* encoding = nullptr;
+  nsAutoCString encoding;
   if (!aForceCharacterSet.IsEmpty()) {
-    if (!(encoding = Encoding::ForLabel(aForceCharacterSet))) {
+    if (!EncodingUtils::FindEncodingForLabel(aForceCharacterSet,
+                                             encoding)) {
       // Reject unknown labels
       return NS_ERROR_INVALID_ARG;
     }
   }
-  if (encoding) {
-    encoding->Name(mForceCharacterSet);
-  } else {
-    mForceCharacterSet.Truncate();
-  }
+  mForceCharacterSet = encoding;
   // now set the force char set on all children of mContainer
   CallChildren(SetChildForceCharacterSet, (void*) &aForceCharacterSet);
   return NS_OK;
@@ -3217,18 +3214,15 @@ static void SetChildHintCharacterSet(nsIContentViewer* aChild, void* aClosure) {
 NS_IMETHODIMP
 nsDocumentViewer::SetHintCharacterSet(const nsACString& aHintCharacterSet) {
   // The empty string means no hint.
-  const Encoding* encoding = nullptr;
+  nsAutoCString encoding;
   if (!aHintCharacterSet.IsEmpty()) {
-    if (!(encoding = Encoding::ForLabel(aHintCharacterSet))) {
+    if (!EncodingUtils::FindEncodingForLabel(aHintCharacterSet,
+                                             encoding)) {
       // Reject unknown labels
       return NS_ERROR_INVALID_ARG;
     }
   }
-  if (encoding) {
-    encoding->Name(mHintCharset);
-  } else {
-    mHintCharset.Truncate();
-  }
+  mHintCharset = encoding;
   // now set the hint char set on all children of mContainer
   CallChildren(SetChildHintCharacterSet, (void*) &aHintCharacterSet);
   return NS_OK;

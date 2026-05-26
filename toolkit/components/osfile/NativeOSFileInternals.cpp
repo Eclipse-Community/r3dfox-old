@@ -8,8 +8,6 @@
  * Native implementation of some OS.File operations.
  */
 
-#include "NativeOSFileInternals.h"
-
 #include "nsString.h"
 #include "nsNetCID.h"
 #include "nsThreadUtils.h"
@@ -19,11 +17,13 @@
 #include "nsProxyRelease.h"
 
 #include "nsINativeOSFileInternals.h"
+#include "NativeOSFileInternals.h"
 #include "mozilla/dom/NativeOSFileInternalsBinding.h"
 
 #include "mozilla/Encoding.h"
 #include "nsIEventTarget.h"
 
+#include "mozilla/dom/EncodingUtils.h"
 #include "mozilla/DebugOnly.h"
 #include "mozilla/Scoped.h"
 #include "mozilla/HoldDropJSObjects.h"
@@ -811,12 +811,12 @@ class DoReadToStringEvent final : public AbstractReadEvent {
     // Obtain the decoder. We do this before reading to avoid doing
     // any unnecessary I/O in case the name of the encoding is incorrect.
     MOZ_ASSERT(!NS_IsMainThread());
-    const Encoding* encoding = Encoding::ForLabel(mEncoding);
-    if (!encoding) {
+    nsAutoCString encodingName;
+    if (!dom::EncodingUtils::FindEncodingForLabel(mEncoding, encodingName)) {
       Fail(NS_LITERAL_CSTRING("Decode"), mResult.forget(), OS_ERROR_INVAL);
       return NS_ERROR_FAILURE;
     }
-    mDecoder = encoding->NewDecoderWithBOMRemoval();
+    mDecoder = dom::EncodingUtils::DecoderForEncoding(encodingName);
     if (!mDecoder) {
       Fail(NS_LITERAL_CSTRING("DecoderForEncoding"), mResult.forget(),
            OS_ERROR_INVAL);

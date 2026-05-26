@@ -29,8 +29,8 @@
 #include "mozilla/StyleSheetInlines.h"
 #include "mozilla/css/Loader.h"
 #include "mozilla/dom/Element.h"
+#include "mozilla/dom/EncodingUtils.h"
 #include "mozilla/dom/ScriptLoader.h"
-#include "mozilla/Encoding.h"
 #include "nsContentUtils.h"
 #include "txXMLUtils.h"
 #include "nsContentSink.h"
@@ -763,11 +763,10 @@ nsresult txMozillaXMLOutput::createResultDocument(const nsAString& aName,
 
   // Set the charset
   if (!mOutputFormat.mEncoding.IsEmpty()) {
-    const Encoding* encoding = Encoding::ForLabel(mOutputFormat.mEncoding);
-    if (encoding) {
+    nsAutoCString canonicalCharset;
+    if (EncodingUtils::FindEncodingForLabel(mOutputFormat.mEncoding,
+                                            canonicalCharset)) {
       mDocument->SetDocumentCharacterSetSource(kCharsetFromOtherComponent);
-      nsAutoCString canonicalCharset;
-      encoding->Name(canonicalCharset);
       mDocument->SetDocumentCharacterSet(canonicalCharset);
     }
   }

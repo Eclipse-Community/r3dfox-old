@@ -811,7 +811,7 @@ NotNull<const Encoding*> GetSubmitEncoding(nsGenericHTMLElement* aForm) {
   if (doc) {
     return Encoding::ForName(doc->GetDocumentCharacterSet());
   }
-  return UTF_8_ENCODING;
+  return WrapNotNull(UTF_8_ENCODING);
 }
 
 void GetEnumAttr(nsGenericHTMLElement* aContent, nsAtom* atom,

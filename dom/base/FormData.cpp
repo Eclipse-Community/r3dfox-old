@@ -17,7 +17,7 @@ using namespace mozilla;
 using namespace mozilla::dom;
 
 FormData::FormData(nsISupports* aOwner)
-    : HTMLFormSubmission(nullptr, EmptyString(), UTF_8_ENCODING, nullptr),
+    : HTMLFormSubmission(nullptr, EmptyString(), WrapNotNull(UTF_8_ENCODING), nullptr),
       mOwner(aOwner) {}
 
 namespace {
@@ -300,7 +300,7 @@ void FormData::SetNameDirectoryPair(FormDataTuple* aData,
 nsresult FormData::GetSendInfo(nsIInputStream** aBody, uint64_t* aContentLength,
                                nsACString& aContentTypeWithCharset,
                                nsACString& aCharset) const {
-  FSMultipartFormData fs(nullptr, EmptyString(), UTF_8_ENCODING, nullptr);
+  FSMultipartFormData fs(nullptr, EmptyString(), WrapNotNull(UTF_8_ENCODING), nullptr);
 
   for (uint32_t i = 0; i < mFormData.Length(); ++i) {
     if (mFormData[i].wasNullBlob) {

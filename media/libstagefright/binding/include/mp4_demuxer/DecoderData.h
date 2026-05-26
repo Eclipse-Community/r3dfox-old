@@ -60,9 +60,6 @@ class MP4AudioInfo : public mozilla::AudioInfo {
   void Update(const stagefright::MetaData* aMetaData,
               const char* aMimeType);
 
-  void Update(const Mp4parseTrackInfo* track,
-              const Mp4parseTrackAudioInfo* audio);
-
   virtual bool IsValid() const override;
 };
 
@@ -72,9 +69,6 @@ class MP4VideoInfo : public mozilla::VideoInfo {
 
   void Update(const stagefright::MetaData* aMetaData,
               const char* aMimeType);
-
-  void Update(const Mp4parseTrackInfo* track,
-              const Mp4parseTrackVideoInfo* video);
 
   virtual bool IsValid() const override;
 };

@@ -19,13 +19,10 @@
 #include "mp4_demuxer/MP4Metadata.h"
 #include "mp4_demuxer/Stream.h"
 #include "MediaPrefs.h"
-#include "mp4parse.h"
 
 #include <limits>
 #include <stdint.h>
 #include <vector>
-
-struct FreeMP4Parser { void operator()(Mp4parseParser* aPtr) { mp4parse_free(aPtr); } };
 
 using namespace stagefright;
 using mozilla::media::TimeUnit;
@@ -102,55 +99,6 @@ private:
   bool mCanSeek;
 };
 
-// Wrap an mp4_demuxer::Stream to remember the read offset.
-
-class RustStreamAdaptor {
-public:
-  explicit RustStreamAdaptor(Stream* aSource)
-    : mSource(aSource)
-    , mOffset(0)
-  {
-  }
-
-  ~RustStreamAdaptor() {}
-
-  bool Read(uint8_t* buffer, uintptr_t size, size_t* bytes_read);
-
-private:
-  Stream* mSource;
-  CheckedInt<size_t> mOffset;
-};
-
-class MP4MetadataRust
-{
-public:
-  explicit MP4MetadataRust(Stream* aSource);
-  ~MP4MetadataRust();
-
-  static MP4Metadata::ResultAndByteBuffer Metadata(Stream* aSource);
-
-  MP4Metadata::ResultAndTrackCount
-  GetNumberTracks(mozilla::TrackInfo::TrackType aType) const;
-  MP4Metadata::ResultAndTrackInfo GetTrackInfo(
-    mozilla::TrackInfo::TrackType aType, size_t aTrackNumber) const;
-  bool CanSeek() const;
-
-  MP4Metadata::ResultAndCryptoFile Crypto() const;
-
-  MediaResult ReadTrackIndice(Mp4parseByteData* aIndices, mozilla::TrackID aTrackID);
-
-  nsresult Init();
-
-private:
-  void UpdateCrypto();
-  Maybe<uint32_t> TrackTypeToGlobalTrackIndex(mozilla::TrackInfo::TrackType aType, size_t aTrackNumber) const;
-
-  CryptoFile mCrypto;
-  RefPtr<Stream> mSource;
-  RustStreamAdaptor mRustSource;
-  mozilla::UniquePtr<Mp4parseParser, FreeMP4Parser> mRustParser;
-};
-
 class IndiceWrapperStagefright : public IndiceWrapper {
 public:
   size_t Length() const override;
@@ -180,73 +128,13 @@ bool IndiceWrapperStagefright::GetIndice(size_t aIndex, Index::Indice& aIndice) 
   return true;
 }
 
-// the owner of mIndice is rust mp4 paser, so lifetime of this class
-// SHOULD NOT longer than rust parser.
-class IndiceWrapperRust : public IndiceWrapper
-{
-public:
-  size_t Length() const override;
-
-  bool GetIndice(size_t aIndex, Index::Indice& aIndice) const override;
-
-  explicit IndiceWrapperRust(Mp4parseByteData& aRustIndice);
-
-protected:
-  UniquePtr<Mp4parseByteData> mIndice;
-};
-
-IndiceWrapperRust::IndiceWrapperRust(Mp4parseByteData& aRustIndice)
-  : mIndice(mozilla::MakeUnique<Mp4parseByteData>())
-{
-  mIndice->length = aRustIndice.length;
-  mIndice->indices = aRustIndice.indices;
-}
-
-size_t
-IndiceWrapperRust::Length() const
-{
-  return mIndice->length;
-}
-
-bool
-IndiceWrapperRust::GetIndice(size_t aIndex, Index::Indice& aIndice) const
-{
-  if (aIndex >= mIndice->length) {
-    MOZ_LOG(gMP4MetadataLog, LogLevel::Error, ("Index overflow in indice"));
-    return false;
-  }
-
-  const Mp4parseIndice* indice = &mIndice->indices[aIndex];
-  aIndice.start_offset = indice->start_offset;
-  aIndice.end_offset = indice->end_offset;
-  aIndice.start_composition = indice->start_composition;
-  aIndice.end_composition = indice->end_composition;
-  aIndice.start_decode = indice->start_decode;
-  aIndice.sync = indice->sync;
-  return true;
-}
-
 MP4Metadata::MP4Metadata(Stream* aSource)
  : mStagefright(MakeUnique<MP4MetadataStagefright>(aSource))
- , mRust(MakeUnique<MP4MetadataRust>(aSource))
- , mReportedAudioTrackTelemetry(false)
- , mReportedVideoTrackTelemetry(false)
 {
 }
 
 MP4Metadata::~MP4Metadata()
 {
-}
-
-nsresult
-MP4Metadata::Parse() const
-{
-  mDisableRust = !MediaPrefs::EnableRustMP4Parser() && !MediaPrefs::RustTestMode();
-  if (mDisableRust) {
-    return;
-  }
-  // Fallback to stagefright if it fails.
-  mDisableRust = !mRust->Init();
 }
 
 /*static*/ MP4Metadata::ResultAndByteBuffer
@@ -272,90 +160,7 @@ MP4Metadata::GetNumberTracks(mozilla::TrackInfo::TrackType aType) const
   MP4Metadata::ResultAndTrackCount numTracks =
     mStagefright->GetNumberTracks(aType);
 
-  MP4Metadata::ResultAndTrackCount numTracksRust =
-    mRust->GetNumberTracks(aType);
-  MOZ_LOG(gMP4MetadataLog, LogLevel::Info, ("%s tracks found: stagefright=(%s)%u rust=(%s)%u",
-                                            TrackTypeToString(aType),
-                                            numTracks.Result().Description().get(),
-                                            numTracks.Ref(),
-                                            numTracksRust.Result().Description().get(),
-                                            numTracksRust.Ref()));
-
-
-  // Consider '0' and 'error' the same for comparison purposes.
-  // (Mostly because Stagefright never returns errors, but Rust may.)
-  bool numTracksMatch =
-    (numTracks.Ref() != NumberTracksError() ? numTracks.Ref() : 0) ==
-    (numTracksRust.Ref() != NumberTracksError() ? numTracksRust.Ref() : 0);
-
-  if (aType == mozilla::TrackInfo::kAudioTrack && !mReportedAudioTrackTelemetry) {
-    Telemetry::Accumulate(Telemetry::MEDIA_RUST_MP4PARSE_TRACK_MATCH_AUDIO,
-                          numTracksMatch);
-    mReportedAudioTrackTelemetry = true;
-  } else if (aType == mozilla::TrackInfo::kVideoTrack && !mReportedVideoTrackTelemetry) {
-    Telemetry::Accumulate(Telemetry::MEDIA_RUST_MP4PARSE_TRACK_MATCH_VIDEO,
-                            numTracksMatch);
-    mReportedVideoTrackTelemetry = true;
-  }
-
-  if (!numTracksMatch && MediaPrefs::MediaWarningsAsErrorsStageFrightVsRust()) {
-    return {MediaResult(NS_ERROR_DOM_MEDIA_METADATA_ERR,
-                        RESULT_DETAIL("Different numbers of tracks: "
-                                      "Stagefright=%u (%s) Rust=%u (%s)",
-                                      numTracks.Ref(),
-                                      numTracks.Result().Description().get(),
-                                      numTracksRust.Ref(),
-                                      numTracksRust.Result().Description().get())),
-            NumberTracksError()};
-  }
-
-  return mDisableRust ? numTracks : numTracksRust;
-}
-
-static const char*
-GetDifferentField(const mozilla::TrackInfo& info,
-                  const mozilla::TrackInfo& infoRust)
-{
-  if (infoRust.mId != info.mId) { return "Id"; }
-  if (infoRust.mKind != info.mKind) { return "Kind"; }
-  if (infoRust.mLabel != info.mLabel) { return "Label"; }
-  if (infoRust.mLanguage != info.mLanguage) { return "Language"; }
-  if (infoRust.mEnabled != info.mEnabled) { return "Enabled"; }
-  if (infoRust.mTrackId != info.mTrackId) { return "TrackId"; }
-  if (infoRust.mMimeType != info.mMimeType) { return "MimeType"; }
-  if (infoRust.mDuration != info.mDuration) { return "Duration"; }
-  if (infoRust.mMediaTime != info.mMediaTime) { return "MediaTime"; }
-  if (infoRust.mCrypto.mValid != info.mCrypto.mValid) { return "Crypto-Valid"; }
-  if (infoRust.mCrypto.mMode != info.mCrypto.mMode) { return "Crypto-Mode"; }
-  if (infoRust.mCrypto.mIVSize != info.mCrypto.mIVSize) { return "Crypto-IVSize"; }
-  if (infoRust.mCrypto.mKeyId != info.mCrypto.mKeyId) { return "Crypto-KeyId"; }
-  switch (info.GetType()) {
-  case mozilla::TrackInfo::kAudioTrack: {
-    const AudioInfo *audioRust = infoRust.GetAsAudioInfo();
-    const AudioInfo *audio = info.GetAsAudioInfo();
-    if (audioRust->mRate != audio->mRate) { return "Rate"; }
-    if (audioRust->mChannels != audio->mChannels) { return "Channels"; }
-    if (audioRust->mBitDepth != audio->mBitDepth) { return "BitDepth"; }
-    if (audioRust->mProfile != audio->mProfile) { return "Profile"; }
-    if (audioRust->mExtendedProfile != audio->mExtendedProfile) { return "ExtendedProfile"; }
-    break;
-  }
-  case mozilla::TrackInfo::kVideoTrack: {
-    const VideoInfo *videoRust = infoRust.GetAsVideoInfo();
-    const VideoInfo *video = info.GetAsVideoInfo();
-    if (videoRust->mDisplay != video->mDisplay) { return "Display"; }
-    if (videoRust->mImage != video->mImage) { return "Image"; }
-    if (*videoRust->mExtraData != *video->mExtraData) { return "ExtraData"; }
-    // mCodecSpecificConfig is for video/mp4-es, not video/avc. Since video/mp4-es
-    // is supported on b2g only, it could be removed from TrackInfo.
-    if (*videoRust->mCodecSpecificConfig != *video->mCodecSpecificConfig) { return "CodecSpecificConfig"; }
-    break;
-  }
-  default:
-    break;
-  }
-
-  return nullptr;
+    return numTracks;
 }
 
 MP4Metadata::ResultAndTrackInfo
@@ -365,25 +170,7 @@ MP4Metadata::GetTrackInfo(mozilla::TrackInfo::TrackType aType,
   MP4Metadata::ResultAndTrackInfo info =
     mStagefright->GetTrackInfo(aType, aTrackNumber);
 
-  MP4Metadata::ResultAndTrackInfo infoRust =
-    mRust->GetTrackInfo(aType, aTrackNumber);
-
-  if (info.Ref() && infoRust.Ref() && MediaPrefs::MediaWarningsAsErrorsStageFrightVsRust()) {
-    const char* diff = GetDifferentField(*info.Ref(), *infoRust.Ref());
-    if (diff) {
-      return {MediaResult(NS_ERROR_DOM_MEDIA_METADATA_ERR,
-                          RESULT_DETAIL("Different field '%s' between "
-                                        "Stagefright (%s) and Rust (%s)",
-                                        diff,
-                                        info.Result().Description().get(),
-                                        infoRust.Result().Description().get())),
-              MediaPrefs::MediaWarningsAsErrorsStageFrightVsRust()
-                ? mozilla::UniquePtr<mozilla::TrackInfo>(nullptr)
-                : mDisableRust ? Move(info.Ref()) : Move(infoRust.Ref())};
-    }
-  }
-
-  return mDisableRust ? Move(info) : Move(infoRust);
+  return info;
 }
 
 bool
@@ -396,59 +183,21 @@ MP4Metadata::ResultAndCryptoFile
 MP4Metadata::Crypto() const
 {
   MP4Metadata::ResultAndCryptoFile crypto = mStagefright->Crypto();
-  MP4Metadata::ResultAndCryptoFile rustCrypto = mRust->Crypto();
 
-  if (MediaPrefs::MediaWarningsAsErrorsStageFrightVsRust()) {
-    if (rustCrypto.Ref()->pssh != crypto.Ref()->pssh) {
-      return {MediaResult(
-               NS_ERROR_DOM_MEDIA_METADATA_ERR,
-               RESULT_DETAIL("Mismatch between Stagefright (%s) and Rust (%s) crypto file",
-                             crypto.Result().Description().get(),
-                             rustCrypto.Result().Description().get())),
-              mDisableRust ? crypto.Ref() : rustCrypto.Ref()};
-    }
-  }
-
-  return mDisableRust ? crypto : rustCrypto;
+  return crypto;
 }
 
 MP4Metadata::ResultAndIndice
 MP4Metadata::GetTrackIndice(mozilla::TrackID aTrackID)
 {
   FallibleTArray<Index::Indice> indiceSF;
-  if (mDisableRust || MediaPrefs::MediaWarningsAsErrorsStageFrightVsRust()) {
     MediaResult rv = mStagefright->ReadTrackIndex(indiceSF, aTrackID);
     if (NS_FAILED(rv)) {
       return {Move(rv), nullptr};
     }
-  }
-
-  mp4parse_byte_data indiceRust = {};
-  if (!mDisableRust || MediaPrefs::MediaWarningsAsErrorsStageFrightVsRust()) {
-    MediaResult rvRust = mRust->ReadTrackIndice(&indiceRust, aTrackID);
-    if (NS_FAILED(rvRust)) {
-      return {Move(rvRust), nullptr};
-    }
-  }
-
-  if (MediaPrefs::MediaWarningsAsErrorsStageFrightVsRust()) {
-    MOZ_DIAGNOSTIC_ASSERT(indiceRust.length == indiceSF.Length());
-    for (uint32_t i = 0; i < indiceRust.length; i++) {
-      MOZ_DIAGNOSTIC_ASSERT(indiceRust.indices[i].start_offset == indiceSF[i].start_offset);
-      MOZ_DIAGNOSTIC_ASSERT(indiceRust.indices[i].end_offset == indiceSF[i].end_offset);
-      MOZ_DIAGNOSTIC_ASSERT(llabs(indiceRust.indices[i].start_composition - int64_t(indiceSF[i].start_composition)) <= 1);
-      MOZ_DIAGNOSTIC_ASSERT(llabs(indiceRust.indices[i].end_composition - int64_t(indiceSF[i].end_composition)) <= 1);
-      MOZ_DIAGNOSTIC_ASSERT(llabs(indiceRust.indices[i].start_decode - int64_t(indiceSF[i].start_decode)) <= 1);
-      MOZ_DIAGNOSTIC_ASSERT(indiceRust.indices[i].sync == indiceSF[i].sync);
-    }
-  }
 
   UniquePtr<IndiceWrapper> indice;
-  if (mDisableRust) {
     indice = mozilla::MakeUnique<IndiceWrapperStagefright>(indiceSF);
-  } else {
-    indice = mozilla::MakeUnique<IndiceWrapperRust>(indiceRust);
-  }
 
   return {NS_OK, Move(indice)};
 }
@@ -705,310 +454,6 @@ MP4MetadataStagefright::Metadata(Stream* aSource)
             nullptr};
   }
   return {NS_OK, Move(buffer)};
-}
-
-bool RustStreamAdaptor::Read(uint8_t* buffer, uintptr_t size, size_t* bytes_read) {
-  if (!mOffset.isValid()) {
-    MOZ_LOG(gMP4MetadataLog, LogLevel::Error,
-            ("Overflow in source stream offset"));
-    return false;
-  }
-  bool rv = mSource->ReadAt(mOffset.value(), buffer, size, bytes_read);
-  if (rv) {
-    mOffset += *bytes_read;
-  }
-  return rv;
-}
-
-// Wrapper to allow rust to call our read adaptor.
-static intptr_t read_source(uint8_t* buffer, uintptr_t size, void* userdata) {
-  MOZ_ASSERT(buffer);
-  MOZ_ASSERT(userdata);
-
-  auto source = reinterpret_cast<RustStreamAdaptor*>(userdata);
-  size_t bytes_read = 0;
-  bool rv = source->Read(buffer, size, &bytes_read);
-  if (!rv) {
-    MOZ_LOG(gMP4MetadataLog, LogLevel::Warning, ("Error reading source data"));
-    return -1;
-  }
-  return bytes_read;
-}
-
-MP4MetadataRust::MP4MetadataRust(Stream* aSource)
-    : mSource(aSource), mRustSource(aSource) {
-  Mp4parseIo io = {read_source, &mRustSource};
-  mRustParser.reset(mp4parse_new(&io));
-  MOZ_ASSERT(mRustParser);
-}
-
-MP4MetadataRust::~MP4MetadataRust() {}
-
-nsresult MP4MetadataRust::Init() {
-  Mp4parseStatus rv = mp4parse_read(mParser.get());
-  if (rv != MP4PARSE_STATUS_OK) {
-    MOZ_LOG(gMP4MetadataLog, LogLevel::Debug,
-            ("Parse failed, return code %d\n", rv));
-    return rv == MP4PARSE_STATUS_OOM ? NS_ERROR_OUT_OF_MEMORY
-                                     : NS_ERROR_DOM_MEDIA_METADATA_ERR;
-  }
-
-  UpdateCrypto();
-
-  return NS_OK;
-}
-
-void MP4MetadataRust::UpdateCrypto() {
-  Mp4parsePsshInfo info = {};
-  if (mp4parse_get_pssh_info(mRustParser.get(), &info) != mp4parse_status_OK) {
-    return;
-  }
-
-  if (info.data.length == 0) {
-    return;
-  }
-
-  mCrypto.Update(info.data.data, info.data.length);
-}
-
-bool TrackTypeEqual(TrackInfo::TrackType aLHS, Mp4parseTrackType aRHS) {
-  switch (aLHS) {
-    case TrackInfo::kAudioTrack:
-      return aRHS == MP4PARSE_TRACK_TYPE_AUDIO;
-    case TrackInfo::kVideoTrack:
-      return aRHS == MP4PARSE_TRACK_TYPE_VIDEO;
-    default:
-      return false;
-  }
-}
-
-MP4Metadata::ResultAndTrackCount MP4MetadataRust::GetNumberTracks(
-    mozilla::TrackInfo::TrackType aType) const {
-  uint32_t tracks;
-  auto rv = mp4parse_get_track_count(mRustParser.get(), &tracks);
-  if (rv != MP4PARSE_STATUS_OK) {
-    MOZ_LOG(gMP4MetadataLog, LogLevel::Warning,
-            ("rust parser error %d counting tracks", rv));
-    return {MediaResult(NS_ERROR_DOM_MEDIA_METADATA_ERR,
-                        RESULT_DETAIL("Rust parser error %d", rv)),
-            MP4Metadata::NumberTracksError()};
-  }
-  MOZ_LOG(gMP4MetadataLog, LogLevel::Info, ("rust parser found %u tracks", tracks));
-
-  uint32_t total = 0;
-  for (uint32_t i = 0; i < tracks; ++i) {
-    Mp4parseTrackInfo track_info;
-    rv = mp4parse_get_track_info(mRustParser.get(), i, &track_info);
-    if (rv != MP4PARSE_STATUS_OK) {
-      continue;
-    }
-    if (track_info.codec == MP4PARSE_CODEC_UNKNOWN) {
-      continue;
-    }
-    if (TrackTypeEqual(aType, track_info.track_type)) {
-      total += 1;
-    }
-  }
-
-  return {NS_OK, total};
-}
-
-Maybe<uint32_t> MP4MetadataRust::TrackTypeToGlobalTrackIndex(
-    mozilla::TrackInfo::TrackType aType, size_t aTrackNumber) const {
-  uint32_t tracks;
-  auto rv = mp4parse_get_track_count(mRustParser.get(), &tracks);
-  if (rv != MP4PARSE_STATUS_OK) {
-    return Nothing();
-  }
-
-  /* The MP4Metadata API uses a per-TrackType index of tracks, but mp4parse
-     (and libstagefright) use a global track index.  Convert the index by
-     counting the tracks of the requested type and returning the global
-     track index when a match is found. */
-  uint32_t perType = 0;
-  for (uint32_t i = 0; i < tracks; ++i) {
-    Mp4parseTrackInfo track_info;
-    rv = mp4parse_get_track_info(mRustParser.get(), i, &track_info);
-    if (rv != MP4PARSE_STATUS_OK) {
-      continue;
-    }
-    if (TrackTypeEqual(aType, track_info.track_type)) {
-      if (perType == aTrackNumber) {
-        return Some(i);
-      }
-      perType += 1;
-    }
-  }
-
-  return Nothing();
-}
-
-MP4Metadata::ResultAndTrackInfo MP4MetadataRust::GetTrackInfo(
-    mozilla::TrackInfo::TrackType aType, size_t aTrackNumber) const {
-  Maybe<uint32_t> trackIndex = TrackTypeToGlobalTrackIndex(aType, aTrackNumber);
-  if (trackIndex.isNothing()) {
-    return {MediaResult(NS_ERROR_DOM_MEDIA_METADATA_ERR,
-                        RESULT_DETAIL("No %s tracks", TrackTypeToStr(aType))),
-            nullptr};
-  }
-
-  Mp4parseTrackInfo info;
-  auto rv = mp4parse_get_track_info(mRustParser.get(), trackIndex.value(), &info);
-  if (rv != MP4PARSE_STATUS_OK) {
-    MOZ_LOG(gMP4MetadataLog, LogLevel::Warning,
-            ("mp4parse_get_track_info returned %d", rv));
-    return {MediaResult(NS_ERROR_DOM_MEDIA_METADATA_ERR,
-                        RESULT_DETAIL("Cannot find %s track #%zu",
-                                      TrackTypeToStr(aType), aTrackNumber)),
-            nullptr};
-  }
-#ifdef DEBUG
-  const char* codec_string = "unrecognized";
-  switch (info.codec) {
-    case MP4PARSE_CODEC_UNKNOWN:
-      codec_string = "unknown";
-      break;
-    case MP4PARSE_CODEC_AAC:
-      codec_string = "aac";
-      break;
-    case MP4PARSE_CODEC_OPUS:
-      codec_string = "opus";
-      break;
-    case MP4PARSE_CODEC_FLAC:
-      codec_string = "flac";
-      break;
-    case MP4PARSE_CODEC_ALAC:
-      codec_string = "alac";
-      break;
-    case MP4PARSE_CODEC_AVC:
-      codec_string = "h.264";
-      break;
-    case MP4PARSE_CODEC_VP9:
-      codec_string = "vp9";
-      break;
-    case MP4PARSE_CODEC_MP3:
-      codec_string = "mp3";
-      break;
-    case MP4PARSE_CODEC_MP4V:
-      codec_string = "mp4v";
-      break;
-    case MP4PARSE_CODEC_JPEG:
-      codec_string = "jpeg";
-      break;
-    case MP4PARSE_CODEC_AC3:
-      codec_string = "ac-3";
-      break;
-    case MP4PARSE_CODEC_EC3:
-      codec_string = "ec-3";
-      break;
-  }
-  MOZ_LOG(gMP4MetadataLog, LogLevel::Debug,
-          ("track codec %s (%u)\n", codec_string, info.codec));
-#endif
-
-  // This specialization interface is crazy.
-  UniquePtr<mozilla::TrackInfo> e;
-  switch (aType) {
-    case TrackInfo::TrackType::kAudioTrack: {
-      Mp4parseTrackAudioInfo audio;
-      auto rv = mp4parse_get_track_audio_info(mRustParser.get(), trackIndex.value(),
-                                              &audio);
-      if (rv != MP4PARSE_STATUS_OK) {
-        MOZ_LOG(gMP4MetadataLog, LogLevel::Warning,
-                ("mp4parse_get_track_audio_info returned error %d", rv));
-        return {MediaResult(NS_ERROR_DOM_MEDIA_METADATA_ERR,
-                            RESULT_DETAIL("Cannot parse %s track #%zu",
-                                          TrackTypeToStr(aType), aTrackNumber)),
-                nullptr};
-      }
-      auto track = mozilla::MakeUnique<MP4AudioInfo>();
-      track->Update(&info, &audio);
-      e = Move(track);
-    } break;
-    case TrackInfo::TrackType::kVideoTrack: {
-      Mp4parseTrackVideoInfo video;
-      auto rv = mp4parse_get_track_video_info(mRustParser.get(), trackIndex.value(),
-                                              &video);
-      if (rv != MP4PARSE_STATUS_OK) {
-        MOZ_LOG(gMP4MetadataLog, LogLevel::Warning,
-                ("mp4parse_get_track_video_info returned error %d", rv));
-        return {MediaResult(NS_ERROR_DOM_MEDIA_METADATA_ERR,
-                            RESULT_DETAIL("Cannot parse %s track #%zu",
-                                          TrackTypeToStr(aType), aTrackNumber)),
-                nullptr};
-      }
-      auto track = mozilla::MakeUnique<MP4VideoInfo>();
-      track->Update(&info, &video);
-      e = Move(track);
-    } break;
-    default:
-      MOZ_LOG(gMP4MetadataLog, LogLevel::Warning,
-              ("unhandled track type %d", aType));
-      return {MediaResult(NS_ERROR_DOM_MEDIA_METADATA_ERR,
-                          RESULT_DETAIL("Cannot handle %s track #%zu",
-                                        TrackTypeToStr(aType), aTrackNumber)),
-              nullptr};
-  }
-
-  // No duration in track, use fragment_duration.
-  if (e && !e->mDuration.IsPositive()) {
-    Mp4parseFragmentInfo info;
-    auto rv = mp4parse_get_fragment_info(mRustParser.get(), &info);
-    if (rv == MP4PARSE_STATUS_OK) {
-      e->mDuration = TimeUnit::FromMicroseconds(info.fragment_duration);
-    }
-  }
-
-  if (e && e->IsValid()) {
-    return {NS_OK, Move(e)};
-  }
-  MOZ_LOG(gMP4MetadataLog, LogLevel::Debug, ("TrackInfo didn't validate"));
-
-  return {MediaResult(NS_ERROR_DOM_MEDIA_METADATA_ERR,
-                      RESULT_DETAIL("Invalid %s track #%zu",
-                                    TrackTypeToStr(aType), aTrackNumber)),
-          nullptr};
-}
-
-bool MP4MetadataRust::CanSeek() const {
-  MOZ_ASSERT(false, "Not yet implemented");
-  return false;
-}
-
-MP4Metadata::ResultAndCryptoFile MP4MetadataRust::Crypto() const {
-  return {NS_OK, &mCrypto};
-}
-
-MediaResult
-MP4MetadataRust::ReadTrackIndice(mp4parse_byte_data* aIndices, mozilla::TrackID aTrackID) {
-  uint8_t fragmented = false;
-  auto rv = mp4parse_is_fragmented(mRustParser.get(), aTrackID, &fragmented);
-  if (rv != MP4PARSE_STATUS_OK) {
-    return MediaResult(NS_ERROR_DOM_MEDIA_METADATA_ERR,
-                       RESULT_DETAIL("Cannot parse whether track id %d is "
-                                     "fragmented, mp4parse_error=%d",
-                                     int(aTrackID), int(rv)));
-  }
-
-  if (fragmented) {
-    return NS_OK;
-  }
-
-  rv = mp4parse_get_indice_table(mRustParser.get(), aTrackID, aIndices);
-  if (rv != MP4PARSE_STATUS_OK) {
-    return MediaResult(NS_ERROR_DOM_MEDIA_METADATA_ERR,
-                       RESULT_DETAIL("Cannot parse index table in track id %d, "
-                                     "mp4parse_error=%d",
-                                     int(aTrackID), int(rv)));
-  }
-
-  return NS_OK;
-}
-
-/*static*/ MP4Metadata::ResultAndByteBuffer
-MP4MetadataRust::Metadata(Stream* aSource) {
-  MOZ_ASSERT(false, "Not yet implemented");
-  return {NS_ERROR_NOT_IMPLEMENTED, nullptr};
 }
 
 }  // namespace mozilla

@@ -13,7 +13,6 @@
 #include "MediaInfo.h"
 #include "MediaResult.h"
 #include "Stream.h"
-#include "mp4parse.h"
 
 namespace mp4_demuxer {
 
@@ -71,8 +70,6 @@ class MP4Metadata {
 
   bool CanSeek() const;
 
-  nsresult Parse() const;
-
   using ResultAndCryptoFile = ResultAndType<const CryptoFile*>;
   ResultAndCryptoFile Crypto() const;
 
@@ -81,11 +78,6 @@ class MP4Metadata {
 
  private:
   UniquePtr<MP4MetadataStagefright> mStagefright;
-  UniquePtr<MP4MetadataRust> mRust;
-  mutable bool mDisableRust;
-  mutable bool mReportedAudioTrackTelemetry;
-  mutable bool mReportedVideoTrackTelemetry;
-  bool ShouldPreferRust() const;
 };
 
 }  // namespace mozilla

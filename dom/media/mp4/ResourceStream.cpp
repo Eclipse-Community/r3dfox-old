@@ -13,7 +13,6 @@ ResourceStream::ResourceStream(mozilla::MediaResource* aResource)
   , mPinCount(0)
 {
   MOZ_ASSERT(aResource);
-  DDLINKCHILD("resource", &mResource);
 }
 
 ResourceStream::~ResourceStream()

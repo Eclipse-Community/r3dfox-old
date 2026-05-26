@@ -1921,10 +1921,6 @@ public:
       if (mMaster->mDuration.Ref()->IsInfinite()) {
         // We have a finite duration when playback reaches the end.
         mMaster->mDuration = Some(clockTime);
-        DDLOGEX(mMaster,
-                DDLogCategory::Property,
-                "duration_us",
-                mMaster->mDuration.Ref()->ToMicroseconds());
       }
       mMaster->UpdatePlaybackPosition(clockTime);
 
@@ -2170,11 +2166,6 @@ DecodeMetadataState::OnMetadataRead(MetadataHolder&& aMetadata)
   if (mMaster->mDuration.Ref().isNothing()) {
     mMaster->mDuration = Some(TimeUnit::FromInfinity());
   }
-
-  DDLOGEX(mMaster,
-          DDLogCategory::Property,
-          "duration_us",
-          mMaster->mDuration.Ref()->ToMicroseconds());
 
   if (mMaster->HasVideo()) {
     SLOG("Video decode HWAccel=%d videoQueueSize=%d",
@@ -2696,8 +2687,6 @@ MediaDecoderStateMachine::MediaDecoderStateMachine(MediaDecoder* aDecoder,
   NS_ASSERTION(NS_IsMainThread(), "Should be on main thread.");
 
   InitVideoQueuePrefs();
-
-  DDLINKCHILD("reader", aReader);
 }
 
 #undef INIT_WATCHABLE
@@ -2972,12 +2961,7 @@ MediaDecoderStateMachine::UpdatePlaybackPositionInternal(const TimeUnit& aTime)
   mCurrentPosition = aTime;
   NS_ASSERTION(mCurrentPosition.Ref() >= TimeUnit::Zero(),
                "CurrentTime should be positive!");
-  if (mDuration.Ref().ref() < mCurrentPosition.Ref()) {
-    mDuration = Some(mCurrentPosition.Ref());
-    DDLOG(DDLogCategory::Property,
-          "duration_us",
-          mDuration.Ref()->ToMicroseconds());
-  }
+  mDuration = Some(std::max(mDuration.Ref().ref(), mCurrentPosition.Ref()));
 }
 
 void
@@ -3130,9 +3114,6 @@ void MediaDecoderStateMachine::BufferedRangeUpdated()
   if (mDuration.Ref().isNothing() || mDuration.Ref()->IsInfinite() ||
       end > mDuration.Ref().ref()) {
     mDuration = Some(end);
-    DDLOG(DDLogCategory::Property,
-          "duration_us",
-          mDuration.Ref()->ToMicroseconds());
   }
 }
 

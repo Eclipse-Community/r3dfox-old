@@ -263,7 +263,6 @@ using media::TimeUnit;
 ADTSDemuxer::ADTSDemuxer(MediaResource* aSource)
   : mSource(aSource)
 {
-  DDLINKCHILD("source", aSource);
 }
 
 bool
@@ -271,7 +270,6 @@ ADTSDemuxer::InitInternal()
 {
   if (!mTrackDemuxer) {
     mTrackDemuxer = new ADTSTrackDemuxer(mSource);
-    DDLINKCHILD("track demuxer", mTrackDemuxer.get());
   }
   return mTrackDemuxer->Init();
 }
@@ -328,7 +326,6 @@ ADTSTrackDemuxer::ADTSTrackDemuxer(MediaResource* aSource)
   , mSamplesPerSecond(0)
   , mChannels(0)
 {
-  DDLINKCHILD("source", aSource);
   Reset();
 }
 

@@ -122,12 +122,7 @@ private:
 
 class WebMTrackDemuxer;
 
-DDLoggedTypeDeclNameAndBase(WebMDemuxer, MediaDataDemuxer);
-DDLoggedTypeNameAndBase(WebMTrackDemuxer, MediaTrackDemuxer);
-
-class WebMDemuxer
-  : public MediaDataDemuxer
-  , public DecoderDoctorLifeLogger<WebMDemuxer>
+class WebMDemuxer : public MediaDataDemuxer
 {
 public:
   explicit WebMDemuxer(MediaResource* aResource);
@@ -295,9 +290,7 @@ private:
   EncryptionInfo mCrypto;
 };
 
-class WebMTrackDemuxer
-  : public MediaTrackDemuxer
-  , public DecoderDoctorLifeLogger<WebMTrackDemuxer>
+class WebMTrackDemuxer : public MediaTrackDemuxer
 {
 public:
   WebMTrackDemuxer(WebMDemuxer* aParent,

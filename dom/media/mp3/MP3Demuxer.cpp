@@ -30,18 +30,13 @@ namespace mozilla {
 
 // MP3Demuxer
 
-MP3Demuxer::MP3Demuxer(MediaResource* aSource)
-  : mSource(aSource)
-{
-  DDLINKCHILD("source", aSource);
-}
+MP3Demuxer::MP3Demuxer(MediaResource* aSource) : mSource(aSource) { }
 
 bool
 MP3Demuxer::InitInternal()
 {
   if (!mTrackDemuxer) {
     mTrackDemuxer = new MP3TrackDemuxer(mSource);
-    DDLINKCHILD("track demuxer", mTrackDemuxer.get());
   }
   return mTrackDemuxer->Init();
 }
@@ -112,7 +107,6 @@ MP3TrackDemuxer::MP3TrackDemuxer(MediaResource* aSource)
   , mSamplesPerSecond(0)
   , mChannels(0)
 {
-  DDLINKCHILD("source", aSource);
   Reset();
 }
 

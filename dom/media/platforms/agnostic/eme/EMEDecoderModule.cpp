@@ -25,11 +25,7 @@ namespace mozilla {
 typedef MozPromiseRequestHolder<DecryptPromise> DecryptPromiseRequestHolder;
 extern already_AddRefed<PlatformDecoderModule> CreateBlankDecoderModule();
 
-DDLoggedTypeDeclNameAndBase(EMEDecryptor, MediaDataDecoder);
-
-class EMEDecryptor
-  : public MediaDataDecoder
-  , public DecoderDoctorLifeLogger<EMEDecryptor>
+class EMEDecryptor : public MediaDataDecoder
 {
 public:
   EMEDecryptor(MediaDataDecoder* aDecoder, CDMProxy* aProxy,
@@ -43,7 +39,6 @@ public:
     , mThroughputLimiter(aDecodeTaskQueue)
     , mIsShutdown(false)
   {
-    DDLINKCHILD("decoder", mDecoder.get());
   }
 
   RefPtr<InitPromise> Init() override

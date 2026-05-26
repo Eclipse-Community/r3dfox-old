@@ -33,11 +33,7 @@ mozilla::LogModule* GetDemuxerLog()
 
 namespace mozilla {
 
-DDLoggedTypeDeclNameAndBase(MP4TrackDemuxer, MediaTrackDemuxer);
-
-class MP4TrackDemuxer
-  : public MediaTrackDemuxer
-  , public DecoderDoctorLifeLogger<MP4TrackDemuxer>
+class MP4TrackDemuxer : public MediaTrackDemuxer
 {
 public:
   MP4TrackDemuxer(MP4Demuxer* aParent,
@@ -124,8 +120,6 @@ MP4Demuxer::MP4Demuxer(MediaResource* aResource)
   : mResource(aResource)
   , mStream(new ResourceStream(aResource))
 {
-  DDLINKCHILD("resource", aResource);
-  DDLINKCHILD("stream", mStream.get());
 }
 
 RefPtr<MP4Demuxer::InitPromise>
@@ -153,7 +147,6 @@ MP4Demuxer::Init()
     new BufferStream(initData.Ref());
 
   MP4Metadata metadata{bufferstream};
-  DDLINKCHILD("metadata", &metadata);
   nsresult rv = metadata.Parse();
   if (NS_FAILED(rv)) {
     return InitPromise::CreateAndReject(
@@ -229,10 +222,8 @@ MP4Demuxer::Init()
         }
         continue;
       }
-      RefPtr<MP4TrackDemuxer> demuxer =
-        new MP4TrackDemuxer(this, Move(info.Ref()), *indices.Ref().get());
-      DDLINKCHILD("audio demuxer", demuxer.get());
-      mAudioDemuxers.AppendElement(Move(demuxer));
+      mAudioDemuxers.AppendElement(
+        new MP4TrackDemuxer(this, Move(info.Ref()), *indices.Ref().get()));
     }
   }
 
@@ -265,10 +256,8 @@ MP4Demuxer::Init()
         }
         continue;
       }
-      RefPtr<MP4TrackDemuxer> demuxer =
-        new MP4TrackDemuxer(this, Move(info.Ref()), *indices.Ref().get());
-      DDLINKCHILD("video demuxer", demuxer.get());
-      mVideoDemuxers.AppendElement(Move(demuxer));
+      mVideoDemuxers.AppendElement(
+        new MP4TrackDemuxer(this, Move(info.Ref()), *indices.Ref().get()));
     }
   }
 

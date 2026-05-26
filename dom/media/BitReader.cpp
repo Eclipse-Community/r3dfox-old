@@ -4,7 +4,7 @@
 
 // Derived from Stagefright's ABitReader.
 
-#include "BitReader.h"
+#include "mp4_demuxer/BitReader.h"
 
 using namespace mozilla;
 

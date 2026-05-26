@@ -1285,7 +1285,7 @@ nsIDocument::nsIDocument()
       mBlockAllMixedContentPreloads(false),
       mUpgradeInsecureRequests(false),
       mUpgradeInsecurePreloads(false),
-      mCharacterSet(WINDOWS_1252_ENCODING),
+      mCharacterSet(NS_LITERAL_CSTRING("windows-1252")),
       mCharacterSetSource(0),
       mParentDocument(nullptr),
       mCachedRootElement(nullptr),
@@ -3466,12 +3466,15 @@ void nsDocument::GetBaseTarget(nsAString& aBaseTarget) {
   aBaseTarget = mBaseTarget;
 }
 
-void nsDocument::SetDocumentCharacterSet(NotNull<const Encoding*> aEncoding) {
-  if (mCharacterSet != aEncoding) {
-    mCharacterSet = aEncoding;
+void nsDocument::SetDocumentCharacterSet(const nsACString& aCharSetID) {
+  // XXX it would be a good idea to assert the sanity of the argument,
+  // but before we figure out what to do about non-Encoding Standard
+  // encodings in the charset menu and in mailnews, assertions are futile.
+  if (!mCharacterSet.Equals(aCharSetID)) {
+    mCharacterSet = aCharSetID;
 
     if (nsPresContext* context = GetPresContext()) {
-      context->DispatchCharSetChange(aEncoding);
+      context->DispatchCharSetChange(aCharSetID);
     }
   }
 }
@@ -3602,7 +3605,7 @@ void nsDocument::SetHeaderData(nsAtom* aHeaderField, const nsAString& aData) {
 }
 void nsDocument::TryChannelCharset(nsIChannel* aChannel,
                                    int32_t& aCharsetSource,
-                                   NotNull<const Encoding*>& aEncoding,
+                                   nsACString& aCharset,
                                    nsHtml5TreeOpExecutor* aExecutor) {
   if (aChannel) {
     nsAutoCString charsetVal;
@@ -3610,7 +3613,7 @@ void nsDocument::TryChannelCharset(nsIChannel* aChannel,
     if (NS_SUCCEEDED(rv)) {
       const Encoding* preferred = Encoding::ForLabel(charsetVal);
       if (preferred) {
-        aEncoding = WrapNotNull(preferred);
+        preferred->Name(aCharset);
         aCharsetSource = kCharsetFromChannel;
         return;
       } else if (aExecutor && !charsetVal.IsEmpty()) {
@@ -5599,9 +5602,7 @@ void nsIDocument::EnableStyleSheetsForSetInternal(const nsAString& aSheetSet,
 }
 
 void nsIDocument::GetCharacterSet(nsAString& aCharacterSet) const {
-  nsAutoCString charset;
-  GetDocumentCharacterSet()->Name(charset);
-  CopyASCIItoUTF16(charset, aCharacterSet);
+  CopyASCIItoUTF16(GetDocumentCharacterSet(), aCharacterSet);
 }
 
 already_AddRefed<nsINode> nsIDocument::ImportNode(nsINode& aNode, bool aDeep,
@@ -5635,7 +5636,9 @@ void nsIDocument::LoadBindingDocument(const nsAString& aURI,
                                       nsIPrincipal& aSubjectPrincipal,
                                       ErrorResult& rv) {
   nsCOMPtr<nsIURI> uri;
-  rv = NS_NewURI(getter_AddRefs(uri), aURI, mCharacterSet, GetDocBaseURI());
+  rv = NS_NewURI(getter_AddRefs(uri), aURI,
+                 mCharacterSet.get(),
+                 GetDocBaseURI());
   if (rv.Failed()) {
     return;
   }
@@ -8756,7 +8759,8 @@ void nsDocument::ScrollToRef() {
       // If UTF-8 URI failed then try to assume the string as a
       // document's charset.
       if (NS_FAILED(rv)) {
-        const Encoding* encoding = GetDocumentCharacterSet();
+        const nsACString &docCharset = GetDocumentCharacterSet();
+        const Encoding* encoding = Encoding::ForName(docCharset);
         rv = encoding->DecodeWithoutBOMHandling(unescapedRef, ref);
         if (NS_SUCCEEDED(rv) && !ref.IsEmpty()) {
           rv = shell->GoToAnchor(ref, mChangeScrollPosWhenScrollingToRef);

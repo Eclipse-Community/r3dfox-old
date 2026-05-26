@@ -20,13 +20,9 @@
 #include "nsISupports.h"
 #include "nsString.h"
 #include "mozilla/FlushType.h"
-#include "mozilla/NotNull.h"
 #include "nsIDTD.h"
 
 class nsParserBase;
-namespace mozilla {
-class Encoding;
-}
 
 #define NS_ICONTENT_SINK_IID                         \
   {                                                  \
@@ -36,11 +32,6 @@ class Encoding;
   }
 
 class nsIContentSink : public nsISupports {
- protected:
-  using Encoding = mozilla::Encoding;
-  template <typename T>
-  using NotNull = mozilla::NotNull<T>;
-
  public:
   NS_DECLARE_STATIC_IID_ACCESSOR(NS_ICONTENT_SINK_IID)
 
@@ -111,7 +102,7 @@ class nsIContentSink : public nsISupports {
    * Set the document character set. This should be passed on to the
    * document itself.
    */
-  virtual void SetDocumentCharset(NotNull<const Encoding*> aEncoding) = 0;
+  NS_IMETHOD SetDocumentCharset(nsACString& aCharset)=0;
 
   /**
    * Returns the target object (often a document object) into which

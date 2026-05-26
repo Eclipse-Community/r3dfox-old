@@ -10,7 +10,6 @@
 
 #include "mozilla/ArrayUtils.h"
 #include "mozilla/DebugOnly.h"
-#include "mozilla/Encoding.h"
 #include "mozilla/EventDispatcher.h"
 #include "mozilla/EventStateManager.h"
 
@@ -135,7 +134,7 @@ namespace {
 class CharSetChangingRunnable : public Runnable {
  public:
   CharSetChangingRunnable(nsPresContext* aPresContext,
-                          NotNull<const Encoding*> aCharSet)
+                          const nsCString& aCharSet)
       : Runnable("CharSetChangingRunnable"),
         mPresContext(aPresContext),
         mCharSet(aCharSet) {}
@@ -147,7 +146,7 @@ class CharSetChangingRunnable : public Runnable {
 
  private:
   RefPtr<nsPresContext> mPresContext;
-  NotNull<const Encoding*> mCharSet;
+  nsCString mCharSet;
 };
 
 }  // namespace
@@ -224,8 +223,14 @@ void nsPresContext::ForceReflowForFontInfoUpdate() {
   PreferenceChanged("font.internaluseonly.changed");
 }
 
-static bool IsVisualCharset(NotNull<const Encoding*> aCharset) {
-  return aCharset == ISO_8859_8_ENCODING;
+static bool IsVisualCharset(const nsCString& aCharset) {
+  if (aCharset.LowerCaseEqualsLiteral("ibm862")             // Hebrew
+      || aCharset.LowerCaseEqualsLiteral("iso-8859-8") ) {  // Hebrew
+    return true; // visual text type
+  }
+  else {
+    return false; // logical text type
+  }
 }
 
 nsPresContext::nsPresContext(nsIDocument* aDocument, nsPresContextType aType)
@@ -1045,7 +1050,7 @@ void nsPresContext::DetachShell() {
   }
 }
 
-void nsPresContext::DoChangeCharSet(NotNull<const Encoding*> aCharSet) {
+void nsPresContext::DoChangeCharSet(const nsCString& aCharSet) {
   UpdateCharSet(aCharSet);
   mDeviceContext->FlushFontCache();
   // In Stylo, if a document contains one or more <script> elements, frame
@@ -1056,7 +1061,7 @@ void nsPresContext::DoChangeCharSet(NotNull<const Encoding*> aCharSet) {
                                                 : nsRestyleHint(0));
 }
 
-void nsPresContext::UpdateCharSet(NotNull<const Encoding*> aCharSet) {
+void nsPresContext::UpdateCharSet(const nsCString& aCharSet) {
   mLanguage = mLangService->LookupCharSet(aCharSet);
   // this will be a language group (or script) code rather than a true language
   // code
@@ -1083,17 +1088,17 @@ void nsPresContext::UpdateCharSet(NotNull<const Encoding*> aCharSet) {
   }
 }
 
-void nsPresContext::DispatchCharSetChange(NotNull<const Encoding*> aEncoding) {
+void nsPresContext::DispatchCharSetChange(const nsCString& aCharSetID) {
 #ifdef MOZ_OLD_STYLE
   if (!Document()->IsStyledByServo()) {
     RefPtr<CharSetChangingRunnable> runnable =
-        new CharSetChangingRunnable(this, aEncoding);
+        new CharSetChangingRunnable(this, aCharSetID);
     Document()->Dispatch(TaskCategory::Other, runnable.forget());
     return;
   }
 #endif
   // In Servo RebuildAllStyleData is async, so no need to do the runnable dance.
-  DoChangeCharSet(aEncoding);
+  DoChangeCharSet(aCharSetID);
 }
 
 nsPresContext* nsPresContext::GetParentPresContext() {

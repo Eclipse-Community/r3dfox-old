@@ -35,11 +35,7 @@ class nsReadEndCondition {
   void operator=(const nsReadEndCondition& aOther);      // No assigning
 };
 
-class nsScanner final {
-  using Encoding = mozilla::Encoding;
-  template <typename T>
-  using NotNull = mozilla::NotNull<T>;
-
+class nsScanner {
  public:
   /**
    *  Use this constructor for the XML fragment parsing case
@@ -143,8 +139,7 @@ class nsScanner final {
    *  @param   aCharsetSource- where the charset info came from
    *  @return
    */
-  nsresult SetDocumentCharset(NotNull<const Encoding*> aEncoding,
-                              int32_t aSource);
+  nsresult SetDocumentCharset(const nsACString& aCharset, int32_t aSource);
 
   void BindSubstring(nsScannerSubstring& aSubstring,
                      const nsScannerIterator& aStart,

@@ -206,7 +206,7 @@ already_AddRefed<nsIURI> XULLinkAccessible::AnchorURIAt(uint32_t aAnchorIndex) {
 
   nsCOMPtr<nsIURI> anchorURI;
   NS_NewURI(getter_AddRefs(anchorURI), href,
-            document->GetDocumentCharacterSet(), baseURI);
+            document->GetDocumentCharacterSet().get(), baseURI);
 
   return anchorURI.forget();
 }

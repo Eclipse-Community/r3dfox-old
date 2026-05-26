@@ -189,7 +189,6 @@ bool XMLHttpRequestMainThread::sDontWarnAboutSyncXHR = false;
 
 XMLHttpRequestMainThread::XMLHttpRequestMainThread()
     : mResponseBodyDecodedPos(0),
-      mResponseCharset(nullptr),
       mResponseType(XMLHttpRequestResponseType::_empty),
       mRequestObserver(nullptr),
       mState(XMLHttpRequestBinding::UNSENT),
@@ -453,7 +452,7 @@ nsIDocument* XMLHttpRequestMainThread::GetResponseXML(ErrorResult& aRv) {
  * from HTTP headers.
  */
 nsresult XMLHttpRequestMainThread::DetectCharset() {
-  mResponseCharset = nullptr;
+  mResponseCharset.Truncate();
   mDecoder = nullptr;
 
   if (mResponseType != XMLHttpRequestResponseType::_empty &&
@@ -478,7 +477,7 @@ nsresult XMLHttpRequestMainThread::DetectCharset() {
     encoding = UTF_8_ENCODING;
   }
 
-  mResponseCharset = encoding;
+  encoding->Name(mResponseCharset);
   mDecoder = encoding->NewDecoderWithBOMRemoval();
 
   return NS_OK;
@@ -2172,7 +2171,7 @@ void XMLHttpRequestMainThread::MatchCharsetAndDecoderToResponseDocument() {
     mResponseCharset = mResponseXML->GetDocumentCharacterSet();
     TruncateResponseText();
     mResponseBodyDecodedPos = 0;
-    mDecoder = mResponseCharset->NewDecoderWithBOMRemoval();
+    mDecoder = Encoding::ForName(mResponseCharset)->NewDecoderWithBOMRemoval();
   }
 }
 

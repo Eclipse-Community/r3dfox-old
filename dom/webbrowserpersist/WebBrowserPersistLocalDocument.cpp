@@ -116,7 +116,7 @@ WebBrowserPersistLocalDocument::GetContentType(nsACString& aContentType) {
 
 NS_IMETHODIMP
 WebBrowserPersistLocalDocument::GetCharacterSet(nsACString& aCharSet) {
-  GetCharacterSet()->Name(aCharSet);
+  aCharSet = GetCharacterSet();
   return NS_OK;
 }
 
@@ -208,7 +208,7 @@ already_AddRefed<nsISHEntry> WebBrowserPersistLocalDocument::GetHistory() {
   return history.forget();
 }
 
-NotNull<const Encoding*> WebBrowserPersistLocalDocument::GetCharacterSet()
+const nsCString& WebBrowserPersistLocalDocument::GetCharacterSet()
     const {
   return mDocument->GetDocumentCharacterSet();
 }
@@ -345,7 +345,7 @@ nsresult ResourceReader::OnWalkURI(const nsACString& aURISpec) {
   nsresult rv;
   nsCOMPtr<nsIURI> uri;
 
-  rv = NS_NewURI(getter_AddRefs(uri), aURISpec, mParent->GetCharacterSet(),
+  rv = NS_NewURI(getter_AddRefs(uri), aURISpec, mParent->GetCharacterSet().get(),
                  mCurrentBaseURI);
   NS_ENSURE_SUCCESS(rv, rv);
   return OnWalkURI(uri);
@@ -603,7 +603,7 @@ nsresult PersistNodeFixup::GetNodeToFixup(nsINode* aNodeIn,
 nsresult PersistNodeFixup::FixupURI(nsAString& aURI) {
   // get the current location of the file (absolutized)
   nsCOMPtr<nsIURI> uri;
-  nsresult rv = NS_NewURI(getter_AddRefs(uri), aURI, mParent->GetCharacterSet(),
+  nsresult rv = NS_NewURI(getter_AddRefs(uri), aURI, mParent->GetCharacterSet().get(),
                           mCurrentBaseURI);
   NS_ENSURE_SUCCESS(rv, rv);
   nsAutoCString spec;
@@ -683,7 +683,7 @@ nsresult PersistNodeFixup::FixupAnchor(nsINode* aNode) {
     // Make a new URI to replace the current one
     nsCOMPtr<nsIURI> newURI;
     nsresult rv = NS_NewURI(getter_AddRefs(newURI), oldCValue,
-                            mParent->GetCharacterSet(), relativeURI);
+                            mParent->GetCharacterSet().get(), relativeURI);
     if (NS_SUCCEEDED(rv) && newURI) {
       Unused
           << NS_MutateURI(newURI).SetUserPass(EmptyCString()).Finalize(newURI);

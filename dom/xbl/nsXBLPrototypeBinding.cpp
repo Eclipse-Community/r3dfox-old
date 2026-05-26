@@ -1533,7 +1533,7 @@ nsresult nsXBLPrototypeBinding::ResolveBaseBinding() {
     mBinding->UnsetAttr(kNameSpaceID_None, nsGkAtoms::display, false);
 
     return NS_NewURI(getter_AddRefs(mBaseBindingURI), value,
-                     doc->GetDocumentCharacterSet(), doc->GetDocBaseURI());
+                     doc->GetDocumentCharacterSet().get(), doc->GetDocBaseURI());
   }
 
   return NS_OK;

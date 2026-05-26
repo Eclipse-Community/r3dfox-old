@@ -2606,7 +2606,7 @@ bool ScriptLoader::ReadyToExecuteParserBlockingScripts() {
 
   if (!unicodeDecoder && aDocument) {
     unicodeDecoder =
-        aDocument->GetDocumentCharacterSet()->NewDecoderWithoutBOMHandling();
+        Encoding::ForName(aDocument->GetDocumentCharacterSet())->NewDecoderWithoutBOMHandling();
   }
 
   if (!unicodeDecoder) {

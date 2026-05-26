@@ -127,7 +127,7 @@ class HTMLContentSink : public nsContentSink, public nsIHTMLContentSink {
   NS_IMETHOD WillResume(void) override;
   NS_IMETHOD SetParser(nsParserBase* aParser) override;
   virtual void FlushPendingNotifications(FlushType aType) override;
-  virtual void SetDocumentCharset(NotNull<const Encoding*> aEncoding) override;
+  NS_IMETHOD SetDocumentCharset(nsACString& aCharset) override;
   virtual nsISupports* GetTarget() override;
   virtual bool IsScriptExecuting() override;
   virtual void ContinueInterruptedParsingAsync() override;
@@ -949,8 +949,9 @@ nsresult HTMLContentSink::FlushTags() {
   return mCurrentContext ? mCurrentContext->FlushTags() : NS_OK;
 }
 
-void HTMLContentSink::SetDocumentCharset(NotNull<const Encoding*> aEncoding) {
+NS_IMETHODIMP HTMLContentSink::SetDocumentCharset(nsACString& aCharset) {
   MOZ_ASSERT_UNREACHABLE("<meta charset> case doesn't occur with about:blank");
+  return NS_ERROR_NOT_IMPLEMENTED;
 }
 
 nsISupports* HTMLContentSink::GetTarget() { return mDocument; }

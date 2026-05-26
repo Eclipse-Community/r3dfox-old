@@ -1145,17 +1145,15 @@ void nsHtml5TreeBuilder::FlushLoads() {
   }
 }
 
-void nsHtml5TreeBuilder::SetDocumentCharset(NotNull<const Encoding*> aEncoding,
+void nsHtml5TreeBuilder::SetDocumentCharset(nsACString& aCharset,
                                             int32_t aCharsetSource) {
   if (mBuilder) {
-    mBuilder->SetDocumentCharsetAndSource(aEncoding, aCharsetSource);
+    mBuilder->SetDocumentCharsetAndSource(aCharset, aCharsetSource);
   } else if (mSpeculativeLoadStage) {
-    nsAutoCString charset;
-    aEncoding->Name(charset);
     mSpeculativeLoadQueue.AppendElement()->InitSetDocumentCharset(
-        charset, aCharsetSource);
+        aCharset, aCharsetSource);
   } else {
-    mOpQueue.AppendElement()->Init(eTreeOpSetDocumentCharset, aEncoding,
+    mOpQueue.AppendElement()->Init(eTreeOpSetDocumentCharset, aCharset,
                                    aCharsetSource);
   }
 }
@@ -1172,7 +1170,7 @@ void nsHtml5TreeBuilder::StreamEnded() {
 }
 
 void nsHtml5TreeBuilder::NeedsCharsetSwitchTo(
-    NotNull<const Encoding*> aEncoding, int32_t aCharsetSource,
+    const nsACString& aCharset, int32_t aCharsetSource,
     int32_t aLineNumber) {
   if (MOZ_UNLIKELY(mBuilder)) {
     MOZ_ASSERT_UNREACHABLE("Must never switch charset with builder.");
@@ -1183,7 +1181,7 @@ void nsHtml5TreeBuilder::NeedsCharsetSwitchTo(
     MarkAsBrokenAndRequestSuspensionWithoutBuilder(NS_ERROR_OUT_OF_MEMORY);
     return;
   }
-  treeOp->Init(eTreeOpNeedsCharsetSwitchTo, aEncoding, aCharsetSource,
+  treeOp->Init(eTreeOpNeedsCharsetSwitchTo, aCharset, aCharsetSource,
                aLineNumber);
 }
 

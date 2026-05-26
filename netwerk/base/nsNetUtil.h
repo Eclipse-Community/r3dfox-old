@@ -16,7 +16,6 @@
 #include "nsIRequest.h"
 #include "nsILoadInfo.h"
 #include "nsIIOService.h"
-#include "mozilla/NotNull.h"
 #include "mozilla/Services.h"
 #include "mozilla/Unused.h"
 #include "nsNetCID.h"
@@ -54,7 +53,6 @@ class nsIUnicharStreamLoader;
 class nsIUnicharStreamLoaderObserver;
 
 namespace mozilla {
-class Encoding;
 class OriginAttributes;
 namespace dom {
 class ClientInfo;
@@ -80,20 +78,8 @@ nsresult NS_NewURI(nsIURI **result, const nsACString &spec,
                    nsIIOService *ioService =
                        nullptr);  // pass in nsIIOService to optimize callers
 
-nsresult NS_NewURI(nsIURI **result, const nsACString &spec,
-                   mozilla::NotNull<const mozilla::Encoding *> encoding,
-                   nsIURI *baseURI = nullptr,
-                   nsIIOService *ioService =
-                       nullptr);  // pass in nsIIOService to optimize callers
-
 nsresult NS_NewURI(nsIURI **result, const nsAString &spec,
                    const char *charset = nullptr, nsIURI *baseURI = nullptr,
-                   nsIIOService *ioService =
-                       nullptr);  // pass in nsIIOService to optimize callers
-
-nsresult NS_NewURI(nsIURI **result, const nsAString &spec,
-                   mozilla::NotNull<const mozilla::Encoding *> encoding,
-                   nsIURI *baseURI = nullptr,
                    nsIIOService *ioService =
                        nullptr);  // pass in nsIIOService to optimize callers
 

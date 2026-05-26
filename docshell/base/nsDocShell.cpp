@@ -313,8 +313,6 @@ static void DecreasePrivateDocShellCount() {
 
 nsDocShell::nsDocShell()
     : nsDocLoader(),
-      mForcedCharset(nullptr),
-      mParentCharset(nullptr),
       mTreeOwner(nullptr),
       mDefaultScrollbarPref(Scrollbar_Auto, Scrollbar_Auto),
       mCharsetReloadState(eCharsetReloadInit),
@@ -1425,7 +1423,7 @@ nsDocShell::GetCharset(nsACString& aCharset) {
   NS_ENSURE_TRUE(presShell, NS_ERROR_FAILURE);
   nsIDocument* doc = presShell->GetDocument();
   NS_ENSURE_TRUE(doc, NS_ERROR_FAILURE);
-  doc->GetDocumentCharacterSet()->Name(aCharset);
+  aCharset = doc->GetDocumentCharacterSet();
   return NS_OK;
 }
 
@@ -1508,7 +1506,7 @@ nsDocShell::SetCharset(const nsACString& aCharset) {
 NS_IMETHODIMP
 nsDocShell::SetForcedCharset(const nsACString& aCharset) {
   if (aCharset.IsEmpty()) {
-    mForcedCharset = nullptr;
+    mForcedCharset.Truncate();
     return NS_OK;
   }
   const Encoding* encoding = Encoding::ForLabel(aCharset);
@@ -1520,21 +1518,21 @@ nsDocShell::SetForcedCharset(const nsACString& aCharset) {
     // Reject XSS hazards
     return NS_ERROR_INVALID_ARG;
   }
-  mForcedCharset = encoding;
+  encoding->Name(mForcedCharset);
   return NS_OK;
 }
 
 NS_IMETHODIMP
 nsDocShell::GetForcedCharset(nsACString& aResult) {
   if (mForcedCharset) {
-    mForcedCharset->Name(aResult);
+    aResult = mForcedCharset;
   } else {
     aResult.Truncate();
   }
   return NS_OK;
 }
 
-void nsDocShell::SetParentCharset(const Encoding*& aCharset,
+void nsDocShell::SetParentCharset(const nsACString& aCharset,
                                   int32_t aCharsetSource,
                                   nsIPrincipal* aPrincipal) {
   mParentCharset = aCharset;
@@ -1542,7 +1540,7 @@ void nsDocShell::SetParentCharset(const Encoding*& aCharset,
   mParentCharsetPrincipal = aPrincipal;
 }
 
-void nsDocShell::GetParentCharset(const Encoding*& aCharset,
+void nsDocShell::GetParentCharset(nsACString& aCharset,
                                   int32_t* aCharsetSource,
                                   nsIPrincipal** aPrincipal) {
   aCharset = mParentCharset;
@@ -3598,7 +3596,7 @@ nsDocShell::AddChild(nsIDocShellTreeItem* aChild) {
     // the actual source charset, which is what we're trying to
     // expose here.
 
-    const Encoding* parentCS = doc->GetDocumentCharacterSet();
+    const nsACString& parentCS = doc->GetDocumentCharacterSet();
     int32_t charsetSource = doc->GetDocumentCharacterSetSource();
     // set the child's parentCharset
     childAsDocShell->SetParentCharset(parentCS, charsetSource,
@@ -10919,8 +10917,7 @@ nsresult nsDocShell::ScrollToAnchor(bool aCurHasRef, bool aNewHasRef,
       NS_ENSURE_TRUE(mContentViewer, NS_ERROR_FAILURE);
       nsIDocument* doc = mContentViewer->GetDocument();
       NS_ENSURE_TRUE(doc, NS_ERROR_FAILURE);
-      nsAutoCString charset;
-      doc->GetDocumentCharacterSet()->Name(charset);
+      const nsACString& charset = doc->GetDocumentCharacterSet();
 
       nsCOMPtr<nsITextToSubURI> textToSubURI =
           do_GetService(NS_ITEXTTOSUBURI_CONTRACTID, &rv);

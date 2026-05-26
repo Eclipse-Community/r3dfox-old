@@ -720,7 +720,7 @@ void nsHtml5TreeOpExecutor::Start() {
 }
 
 void nsHtml5TreeOpExecutor::NeedsCharsetSwitchTo(
-    NotNull<const Encoding*> aEncoding, int32_t aSource, uint32_t aLineNumber) {
+    const char* aEncoding, int32_t aSource, uint32_t aLineNumber) {
   nsHtml5AutoPauseUpdate autoPause(this);
   if (MOZ_UNLIKELY(!mParser)) {
     // got terminate
@@ -734,9 +734,7 @@ void nsHtml5TreeOpExecutor::NeedsCharsetSwitchTo(
 
   // ask the webshellservice to load the URL
   if (NS_SUCCEEDED(wss->StopDocumentLoad())) {
-    nsAutoCString charset;
-    aEncoding->Name(charset);
-    wss->ReloadDocument(charset.get(), aSource);
+    wss->ReloadDocument(aEncoding, aSource);
   }
   // if the charset switch was accepted, wss has called Terminate() on the
   // parser by now
@@ -896,9 +894,9 @@ already_AddRefed<nsIURI> nsHtml5TreeOpExecutor::ConvertIfNotPreloadedYet(
   }
 
   nsIURI* base = BaseURIForPreload();
-  auto encoding = mDocument->GetDocumentCharacterSet();
+  const nsCString& charset = mDocument->GetDocumentCharacterSet();
   nsCOMPtr<nsIURI> uri;
-  nsresult rv = NS_NewURI(getter_AddRefs(uri), aURL, encoding, base);
+  nsresult rv = NS_NewURI(getter_AddRefs(uri), aURL, charset.get(), base);
   if (NS_FAILED(rv)) {
     NS_WARNING("Failed to create a URI");
     return nullptr;
@@ -991,8 +989,8 @@ void nsHtml5TreeOpExecutor::PreloadEndPicture() {
 }
 
 void nsHtml5TreeOpExecutor::AddBase(const nsAString& aURL) {
-  auto encoding = mDocument->GetDocumentCharacterSet();
-  nsresult rv = NS_NewURI(getter_AddRefs(mViewSourceBaseURI), aURL, encoding,
+  const nsCString& charset = mDocument->GetDocumentCharacterSet();
+  nsresult rv = NS_NewURI(getter_AddRefs(mViewSourceBaseURI), aURL, charset.get(),
                           GetViewSourceBaseURI());
   if (NS_FAILED(rv)) {
     mViewSourceBaseURI = nullptr;
@@ -1003,9 +1001,9 @@ void nsHtml5TreeOpExecutor::SetSpeculationBase(const nsAString& aURL) {
     // the first one wins
     return;
   }
-  auto encoding = mDocument->GetDocumentCharacterSet();
+  const nsCString& charset = mDocument->GetDocumentCharacterSet();
   DebugOnly<nsresult> rv = NS_NewURI(getter_AddRefs(mSpeculationBaseURI), aURL,
-                                     encoding, mDocument->GetDocumentURI());
+                                     charset.get(), mDocument->GetDocumentURI());
   NS_WARNING_ASSERTION(NS_SUCCEEDED(rv), "Failed to create a URI");
 }
 

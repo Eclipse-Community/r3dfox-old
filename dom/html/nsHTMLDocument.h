@@ -303,22 +303,22 @@ class nsHTMLDocument : public nsDocument, public nsIHTMLDocument {
 
   static void TryHintCharset(nsIContentViewer* aContentViewer,
                              int32_t& aCharsetSource,
-                             NotNull<const Encoding*>& aEncoding);
+                             nsACString& aCharset);
   void TryUserForcedCharset(nsIContentViewer* aCv, nsIDocShell* aDocShell,
                             int32_t& aCharsetSource,
-                            NotNull<const Encoding*>& aEncoding);
+                            nsACString& aCharset);
   static void TryCacheCharset(nsICachingChannel* aCachingChannel,
                               int32_t& aCharsetSource,
-                              NotNull<const Encoding*>& aEncoding);
+                              nsACString& aCharset);
   void TryParentCharset(nsIDocShell* aDocShell, int32_t& charsetSource,
-                        NotNull<const Encoding*>& aEncoding);
-  void TryTLD(int32_t& aCharsetSource, NotNull<const Encoding*>& aCharset);
+                        nsACString& aCharset);
+  void TryTLD(int32_t& aCharsetSource, nsACString& aCharset);
   void TryFallback(int32_t& aCharsetSource,
-                   NotNull<const Encoding*>& aEncoding);
+                   nsACString& aCharset);
 
   // Override so we can munge the charset on our wyciwyg channel as needed.
   virtual void SetDocumentCharacterSet(
-      NotNull<const Encoding*> aEncoding) override;
+      const nsACString& aCharSetID) override;
 
   // Tracks if we are currently processing any document.write calls (either
   // implicit or explicit). Note that if a write call writes out something which

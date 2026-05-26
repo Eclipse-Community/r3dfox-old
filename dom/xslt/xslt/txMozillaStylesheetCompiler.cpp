@@ -81,8 +81,7 @@ class txStylesheetSink final : public nsIXMLContentSink,
   NS_IMETHOD WillResume(void) override { return NS_OK; }
   NS_IMETHOD SetParser(nsParserBase* aParser) override { return NS_OK; }
   virtual void FlushPendingNotifications(mozilla::FlushType aType) override {}
-  virtual void SetDocumentCharset(NotNull<const Encoding*> aEncoding) override {
-  }
+  NS_IMETHOD SetDocumentCharset(nsACString& aCharset) override { return NS_OK; }
   virtual nsISupports* GetTarget() override { return nullptr; }
 
  private:
@@ -241,7 +240,9 @@ txStylesheetSink::OnStartRequest(nsIRequest* aRequest, nsISupports* aContext) {
     encoding = UTF_8_ENCODING;
   }
 
-  mParser->SetDocumentCharset(WrapNotNull(encoding), charsetSource);
+  nsAutoCString charset;
+  encoding->Name(charset);
+  mParser->SetDocumentCharset(charset, charsetSource);
 
   nsAutoCString contentType;
   channel->GetContentType(contentType);

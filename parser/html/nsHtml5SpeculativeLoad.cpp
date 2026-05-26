@@ -100,7 +100,7 @@ void nsHtml5SpeculativeLoad::Perform(nsHtml5TreeOpExecutor* aExecutor) {
       int32_t intSource =
           (int32_t)mTypeOrCharsetSourceOrDocumentModeOrMetaCSPOrSizesOrIntegrity
               .First();
-      aExecutor->SetDocumentCharsetAndSource(Encoding::ForName(narrowName), intSource);
+      aExecutor->SetDocumentCharsetAndSource(narrowName, intSource);
     } break;
     case eSpeculativeLoadSetDocumentMode: {
       NS_ASSERTION(mTypeOrCharsetSourceOrDocumentModeOrMetaCSPOrSizesOrIntegrity

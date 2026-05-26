@@ -19,7 +19,6 @@
 #include "nsCharsetSource.h"
 
 using mozilla::Encoding;
-using mozilla::NotNull;
 
 #define XMLNS_URI "http://www.w3.org/2000/xmlns/"
 
@@ -358,9 +357,9 @@ nsresult nsSAXXMLReader::InitParser(nsIRequestObserver *aObserver,
   parser->SetContentSink(this);
 
   int32_t charsetSource = kCharsetFromDocTypeDefault;
-  auto encoding = UTF_8_ENCODING;
-  TryChannelCharset(aChannel, charsetSource, encoding);
-  parser->SetDocumentCharset(encoding, charsetSource);
+  nsAutoCString charset(NS_LITERAL_CSTRING("UTF-8"));
+  TryChannelCharset(aChannel, charsetSource, charset);
+  parser->SetDocumentCharset(charset, charsetSource);
 
   rv = parser->Parse(mBaseURI, aObserver);
   NS_ENSURE_SUCCESS(rv, rv);
@@ -373,7 +372,7 @@ nsresult nsSAXXMLReader::InitParser(nsIRequestObserver *aObserver,
 // from nsDocument.cpp
 bool nsSAXXMLReader::TryChannelCharset(nsIChannel *aChannel,
                                        int32_t &aCharsetSource,
-                                       NotNull<const Encoding *> &aEncoding) {
+                                       nsACString& aCharset) {
   if (aCharsetSource >= kCharsetFromChannel) return true;
 
   if (aChannel) {
@@ -383,7 +382,7 @@ bool nsSAXXMLReader::TryChannelCharset(nsIChannel *aChannel,
       const Encoding *preferred = Encoding::ForLabel(charsetVal);
       if (!preferred) return false;
 
-      aEncoding = WrapNotNull(preferred);
+      preferred->Name(aCharset);
       aCharsetSource = kCharsetFromChannel;
       return true;
     }

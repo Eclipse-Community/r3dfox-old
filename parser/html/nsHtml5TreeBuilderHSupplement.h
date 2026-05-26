@@ -4,10 +4,6 @@
 
 #define NS_HTML5_TREE_BUILDER_HANDLE_ARRAY_LENGTH 512
 private:
-using Encoding = mozilla::Encoding;
-template <typename T>
-using NotNull = mozilla::NotNull<T>;
-
 nsHtml5OplessBuilder* mBuilder;
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 // If mBuilder is not null, the tree op machinery is not in use and
@@ -103,12 +99,12 @@ bool Flush(bool aDiscretionary = false);
 
 void FlushLoads();
 
-void SetDocumentCharset(NotNull<const Encoding*> aEncoding,
+void SetDocumentCharset(nsACString& aCharset,
                         int32_t aCharsetSource);
 
 void StreamEnded();
 
-void NeedsCharsetSwitchTo(NotNull<const Encoding*> aEncoding, int32_t aSource,
+void NeedsCharsetSwitchTo(const nsACString& aEncoding, int32_t aSource,
                           int32_t aLineNumber);
 
 void MaybeComplainAboutCharset(const char* aMsgId, bool aError,

@@ -109,7 +109,7 @@ bool nsXBLResourceLoader::LoadResources(nsIContent* aBoundElement) {
     if (curr->mSrc.IsEmpty()) continue;
 
     if (NS_FAILED(NS_NewURI(getter_AddRefs(url), curr->mSrc,
-                            doc->GetDocumentCharacterSet(), docURL)))
+                            doc->GetDocumentCharacterSet().get(), docURL)))
       continue;
 
     if (curr->mType == nsGkAtoms::image) {

@@ -37,9 +37,10 @@ nsReferencedElement::Reset(nsIContent* aFromContent, nsIURI* aURI,
     return;
   }
 
-  auto encoding = doc->GetDocumentCharacterSet();
+  const nsCString& doc_charset = doc->GetDocumentCharacterSet();
+  const char *charset = doc_charset.IsEmpty() ? nullptr : doc_charset.get();
   nsAutoString ref;
-  nsresult rv = encoding->DecodeWithoutBOMHandling(refPart, ref);
+  nsresult rv = charset->DecodeWithoutBOMHandling(refPart, ref);
   if (NS_FAILED(rv) || ref.IsEmpty()) {
     return;
   }

@@ -12,6 +12,8 @@
 #include "BufferReader.h"
 #include "mozilla/ResultExtensions.h"
 
+using mp4_demuxer::BufferReader;
+
 namespace mozilla
 {
 

@@ -7,7 +7,7 @@
 
 #include "MediaData.h"
 
-namespace mozilla
+namespace mp4_demuxer
 {
 
 class BitReader
@@ -45,6 +45,6 @@ private:
   size_t mNumBitsLeft;    // Number of bits left in reservoir.
 };
 
-} // namespace mozilla
+} // namespace mp4_demuxer
 
 #endif // BIT_READER_H_

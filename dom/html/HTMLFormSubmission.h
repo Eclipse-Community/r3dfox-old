@@ -10,7 +10,7 @@
 #include "mozilla/Attributes.h"
 #include "mozilla/dom/Element.h"
 #include "nsCOMPtr.h"
-#include "mozilla/Encoding.h"
+#include "nsNCRFallbackEncoderWrapper.h"
 #include "nsString.h"
 
 class nsIURI;
@@ -95,7 +95,10 @@ public:
   /**
    * Get the charset that will be used for submission.
    */
-  void GetCharset(nsACString& aCharset) { mEncoding->Name(aCharset); }
+  void GetCharset(nsACString& aCharset)
+  {
+    aCharset = mCharset;
+  }
 
   Element* GetOriginatingElement() const
   {
@@ -106,19 +109,19 @@ protected:
   /**
    * Can only be constructed by subclasses.
    *
-   * @param aEncoding the character encoding of the form
+   * @param aCharset the charset of the form as a string
    * @param aOriginatingElement the originating element (can be null)
    */
-  HTMLFormSubmission(mozilla::NotNull<const mozilla::Encoding*> aEncoding,
+  HTMLFormSubmission(const nsACString& aCharset,
                      Element* aOriginatingElement)
-    : mEncoding(aEncoding)
+    : mCharset(aCharset)
     , mOriginatingElement(aOriginatingElement)
   {
     MOZ_COUNT_CTOR(HTMLFormSubmission);
   }
 
-  // The character encoding of this form submission
-  mozilla::NotNull<const mozilla::Encoding*> mEncoding;
+  // The name of the encoder charset
+  nsCString mCharset;
 
   // Originating element.
   RefPtr<Element> mOriginatingElement;
@@ -127,7 +130,7 @@ protected:
 class EncodingFormSubmission : public HTMLFormSubmission
 {
 public:
-  EncodingFormSubmission(mozilla::NotNull<const mozilla::Encoding*> aEncoding,
+  EncodingFormSubmission(const nsACString& aCharset,
                          Element* aOriginatingElement);
 
   virtual ~EncodingFormSubmission();
@@ -143,6 +146,10 @@ public:
    */
   nsresult EncodeVal(const nsAString& aStr, nsCString& aResult,
                      bool aHeaderEncode);
+
+private:
+  // The encoder that will encode Unicode names and values
+  nsNCRFallbackEncoderWrapper mEncoder;
 };
 
 /**
@@ -153,9 +160,9 @@ class FSMultipartFormData : public EncodingFormSubmission
 {
 public:
   /**
-   * @param aEncoding the character encoding of the form
+   * @param aCharset the charset of the form as a string
    */
-  FSMultipartFormData(mozilla::NotNull<const mozilla::Encoding*> aEncoding,
+  FSMultipartFormData(const nsACString& aCharset,
                       Element* aOriginatingElement);
   ~FSMultipartFormData();
 

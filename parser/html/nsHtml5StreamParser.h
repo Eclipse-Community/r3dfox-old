@@ -10,7 +10,7 @@
 #include "nsCOMPtr.h"
 #include "nsICharsetDetectionObserver.h"
 #include "nsHtml5MetaScanner.h"
-#include "mozilla/Encoding.h"
+#include "nsIUnicodeDecoder.h"
 #include "nsHtml5TreeOpExecutor.h"
 #include "nsHtml5OwningUTF16Buffer.h"
 #include "nsIInputStream.h"
@@ -400,7 +400,7 @@ public:
     /**
      * The Unicode decoder
      */
-    mozilla::UniquePtr<mozilla::Decoder> mUnicodeDecoder;
+    nsCOMPtr<nsIUnicodeDecoder>   mUnicodeDecoder;
 
     /**
      * The buffer for sniffing the character encoding

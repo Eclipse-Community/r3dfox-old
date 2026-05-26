@@ -3,10 +3,9 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#include "nsIndexedToHTML.h"
-
 #include "DateTimeFormat.h"
-#include "mozilla/Encoding.h"
+#include "nsIndexedToHTML.h"
+#include "mozilla/dom/EncodingUtils.h"
 #include "mozilla/intl/LocaleService.h"
 #include "nsNetUtil.h"
 #include "netCore.h"

@@ -6,7 +6,7 @@
 #include "Box.h"
 #include "SinfParser.h"
 #include <limits>
-#include "MP4Interval.h"
+#include "Intervals.h"
 
 #include "mozilla/CheckedInt.h"
 #include "mozilla/Logging.h"
@@ -21,8 +21,10 @@ extern mozilla::LogModule* GetDemuxerLog();
 #define LOG(...)
 #endif
 
-namespace mozilla
+namespace mp4_demuxer
 {
+
+using namespace mozilla;
 
 const uint32_t kKeyIdSize = 16;
 
@@ -111,9 +113,9 @@ MoofParser::FirstCompleteMediaSegment()
   return MediaByteRange();
 }
 
-class BlockingStream : public ByteStream {
+class BlockingStream : public Stream {
 public:
-  explicit BlockingStream(ByteStream* aStream) : mStream(aStream)
+  explicit BlockingStream(Stream* aStream) : mStream(aStream)
   {
   }
 
@@ -135,7 +137,7 @@ public:
   }
 
 private:
-  RefPtr<ByteStream> mStream;
+  RefPtr<Stream> mStream;
 };
 
 bool
@@ -145,7 +147,7 @@ MoofParser::BlockingReadNextMoof()
   mSource->Length(&length);
   MediaByteRangeSet byteRanges;
   byteRanges += MediaByteRange(0, length);
-  RefPtr<BlockingStream> stream = new BlockingStream(mSource);
+  RefPtr<mp4_demuxer::BlockingStream> stream = new BlockingStream(mSource);
 
   BoxContext context(stream, byteRanges);
   for (Box box(&context, mOffset); box.IsAvailable(); box = box.Next()) {
@@ -166,7 +168,7 @@ MoofParser::ScanForMetadata(mozilla::MediaByteRange& aFtyp,
   mSource->Length(&length);
   MediaByteRangeSet byteRanges;
   byteRanges += MediaByteRange(0, length);
-  RefPtr<BlockingStream> stream = new BlockingStream(mSource);
+  RefPtr<mp4_demuxer::BlockingStream> stream = new BlockingStream(mSource);
 
   BoxContext context(stream, byteRanges);
   for (Box box(&context, mOffset); box.IsAvailable(); box = box.Next()) {
@@ -215,7 +217,7 @@ MoofParser::Metadata()
     return nullptr;
   }
 
-  RefPtr<BlockingStream> stream = new BlockingStream(mSource);
+  RefPtr<mp4_demuxer::BlockingStream> stream = new BlockingStream(mSource);
   size_t read;
   bool rv =
     stream->ReadAt(ftyp.mStart, metadata->Elements(), ftypLength.value(), &read);
@@ -230,10 +232,10 @@ MoofParser::Metadata()
   return metadata.forget();
 }
 
-MP4Interval<Microseconds>
+Interval<Microseconds>
 MoofParser::GetCompositionRange(const MediaByteRangeSet& aByteRanges)
 {
-  MP4Interval<Microseconds> compositionRange;
+  Interval<Microseconds> compositionRange;
   BoxContext context(mSource, aByteRanges);
   for (size_t i = 0; i < mMoofs.Length(); i++) {
     Moof& moof = mMoofs[i];
@@ -454,7 +456,7 @@ Moof::Moof(Box& aBox, Trex& aTrex, Mvhd& aMvhd, Mdhd& aMdhd, Edts& aEdts, Sinf& 
         sample.mDecodeTime = dtsOffset + int64_t(compositionDuration * adjust);
         compositionDuration += sample.mCompositionRange.Length();
       }
-      mTimeRange = MP4Interval<Microseconds>(ctsOrder[0]->mCompositionRange.start,
+      mTimeRange = Interval<Microseconds>(ctsOrder[0]->mCompositionRange.start,
           ctsOrder.LastElement()->mCompositionRange.end);
     }
     ProcessCenc();
@@ -649,7 +651,7 @@ Moof::ParseTrun(Box& aBox, Tfhd& aTfhd, Mvhd& aMvhd, Mdhd& aMdhd, Edts& aEdts, u
     MOZ_TRY_VAR(firstSampleFlags, reader->ReadU32());
   }
   uint64_t decodeTime = *aDecodeTime;
-  nsTArray<MP4Interval<Microseconds>> timeRanges;
+  nsTArray<Interval<Microseconds>> timeRanges;
 
   if (!mIndex.SetCapacity(sampleCount, fallible)) {
     LOG(Moof, "Out of Memory");
@@ -685,7 +687,7 @@ Moof::ParseTrun(Box& aBox, Tfhd& aTfhd, Mvhd& aMvhd, Mdhd& aMdhd, Edts& aEdts, u
       sample.mDecodeTime = decodeOffset + emptyOffset;
       MOZ_TRY_VAR(startCts, aMdhd.ToMicroseconds((int64_t)decodeTime + ctsOffset - aEdts.mMediaStart));
       MOZ_TRY_VAR(endCts, aMdhd.ToMicroseconds((int64_t)decodeTime + ctsOffset + sampleDuration - aEdts.mMediaStart));
-      sample.mCompositionRange = MP4Interval<Microseconds>(startCts + emptyOffset, endCts + emptyOffset);
+      sample.mCompositionRange = Interval<Microseconds>(startCts + emptyOffset, endCts + emptyOffset);
       // Sometimes audio streams don't properly mark their samples as keyframes,
       // because every audio sample is a keyframe.
       sample.mSync = !(sampleFlags & 0x1010000) || aIsAudio;

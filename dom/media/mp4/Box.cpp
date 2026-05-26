@@ -5,12 +5,14 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "Box.h"
-#include "ByteStream.h"
+#include "Stream.h"
 #include "mozilla/EndianUtils.h"
 #include "mozilla/Unused.h"
 #include <algorithm>
 
-namespace mozilla {
+using namespace mozilla;
+
+namespace mp4_demuxer {
 
 // Limit reads to 32MiB max.
 // static
@@ -168,7 +170,7 @@ Box::Read(nsTArray<uint8_t>* aDest, const MediaByteRange& aRange) const
                                        aDest->Length(), &bytes) ||
       bytes != aDest->Length()) {
     // Byte ranges are being reported incorrectly
-    NS_WARNING("Read failed in mozilla::Box::Read()");
+    NS_WARNING("Read failed in mp4_demuxer::Box::Read()");
     aDest->Clear();
     return false;
   }

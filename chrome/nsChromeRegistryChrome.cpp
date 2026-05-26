@@ -292,6 +292,7 @@ static void SerializeURI(nsIURI* aURI, SerializedURI& aSerializedURI) {
   if (!aURI) return;
 
   aURI->GetSpec(aSerializedURI.spec);
+  aURI->GetOriginCharset(aSerializedURI.charset);
 }
 
 void nsChromeRegistryChrome::SendRegisteredChrome(

@@ -103,8 +103,6 @@ class nsJARURI final : public nsIJARURI,
   nsresult SetRef(const nsACString &input);
   nsresult SetFilePath(const nsACString &input);
   nsresult SetQuery(const nsACString &input);
-  nsresult SetQueryWithEncoding(const nsACString &input,
-                                const Encoding *encoding);
   bool Deserialize(const mozilla::ipc::URIParams &);
 
   nsresult SetFileNameInternal(const nsACString &fileName);

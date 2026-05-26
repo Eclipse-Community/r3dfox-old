@@ -148,13 +148,17 @@ static const char NEVER_ASK_FOR_OPEN_FILE_PREF[] =
  */
 static nsresult UnescapeFragment(const nsACString& aFragment, nsIURI* aURI,
                                  nsAString& aResult) {
-  // We need the unescaper
-  nsresult rv;
+  // First, we need a charset
+  nsAutoCString originCharset;
+  nsresult rv = aURI->GetOriginCharset(originCharset);
+  NS_ENSURE_SUCCESS(rv, rv);
+
+  // Now, we need the unescaper
   nsCOMPtr<nsITextToSubURI> textToSubURI =
       do_GetService(NS_ITEXTTOSUBURI_CONTRACTID, &rv);
   NS_ENSURE_SUCCESS(rv, rv);
 
-  return textToSubURI->UnEscapeURIForUI(NS_LITERAL_CSTRING("UTF-8"), aFragment,
+  return textToSubURI->UnEscapeURIForUI(originCharset, aFragment,
                                         aResult);
 }
 

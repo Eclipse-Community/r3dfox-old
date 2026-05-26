@@ -77,8 +77,6 @@ class nsSimpleURI : public nsIURI,
   virtual nsresult SetRef(const nsACString &input);
   virtual nsresult SetFilePath(const nsACString &input);
   virtual nsresult SetQuery(const nsACString &input);
-  virtual nsresult SetQueryWithEncoding(const nsACString &input,
-                                        const Encoding *encoding);
 
   // Helper to share code between Equals methods.
   virtual nsresult EqualsInternal(nsIURI *other,

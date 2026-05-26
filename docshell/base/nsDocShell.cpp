@@ -4646,10 +4646,13 @@ nsDocShell::DisplayLoadError(nsresult aError, nsIURI* aURI,
         aURI->GetSpec(spec);
       }
 
+      nsAutoCString charset;
+      // unescape and convert from origin charset
+      aURI->GetOriginCharset(charset);
       nsCOMPtr<nsITextToSubURI> textToSubURI(
           do_GetService(NS_ITEXTTOSUBURI_CONTRACTID, &rv));
       if (NS_SUCCEEDED(rv)) {
-        rv = textToSubURI->UnEscapeURIForUI(NS_LITERAL_CSTRING("UTF-8"), spec,
+        rv = textToSubURI->UnEscapeURIForUI(charset, spec,
                                             formatStrs[formatStrCount]);
       }
     } else {
@@ -4742,8 +4745,11 @@ nsresult nsDocShell::LoadErrorPage(nsIURI* aURI, const char16_t* aURL,
   }
 
   nsAutoCString url;
+  nsAutoCString charset;
   if (aURI) {
     nsresult rv = aURI->GetSpec(url);
+    NS_ENSURE_SUCCESS(rv, rv);
+    rv = aURI->GetOriginCharset(charset);
     NS_ENSURE_SUCCESS(rv, rv);
   } else if (aURL) {
     CopyUTF16toUTF8(aURL, url);
@@ -4759,8 +4765,9 @@ nsresult nsDocShell::LoadErrorPage(nsIURI* aURI, const char16_t* aURL,
     return NS_ERROR_OUT_OF_MEMORY;                     \
   }
 
-  nsCString escapedUrl, escapedError, escapedDescription, escapedCSSClass;
+  nsCString escapedUrl, escapedCharset, escapedError, escapedDescription, escapedCSSClass;
   SAFE_ESCAPE(escapedUrl, url, url_Path);
+  SAFE_ESCAPE(escapedCharset, charset, url_Path);
   SAFE_ESCAPE(escapedError, nsDependentCString(aErrorType), url_Path);
   SAFE_ESCAPE(escapedDescription, NS_ConvertUTF16toUTF8(aDescription),
               url_Path);
@@ -4783,7 +4790,8 @@ nsresult nsDocShell::LoadErrorPage(nsIURI* aURI, const char16_t* aURL,
     errorPageUrl.AppendLiteral("&s=");
     errorPageUrl.AppendASCII(escapedCSSClass.get());
   }
-  errorPageUrl.AppendLiteral("&c=UTF-8");
+  errorPageUrl.AppendLiteral("&c=");
+  errorPageUrl.AppendASCII(escapedCharset.get());
 
   nsAutoCString frameType(FrameTypeToString(mFrameType));
   errorPageUrl.AppendLiteral("&f=");
@@ -11363,8 +11371,11 @@ nsDocShell::AddState(JS::Handle<JS::Value> aData, const nsAString& aTitle,
     nsAutoCString spec;
     docBaseURI->GetSpec(spec);
 
-    rv = NS_NewURI(getter_AddRefs(newURI), aURL,
-                   document->GetDocumentCharacterSet(), docBaseURI);
+    nsAutoCString charset;
+    rv = docBaseURI->GetOriginCharset(charset);
+    NS_ENSURE_SUCCESS(rv, NS_ERROR_FAILURE);
+
+    rv = NS_NewURI(getter_AddRefs(newURI), aURL, charset.get(), docBaseURI);
 
     // 2b: If 2a fails, raise a SECURITY_ERR
     if (NS_FAILED(rv)) {

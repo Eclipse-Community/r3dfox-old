@@ -35,7 +35,6 @@ class nsIFile;
 class nsIURLParser;
 
 namespace mozilla {
-class Encoding;
 namespace net {
 
 //-----------------------------------------------------------------------------
@@ -124,7 +123,7 @@ class nsStandardURL : public nsIFileURL,
   //
   class nsSegmentEncoder {
    public:
-    explicit nsSegmentEncoder(const Encoding *encoding = nullptr);
+    explicit nsSegmentEncoder(const char *charset);
 
     // Encode the given segment if necessary, and return the length of
     // the encoded segment.  The encoded segment is appended to |buf|
@@ -183,8 +182,6 @@ class nsStandardURL : public nsIFileURL,
   virtual nsresult SetRef(const nsACString &input);
   virtual nsresult SetFilePath(const nsACString &input);
   virtual nsresult SetQuery(const nsACString &input);
-  virtual nsresult SetQueryWithEncoding(const nsACString &input,
-                                        const Encoding *encoding);
   bool Deserialize(const mozilla::ipc::URIParams &);
 
  private:
@@ -215,9 +212,7 @@ class nsStandardURL : public nsIFileURL,
                               bool useEsc = false, int32_t *diff = nullptr);
   uint32_t AppendToBuf(char *, uint32_t, const char *, uint32_t);
 
-  nsresult BuildNormalizedSpec(const char *spec, const Encoding *encoding);
-  nsresult SetSpecWithEncoding(const nsACString &input,
-                               const Encoding *encoding);
+  nsresult BuildNormalizedSpec(const char *spec);
 
   bool SegmentIs(const URLSegment &s1, const char *val,
                  bool ignoreCase = false);
@@ -299,6 +294,7 @@ class nsStandardURL : public nsIFileURL,
   URLSegment mQuery;
   URLSegment mRef;
 
+  nsCString              mOriginCharset;
   nsCOMPtr<nsIURLParser> mParser;
 
   // mFile is protected so subclasses can access it directly

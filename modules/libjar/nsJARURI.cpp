@@ -442,6 +442,12 @@ NS_IMETHODIMP
 nsJARURI::GetAsciiHost(nsACString &aHost) { return NS_ERROR_FAILURE; }
 
 NS_IMETHODIMP
+nsJARURI::GetOriginCharset(nsACString &aOriginCharset) {
+    aOriginCharset = mCharsetHint;
+    return NS_OK;
+}
+
+NS_IMETHODIMP
 nsJARURI::Equals(nsIURI *other, bool *result) {
   return EqualsInternal(other, eHonorRef, result);
 }
@@ -563,13 +569,6 @@ nsresult nsJARURI::SetQuery(const nsACString &query) {
   return NS_MutateURI(mJAREntry).SetQuery(query).Finalize(mJAREntry);
 }
 
-nsresult nsJARURI::SetQueryWithEncoding(const nsACString &query,
-                                        const Encoding *encoding) {
-  return NS_MutateURI(mJAREntry)
-      .SetQueryWithEncoding(query, encoding)
-      .Finalize(mJAREntry);
-}
-
 NS_IMETHODIMP
 nsJARURI::GetRef(nsACString &ref) { return mJAREntry->GetRef(ref); }
 
@@ -659,8 +658,12 @@ nsJARURI::GetCommonBaseSpec(nsIURI *uriToCompare, nsACString &commonSpec) {
   rv = otherJARURI->GetJAREntry(otherEntry);
   if (NS_FAILED(rv)) return rv;
 
+  nsAutoCString otherCharset;
+  rv = uriToCompare->GetOriginCharset(otherCharset);
+  if (NS_FAILED(rv)) return rv;
+
   nsCOMPtr<nsIURL> url;
-  rv = CreateEntryURL(otherEntry, nullptr, getter_AddRefs(url));
+  rv = CreateEntryURL(otherEntry, otherCharset.get(), getter_AddRefs(url));
   if (NS_FAILED(rv)) return rv;
 
   nsAutoCString common;
@@ -701,8 +704,12 @@ nsJARURI::GetRelativeSpec(nsIURI *uriToCompare, nsACString &relativeSpec) {
   rv = otherJARURI->GetJAREntry(otherEntry);
   if (NS_FAILED(rv)) return rv;
 
+  nsAutoCString otherCharset;
+  rv = uriToCompare->GetOriginCharset(otherCharset);
+  if (NS_FAILED(rv)) return rv;
+
   nsCOMPtr<nsIURL> url;
-  rv = CreateEntryURL(otherEntry, nullptr, getter_AddRefs(url));
+  rv = CreateEntryURL(otherEntry, otherCharset.get(), getter_AddRefs(url));
   if (NS_FAILED(rv)) return rv;
 
   nsAutoCString relativeEntrySpec;

@@ -42,12 +42,10 @@ SERVO_BINDING_FUNC(Servo_Element_IsPrimaryStyleReusedViaRuleNode,
                    RawGeckoElementBorrowed element)
 
 // Styleset and Stylesheet management
-SERVO_BINDING_FUNC(Servo_StyleSheet_FromUTF8Bytes,
-                   RawServoStyleSheetContentsStrong,
+SERVO_BINDING_FUNC(Servo_StyleSheet_FromUTF8Bytes, RawServoStyleSheetContentsStrong,
                    mozilla::css::Loader* loader,
                    mozilla::ServoStyleSheet* gecko_stylesheet,
-                   const uint8_t* data,
-                   size_t data_len,
+                   const nsACString* data,
                    mozilla::css::SheetParsingMode parsing_mode,
                    RawGeckoURLExtraData* extra_data,
                    uint32_t line_number_offset,

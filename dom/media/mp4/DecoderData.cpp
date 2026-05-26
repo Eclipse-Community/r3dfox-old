@@ -16,7 +16,7 @@
 
 using mozilla::media::TimeUnit;
 
-namespace mozilla
+namespace mp4_demuxer
 {
 
 mozilla::Result<mozilla::Ok, nsresult>

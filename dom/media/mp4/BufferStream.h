@@ -5,7 +5,7 @@
 #ifndef BUFFER_STREAM_H_
 #define BUFFER_STREAM_H_
 
-#include "Stream.h"
+#include "mp4_demuxer/Stream.h"
 #include "nsTArray.h"
 #include "MediaResource.h"
 

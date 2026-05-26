@@ -44,7 +44,6 @@ UNIFIED_SOURCES += [
   'ClientSourceOpParent.cpp',
   'ClientSourceParent.cpp',
   'ClientState.cpp',
-  'ClientValidation.cpp',
 ]
 
 IPDL_SOURCES += [

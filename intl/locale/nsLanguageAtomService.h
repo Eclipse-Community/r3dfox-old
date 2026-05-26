@@ -11,24 +11,17 @@
 #ifndef nsLanguageAtomService_h_
 #define nsLanguageAtomService_h_
 
-#include "mozilla/NotNull.h"
 #include "nsCOMPtr.h"
 #include "nsAtom.h"
 #include "nsRefPtrHashtable.h"
 
-namespace mozilla {
-class Encoding;
-}
-
-class nsLanguageAtomService final
+class nsLanguageAtomService
 {
-  using Encoding = mozilla::Encoding;
-  template <typename T> using NotNull = mozilla::NotNull<T>;
 public:
   static nsLanguageAtomService* GetService();
 
   nsAtom* LookupLanguage(const nsACString &aLanguage);
-  already_AddRefed<nsAtom> LookupCharSet(NotNull<const Encoding*> aCharSet);
+  already_AddRefed<nsAtom> LookupCharSet(const nsACString& aCharSet);
   nsAtom* GetLocaleLanguage();
 
   // Returns the language group that the specified language is a part of.

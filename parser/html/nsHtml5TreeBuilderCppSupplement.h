@@ -1191,19 +1191,17 @@ nsHtml5TreeBuilder::FlushLoads()
 }
 
 void
-nsHtml5TreeBuilder::SetDocumentCharset(NotNull<const Encoding*> aEncoding,
+nsHtml5TreeBuilder::SetDocumentCharset(nsACString& aCharset,
                                        int32_t aCharsetSource)
 {
   if (mBuilder) {
-    mBuilder->SetDocumentCharsetAndSource(aEncoding, aCharsetSource);
+    mBuilder->SetDocumentCharsetAndSource(aCharset, aCharsetSource);
   } else if (mSpeculativeLoadStage) {
-    nsAutoCString charset;
-    aEncoding->Name(charset);
     mSpeculativeLoadQueue.AppendElement()->InitSetDocumentCharset(
-      charset, aCharsetSource);
+      aCharset, aCharsetSource);
   } else {
     mOpQueue.AppendElement()->Init(
-      eTreeOpSetDocumentCharset, aEncoding, aCharsetSource);
+      eTreeOpSetDocumentCharset, aCharset, aCharsetSource);
   }
 }
 
@@ -1221,7 +1219,7 @@ nsHtml5TreeBuilder::StreamEnded()
 }
 
 void
-nsHtml5TreeBuilder::NeedsCharsetSwitchTo(NotNull<const Encoding*> aEncoding,
+nsHtml5TreeBuilder::NeedsCharsetSwitchTo(const nsACString& aCharset,
                                          int32_t aCharsetSource,
                                          int32_t aLineNumber)
 {
@@ -1235,7 +1233,7 @@ nsHtml5TreeBuilder::NeedsCharsetSwitchTo(NotNull<const Encoding*> aEncoding,
     return;
   }
   treeOp->Init(eTreeOpNeedsCharsetSwitchTo,
-               aEncoding,
+               aCharset,
                aCharsetSource,
                aLineNumber);
 }

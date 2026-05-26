@@ -700,9 +700,6 @@ public:
   /**
    * Convert aInput (in encoding aEncoding) to UTF16 in aOutput.
    *
-   * @deprecated Use mozilla::Encoding::DecodeWithBOMRemoval() in new code.
-   * https://bugzilla.mozilla.org/show_bug.cgi?id=1369020
-   *
    * @param aEncoding the Gecko-canonical name of the encoding or the empty
    *                  string (meaning UTF-8)
    */
@@ -721,9 +718,6 @@ public:
   /**
    * Determine whether a buffer begins with a BOM for UTF-8, UTF-16LE,
    * UTF-16BE
-   *
-   * @deprecated Use mozilla::Encoding::ForBOM() in new code.
-   * https://bugzilla.mozilla.org/show_bug.cgi?id=1369022
    *
    * @param aBuffer the buffer to check
    * @param aLength the length of the buffer

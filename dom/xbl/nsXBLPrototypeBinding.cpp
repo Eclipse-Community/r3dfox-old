@@ -1639,7 +1639,7 @@ nsXBLPrototypeBinding::ResolveBaseBinding()
     mBinding->UnsetAttr(kNameSpaceID_None, nsGkAtoms::display, false);
 
     return NS_NewURI(getter_AddRefs(mBaseBindingURI), value,
-                     doc->GetDocumentCharacterSet(),
+                     doc->GetDocumentCharacterSet().get(),
                      doc->GetDocBaseURI());
   }
 

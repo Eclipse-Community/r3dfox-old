@@ -166501,54 +166501,6 @@
      {}
     ]
    ],
-   "encoding/eof-shift_jis.html": [
-    [
-     "/encoding/eof-shift_jis.html",
-     [
-      [
-       "/encoding/eof-shift_jis-ref.html",
-       "=="
-      ]
-     ],
-     {}
-    ]
-   ],
-   "encoding/eof-utf-8-one.html": [
-    [
-     "/encoding/eof-utf-8-one.html",
-     [
-      [
-       "/encoding/eof-utf-8-one-ref.html",
-       "=="
-      ]
-     ],
-     {}
-    ]
-   ],
-   "encoding/eof-utf-8-three.html": [
-    [
-     "/encoding/eof-utf-8-three.html",
-     [
-      [
-       "/encoding/eof-utf-8-three-ref.html",
-       "=="
-      ]
-     ],
-     {}
-    ]
-   ],
-   "encoding/eof-utf-8-two.html": [
-    [
-     "/encoding/eof-utf-8-two.html",
-     [
-      [
-       "/encoding/eof-utf-8-two-ref.html",
-       "=="
-      ]
-     ],
-     {}
-    ]
-   ],
    "fonts/matching/fixed-stretch-style-over-weight.html": [
     [
      "/fonts/matching/fixed-stretch-style-over-weight.html",
@@ -283496,26 +283448,6 @@
     ]
    ],
    "encoding/OWNERS": [
-    [
-     {}
-    ]
-   ],
-   "encoding/eof-shift_jis-ref.html": [
-    [
-     {}
-    ]
-   ],
-   "encoding/eof-utf-8-one-ref.html": [
-    [
-     {}
-    ]
-   ],
-   "encoding/eof-utf-8-three-ref.html": [
-    [
-     {}
-    ]
-   ],
-   "encoding/eof-utf-8-two-ref.html": [
     [
      {}
     ]
@@ -572777,38 +572709,6 @@
    "b9635c43ce159e1961106b039dce0e3d04fade34",
    "testharness"
   ],
-  "encoding/eof-shift_jis-ref.html": [
-   "55ac2be8c2cce3bae0ea1e61f5c330c38adc1e9e",
-   "support"
-  ],
-  "encoding/eof-shift_jis.html": [
-   "c5f6bd10724c2186f9c3347a8eca29627c8fcb5d",
-   "reftest"
-  ],
-  "encoding/eof-utf-8-one-ref.html": [
-   "88e83397cb0e375bc9c84ddedfe60aa5cb11a667",
-   "support"
-  ],
-  "encoding/eof-utf-8-one.html": [
-   "8f89ca912cc4d01dc9cb72e027aef26e1d0cb2a6",
-   "reftest"
-  ],
-  "encoding/eof-utf-8-three-ref.html": [
-   "48dbb873550d0fb33c45a4ab4fff03654b1732b2",
-   "support"
-  ],
-  "encoding/eof-utf-8-three.html": [
-   "b04b8002836ea0f476b65270bb2b5797ffec5fdd",
-   "reftest"
-  ],
-  "encoding/eof-utf-8-two-ref.html": [
-   "ef39f0e0af97a88ceaf652a9df0b2cd07719bff5",
-   "support"
-  ],
-  "encoding/eof-utf-8-two.html": [
-   "dd855efd3ea7bd865c35c105506473fb7731bc36",
-   "reftest"
-  ],
   "encoding/gb18030-encoder.html": [
    "6f091a64de33492bd17ecbd37f5db0fff9af499a",
    "testharness"
@@ -578670,7 +578570,7 @@
    "testharness"
   ],
   "html/browsers/the-window-object/window-named-properties.html": [
-   "21bb2b7a30381decf8b55152ba33cd723b67b8d5",
+   "03bab12397e43003c6a4d768d2faa580501400bf",
    "testharness"
   ],
   "html/browsers/the-window-object/window-open-noopener.html": [
@@ -603538,7 +603438,7 @@
    "support"
   ],
   "old-tests/submission/Opera/script_scheduling/scripts/include-11.js": [
-   "f26e65bc15505040371e3026cd09c8eb0df0a1c4",
+   "af092f1827bebd1e69f3b914049ad4febfcc8dc5",
    "support"
   ],
   "old-tests/submission/Opera/script_scheduling/scripts/include-12.js": [

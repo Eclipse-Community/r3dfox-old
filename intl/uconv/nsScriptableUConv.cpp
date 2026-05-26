@@ -187,7 +187,7 @@ nsScriptableUnicodeConverter::ConvertToByteArray(const nsAString& aString,
   nsresult rv = ConvertFromUnicodeWithLength(aString, &len, &data);
   if (NS_FAILED(rv))
     return rv;
-  nsXPIDLCString str;
+  nsCString str;
   str.Adopt(data, len); // NOTE: This uses the XPIDLCString as a byte array
 
   rv = FinishWithLength(&data, &len);

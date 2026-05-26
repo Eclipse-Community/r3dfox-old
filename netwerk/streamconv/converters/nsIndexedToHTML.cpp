@@ -15,12 +15,12 @@
 #include "nsEscape.h"
 #include "nsIDirIndex.h"
 #include "nsURLHelper.h"
+#include "nsIPlatformCharset.h"
 #include "nsIPrefService.h"
 #include "nsIPrefBranch.h"
 #include "nsIPrefLocalizedString.h"
 #include "nsIStringBundle.h"
 #include "nsITextToSubURI.h"
-#include "nsNativeCharsetUtils.h"
 #include "nsString.h"
 #include <algorithm>
 #include "nsIChannel.h"
@@ -507,10 +507,13 @@ nsIndexedToHTML::DoOnStartRequest(nsIRequest* request, nsISupports *aContext,
     // 1. file URL may be encoded in platform charset for backward compatibility
     // 2. query part may not be encoded in UTF-8 (see bug 261929)
     // so try the platform's default if this is file url
-    if (NS_FAILED(rv) && isSchemeFile && !NS_IsNativeUTF8()) {
-        auto encoding = mozilla::dom::FallbackEncoding::FromLocale();
+    if (NS_FAILED(rv) && isSchemeFile) {
+        nsCOMPtr<nsIPlatformCharset> platformCharset(do_GetService(NS_PLATFORMCHARSET_CONTRACTID, &rv));
+        NS_ENSURE_SUCCESS(rv, rv);
         nsAutoCString charset;
-        encoding->Name(charset);
+        rv = platformCharset->GetCharset(kPlatformCharsetSel_FileName, charset);
+        NS_ENSURE_SUCCESS(rv, rv);
+
         rv = mTextToSubURI->UnEscapeAndConvert(charset.get(), titleUri.get(),
                                                getter_Copies(unEscapeSpec));
     }

@@ -8,7 +8,7 @@
 
 #include "nsIChannel.h"
 #include "nsIUnicharStreamLoader.h"
-#include "mozilla/Encoding.h"
+#include "nsIUnicodeDecoder.h"
 #include "nsCOMPtr.h"
 #include "nsString.h"
 
@@ -38,7 +38,7 @@ protected:
                                   uint32_t, uint32_t, uint32_t *);
 
   nsCOMPtr<nsIUnicharStreamLoaderObserver> mObserver;
-  mozilla::UniquePtr<mozilla::Decoder> mDecoder;
+  nsCOMPtr<nsIUnicodeDecoder>              mDecoder;
   nsCOMPtr<nsISupports>                    mContext;
   nsCOMPtr<nsIChannel>                     mChannel;
   nsCString                                mCharset;

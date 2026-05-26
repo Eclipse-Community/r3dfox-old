@@ -130,6 +130,7 @@ SubstitutingProtocolHandler::CollectSubstitutions(InfallibleTArray<SubstitutionM
     if (uri) {
       nsresult rv = uri->GetSpec(serialized.spec);
       NS_ENSURE_SUCCESS(rv, rv);
+      uri->GetOriginCharset(serialized.charset);
     }
     SubstitutionMapping substitution = { mScheme, nsCString(iter.Key()), serialized, entry.flags };
     aMappings.AppendElement(substitution);
@@ -157,6 +158,7 @@ SubstitutingProtocolHandler::SendSubstitution(const nsACString& aRoot, nsIURI* a
   if (aBaseURI) {
     nsresult rv = aBaseURI->GetSpec(mapping.resolvedURI.spec);
     NS_ENSURE_SUCCESS(rv, rv);
+    aBaseURI->GetOriginCharset(mapping.resolvedURI.charset);
   }
   mapping.flags = aFlags;
 

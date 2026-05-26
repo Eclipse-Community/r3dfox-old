@@ -128,6 +128,13 @@ NullPrincipalURI::SetHostPort(const nsACString& aHost)
 }
 
 NS_IMETHODIMP
+NullPrincipalURI::GetOriginCharset(nsACString& _charset)
+{
+  _charset.Truncate();
+  return NS_OK;
+}
+
+NS_IMETHODIMP
 NullPrincipalURI::GetPassword(nsACString& _password)
 {
   return NS_ERROR_NOT_IMPLEMENTED;
@@ -174,13 +181,6 @@ NullPrincipalURI::GetQuery(nsACString& aQuery)
 
 nsresult
 NullPrincipalURI::SetQuery(const nsACString& aQuery)
-{
-  return NS_ERROR_NOT_IMPLEMENTED;
-}
-
-nsresult
-NullPrincipalURI::SetQueryWithEncoding(const nsACString& aQuery,
-                                       const Encoding* aEncoding)
 {
   return NS_ERROR_NOT_IMPLEMENTED;
 }

@@ -12,8 +12,8 @@
 #include "nsTArray.h"
 #include "nsAutoPtr.h"
 #include "nsCOMPtr.h"
+#include "nsIUnicodeDecoder.h"
 #include "nsReadLine.h"
-#include "mozilla/Encoding.h"
 
 #define NS_CONVERTERINPUTSTREAM_CONTRACTID "@mozilla.org/intl/converter-input-stream;1"
 
@@ -33,22 +33,20 @@ class nsConverterInputStream : public nsIConverterInputStream,
     NS_DECL_NSIUNICHARLINEINPUTSTREAM
     NS_DECL_NSICONVERTERINPUTSTREAM
 
-    nsConverterInputStream()
-      : mLastErrorCode(NS_OK)
-      , mLeftOverBytes(0)
-      , mUnicharDataOffset(0)
-      , mUnicharDataLength(0)
-      , mErrorsAreFatal(false)
-      , mLineBuffer(nullptr)
-    {
-    }
+    nsConverterInputStream() :
+        mLastErrorCode(NS_OK),
+        mLeftOverBytes(0),
+        mUnicharDataOffset(0),
+        mUnicharDataLength(0),
+        mReplacementChar(DEFAULT_REPLACEMENT_CHARACTER),
+        mLineBuffer(nullptr) { }
 
-  private:
+ private:
     virtual ~nsConverterInputStream() { Close(); }
 
     uint32_t Fill(nsresult *aErrorCode);
-
-    mozilla::UniquePtr<mozilla::Decoder> mConverter;
+    
+    nsCOMPtr<nsIUnicodeDecoder> mConverter;
     FallibleTArray<char> mByteData;
     FallibleTArray<char16_t> mUnicharData;
     nsCOMPtr<nsIInputStream> mInput;
@@ -57,7 +55,7 @@ class nsConverterInputStream : public nsIConverterInputStream,
     uint32_t  mLeftOverBytes;
     uint32_t  mUnicharDataOffset;
     uint32_t  mUnicharDataLength;
-    bool mErrorsAreFatal;
+    char16_t mReplacementChar;
 
     nsAutoPtr<nsLineBuffer<char16_t> > mLineBuffer;
 };

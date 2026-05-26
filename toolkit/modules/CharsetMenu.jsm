@@ -44,7 +44,7 @@ const kEncodings = new Set([
   "windows-1250",
   "ISO-8859-2",
   // Chinese, Simplified
-  "GBK",
+  "gbk",
   // Chinese, Traditional
   "Big5",
   // Cyrillic
@@ -215,7 +215,7 @@ var CharsetMenu = {
   },
 
   _getCharsetLabel(charset) {
-    if (charset == "GBK") {
+    if (charset == "gbk") {
       // Localization key has been revised
       charset = "gbk.bis";
     }
@@ -225,7 +225,7 @@ var CharsetMenu = {
     return charset;
   },
   _getCharsetAccessKey(charset) {
-    if (charset == "GBK") {
+    if (charset == "gbk") {
       // Localization key has been revised
       charset = "gbk.bis";
     }
@@ -245,7 +245,7 @@ var CharsetMenu = {
         return "windows-1255";
 
       case "gb18030":
-        return "GBK";
+        return "gbk";
 
       default:
         return charset;

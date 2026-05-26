@@ -504,8 +504,9 @@ nsIndexedToHTML::DoOnStartRequest(nsIRequest* request, nsISupports *aContext,
       encoding.AssignLiteral("UTF-8");
     }
 
-    nsAutoString unEscapeSpec;
-    rv = mTextToSubURI->UnEscapeAndConvert(encoding, titleUri, unEscapeSpec);
+    nsXPIDLString unEscapeSpec;
+    rv = mTextToSubURI->UnEscapeAndConvert(encoding, titleUri.get(),
+                                           getter_Copies(unEscapeSpec));
     // unescape may fail because
     // 1. file URL may be encoded in platform charset for backward compatibility
     // 2. query part may not be encoded in UTF-8 (see bug 261929)
@@ -517,7 +518,8 @@ nsIndexedToHTML::DoOnStartRequest(nsIRequest* request, nsISupports *aContext,
         rv = platformCharset->GetCharset(kPlatformCharsetSel_FileName, charset);
         NS_ENSURE_SUCCESS(rv, rv);
 
-        rv = mTextToSubURI->UnEscapeAndConvert(charset, titleUri, unEscapeSpec);
+        rv = mTextToSubURI->UnEscapeAndConvert(charset.get(), titleUri.get(),
+                                               getter_Copies(unEscapeSpec));
     }
     if (NS_FAILED(rv)) return rv;
 

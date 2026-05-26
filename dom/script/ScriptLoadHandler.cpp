@@ -10,6 +10,7 @@
 
 #include "nsContentUtils.h"
 
+#include "mozilla/dom/EncodingUtils.h"
 #include "mozilla/Telemetry.h"
 
 namespace mozilla {
@@ -99,34 +100,31 @@ ScriptLoadHandler::DecodeRawData(const uint8_t* aData,
                                  uint32_t aDataLength,
                                  bool aEndOfStream)
 {
-  CheckedInt<size_t> needed = mDecoder->MaxUTF16BufferLength(aDataLength);
-  if (!needed.isValid()) {
-    return NS_ERROR_OUT_OF_MEMORY;
-  }
+  int32_t srcLen = aDataLength;
+  const char* src = reinterpret_cast<const char*>(aData);
+  int32_t dstLen;
+  nsresult rv =
+    mDecoder->GetMaxLength(src, srcLen, &dstLen);
+
+  NS_ENSURE_SUCCESS(rv, rv);
 
   uint32_t haveRead = mRequest->mScriptText.length();
 
   CheckedInt<uint32_t> capacity = haveRead;
-  capacity += needed.value();
+  capacity += dstLen;
 
   if (!capacity.isValid() || !mRequest->mScriptText.reserve(capacity.value())) {
     return NS_ERROR_OUT_OF_MEMORY;
   }
 
-  uint32_t result;
-  size_t read;
-  size_t written;
-  bool hadErrors;
-  Tie(result, read, written, hadErrors) = mDecoder->DecodeToUTF16(
-    MakeSpan(aData, aDataLength),
-    MakeSpan(mRequest->mScriptText.begin() + haveRead, needed.value()),
-    aEndOfStream);
-  MOZ_ASSERT(result == kInputEmpty);
-  MOZ_ASSERT(read == aDataLength);
-  MOZ_ASSERT(written <= needed.value());
-  Unused << hadErrors;
+  rv = mDecoder->Convert(src,
+                         &srcLen,
+                         mRequest->mScriptText.begin() + haveRead,
+                         &dstLen);
 
-  haveRead += written;
+  NS_ENSURE_SUCCESS(rv, rv);
+
+  haveRead += dstLen;
   MOZ_ASSERT(haveRead <= capacity.value(), "mDecoder produced more data than expected");
   MOZ_ALWAYS_TRUE(mRequest->mScriptText.resizeUninitialized(haveRead));
 
@@ -166,7 +164,7 @@ ScriptLoadHandler::EnsureDecoder(nsIIncrementalStreamLoader* aLoader,
   // JavaScript modules are always UTF-8.
   if (mRequest->IsModuleRequest()) {
     oCharset = "UTF-8";
-    mDecoder = UTF_8_ENCODING->NewDecoderWithBOMRemoval();
+    mDecoder = EncodingUtils::DecoderForEncoding(oCharset);
     return true;
   }
 
@@ -178,12 +176,8 @@ ScriptLoadHandler::EnsureDecoder(nsIIncrementalStreamLoader* aLoader,
   }
 
   // Do BOM detection.
-  const Encoding* encoding;
-  size_t bomLength;
-  Tie(encoding, bomLength) = Encoding::ForBOM(MakeSpan(aData, aDataLength));
-  if (encoding) {
-    mDecoder = encoding->NewDecoderWithBOMRemoval();
-    encoding->Name(oCharset);
+  if (nsContentUtils::CheckForBOM(aData, aDataLength, oCharset)) {
+    mDecoder = EncodingUtils::DecoderForEncoding(oCharset);
     return true;
   }
 
@@ -195,14 +189,11 @@ ScriptLoadHandler::EnsureDecoder(nsIIncrementalStreamLoader* aLoader,
 
   nsCOMPtr<nsIChannel> channel = do_QueryInterface(req);
 
-  if (channel) {
-    nsAutoCString label;
-    if (NS_SUCCEEDED(channel->GetContentCharset(label)) &&
-        (encoding = Encoding::ForLabel(label))) {
-      mDecoder = encoding->NewDecoderWithoutBOMHandling();
-      encoding->Name(oCharset);
-      return true;
-    }
+  if (channel &&
+      NS_SUCCEEDED(channel->GetContentCharset(oCharset)) &&
+      EncodingUtils::FindEncodingForLabel(oCharset, oCharset)) {
+    mDecoder = EncodingUtils::DecoderForEncoding(oCharset);
+    return true;
   }
 
   // Check the hint charset from the script element or preload
@@ -220,26 +211,25 @@ ScriptLoadHandler::EnsureDecoder(nsIIncrementalStreamLoader* aLoader,
     hintCharset = mScriptLoader->mPreloads[i].mCharset;
   }
 
-  if ((encoding = Encoding::ForLabel(hintCharset))) {
-    mDecoder = encoding->NewDecoderWithoutBOMHandling();
-    encoding->Name(oCharset);
+  if (EncodingUtils::FindEncodingForLabel(hintCharset, oCharset)) {
+    mDecoder = EncodingUtils::DecoderForEncoding(oCharset);
     return true;
   }
 
   // Get the charset from the charset of the document.
   if (mScriptLoader->mDocument) {
-    encoding =
-      Encoding::ForName(mScriptLoader->mDocument->GetDocumentCharacterSet());
-    mDecoder = encoding->NewDecoderWithoutBOMHandling();
-    encoding->Name(oCharset);
+    oCharset = mScriptLoader->mDocument->GetDocumentCharacterSet();
+    mDecoder = EncodingUtils::DecoderForEncoding(oCharset);
     return true;
   }
 
   // Curiously, there are various callers that don't pass aDocument. The
   // fallback in the old code was ISO-8859-1, which behaved like
-  // windows-1252.
+  // windows-1252. Saying windows-1252 for clarity and for compliance
+  // with the Encoding Standard.
   oCharset = "windows-1252";
-  mDecoder = WINDOWS_1252_ENCODING->NewDecoderWithoutBOMHandling();
+  mDecoder = EncodingUtils::DecoderForEncoding(oCharset);
+
   return true;
 }
 

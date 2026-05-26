@@ -14,6 +14,7 @@
 #include "nsWrapperCache.h"
 #include "nsISupports.h"
 #include "nsIInputStream.h"
+#include "nsIUnicodeDecoder.h"
 
 namespace mozilla {
 namespace dom {
@@ -114,6 +115,7 @@ private:
   };
 
   nsTArray<Param> mParams;
+  nsCOMPtr<nsIUnicodeDecoder> mDecoder;
 };
 
 class URLSearchParams final : public nsISupports,

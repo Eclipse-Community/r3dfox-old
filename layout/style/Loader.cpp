@@ -68,7 +68,8 @@
 #include "nsIContentSecurityPolicy.h"
 #include "mozilla/dom/SRICheck.h"
 
-#include "mozilla/Encoding.h"
+#include "mozilla/dom/EncodingUtils.h"
+using mozilla::dom::EncodingUtils;
 
 using namespace mozilla::dom;
 
@@ -505,6 +506,8 @@ NotNull<const Encoding*>
 SheetLoadData::DetermineNonBOMEncoding(nsACString const& aSegment,
                                        nsIChannel* aChannel)
 {
+// afaik this should only be for stylo so skipping https://github.com/Eclipse-Community/r3dfox-old/commit/3c8567b60d5ae275eb2722a44f116653342c6e90
+
   const Encoding* encoding;
   nsAutoCString label;
 

@@ -3,9 +3,6 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#include "nsSAXXMLReader.h"
-
-#include "mozilla/Encoding.h"
 #include "nsIInputStream.h"
 #include "nsNetCID.h"
 #include "nsNetUtil.h"
@@ -16,9 +13,12 @@
 #include "nsStringStream.h"
 #include "nsIScriptError.h"
 #include "nsSAXAttributes.h"
+#include "nsSAXXMLReader.h"
 #include "nsCharsetSource.h"
 
-using mozilla::Encoding;
+#include "mozilla/dom/EncodingUtils.h"
+
+using mozilla::dom::EncodingUtils;
 
 #define XMLNS_URI "http://www.w3.org/2000/xmlns/"
 
@@ -433,11 +433,11 @@ nsSAXXMLReader::TryChannelCharset(nsIChannel *aChannel,
     nsAutoCString charsetVal;
     nsresult rv = aChannel->GetContentCharset(charsetVal);
     if (NS_SUCCEEDED(rv)) {
-      const Encoding* preferred = Encoding::ForLabel(charsetVal);
-      if (!preferred)
+      nsAutoCString preferred;
+      if (!EncodingUtils::FindEncodingForLabel(charsetVal, preferred))
         return false;
 
-      preferred->Name(aCharset);
+      aCharset = preferred;
       aCharsetSource = kCharsetFromChannel;
       return true;
     }

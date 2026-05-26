@@ -32,7 +32,6 @@ class PClientManagerChild;
 class ClientHandle final : public ClientThing<ClientHandleChild>
 {
   friend class ClientManager;
-  friend class ClientHandleChild;
 
   RefPtr<ClientManager> mManager;
   nsCOMPtr<nsISerialEventTarget> mSerialEventTarget;
@@ -45,10 +44,6 @@ class ClientHandle final : public ClientThing<ClientHandleChild>
 
   already_AddRefed<ClientOpPromise>
   StartOp(const ClientOpConstructorArgs& aArgs);
-
-  // Private methods called by ClientHandleChild
-  void
-  ExecutionReady(const ClientInfo& aClientInfo);
 
   // Private methods called by ClientManager
   ClientHandle(ClientManager* aManager,

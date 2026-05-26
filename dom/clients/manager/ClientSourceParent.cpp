@@ -90,28 +90,6 @@ ClientSourceParent::RecvTeardown()
 }
 
 IPCResult
-ClientSourceParent::RecvExecutionReady(const ClientSourceExecutionReadyArgs& aArgs)
-{
-  // Now that we have the creation URL for the Client we can do some validation
-  // to make sure the child actor is not giving us garbage.  Since we validate
-  // on the child side as well we treat a failure here as fatal.
-  if (!ClientIsValidCreationURL(mClientInfo.PrincipalInfo(), aArgs.url())) {
-    KillInvalidChild();
-    return IPC_OK();
-  }
-
-  mClientInfo.SetURL(aArgs.url());
-  mClientInfo.SetFrameType(aArgs.frameType());
-  mExecutionReady = true;
-
-  for (ClientHandleParent* handle : mHandleList) {
-    Unused << handle->SendExecutionReady(mClientInfo.ToIPC());
-  }
-
-  return IPC_OK();
-};
-
-IPCResult
 ClientSourceParent::RecvFreeze()
 {
   MOZ_DIAGNOSTIC_ASSERT(!mFrozen);
@@ -167,7 +145,6 @@ ClientSourceParent::DeallocPClientSourceOpParent(PClientSourceOpParent* aActor)
 ClientSourceParent::ClientSourceParent(const ClientSourceConstructorArgs& aArgs)
   : mClientInfo(aArgs.id(), aArgs.type(), aArgs.principalInfo(), aArgs.creationTime())
   , mService(ClientManagerService::GetOrCreateInstance())
-  , mExecutionReady(false)
   , mFrozen(false)
 {
 }

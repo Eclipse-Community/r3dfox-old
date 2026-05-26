@@ -14,15 +14,6 @@ namespace dom {
 
 using mozilla::ipc::IPCResult;
 
-IPCResult
-ClientHandleChild::RecvExecutionReady(const IPCClientInfo& aClientInfo)
-{
-  if (mHandle) {
-    mHandle->ExecutionReady(ClientInfo(aClientInfo));
-  }
-  return IPC_OK();
-}
-
 void
 ClientHandleChild::ActorDestroy(ActorDestroyReason aReason)
 {
@@ -59,7 +50,7 @@ void
 ClientHandleChild::SetOwner(ClientThing<ClientHandleChild>* aThing)
 {
   MOZ_DIAGNOSTIC_ASSERT(!mHandle);
-  mHandle = static_cast<ClientHandle*>(aThing);
+  mHandle = aThing;
   MOZ_DIAGNOSTIC_ASSERT(mHandle);
 }
 
@@ -67,7 +58,7 @@ void
 ClientHandleChild::RevokeOwner(ClientThing<ClientHandleChild>* aThing)
 {
   MOZ_DIAGNOSTIC_ASSERT(mHandle);
-  MOZ_DIAGNOSTIC_ASSERT(mHandle == static_cast<ClientHandle*>(aThing));
+  MOZ_DIAGNOSTIC_ASSERT(mHandle == aThing);
   mHandle = nullptr;
 }
 

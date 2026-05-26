@@ -12,6 +12,7 @@
 #include "nsIGlobalObject.h"
 #include "nsIStreamLoader.h"
 #include "nsIThreadRetargetableRequest.h"
+#include "nsIUnicodeDecoder.h"
 
 #include "nsCharSeparatedTokenizer.h"
 #include "nsDOMString.h"

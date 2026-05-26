@@ -453,13 +453,6 @@ nsMozIconURI::SetQuery(const nsACString& aQuery)
 }
 
 NS_IMETHODIMP
-nsMozIconURI::SetQueryWithEncoding(const nsACString& aQuery,
-                                   const Encoding* aEncoding)
-{
-  return NS_ERROR_FAILURE;
-}
-
-NS_IMETHODIMP
 nsMozIconURI::GetRef(nsACString& aRef)
 {
   aRef.Truncate();
@@ -583,6 +576,13 @@ NS_IMETHODIMP
 nsMozIconURI::GetAsciiHost(nsACString& aHostA)
 {
   return GetHost(aHostA);
+}
+
+NS_IMETHODIMP
+nsMozIconURI::GetOriginCharset(nsACString& result)
+{
+  result.Truncate();
+  return NS_OK;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -2846,8 +2846,8 @@ HTMLEditor::ReplaceStyleSheet(const nsAString& aURL)
   nsresult rv = NS_NewURI(getter_AddRefs(uaURI), aURL);
   NS_ENSURE_SUCCESS(rv, rv);
 
-  return ps->GetDocument()->CSSLoader()->LoadSheet(
-    uaURI, false, nullptr, nullptr, this);
+  return ps->GetDocument()->CSSLoader()->
+    LoadSheet(uaURI, false, nullptr, EmptyCString(), this);
 }
 
 NS_IMETHODIMP

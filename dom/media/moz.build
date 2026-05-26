@@ -160,12 +160,6 @@ EXPORTS += [
     'XiphExtradata.h',
 ]
 
-EXPORTS.mp4_demuxer += [
-    'BitReader.h',
-    'BufferReader.h',
-    'ByteWriter.h',
-]
-
 EXPORTS.mozilla += [
     'MediaManager.h',
 ]
@@ -222,7 +216,6 @@ UNIFIED_SOURCES += [
     'BackgroundVideoDecodingPermissionObserver.cpp',
     'BaseMediaResource.cpp',
     'Benchmark.cpp',
-    'BitReader.cpp',
     'CanvasCaptureMediaStream.cpp',
     'ChannelMediaDecoder.cpp',
     'ChannelMediaResource.cpp',

@@ -63,7 +63,6 @@
 // Interfaces Needed
 
 namespace mozilla {
-class Encoding;
 class HTMLEditor;
 enum class TaskCategory;
 namespace dom {
@@ -281,8 +280,6 @@ public:
     mInFrameSwap = aInSwap;
   }
   bool InFrameSwap();
-
-  const mozilla::Encoding* GetForcedCharset() { return mForcedCharset; }
 
   mozilla::HTMLEditor* GetHTMLEditorInternal();
   nsresult SetHTMLEditorInternal(mozilla::HTMLEditor* aHTMLEditor);
@@ -991,8 +988,8 @@ private: // data members
   // Checked in nsMixedContentBlocker, to see if the channels match.
   nsCOMPtr<nsIChannel> mMixedContentChannel;
 
-  const mozilla::Encoding* mForcedCharset;
-  const mozilla::Encoding* mParentCharset;
+  nsCString mForcedCharset;
+  nsCString mParentCharset;
 
   // WEAK REFERENCES BELOW HERE.
   // Note these are intentionally not addrefd. Doing so will create a cycle.

@@ -269,15 +269,14 @@ ForEachPing(nsIContent* aContent, ForEachPingCallback aCallback, void* aClosure)
   }
 
   nsIDocument* doc = aContent->OwnerDoc();
-  nsAutoCString charset;
-  doc->GetDocumentCharacterSet()->Name(charset);
 
   nsWhitespaceTokenizer tokenizer(value);
 
   while (tokenizer.hasMoreTokens()) {
     nsCOMPtr<nsIURI> uri, baseURI = aContent->GetBaseURI();
     ios->NewURI(NS_ConvertUTF16toUTF8(tokenizer.nextToken()),
-                charset.get(), baseURI, getter_AddRefs(uri));
+                doc->GetDocumentCharacterSet().get(),
+                baseURI, getter_AddRefs(uri));
     // if we can't generate a valid URI, then there is nothing to do
     if (!uri) {
       continue;

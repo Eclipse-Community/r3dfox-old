@@ -8,14 +8,10 @@
 #include "nsHtml5DocumentMode.h"
 #include "nsHtml5HtmlAttributes.h"
 #include "mozilla/dom/FromParser.h"
-#include "mozilla/NotNull.h"
 
 class nsIContent;
 class nsHtml5TreeOpExecutor;
 class nsHtml5DocumentBuilder;
-namespace mozilla {
-class Encoding;
-}
 
 enum eHtml5TreeOperation
 {
@@ -93,9 +89,7 @@ class nsHtml5TreeOperationStringPair {
     }
 };
 
-class nsHtml5TreeOperation final {
-    template <typename T> using NotNull = mozilla::NotNull<T>;
-    using Encoding = mozilla::Encoding;
+class nsHtml5TreeOperation {
 
   public:
     /**
@@ -275,27 +269,6 @@ class nsHtml5TreeOperation final {
                      int32_t aLineNumber)
     {
       Init(aOpCode, aString, aInt32);
-      mTwo.integer = aLineNumber;
-    }
-
-    inline void Init(eHtml5TreeOperation aOpCode, 
-                     NotNull<const Encoding*> aEncoding,
-                     int32_t aInt32)
-    {
-      NS_PRECONDITION(mOpCode == eTreeOpUninitialized,
-        "Op code must be uninitialized when initializing.");
-
-      mOpCode = aOpCode;
-      mOne.encoding = aEncoding;
-      mFour.integer = aInt32;
-    }
-
-    inline void Init(eHtml5TreeOperation aOpCode, 
-                     NotNull<const Encoding*> aEncoding,
-                     int32_t aInt32,
-                     int32_t aLineNumber)
-    {
-      Init(aOpCode, aEncoding, aInt32);
       mTwo.integer = aLineNumber;
     }
 
@@ -569,7 +542,6 @@ class nsHtml5TreeOperation final {
       nsAHtml5TreeBuilderState*       state;
       int32_t                         integer;
       nsresult                        result;
-      const Encoding*                 encoding;
       mozilla::dom::HTMLContentCreatorFunction htmlCreator;
       mozilla::dom::SVGContentCreatorFunction svgCreator;
     } mOne, mTwo, mThree, mFour, mFive;

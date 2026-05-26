@@ -421,8 +421,10 @@ class nsHtml5TreeBuilder : public nsAHtml5TreeBuilderState
     void addAttributesToHtml(nsHtml5HtmlAttributes* attributes);
     void pushHeadPointerOntoStack();
     void reconstructTheActiveFormattingElements();
+
   public:
     void notifyUnusedStackNode(int32_t idxInStackNodes);
+
   private:
     nsHtml5StackNode* getUnusedStackNode();
     nsHtml5StackNode* createStackNode(

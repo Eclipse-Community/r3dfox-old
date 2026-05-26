@@ -294,8 +294,6 @@ H264Converter::CreateDecoder(const VideoInfo& aConfig,
     }
   }
 
-  DDLINKCHILD("decoder", mDecoder.get());
-
   mNeedKeyframe = true;
 
   return NS_OK;

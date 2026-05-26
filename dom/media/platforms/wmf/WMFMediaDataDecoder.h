@@ -79,16 +79,12 @@ protected:
   Maybe<media::TimeUnit> mSeekTargetThreshold;
 };
 
-DDLoggedTypeDeclNameAndBase(WMFMediaDataDecoder, MediaDataDecoder);
-
 // Decodes audio and video using Windows Media Foundation. Samples are decoded
 // using the MFTDecoder created by the MFTManager. This class implements
 // the higher-level logic that drives mapping the MFT to the async
 // MediaDataDecoder interface. The specifics of decoding the exact stream
 // type are handled by MFTManager and the MFTDecoder it creates.
-class WMFMediaDataDecoder
-  : public MediaDataDecoder
-  , public DecoderDoctorLifeLogger<WMFMediaDataDecoder>
+class WMFMediaDataDecoder : public MediaDataDecoder
 {
 public:
   WMFMediaDataDecoder(MFTManager* aOutputSource, TaskQueue* aTaskQueue);

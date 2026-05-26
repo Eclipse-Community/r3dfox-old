@@ -26,7 +26,6 @@ namespace mozilla {
 WAVDemuxer::WAVDemuxer(MediaResource* aSource)
   : mSource(aSource)
 {
-  DDLINKCHILD("source", aSource);
 }
 
 bool
@@ -34,7 +33,6 @@ WAVDemuxer::InitInternal()
 {
   if (!mTrackDemuxer) {
     mTrackDemuxer = new WAVTrackDemuxer(mSource.GetResource());
-    DDLINKCHILD("track demuxer", mTrackDemuxer.get());
   }
   return mTrackDemuxer->Init();
 }
@@ -83,7 +81,6 @@ WAVTrackDemuxer::WAVTrackDemuxer(MediaResource* aSource)
   , mSamplesPerSecond(0)
   , mChannels(0)
 {
-  DDLINKCHILD("source", aSource);
   Reset();
 }
 

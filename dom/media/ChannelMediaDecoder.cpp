@@ -15,23 +15,14 @@ namespace mozilla {
 
 extern LazyLogModule gMediaDecoderLog;
 #define LOG(x, ...)                                                            \
-  DDMOZ_LOG(gMediaDecoderLog, LogLevel::Debug, x, ##__VA_ARGS__)
+  MOZ_LOG(                                                                     \
+    gMediaDecoderLog, LogLevel::Debug, ("Decoder=%p " x, this, ##__VA_ARGS__))
 
 ChannelMediaDecoder::ResourceCallback::ResourceCallback(
   AbstractThread* aMainThread)
   : mAbstractMainThread(aMainThread)
 {
   MOZ_ASSERT(aMainThread);
-  DecoderDoctorLogger::LogConstructionAndBase(
-    "ChannelMediaDecoder::ResourceCallback",
-    this,
-    static_cast<const MediaResourceCallback*>(this));
-}
-
-ChannelMediaDecoder::ResourceCallback::~ResourceCallback()
-{
-  DecoderDoctorLogger::LogDestruction("ChannelMediaDecoder::ResourceCallback",
-                                      this);
 }
 
 void
@@ -39,8 +30,6 @@ ChannelMediaDecoder::ResourceCallback::Connect(ChannelMediaDecoder* aDecoder)
 {
   MOZ_ASSERT(NS_IsMainThread());
   mDecoder = aDecoder;
-  DecoderDoctorLogger::LinkParentAndChild(
-    "ChannelMediaDecoder::ResourceCallback", this, "decoder", mDecoder);
   mTimer = NS_NewTimer(mAbstractMainThread->AsEventTarget());
 }
 
@@ -49,8 +38,6 @@ ChannelMediaDecoder::ResourceCallback::Disconnect()
 {
   MOZ_ASSERT(NS_IsMainThread());
   if (mDecoder) {
-    DecoderDoctorLogger::UnlinkParentAndChild(
-      "ChannelMediaDecoder::ResourceCallback", this, mDecoder);
     mDecoder = nullptr;
     mTimer->Cancel();
     mTimer = nullptr;
@@ -75,11 +62,6 @@ ChannelMediaDecoder::ResourceCallback::NotifyNetworkError(
   const MediaResult& aError)
 {
   MOZ_ASSERT(NS_IsMainThread());
-  DDLOGEX2("ChannelMediaDecoder::ResourceCallback",
-           this,
-           DDLogCategory::Log,
-           "network_error",
-           aError);
   if (mDecoder) {
     mDecoder->NetworkError(aError);
   }
@@ -100,12 +82,6 @@ void
 ChannelMediaDecoder::ResourceCallback::NotifyDataArrived()
 {
   MOZ_ASSERT(NS_IsMainThread());
-  DDLOGEX2("ChannelMediaDecoder::ResourceCallback",
-           this,
-           DDLogCategory::Log,
-           "data_arrived",
-           true);
-
   if (!mDecoder) {
     return;
   }
@@ -128,11 +104,6 @@ ChannelMediaDecoder::ResourceCallback::NotifyDataArrived()
 void
 ChannelMediaDecoder::ResourceCallback::NotifyDataEnded(nsresult aStatus)
 {
-  DDLOGEX2("ChannelMediaDecoder::ResourceCallback",
-           this,
-           DDLogCategory::Log,
-           "data_ended",
-           aStatus);
   MOZ_ASSERT(NS_IsMainThread());
   if (mDecoder) {
     mDecoder->NotifyDownloadEnded(aStatus);
@@ -143,11 +114,6 @@ void
 ChannelMediaDecoder::ResourceCallback::NotifyPrincipalChanged()
 {
   MOZ_ASSERT(NS_IsMainThread());
-  DDLOGEX2("ChannelMediaDecoder::ResourceCallback",
-           this,
-           DDLogCategory::Log,
-           "principal_changed",
-           true);
   if (mDecoder) {
     mDecoder->NotifyPrincipalChanged();
   }
@@ -158,11 +124,6 @@ ChannelMediaDecoder::ResourceCallback::NotifySuspendedStatusChanged(
   bool aSuspendedByCache)
 {
   MOZ_ASSERT(NS_IsMainThread());
-  DDLOGEX2("ChannelMediaDecoder::ResourceCallback",
-           this,
-           DDLogCategory::Log,
-           "suspended_status_changed",
-           aSuspendedByCache);
   MediaDecoderOwner* owner = GetMediaOwner();
   if (owner) {
     AbstractThread::AutoEnter context(owner->AbstractMainThread());
@@ -266,7 +227,6 @@ ChannelMediaDecoder::Load(nsIChannel* aChannel,
   if (!mResource) {
     return NS_ERROR_FAILURE;
   }
-  DDLINKCHILD("resource", mResource.get());
 
   nsresult rv = MediaShutdownManager::Instance().Register(this);
   if (NS_WARN_IF(NS_FAILED(rv))) {
@@ -295,7 +255,6 @@ ChannelMediaDecoder::Load(BaseMediaResource* aOriginal)
   if (!mResource) {
     return NS_ERROR_FAILURE;
   }
-  DDLINKCHILD("resource", mResource.get());
 
   nsresult rv = MediaShutdownManager::Instance().Register(this);
   if (NS_WARN_IF(NS_FAILED(rv))) {

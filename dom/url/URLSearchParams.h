@@ -13,6 +13,7 @@
 #include "nsCycleCollectionParticipant.h"
 #include "nsWrapperCache.h"
 #include "nsISupports.h"
+#include "nsIUnicodeDecoder.h"
 #include "nsIXMLHttpRequest.h"
 
 namespace mozilla {
@@ -121,6 +122,7 @@ private:
   };
 
   nsTArray<Param> mParams;
+  nsCOMPtr<nsIUnicodeDecoder> mDecoder;
 };
 
 class URLSearchParams final : public nsIXHRSendable,

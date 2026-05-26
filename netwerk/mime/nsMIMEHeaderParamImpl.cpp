@@ -21,6 +21,7 @@
 #include "nsReadableUtils.h"
 #include "nsNativeCharsetUtils.h"
 #include "nsError.h"
+#include "nsIUnicodeDecoder.h"
 #include "mozilla/dom/EncodingUtils.h"
 
 using mozilla::dom::EncodingUtils;

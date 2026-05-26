@@ -400,10 +400,7 @@ private:
  *
  * (Note: Span is like Rust's slice only conceptually. Due to the lack of
  * ABI guarantees, you should still decompose spans/slices to raw pointer
- * and length parts when crossing the FFI. The Elements() and data() methods
- * are guaranteed to return a non-null pointer even for zero-length spans,
- * so the pointer can be used as a raw part of a Rust slice without further
- * checks.)
+ * and length parts when crossing the FFI.)
  *
  * In addition to having constructors and MakeSpan() functions that take
  * various well-known types, a Span for an arbitrary type can be constructed
@@ -805,16 +802,12 @@ public:
   }
 
   /**
-   * Pointer to the first element of the span. The return value is never
-   * nullptr, not ever for zero-length spans, so it can be passed as-is
-   * to std::slice::from_raw_parts() in Rust.
+   * Pointer to the first element of the span.
    */
   constexpr pointer Elements() const { return data(); }
 
   /**
    * Pointer to the first element of the span (standard-libray duck typing version).
-   * The return value is never nullptr, not ever for zero-length spans, so it can
-   * be passed as-is to std::slice::from_raw_parts() in Rust.
    */
   constexpr pointer data() const { return storage_.data(); }
 
@@ -855,9 +848,7 @@ private:
     MOZ_SPAN_ASSERTION_CONSTEXPR storage_type(pointer elements,
                                               OtherExtentType ext)
       : ExtentType(ext)
-      // Replace nullptr with 0x1 for Rust slice compatibility. See
-      // https://doc.rust-lang.org/std/slice/fn.from_raw_parts.html
-      , data_(elements ? elements : reinterpret_cast<pointer>(0x1))
+      , data_(elements)
     {
       const size_t extentSize = ExtentType::size();
       MOZ_RELEASE_ASSERT(

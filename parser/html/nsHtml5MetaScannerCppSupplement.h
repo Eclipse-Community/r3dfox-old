@@ -4,7 +4,9 @@
 
 #include "nsISupportsImpl.h"
 
-#include "mozilla/Encoding.h"
+#include "mozilla/dom/EncodingUtils.h"
+
+using mozilla::dom::EncodingUtils;
 
 void
 nsHtml5MetaScanner::sniff(nsHtml5ByteReadable* bytes, nsACString& charset)
@@ -25,20 +27,20 @@ nsHtml5MetaScanner::tryCharset(nsHtml5String charset)
   nsString charset16; // Not Auto, because using it to hold nsStringBuffer*
   charset.ToString(charset16);
   CopyUTF16toUTF8(charset16, label);
-  const mozilla::Encoding* encoding = mozilla::Encoding::ForLabel(label);
-  if (!encoding) {
+  nsAutoCString encoding;
+  if (!EncodingUtils::FindEncodingForLabel(label, encoding)) {
     return false;
   }
-  if (encoding == UTF_16BE_ENCODING ||
-      encoding == UTF_16LE_ENCODING) {
+  if (encoding.EqualsLiteral("UTF-16BE") ||
+      encoding.EqualsLiteral("UTF-16LE")) {
     mCharset.AssignLiteral("UTF-8");
     return true;
   }
-  if (encoding == X_USER_DEFINED_ENCODING) {
+  if (encoding.EqualsLiteral("x-user-defined")) {
     // WebKit/Blink hack for Indian and Armenian legacy sites
     mCharset.AssignLiteral("windows-1252");
     return true;
   }
-  encoding->Name(mCharset);
+  mCharset.Assign(encoding);
   return true;
 }

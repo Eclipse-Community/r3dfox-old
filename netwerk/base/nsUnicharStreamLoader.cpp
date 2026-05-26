@@ -8,7 +8,7 @@
 #include "nsUnicharStreamLoader.h"
 #include "nsIInputStream.h"
 #include <algorithm>
-#include "mozilla/Encoding.h"
+#include "mozilla/dom/EncodingUtils.h"
 
 // 1024 bytes is specified in
 // http://www.whatwg.org/specs/web-apps/current-work/#charset for HTML; for
@@ -17,6 +17,7 @@
 #define SNIFFING_BUFFER_SIZE 1024
 
 using namespace mozilla;
+using mozilla::dom::EncodingUtils;
 
 NS_IMETHODIMP
 nsUnicharStreamLoader::Init(nsIUnicharStreamLoaderObserver *aObserver)
@@ -178,11 +179,11 @@ nsUnicharStreamLoader::DetermineCharset()
     mCharset.AssignLiteral("UTF-8");
   }
 
-  const Encoding* encoding = Encoding::ForLabel(mCharset);
-  if (!encoding) {
+  nsAutoCString encoding;
+  if (!EncodingUtils::FindEncodingForLabel(mCharset, encoding)) {
     return NS_ERROR_UCONV_NOCONV;
   }
-  mDecoder = encoding->NewDecoderWithBOMRemoval();
+  mDecoder = EncodingUtils::DecoderForEncoding(encoding);
 
   // Process the data into mBuffer
   uint32_t dummy;

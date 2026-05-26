@@ -8,6 +8,9 @@
 
 #include "mozilla/ArrayUtils.h" // ArrayLength
 #include "nsUConvPropertySearch.h"
+#include "nsIUnicodeDecoder.h"
+#include "nsIUnicodeEncoder.h"
+#include "nsComponentManagerUtils.h"
 
 namespace mozilla {
 namespace dom {
@@ -24,25 +27,31 @@ bool
 EncodingUtils::FindEncodingForLabel(const nsACString& aLabel,
                                     nsACString& aOutEncoding)
 {
-  auto encoding = Encoding::ForLabel(aLabel);
-  if (!encoding) {
+  // Save aLabel first because it may refer the same string as aOutEncoding.
+  nsCString label(aLabel);
+
+  EncodingUtils::TrimSpaceCharacters(label);
+  if (label.IsEmpty()) {
     aOutEncoding.Truncate();
     return false;
   }
-  encoding->Name(aOutEncoding);
-  return true;
+
+  ToLowerCase(label);
+  return NS_SUCCEEDED(nsUConvPropertySearch::SearchPropertyValue(
+      labelsEncodings, ArrayLength(labelsEncodings), label, aOutEncoding));
 }
 
 bool
 EncodingUtils::FindEncodingForLabelNoReplacement(const nsACString& aLabel,
                                                  nsACString& aOutEncoding)
 {
-  auto encoding = Encoding::ForLabelNoReplacement(aLabel);
-  if (!encoding) {
+  if(!FindEncodingForLabel(aLabel, aOutEncoding)) {
+    return false;
+  }
+  if (aOutEncoding.EqualsLiteral("replacement")) {
     aOutEncoding.Truncate();
     return false;
   }
-  encoding->Name(aOutEncoding);
   return true;
 }
 
@@ -60,16 +69,26 @@ EncodingUtils::IsAsciiCompatible(const nsACString& aPreferredName)
            aPreferredName.LowerCaseEqualsLiteral("x-imap4-modified-utf7"));
 }
 
-UniquePtr<Decoder>
+already_AddRefed<nsIUnicodeDecoder>
 EncodingUtils::DecoderForEncoding(const nsACString& aEncoding)
 {
-  return Encoding::ForName(aEncoding)->NewDecoderWithBOMRemoval();
+  nsAutoCString contractId(NS_UNICODEDECODER_CONTRACTID_BASE);
+  contractId.Append(aEncoding);
+
+  nsCOMPtr<nsIUnicodeDecoder> decoder = do_CreateInstance(contractId.get());
+  MOZ_ASSERT(decoder, "Tried to create decoder for unknown encoding.");
+  return decoder.forget();
 }
 
-UniquePtr<Encoder>
+already_AddRefed<nsIUnicodeEncoder>
 EncodingUtils::EncoderForEncoding(const nsACString& aEncoding)
 {
-  return Encoding::ForName(aEncoding)->NewEncoder();
+  nsAutoCString contractId(NS_UNICODEENCODER_CONTRACTID_BASE);
+  contractId.Append(aEncoding);
+
+  nsCOMPtr<nsIUnicodeEncoder> encoder = do_CreateInstance(contractId.get());
+  MOZ_ASSERT(encoder, "Tried to create encoder for unknown encoding.");
+  return encoder.forget();
 }
 
 void

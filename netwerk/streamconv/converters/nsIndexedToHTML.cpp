@@ -498,7 +498,8 @@ nsIndexedToHTML::DoOnStartRequest(nsIRequest* request, nsISupports *aContext,
     }
 
     nsAutoString unEscapeSpec;
-    rv = mTextToSubURI->UnEscapeAndConvert(NS_LITERAL_CSTRING("UTF-8"), titleUri, unEscapeSpec);
+    rv = mTextToSubURI->UnEscapeAndConvert(NS_LITERAL_CSTRING("UTF-8"), titleUri.get(),
+                                           getter_Copies(unEscapeSpec));
     // unescape may fail because
     // 1. file URL may be encoded in platform charset for backward compatibility
     // 2. query part may not be encoded in UTF-8 (see bug 261929)
@@ -507,7 +508,8 @@ nsIndexedToHTML::DoOnStartRequest(nsIRequest* request, nsISupports *aContext,
         auto encoding = mozilla::dom::FallbackEncoding::FromLocale();
         nsAutoCString charset;
         encoding->Name(charset);
-        rv = mTextToSubURI->UnEscapeAndConvert(charset, titleUri, unEscapeSpec);
+        rv = mTextToSubURI->UnEscapeAndConvert(charset.get(), titleUri.get(),
+                                               getter_Copies(unEscapeSpec));
     }
     if (NS_FAILED(rv)) return rv;
 

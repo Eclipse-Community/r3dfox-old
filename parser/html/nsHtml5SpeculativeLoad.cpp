@@ -92,7 +92,7 @@ nsHtml5SpeculativeLoad::Perform(nsHtml5TreeOpExecutor* aExecutor)
         NS_ASSERTION(mTypeOrCharsetSourceOrDocumentModeOrMetaCSPOrSizesOrIntegrity.Length() == 1,
             "Unexpected charset source string");
         int32_t intSource = (int32_t)mTypeOrCharsetSourceOrDocumentModeOrMetaCSPOrSizesOrIntegrity.First();
-        aExecutor->SetDocumentCharsetAndSource(Encoding::ForName(narrowName),
+        aExecutor->SetDocumentCharsetAndSource(narrowName,
                                                intSource);
       }
       break;

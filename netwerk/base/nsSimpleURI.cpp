@@ -726,6 +726,13 @@ nsSimpleURI::GetAsciiHost(nsACString &result)
     return NS_OK;
 }
 
+NS_IMETHODIMP
+nsSimpleURI::GetOriginCharset(nsACString &result)
+{
+    result.Truncate();
+    return NS_OK;
+}
+
 //----------------------------------------------------------------------------
 // nsSimpleURI::nsIClassInfo
 //----------------------------------------------------------------------------
@@ -876,13 +883,6 @@ nsSimpleURI::SetQuery(const nsACString& aQuery)
     }
 
     return NS_OK;
-}
-
-NS_IMETHODIMP
-nsSimpleURI::SetQueryWithEncoding(const nsACString& aQuery,
-                                  const Encoding* aEncoding)
-{
-    return SetQuery(aQuery);
 }
 
 } // namespace net

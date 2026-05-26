@@ -20,7 +20,6 @@ class ClientSourceParent final : public PClientSourceParent
   ClientInfo mClientInfo;
   RefPtr<ClientManagerService> mService;
   nsTArray<ClientHandleParent*> mHandleList;
-  bool mExecutionReady;
   bool mFrozen;
 
   void
@@ -29,9 +28,6 @@ class ClientSourceParent final : public PClientSourceParent
   // PClientSourceParent
   mozilla::ipc::IPCResult
   RecvTeardown() override;
-
-  mozilla::ipc::IPCResult
-  RecvExecutionReady(const ClientSourceExecutionReadyArgs& aArgs) override;
 
   mozilla::ipc::IPCResult
   RecvFreeze() override;

@@ -493,6 +493,7 @@ nsIndexedToHTML::DoOnStartRequest(nsIRequest* request, nsISupports *aContext,
         if (NS_FAILED(rv)) return rv;
     }
 
+    // I can not convert this to any other string type please help
     nsXPIDLCString encoding;
     rv = uri->GetOriginCharset(encoding);
     if (NS_FAILED(rv)) return rv;

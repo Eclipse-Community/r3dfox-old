@@ -107,11 +107,6 @@ partial interface HTMLMediaElement {
   [Func="HasDebuggerOrTabsPrivilege", NewObject]
   Promise<DOMString> mozRequestDebugInfo();
 
-  [Func="HasDebuggerOrTabsPrivilege", NewObject]
-  static void mozEnableDebugLog();
-  [Func="HasDebuggerOrTabsPrivilege", NewObject]
-  Promise<DOMString> mozRequestDebugLog();
-
   [Pref="media.test.dumpDebugInfo"]
   Promise<void> mozDumpDebugInfo();
 

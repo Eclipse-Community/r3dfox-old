@@ -17,10 +17,7 @@
 
 namespace mozilla {
 
-DDLoggedTypeDeclNameAndBase(VPXDecoder, MediaDataDecoder);
-
-class VPXDecoder : public MediaDataDecoder,
-                   public DecoderDoctorLifeLogger<VPXDecoder> {
+class VPXDecoder : public MediaDataDecoder {
  public:
   explicit VPXDecoder(const CreateDecoderParams& aParams);
 

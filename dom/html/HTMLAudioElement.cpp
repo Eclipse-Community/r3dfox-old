@@ -29,11 +29,9 @@ NS_IMPL_ELEMENT_CLONE(HTMLAudioElement)
 
 HTMLAudioElement::HTMLAudioElement(already_AddRefed<NodeInfo>& aNodeInfo)
     : HTMLMediaElement(aNodeInfo) {
-  DecoderDoctorLogger::LogConstruction(this);
 }
 
 HTMLAudioElement::~HTMLAudioElement() {
-  DecoderDoctorLogger::LogDestruction(this);
 }
 
 bool HTMLAudioElement::IsInteractiveHTMLContent(bool aIgnoreTabindex) const {

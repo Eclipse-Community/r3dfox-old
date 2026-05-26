@@ -144,8 +144,6 @@ struct MediaPlaybackEvent {
 
 enum class VideoDecodeMode : uint8_t { Normal, Suspend };
 
-DDLoggedTypeDeclName(MediaDecoderStateMachine);
-
 /*
   The state machine class. This manages the decoding and seeking in the
   MediaDecoderReader on the decode task queue, and A/V sync on the shared
@@ -157,8 +155,7 @@ DDLoggedTypeDeclName(MediaDecoderStateMachine);
 
   See MediaDecoder.h for more details.
 */
-class MediaDecoderStateMachine
-    : public DecoderDoctorLifeLogger<MediaDecoderStateMachine> {
+class MediaDecoderStateMachine {
   NS_INLINE_DECL_THREADSAFE_REFCOUNTING(MediaDecoderStateMachine)
 
   using TrackSet = MediaFormatReader::TrackSet;

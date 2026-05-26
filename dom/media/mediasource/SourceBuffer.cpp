@@ -36,16 +36,9 @@ class JSObject;
 extern mozilla::LogModule* GetMediaSourceLog();
 extern mozilla::LogModule* GetMediaSourceAPILog();
 
-#define MSE_DEBUG(arg, ...)                                                  \
-  DDMOZ_LOG(GetMediaSourceLog(), mozilla::LogLevel::Debug, "(%s)::%s: " arg, \
-            mType.OriginalString().Data(), __func__, ##__VA_ARGS__)
-#define MSE_DEBUGV(arg, ...)                                                   \
-  DDMOZ_LOG(GetMediaSourceLog(), mozilla::LogLevel::Verbose, "(%s)::%s: " arg, \
-            mType.OriginalString().Data(), __func__, ##__VA_ARGS__)
-#define MSE_API(arg, ...)                                              \
-  DDMOZ_LOG(GetMediaSourceAPILog(), mozilla::LogLevel::Debug,          \
-            "(%s)::%s: " arg, mType.OriginalString().Data(), __func__, \
-            ##__VA_ARGS__)
+#define MSE_DEBUG(arg, ...) MOZ_LOG(GetMediaSourceLog(), mozilla::LogLevel::Debug, ("SourceBuffer(%p:%s)::%s: " arg, this, mType.OriginalString().Data(), __func__, ##__VA_ARGS__))
+#define MSE_DEBUGV(arg, ...) MOZ_LOG(GetMediaSourceLog(), mozilla::LogLevel::Verbose, ("SourceBuffer(%p:%s)::%s: " arg, this, mType.OriginalString().Data(), __func__, ##__VA_ARGS__))
+#define MSE_API(arg, ...) MOZ_LOG(GetMediaSourceAPILog(), mozilla::LogLevel::Debug, ("SourceBuffer(%p:%s)::%s: " arg, this, mType.OriginalString().Data(), __func__, ##__VA_ARGS__))
 
 namespace mozilla {
 
@@ -144,7 +137,6 @@ void SourceBuffer::SetAppendWindowStart(double aAppendWindowStart,
                                         ErrorResult& aRv) {
   MOZ_ASSERT(NS_IsMainThread());
   MSE_API("SetAppendWindowStart(aAppendWindowStart=%f)", aAppendWindowStart);
-  DDLOG(DDLogCategory::API, "SetAppendWindowStart", aAppendWindowStart);
   if (!IsAttached() || mUpdating) {
     aRv.Throw(NS_ERROR_DOM_INVALID_STATE_ERR);
     return;
@@ -161,7 +153,6 @@ void SourceBuffer::SetAppendWindowEnd(double aAppendWindowEnd,
                                       ErrorResult& aRv) {
   MOZ_ASSERT(NS_IsMainThread());
   MSE_API("SetAppendWindowEnd(aAppendWindowEnd=%f)", aAppendWindowEnd);
-  DDLOG(DDLogCategory::API, "SetAppendWindowEnd", aAppendWindowEnd);
   if (!IsAttached() || mUpdating) {
     aRv.Throw(NS_ERROR_DOM_INVALID_STATE_ERR);
     return;
@@ -178,7 +169,6 @@ void SourceBuffer::AppendBuffer(const ArrayBuffer& aData, ErrorResult& aRv) {
   MOZ_ASSERT(NS_IsMainThread());
   MSE_API("AppendBuffer(ArrayBuffer)");
   aData.ComputeLengthAndData();
-  DDLOG(DDLogCategory::API, "AppendBuffer", aData.Length());
   AppendData(aData.Data(), aData.Length(), aRv);
 }
 
@@ -187,7 +177,6 @@ void SourceBuffer::AppendBuffer(const ArrayBufferView& aData,
   MOZ_ASSERT(NS_IsMainThread());
   MSE_API("AppendBuffer(ArrayBufferView)");
   aData.ComputeLengthAndData();
-  DDLOG(DDLogCategory::API, "AppendBuffer", aData.Length());
   AppendData(aData.Data(), aData.Length(), aRv);
 }
 
@@ -195,21 +184,17 @@ void SourceBuffer::Abort(ErrorResult& aRv) {
   MOZ_ASSERT(NS_IsMainThread());
   MSE_API("Abort()");
   if (!IsAttached()) {
-    DDLOG(DDLogCategory::API, "Abort", NS_ERROR_DOM_INVALID_STATE_ERR);
     aRv.Throw(NS_ERROR_DOM_INVALID_STATE_ERR);
     return;
   }
   if (mMediaSource->ReadyState() != MediaSourceReadyState::Open) {
-    DDLOG(DDLogCategory::API, "Abort", NS_ERROR_DOM_INVALID_STATE_ERR);
     aRv.Throw(NS_ERROR_DOM_INVALID_STATE_ERR);
     return;
   }
   if (mPendingRemoval.Exists()) {
-    DDLOG(DDLogCategory::API, "Abort", NS_ERROR_DOM_INVALID_STATE_ERR);
     aRv.Throw(NS_ERROR_DOM_INVALID_STATE_ERR);
     return;
   }
-  DDLOG(DDLogCategory::API, "Abort", NS_OK);
   AbortBufferAppend();
   ResetParserState();
   mCurrentAttributes.SetAppendWindowStart(0);
@@ -234,8 +219,6 @@ void SourceBuffer::ResetParserState() {
 void SourceBuffer::Remove(double aStart, double aEnd, ErrorResult& aRv) {
   MOZ_ASSERT(NS_IsMainThread());
   MSE_API("Remove(aStart=%f, aEnd=%f)", aStart, aEnd);
-  DDLOG(DDLogCategory::API, "Remove-from", aStart);
-  DDLOG(DDLogCategory::API, "Remove-until", aEnd);
   if (!IsAttached()) {
     aRv.Throw(NS_ERROR_DOM_INVALID_STATE_ERR);
     return;
@@ -310,7 +293,6 @@ SourceBuffer::SourceBuffer(MediaSource* aMediaSource,
 
   mTrackBuffersManager =
       new TrackBuffersManager(aMediaSource->GetDecoder(), aType);
-  DDLINKCHILD("track buffers manager", mTrackBuffersManager.get());
 
   MSE_DEBUG("Create mTrackBuffersManager=%p", mTrackBuffersManager.get());
 
@@ -406,7 +388,6 @@ void SourceBuffer::AppendDataCompletedWithSuccess(
     const SourceBufferTask::AppendBufferResult& aResult) {
   MOZ_ASSERT(mUpdating);
   mPendingAppend.Complete();
-  DDLOG(DDLogCategory::API, "AppendBuffer-completed", NS_OK);
 
   if (aResult.first()) {
     if (!mActive) {
@@ -441,7 +422,6 @@ void SourceBuffer::AppendDataCompletedWithSuccess(
 void SourceBuffer::AppendDataErrored(const MediaResult& aError) {
   MOZ_ASSERT(mUpdating);
   mPendingAppend.Complete();
-  DDLOG(DDLogCategory::API, "AppendBuffer-error", aError);
 
   switch (aError.Code()) {
     case NS_ERROR_DOM_MEDIA_CANCELED:

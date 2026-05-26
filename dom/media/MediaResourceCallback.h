@@ -7,7 +7,6 @@
 #ifndef MediaResourceCallback_h_
 #define MediaResourceCallback_h_
 
-#include "DecoderDoctorLogger.h"
 #include "nsError.h"
 #include "nsISupportsImpl.h"
 #include "MediaResult.h"
@@ -18,8 +17,6 @@ class AbstractThread;
 class MediaDecoderOwner;
 class MediaResource;
 
-DDLoggedTypeDeclName(MediaResourceCallback);
-
 /**
  * A callback used by MediaResource (sub-classes like FileMediaResource,
  * RtspMediaResource, and ChannelMediaResource) to notify various events.
@@ -29,8 +26,7 @@ DDLoggedTypeDeclName(MediaResourceCallback);
  * gtests for the readers without using a mock MediaResource when you don't
  * care about the events notified by the MediaResource.
  */
-class MediaResourceCallback
-    : public DecoderDoctorLifeLogger<MediaResourceCallback> {
+class MediaResourceCallback {
  public:
   NS_INLINE_DECL_THREADSAFE_REFCOUNTING(MediaResourceCallback);
 

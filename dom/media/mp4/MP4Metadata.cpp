@@ -89,8 +89,6 @@ static intptr_t read_source(uint8_t* buffer, uintptr_t size, void* userdata) {
 
 MP4Metadata::MP4Metadata(ByteStream* aSource)
     : mSource(aSource), mSourceAdaptor(aSource) {
-  DDLINKCHILD("source", aSource);
-
   Mp4parseIo io = {read_source, &mSourceAdaptor};
   mParser.reset(mp4parse_new(&io));
   MOZ_ASSERT(mParser);

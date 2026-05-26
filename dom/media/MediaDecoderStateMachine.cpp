@@ -60,12 +60,8 @@ using namespace mozilla::media;
 #undef SLOGE
 
 #define FMT(x, ...) "Decoder=%p " x, mDecoderID, ##__VA_ARGS__
-#define LOG(x, ...)                                                         \
-  DDMOZ_LOG(gMediaDecoderLog, LogLevel::Debug, "Decoder=%p " x, mDecoderID, \
-            ##__VA_ARGS__)
-#define LOGV(x, ...)                                                          \
-  DDMOZ_LOG(gMediaDecoderLog, LogLevel::Verbose, "Decoder=%p " x, mDecoderID, \
-            ##__VA_ARGS__)
+#define LOG(x, ...) MOZ_LOG(gMediaDecoderLog, LogLevel::Debug,   (FMT(x, ##__VA_ARGS__)))
+#define LOGV(x, ...) MOZ_LOG(gMediaDecoderLog, LogLevel::Verbose, (FMT(x, ##__VA_ARGS__)))
 #define LOGW(x, ...) NS_WARNING(nsPrintfCString(FMT(x, ##__VA_ARGS__)).get())
 #define LOGE(x, ...)                                                   \
   NS_DebugBreak(NS_DEBUG_WARNING,                                      \
@@ -73,12 +69,8 @@ using namespace mozilla::media;
                 __FILE__, __LINE__)
 
 // Used by StateObject and its sub-classes
-#define SFMT(x, ...)                                                     \
-  "Decoder=%p state=%s " x, mMaster->mDecoderID, ToStateStr(GetState()), \
-      ##__VA_ARGS__
-#define SLOG(x, ...)                                                     \
-  DDMOZ_LOGEX(mMaster, gMediaDecoderLog, LogLevel::Debug, "state=%s " x, \
-              ToStateStr(GetState()), ##__VA_ARGS__)
+#define SFMT(x, ...) "Decoder=%p state=%s " x, mMaster->mDecoderID, ToStateStr(GetState()), ##__VA_ARGS__
+#define SLOG(x, ...) MOZ_LOG(gMediaDecoderLog, LogLevel::Debug, (SFMT(x, ##__VA_ARGS__)))
 #define SLOGW(x, ...) NS_WARNING(nsPrintfCString(SFMT(x, ##__VA_ARGS__)).get())
 #define SLOGE(x, ...)                                                   \
   NS_DebugBreak(NS_DEBUG_WARNING,                                       \
@@ -1755,8 +1747,6 @@ class MediaDecoderStateMachine::CompletedState
       if (mMaster->mDuration.Ref()->IsInfinite()) {
         // We have a finite duration when playback reaches the end.
         mMaster->mDuration = Some(clockTime);
-        DDLOGEX(mMaster, DDLogCategory::Property, "duration_us",
-                mMaster->mDuration.Ref()->ToMicroseconds());
       }
       mMaster->UpdatePlaybackPosition(clockTime);
 
@@ -1975,9 +1965,6 @@ void MediaDecoderStateMachine::DecodeMetadataState::OnMetadataRead(
   if (mMaster->mDuration.Ref().isNothing()) {
     mMaster->mDuration = Some(TimeUnit::FromInfinity());
   }
-
-  DDLOGEX(mMaster, DDLogCategory::Property, "duration_us",
-          mMaster->mDuration.Ref()->ToMicroseconds());
 
   if (mMaster->HasVideo()) {
     SLOG("Video decode HWAccel=%d videoQueueSize=%d",
@@ -2443,8 +2430,6 @@ MediaDecoderStateMachine::MediaDecoderStateMachine(MediaDecoder* aDecoder,
   NS_ASSERTION(NS_IsMainThread(), "Should be on main thread.");
 
   InitVideoQueuePrefs();
-
-  DDLINKCHILD("reader", aReader);
 }
 
 #undef INIT_WATCHABLE
@@ -2681,11 +2666,7 @@ void MediaDecoderStateMachine::UpdatePlaybackPositionInternal(
   mCurrentPosition = aTime;
   NS_ASSERTION(mCurrentPosition.Ref() >= TimeUnit::Zero(),
                "CurrentTime should be positive!");
-  if (mDuration.Ref().ref() < mCurrentPosition.Ref()) {
-    mDuration = Some(mCurrentPosition.Ref());
-    DDLOG(DDLogCategory::Property, "duration_us",
-          mDuration.Ref()->ToMicroseconds());
-  }
+  mDuration = Some(std::max(mDuration.Ref().ref(), mCurrentPosition.Ref()));
 }
 
 void MediaDecoderStateMachine::UpdatePlaybackPosition(const TimeUnit& aTime) {
@@ -2836,8 +2817,6 @@ void MediaDecoderStateMachine::BufferedRangeUpdated() {
   if (mDuration.Ref().isNothing() || mDuration.Ref()->IsInfinite() ||
       end > mDuration.Ref().ref()) {
     mDuration = Some(end);
-    DDLOG(DDLogCategory::Property, "duration_us",
-          mDuration.Ref()->ToMicroseconds());
   }
 }
 

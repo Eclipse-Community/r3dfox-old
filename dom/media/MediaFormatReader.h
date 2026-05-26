@@ -67,10 +67,7 @@ struct MOZ_STACK_CLASS MediaFormatReaderInit {
   MediaDecoderOwnerID mMediaDecoderOwnerID = nullptr;
 };
 
-DDLoggedTypeDeclName(MediaFormatReader);
-
-class MediaFormatReader final
-    : public DecoderDoctorLifeLogger<MediaFormatReader> {
+class MediaFormatReader final {
   static const bool IsExclusive = true;
   typedef TrackInfo::TrackType TrackType;
   typedef MozPromise<bool, MediaResult, IsExclusive> NotifyDataArrivedPromise;
@@ -349,13 +346,6 @@ class MediaFormatReader final
           mIsHardwareAccelerated(false),
           mLastStreamSourceID(UINT32_MAX),
           mIsNullDecode(false) {
-      DecoderDoctorLogger::LogConstruction("MediaFormatReader::DecoderData",
-                                           this);
-    }
-
-    ~DecoderData() {
-      DecoderDoctorLogger::LogDestruction("MediaFormatReader::DecoderData",
-                                          this);
     }
 
     MediaFormatReader* mOwner;
@@ -582,15 +572,6 @@ class MediaFormatReader final
     DecoderDataWithPromise(MediaFormatReader* aOwner, MediaData::Type aType,
                            uint32_t aNumOfMaxError)
         : DecoderData(aOwner, aType, aNumOfMaxError), mHasPromise(false) {
-      DecoderDoctorLogger::LogConstructionAndBase(
-          "MediaFormatReader::DecoderDataWithPromise", this,
-          "MediaFormatReader::DecoderData",
-          static_cast<const MediaFormatReader::DecoderData*>(this));
-    }
-
-    ~DecoderDataWithPromise() {
-      DecoderDoctorLogger::LogDestruction(
-          "MediaFormatReader::DecoderDataWithPromise", this);
     }
 
     bool HasPromise() const override { return mHasPromise; }

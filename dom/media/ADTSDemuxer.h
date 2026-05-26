@@ -21,10 +21,7 @@ class FrameParser;
 
 class ADTSTrackDemuxer;
 
-DDLoggedTypeDeclNameAndBase(ADTSDemuxer, MediaDataDemuxer);
-
-class ADTSDemuxer : public MediaDataDemuxer,
-                    public DecoderDoctorLifeLogger<ADTSDemuxer> {
+class ADTSDemuxer : public MediaDataDemuxer {
  public:
   // MediaDataDemuxer interface.
   explicit ADTSDemuxer(MediaResource* aSource);
@@ -44,10 +41,7 @@ class ADTSDemuxer : public MediaDataDemuxer,
   RefPtr<ADTSTrackDemuxer> mTrackDemuxer;
 };
 
-DDLoggedTypeNameAndBase(ADTSTrackDemuxer, MediaTrackDemuxer);
-
-class ADTSTrackDemuxer : public MediaTrackDemuxer,
-                         public DecoderDoctorLifeLogger<ADTSTrackDemuxer> {
+class ADTSTrackDemuxer : public MediaTrackDemuxer {
  public:
   explicit ADTSTrackDemuxer(MediaResource* aSource);
 

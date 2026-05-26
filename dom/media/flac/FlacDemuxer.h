@@ -18,11 +18,8 @@ class FrameParser;
 }  // namespace flac
 class FlacTrackDemuxer;
 
-DDLoggedTypeDeclNameAndBase(FlacDemuxer, MediaDataDemuxer);
-DDLoggedTypeNameAndBase(FlacTrackDemuxer, MediaTrackDemuxer);
 
-class FlacDemuxer : public MediaDataDemuxer,
-                    public DecoderDoctorLifeLogger<FlacDemuxer> {
+class FlacDemuxer : public MediaDataDemuxer {
  public:
   // MediaDataDemuxer interface.
   explicit FlacDemuxer(MediaResource* aSource);
@@ -42,8 +39,7 @@ class FlacDemuxer : public MediaDataDemuxer,
   RefPtr<FlacTrackDemuxer> mTrackDemuxer;
 };
 
-class FlacTrackDemuxer : public MediaTrackDemuxer,
-                         public DecoderDoctorLifeLogger<FlacTrackDemuxer> {
+class FlacTrackDemuxer : public MediaTrackDemuxer {
  public:
   explicit FlacTrackDemuxer(MediaResource* aSource);
 

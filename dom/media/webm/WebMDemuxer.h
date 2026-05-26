@@ -88,11 +88,7 @@ class MediaRawDataQueue {
 
 class WebMTrackDemuxer;
 
-DDLoggedTypeDeclNameAndBase(WebMDemuxer, MediaDataDemuxer);
-DDLoggedTypeNameAndBase(WebMTrackDemuxer, MediaTrackDemuxer);
-
-class WebMDemuxer : public MediaDataDemuxer,
-                    public DecoderDoctorLifeLogger<WebMDemuxer> {
+class WebMDemuxer : public MediaDataDemuxer {
  public:
   explicit WebMDemuxer(MediaResource* aResource);
   // Indicate if the WebMDemuxer is to be used with MediaSource. In which
@@ -244,8 +240,7 @@ class WebMDemuxer : public MediaDataDemuxer,
   EncryptionInfo mCrypto;
 };
 
-class WebMTrackDemuxer : public MediaTrackDemuxer,
-                         public DecoderDoctorLifeLogger<WebMTrackDemuxer> {
+class WebMTrackDemuxer : public MediaTrackDemuxer {
  public:
   WebMTrackDemuxer(WebMDemuxer* aParent, TrackInfo::TrackType aType,
                    uint32_t aTrackNumber);

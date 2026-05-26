@@ -51,7 +51,7 @@ namespace mozilla {
 
 LazyLogModule gMediaDecoderLog("MediaDecoder");
 #define LOG(x, ...) \
-  DDMOZ_LOG(gMediaDecoderLog, LogLevel::Debug, x, ##__VA_ARGS__)
+  MOZ_LOG(gMediaDecoderLog, LogLevel::Debug, ("Decoder=%p " x, this, ##__VA_ARGS__))
 
 #define DUMP(x, ...) printf_stderr(x "\n", ##__VA_ARGS__)
 
@@ -758,9 +758,7 @@ void MediaDecoder::ChangeState(PlayState aState) {
     mNextState = PLAY_STATE_PAUSED;
   }
 
-  if (mPlayState != aState) {
-    DDLOG(DDLogCategory::Property, "play_state", ToPlayStateStr(aState));
-  }
+  LOG("ChangeState %s => %s", PlayStateStr(), ToPlayStateStr(aState));
   mPlayState = aState;
 
   if (mPlayState == PLAY_STATE_PLAYING) {
@@ -780,7 +778,6 @@ void MediaDecoder::UpdateLogicalPositionInternal() {
   }
   bool logicalPositionChanged = mLogicalPosition != currentPosition;
   mLogicalPosition = currentPosition;
-  DDLOG(DDLogCategory::Property, "currentTime", mLogicalPosition);
 
   // Invalidate the frame so any video data is displayed.
   // Do this before the timeupdate event so that if that
@@ -1035,14 +1032,11 @@ void MediaDecoder::DisconnectMirrors() {
 void MediaDecoder::SetStateMachine(MediaDecoderStateMachine* aStateMachine) {
   MOZ_ASSERT(NS_IsMainThread());
   MOZ_ASSERT_IF(aStateMachine, !mDecoderStateMachine);
+  mDecoderStateMachine = aStateMachine;
   if (aStateMachine) {
-    mDecoderStateMachine = aStateMachine;
-    DDLINKCHILD("decoder state machine", mDecoderStateMachine.get());
     ConnectMirrors(aStateMachine);
     UpdateVideoDecodeMode();
-  } else if (mDecoderStateMachine) {
-    DDUNLINKCHILD(mDecoderStateMachine.get());
-    mDecoderStateMachine = nullptr;
+  } else {
     DisconnectMirrors();
   }
 }

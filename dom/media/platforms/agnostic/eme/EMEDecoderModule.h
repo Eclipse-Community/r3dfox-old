@@ -40,11 +40,8 @@ class EMEDecoderModule : public PlatformDecoderModule {
   RefPtr<PDMFactory> mPDM;
 };
 
-DDLoggedTypeDeclNameAndBase(EMEMediaDataDecoderProxy, MediaDataDecoderProxy);
-
 class EMEMediaDataDecoderProxy
-    : public MediaDataDecoderProxy,
-      public DecoderDoctorLifeLogger<EMEMediaDataDecoderProxy> {
+    : public MediaDataDecoderProxy {
  public:
   EMEMediaDataDecoderProxy(already_AddRefed<AbstractThread> aProxyThread,
                            CDMProxy* aProxy,

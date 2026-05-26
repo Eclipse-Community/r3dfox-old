@@ -14,10 +14,7 @@
 
 namespace mozilla {
 
-DDLoggedTypeDeclNameAndBase(RemoteDataDecoder, MediaDataDecoder);
-
-class RemoteDataDecoder : public MediaDataDecoder,
-                          public DecoderDoctorLifeLogger<RemoteDataDecoder> {
+class RemoteDataDecoder : public MediaDataDecoder {
  public:
   static already_AddRefed<MediaDataDecoder> CreateAudioDecoder(
       const CreateDecoderParams& aParams, const nsString& aDrmStubId,

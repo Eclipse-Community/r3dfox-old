@@ -252,9 +252,7 @@ class Moof final : public Atom {
   uint64_t mMaxRoundingError;
 };
 
-DDLoggedTypeDeclName(MoofParser);
-
-class MoofParser : public DecoderDoctorLifeLogger<MoofParser> {
+class MoofParser {
  public:
   MoofParser(ByteStream* aSource, uint32_t aTrackId, bool aIsAudio)
       : mSource(aSource),
@@ -264,7 +262,6 @@ class MoofParser : public DecoderDoctorLifeLogger<MoofParser> {
         mLastDecodeTime(0) {
     // Setting the mTrex.mTrackId to 0 is a nasty work around for calculating
     // the composition range for MSE. We need an array of tracks.
-    DDLINKCHILD("source", aSource);
   }
   bool RebuildFragmentedIndex(const mozilla::MediaByteRangeSet& aByteRanges);
   // If *aCanEvict is set to true. then will remove all moofs already parsed

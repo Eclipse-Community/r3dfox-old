@@ -16,10 +16,7 @@ namespace mozilla {
 class MP4TrackDemuxer;
 class ResourceStream;
 
-DDLoggedTypeDeclNameAndBase(MP4Demuxer, MediaDataDemuxer);
-
-class MP4Demuxer : public MediaDataDemuxer,
-                   public DecoderDoctorLifeLogger<MP4Demuxer> {
+class MP4Demuxer : public MediaDataDemuxer {
  public:
   explicit MP4Demuxer(MediaResource* aResource);
 

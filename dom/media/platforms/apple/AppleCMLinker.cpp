@@ -97,5 +97,3 @@ fail:
 }
 
 }  // namespace mozilla
-
-#undef LOG

@@ -59,10 +59,7 @@ class SourceBufferTaskQueue {
   nsTArray<RefPtr<SourceBufferTask>> mQueue;
 };
 
-DDLoggedTypeDeclName(TrackBuffersManager);
-
-class TrackBuffersManager
-    : public DecoderDoctorLifeLogger<TrackBuffersManager> {
+class TrackBuffersManager {
  public:
   NS_INLINE_DECL_THREADSAFE_REFCOUNTING(TrackBuffersManager);
 

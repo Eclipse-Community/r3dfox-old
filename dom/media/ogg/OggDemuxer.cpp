@@ -22,9 +22,7 @@
 #include <algorithm>
 
 extern mozilla::LazyLogModule gMediaDemuxerLog;
-#define OGG_DEBUG(arg, ...)                                           \
-  DDMOZ_LOG(gMediaDemuxerLog, mozilla::LogLevel::Debug, "::%s: " arg, \
-            __func__, ##__VA_ARGS__)
+#define OGG_DEBUG(arg, ...) MOZ_LOG(gMediaDemuxerLog, mozilla::LogLevel::Debug, ("OggDemuxer(%p)::%s: " arg, this, __func__, ##__VA_ARGS__))
 
 // Un-comment to enable logging of seek bisections.
 //#define SEEK_LOGGING
@@ -111,8 +109,6 @@ OggDemuxer::OggDemuxer(MediaResource* aResource)
       mTimedMetadataEvent(nullptr),
       mOnSeekableEvent(nullptr) {
   MOZ_COUNT_CTOR(OggDemuxer);
-  // aResource is referenced through inner m{Audio,Video}OffState members.
-  DDLINKCHILD("resource", aResource);
 }
 
 OggDemuxer::~OggDemuxer() {
@@ -247,7 +243,6 @@ already_AddRefed<MediaTrackDemuxer> OggDemuxer::GetTrackDemuxer(
     return nullptr;
   }
   RefPtr<OggTrackDemuxer> e = new OggTrackDemuxer(this, aType, aTrackNumber);
-  DDLINKCHILD("track demuxer", e.get());
   mDemuxers.AppendElement(e);
 
   return e.forget();

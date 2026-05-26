@@ -17,10 +17,7 @@
 
 namespace mozilla {
 
-DDLoggedTypeDeclNameAndBase(AppleVTDecoder, MediaDataDecoder);
-
-class AppleVTDecoder : public MediaDataDecoder,
-                       public DecoderDoctorLifeLogger<AppleVTDecoder> {
+class AppleVTDecoder : public MediaDataDecoder {
  public:
   AppleVTDecoder(const VideoInfo& aConfig, TaskQueue* aTaskQueue,
                  layers::ImageContainer* aImageContainer);

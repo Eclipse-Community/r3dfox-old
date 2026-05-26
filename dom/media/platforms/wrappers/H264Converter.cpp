@@ -264,8 +264,6 @@ MediaResult H264Converter::CreateDecoder(
     }
   }
 
-  DDLINKCHILD("decoder", mDecoder.get());
-
   mNeedKeyframe = true;
 
   return NS_OK;

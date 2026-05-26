@@ -23,11 +23,7 @@ class AbstractThread;
 class MediaResult;
 class MediaSourceTrackDemuxer;
 
-DDLoggedTypeDeclNameAndBase(MediaSourceDemuxer, MediaDataDemuxer);
-DDLoggedTypeNameAndBase(MediaSourceTrackDemuxer, MediaTrackDemuxer);
-
-class MediaSourceDemuxer : public MediaDataDemuxer,
-                           public DecoderDoctorLifeLogger<MediaSourceDemuxer> {
+class MediaSourceDemuxer : public MediaDataDemuxer {
  public:
   explicit MediaSourceDemuxer(AbstractThread* aAbstractMainThread);
 
@@ -90,8 +86,7 @@ class MediaSourceDemuxer : public MediaDataDemuxer,
 };
 
 class MediaSourceTrackDemuxer
-    : public MediaTrackDemuxer,
-      public DecoderDoctorLifeLogger<MediaSourceTrackDemuxer> {
+    : public MediaTrackDemuxer {
  public:
   MediaSourceTrackDemuxer(MediaSourceDemuxer* aParent,
                           TrackInfo::TrackType aType,

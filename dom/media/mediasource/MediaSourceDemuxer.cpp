@@ -137,7 +137,6 @@ already_AddRefed<MediaTrackDemuxer> MediaSourceDemuxer::GetTrackDemuxer(
   }
   RefPtr<MediaSourceTrackDemuxer> e =
       new MediaSourceTrackDemuxer(this, aType, manager);
-  DDLINKCHILD("track demuxer", e.get());
   mDemuxers.AppendElement(e);
   return e.forget();
 }

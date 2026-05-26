@@ -18,13 +18,8 @@ template <int V>
 class FFmpegDataDecoder : public MediaDataDecoder {};
 
 template <>
-class FFmpegDataDecoder<LIBAV_VER>;
-DDLoggedTypeNameAndBase(FFmpegDataDecoder<LIBAV_VER>, MediaDataDecoder);
-
-template <>
 class FFmpegDataDecoder<LIBAV_VER>
-    : public MediaDataDecoder,
-      public DecoderDoctorLifeLogger<FFmpegDataDecoder<LIBAV_VER>> {
+    : public MediaDataDecoder {
  public:
   FFmpegDataDecoder(FFmpegLibWrapper* aLib, TaskQueue* aTaskQueue,
                     AVCodecID aCodecID);

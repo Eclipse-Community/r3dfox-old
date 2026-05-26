@@ -35,11 +35,6 @@ class AsyncEventRunner;
 class MediaResult;
 
 namespace dom {
-class MediaSource;
-}  // namespace dom
-DDLoggedTypeName(dom::MediaSource);
-
-namespace dom {
 
 class GlobalObject;
 class SourceBuffer;
@@ -54,8 +49,7 @@ class Optional;
     }                                                \
   }
 
-class MediaSource final : public DOMEventTargetHelper,
-                          public DecoderDoctorLifeLogger<MediaSource> {
+class MediaSource final : public DOMEventTargetHelper {
  public:
   /** WebIDL Methods. */
   static already_AddRefed<MediaSource> Constructor(const GlobalObject& aGlobal,

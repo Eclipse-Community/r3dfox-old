@@ -16,9 +16,9 @@
 
 extern mozilla::LazyLogModule gMediaDemuxerLog;
 #define LOG(msg, ...) \
-  DDMOZ_LOG(gMediaDemuxerLog, LogLevel::Debug, msg, ##__VA_ARGS__)
+  MOZ_LOG(gMediaDemuxerLog, LogLevel::Debug, ("FlacDemuxer " msg, ##__VA_ARGS__))
 #define LOGV(msg, ...) \
-  DDMOZ_LOG(gMediaDemuxerLog, LogLevel::Verbose, msg, ##__VA_ARGS__)
+  MOZ_LOG(gMediaDemuxerLog, LogLevel::Verbose, ("FlacDemuxer " msg, ##__VA_ARGS__))
 
 using namespace mozilla::media;
 
@@ -519,13 +519,11 @@ class FrameParser {
 // FlacDemuxer
 
 FlacDemuxer::FlacDemuxer(MediaResource* aSource) : mSource(aSource) {
-  DDLINKCHILD("source", aSource);
 }
 
 bool FlacDemuxer::InitInternal() {
   if (!mTrackDemuxer) {
     mTrackDemuxer = new FlacTrackDemuxer(mSource);
-    DDLINKCHILD("track demuxer", mTrackDemuxer.get());
   }
   return mTrackDemuxer->Init();
 }
@@ -562,7 +560,6 @@ bool FlacDemuxer::IsSeekable() const {
 // FlacTrackDemuxer
 FlacTrackDemuxer::FlacTrackDemuxer(MediaResource* aSource)
     : mSource(aSource), mParser(new flac::FrameParser()), mTotalFrameLen(0) {
-  DDLINKCHILD("source", aSource);
   Reset();
 }
 

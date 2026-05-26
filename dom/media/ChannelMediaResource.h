@@ -50,8 +50,6 @@ class ChannelSuspendAgent {
   bool mIsChannelSuspended = false;
 };
 
-DDLoggedTypeDeclNameAndBase(ChannelMediaResource, BaseMediaResource);
-
 /**
  * This is the MediaResource implementation that wraps Necko channels.
  * Much of its functionality is actually delegated to MediaCache via
@@ -60,9 +58,7 @@ DDLoggedTypeDeclNameAndBase(ChannelMediaResource, BaseMediaResource);
  * All synchronization is performed by MediaCacheStream; all off-main-
  * thread operations are delegated directly to that object.
  */
-class ChannelMediaResource
-    : public BaseMediaResource,
-      public DecoderDoctorLifeLogger<ChannelMediaResource> {
+class ChannelMediaResource : public BaseMediaResource {
   // Store information shared among resources. Main thread only.
   struct SharedInfo {
     NS_INLINE_DECL_REFCOUNTING(SharedInfo);

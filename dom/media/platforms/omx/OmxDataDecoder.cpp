@@ -19,13 +19,14 @@
 #undef LOGL
 #endif
 
-#define LOG(arg, ...)                                                  \
-  DDMOZ_LOG(sPDMLog, mozilla::LogLevel::Debug, "::%s: " arg, __func__, \
-            ##__VA_ARGS__)
+#define LOG(arg, ...) MOZ_LOG(sPDMLog, mozilla::LogLevel::Debug, ("OmxDataDecoder(%p)::%s: " arg, this, __func__, ##__VA_ARGS__))
 
 #define LOGL(arg, ...)                                                     \
-  DDMOZ_LOGEX(self.get(), sPDMLog, mozilla::LogLevel::Debug, "::%s: " arg, \
-              __func__, ##__VA_ARGS__)
+  {                                                                        \
+    void* p = self;                                              \
+    MOZ_LOG(sPDMLog, mozilla::LogLevel::Debug,                         \
+            ("OmxDataDecoder(%p)::%s: " arg, p, __func__, ##__VA_ARGS__)); \
+  }
 
 #define CHECK_OMX_ERR(err)      \
   if (err != OMX_ErrorNone) {   \
@@ -938,11 +939,9 @@ already_AddRefed<VideoData> MediaDataHelper::CreateYUV420VideoData(
       0,  // Filled later by caller.
       media::TimeUnit::FromMicroseconds(-1), info.ImageRect());
 
-  MOZ_LOG(sPDMLog, mozilla::LogLevel::Debug,
-          ("YUV420 VideoData: disp width %d, height %d, pic width %d, height "
-           "%d, time %lld",
-           info.mDisplay.width, info.mDisplay.height, info.mImage.width,
-           info.mImage.height, aBufferData->mBuffer->nTimeStamp));
+  LOG("YUV420 VideoData: disp width %d, height %d, pic width %d, height %d, time %lld",
+      info.mDisplay.width, info.mDisplay.height, info.mImage.width,
+      info.mImage.height, aBufferData->mBuffer->nTimeStamp);
 
   return data.forget();
 }

@@ -19,27 +19,15 @@
 #include <algorithm>
 
 #undef LOG
-#define LOG(arg, ...)                                                  \
-  DDMOZ_LOG(sPDMLog, mozilla::LogLevel::Debug, "::%s: " arg, __func__, \
-            ##__VA_ARGS__)
-#define LOG_RESULT(code, message, ...)                                        \
-  DDMOZ_LOG(sPDMLog, mozilla::LogLevel::Debug, "::%s: %s (code %d) " message, \
-            __func__, aom_codec_err_to_string(code), (int)code, ##__VA_ARGS__)
-#define LOGEX_RESULT(_this, code, message, ...)         \
-  DDMOZ_LOGEX(_this, sPDMLog, mozilla::LogLevel::Debug, \
-              "::%s: %s (code %d) " message, __func__,  \
-              aom_codec_err_to_string(code), (int)code, ##__VA_ARGS__)
-#define LOG_STATIC_RESULT(code, message, ...)                 \
-  MOZ_LOG(sPDMLog, mozilla::LogLevel::Debug,                  \
-          ("AOMDecoder::%s: %s (code %d) " message, __func__, \
-           aom_codec_err_to_string(code), (int)code, ##__VA_ARGS__))
+#define LOG(arg, ...) MOZ_LOG(sPDMLog, mozilla::LogLevel::Debug, ("AOMDecoder(%p)::%s: " arg, this, __func__, ##__VA_ARGS__))
+#define LOG_RESULT(code, message, ...) MOZ_LOG(sPDMLog, mozilla::LogLevel::Debug, ("AOMDecoder::%s: %s (code %d) " message, __func__, aom_codec_err_to_string(code), (int)code, ##__VA_ARGS__))
 
 namespace mozilla {
 
 using namespace gfx;
 using namespace layers;
 
-static MediaResult InitContext(AOMDecoder& aAOMDecoder, aom_codec_ctx_t* aCtx,
+static MediaResult InitContext(aom_codec_ctx_t* aCtx,
                                const VideoInfo& aInfo) {
   aom_codec_iface_t* dx = aom_codec_av1_dx();
   if (!dx) {
@@ -64,8 +52,7 @@ static MediaResult InitContext(AOMDecoder& aAOMDecoder, aom_codec_ctx_t* aCtx,
 
   auto res = aom_codec_dec_init(aCtx, dx, &config, flags);
   if (res != AOM_CODEC_OK) {
-    LOGEX_RESULT(&aAOMDecoder, res, "Codec initialization failed, res=%d",
-                 int(res));
+    LOG_RESULT(res, "Codec initialization failed!");
     return MediaResult(NS_ERROR_DOM_MEDIA_FATAL_ERR,
                        RESULT_DETAIL("AOM error initializing AV1 decoder: %s",
                                      aom_codec_err_to_string(res)));
@@ -87,14 +74,14 @@ RefPtr<ShutdownPromise> AOMDecoder::Shutdown() {
   return InvokeAsync(mTaskQueue, __func__, [self]() {
     auto res = aom_codec_destroy(&self->mCodec);
     if (res != AOM_CODEC_OK) {
-      LOGEX_RESULT(self.get(), res, "aom_codec_destroy");
+      LOG_RESULT(res, "aom_codec_destroy");
     }
     return ShutdownPromise::CreateAndResolve(true, __func__);
   });
 }
 
 RefPtr<MediaDataDecoder::InitPromise> AOMDecoder::Init() {
-  MediaResult rv = InitContext(*this, &mCodec, mInfo);
+  MediaResult rv = InitContext(&mCodec, mInfo);
   if (NS_FAILED(rv)) {
     return AOMDecoder::InitPromise::CreateAndReject(rv, __func__);
   }
@@ -320,8 +307,7 @@ bool AOMDecoder::IsKeyframe(Span<const uint8_t> aBuffer) {
   auto res = aom_codec_peek_stream_info(aom_codec_av1_dx(), aBuffer.Elements(),
                                         aBuffer.Length(), &info);
   if (res != AOM_CODEC_OK) {
-    LOG_STATIC_RESULT(
-        res, "couldn't get keyframe flag with aom_codec_peek_stream_info");
+    LOG_RESULT(res, "couldn't get keyframe flag with aom_codec_peek_stream_info");
     return false;
   }
 
@@ -336,8 +322,7 @@ gfx::IntSize AOMDecoder::GetFrameSize(Span<const uint8_t> aBuffer) {
   auto res = aom_codec_peek_stream_info(aom_codec_av1_dx(), aBuffer.Elements(),
                                         aBuffer.Length(), &info);
   if (res != AOM_CODEC_OK) {
-    LOG_STATIC_RESULT(
-        res, "couldn't get frame size with aom_codec_peek_stream_info");
+    LOG_RESULT(res, "couldn't get frame size with aom_codec_peek_stream_info");
   }
 
   return gfx::IntSize(info.w, info.h);

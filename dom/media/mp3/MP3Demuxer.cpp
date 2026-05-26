@@ -17,9 +17,9 @@
 
 extern mozilla::LazyLogModule gMediaDemuxerLog;
 #define MP3LOG(msg, ...) \
-  DDMOZ_LOG(gMediaDemuxerLog, LogLevel::Debug, msg, ##__VA_ARGS__)
+  MOZ_LOG(gMediaDemuxerLog, LogLevel::Debug, ("MP3Demuxer " msg, ##__VA_ARGS__))
 #define MP3LOGV(msg, ...) \
-  DDMOZ_LOG(gMediaDemuxerLog, LogLevel::Verbose, msg, ##__VA_ARGS__)
+  MOZ_LOG(gMediaDemuxerLog, LogLevel::Verbose, ("MP3Demuxer " msg, ##__VA_ARGS__))
 
 using mozilla::BufferReader;
 using mozilla::media::TimeInterval;
@@ -31,13 +31,11 @@ namespace mozilla {
 // MP3Demuxer
 
 MP3Demuxer::MP3Demuxer(MediaResource* aSource) : mSource(aSource) {
-  DDLINKCHILD("source", aSource);
 }
 
 bool MP3Demuxer::InitInternal() {
   if (!mTrackDemuxer) {
     mTrackDemuxer = new MP3TrackDemuxer(mSource);
-    DDLINKCHILD("track demuxer", mTrackDemuxer.get());
   }
   return mTrackDemuxer->Init();
 }
@@ -93,7 +91,6 @@ MP3TrackDemuxer::MP3TrackDemuxer(MediaResource* aSource)
       mSamplesPerFrame(0),
       mSamplesPerSecond(0),
       mChannels(0) {
-  DDLINKCHILD("source", aSource);
   Reset();
 }
 
@@ -730,6 +727,3 @@ double MP3TrackDemuxer::AverageFrameLength() const {
 }
 
 }  // namespace mozilla
-
-#undef MP3LOG
-#undef MP3LOGV

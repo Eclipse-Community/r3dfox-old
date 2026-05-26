@@ -5,14 +5,11 @@
 #ifndef STREAM_H_
 #define STREAM_H_
 
-#include "DecoderDoctorLogger.h"
 #include "nsISupportsImpl.h"
 
 namespace mozilla {
 
-DDLoggedTypeDeclName(ByteStream);
-
-class ByteStream : public DecoderDoctorLifeLogger<ByteStream> {
+class ByteStream {
  public:
   NS_INLINE_DECL_THREADSAFE_REFCOUNTING(ByteStream);
 

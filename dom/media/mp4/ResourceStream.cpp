@@ -11,7 +11,6 @@ namespace mozilla {
 ResourceStream::ResourceStream(mozilla::MediaResource* aResource)
     : mResource(aResource), mPinCount(0) {
   MOZ_ASSERT(aResource);
-  DDLINKCHILD("resource", &mResource);
 }
 
 ResourceStream::~ResourceStream() { MOZ_ASSERT(mPinCount == 0); }

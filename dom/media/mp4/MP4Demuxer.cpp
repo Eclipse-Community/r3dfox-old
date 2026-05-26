@@ -26,16 +26,11 @@
 extern mozilla::LazyLogModule gMediaDemuxerLog;
 mozilla::LogModule* GetDemuxerLog() { return gMediaDemuxerLog; }
 
-#define LOG(arg, ...)                                                 \
-  DDMOZ_LOG(gMediaDemuxerLog, mozilla::LogLevel::Debug, "::%s: " arg, \
-            __func__, ##__VA_ARGS__)
+#define LOG(arg, ...) MOZ_LOG(gMediaDemuxerLog, mozilla::LogLevel::Debug, ("MP4Demuxer(%p)::%s: " arg, this, __func__, ##__VA_ARGS__))
 
 namespace mozilla {
 
-DDLoggedTypeDeclNameAndBase(MP4TrackDemuxer, MediaTrackDemuxer);
-
-class MP4TrackDemuxer : public MediaTrackDemuxer,
-                        public DecoderDoctorLifeLogger<MP4TrackDemuxer> {
+class MP4TrackDemuxer : public MediaTrackDemuxer {
  public:
   MP4TrackDemuxer(MP4Demuxer* aParent, UniquePtr<TrackInfo>&& aInfo,
                   const IndiceWrapper& aIndices);
@@ -115,8 +110,6 @@ bool AccumulateSPSTelemetry(const MediaByteBuffer* aExtradata) {
 
 MP4Demuxer::MP4Demuxer(MediaResource* aResource)
     : mResource(aResource), mStream(new ResourceStream(aResource)) {
-  DDLINKCHILD("resource", aResource);
-  DDLINKCHILD("stream", mStream.get());
 }
 
 RefPtr<MP4Demuxer::InitPromise> MP4Demuxer::Init() {
@@ -140,7 +133,6 @@ RefPtr<MP4Demuxer::InitPromise> MP4Demuxer::Init() {
   RefPtr<BufferStream> bufferstream = new BufferStream(initData.Ref());
 
   MP4Metadata metadata{bufferstream};
-  DDLINKCHILD("metadata", &metadata);
   nsresult rv = metadata.Parse();
   if (NS_FAILED(rv)) {
     return InitPromise::CreateAndReject(
@@ -220,10 +212,8 @@ RefPtr<MP4Demuxer::InitPromise> MP4Demuxer::Init() {
         }
         continue;
       }
-      RefPtr<MP4TrackDemuxer> demuxer =
-          new MP4TrackDemuxer(this, Move(info.Ref()), *indices.Ref().get());
-      DDLINKCHILD("audio demuxer", demuxer.get());
-      mAudioDemuxers.AppendElement(Move(demuxer));
+      mAudioDemuxers.AppendElement(
+        new MP4TrackDemuxer(this, Move(info.Ref()), *indices.Ref().get()));
     }
   }
 
@@ -257,10 +247,8 @@ RefPtr<MP4Demuxer::InitPromise> MP4Demuxer::Init() {
         }
         continue;
       }
-      RefPtr<MP4TrackDemuxer> demuxer =
-          new MP4TrackDemuxer(this, Move(info.Ref()), *indices.Ref().get());
-      DDLINKCHILD("video demuxer", demuxer.get());
-      mVideoDemuxers.AppendElement(Move(demuxer));
+      mVideoDemuxers.AppendElement(
+        new MP4TrackDemuxer(this, Move(info.Ref()), *indices.Ref().get()));
     }
   }
 

@@ -12,10 +12,7 @@
 namespace mozilla {
 class MediaByteBuffer;
 
-DDLoggedTypeDeclNameAndBase(BufferStream, ByteStream);
-
-class BufferStream : public ByteStream,
-                     public mozilla::DecoderDoctorLifeLogger<BufferStream> {
+class BufferStream : public ByteStream {
  public:
   /* BufferStream does not take ownership of aData nor does it make a copy.
    * Therefore BufferStream shouldn't get used after aData is destroyed.

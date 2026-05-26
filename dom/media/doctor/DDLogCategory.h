@@ -16,8 +16,7 @@ namespace mozilla {
 // Those starting with '_' are for internal use only.
 MOZ_DEFINE_ENUM_CLASS(DDLogCategory,
                       (_Construction, _DerivedConstruction, _Destruction, _Link,
-                       _Unlink, Property, Event, API, Log, MozLogError,
-                       MozLogWarning, MozLogInfo, MozLogDebug, MozLogVerbose));
+                       _Unlink, Property, Event, API, Log));
 
 // Corresponding short strings, used as JSON property names when logs are
 // retrieved.

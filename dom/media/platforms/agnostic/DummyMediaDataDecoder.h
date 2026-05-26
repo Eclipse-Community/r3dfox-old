@@ -22,13 +22,10 @@ class DummyDataCreator {
   virtual already_AddRefed<MediaData> Create(MediaRawData* aSample) = 0;
 };
 
-DDLoggedTypeDeclNameAndBase(DummyMediaDataDecoder, MediaDataDecoder);
-
 // Decoder that uses a passed in object's Create function to create Null
 // MediaData objects.
 class DummyMediaDataDecoder
-    : public MediaDataDecoder,
-      public DecoderDoctorLifeLogger<DummyMediaDataDecoder> {
+    : public MediaDataDecoder {
  public:
   DummyMediaDataDecoder(UniquePtr<DummyDataCreator>&& aCreator,
                         const nsACString& aDescription,

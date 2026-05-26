@@ -14,10 +14,7 @@
 
 namespace mozilla {
 
-DDLoggedTypeDeclNameAndBase(AOMDecoder, MediaDataDecoder);
-
-class AOMDecoder : public MediaDataDecoder,
-                   public DecoderDoctorLifeLogger<AOMDecoder> {
+class AOMDecoder : public MediaDataDecoder {
  public:
   explicit AOMDecoder(const CreateDecoderParams& aParams);
 

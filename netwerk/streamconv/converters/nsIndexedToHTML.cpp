@@ -497,15 +497,15 @@ nsIndexedToHTML::DoOnStartRequest(nsIRequest* request, nsISupports *aContext,
         if (NS_FAILED(rv)) return rv;
     }
 
-    nsXPIDLCString encoding;
+    nsAutoCString encoding;
     rv = uri->GetOriginCharset(encoding);
     if (NS_FAILED(rv)) return rv;
     if (encoding.IsEmpty()) {
       encoding.AssignLiteral("UTF-8");
     }
 
-    nsXPIDLString unEscapeSpec;
-    rv = mTextToSubURI->UnEscapeAndConvert(encoding, titleUri.get(),
+    nsString unEscapeSpec;
+    rv = mTextToSubURI->UnEscapeAndConvert(encoding.get(), titleUri.get(),
                                            getter_Copies(unEscapeSpec));
     // unescape may fail because
     // 1. file URL may be encoded in platform charset for backward compatibility

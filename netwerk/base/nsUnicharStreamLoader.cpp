@@ -8,7 +8,7 @@
 #include "nsUnicharStreamLoader.h"
 #include "nsIInputStream.h"
 #include <algorithm>
-#include "mozilla/Encoding.h"
+#include "mozilla/dom/EncodingUtils.h"
 
 // 1024 bytes is specified in
 // http://www.whatwg.org/specs/web-apps/current-work/#charset for HTML; for
@@ -17,6 +17,7 @@
 #define SNIFFING_BUFFER_SIZE 1024
 
 using namespace mozilla;
+using mozilla::dom::EncodingUtils;
 
 NS_IMETHODIMP
 nsUnicharStreamLoader::Init(nsIUnicharStreamLoaderObserver *aObserver)
@@ -183,15 +184,15 @@ nsUnicharStreamLoader::DetermineCharset()
   // replacement, since it's not invariant under a second label resolution
   // operation.
   if (mCharset.EqualsLiteral("replacement")) {
-    mDecoder = REPLACEMENT_ENCODING->NewDecoderWithBOMRemoval();
+    mDecoder = EncodingUtils::DecoderForEncoding(mCharset);
   } else {
-    const Encoding* encoding = Encoding::ForLabelNoReplacement(mCharset);
-    if (!encoding) {
+    nsAutoCString charset;
+    if (!EncodingUtils::FindEncodingForLabelNoReplacement(mCharset, charset)) {
       // If we got replacement here, the caller was not mozilla::css::Loader
       // but an extension.
       return NS_ERROR_UCONV_NOCONV;
     }
-    mDecoder = encoding->NewDecoderWithBOMRemoval();
+    mDecoder = EncodingUtils::DecoderForEncoding(charset);
   }
 
   // Process the data into mBuffer

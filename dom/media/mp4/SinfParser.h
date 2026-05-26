@@ -10,7 +10,7 @@
 #include "Atom.h"
 #include "AtomType.h"
 
-namespace mozilla {
+namespace mp4_demuxer {
 
 class Box;
 

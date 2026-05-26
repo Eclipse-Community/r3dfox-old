@@ -6,7 +6,7 @@
 
 #include "ResourceStream.h"
 
-namespace mozilla {
+namespace mp4_demuxer {
 
 ResourceStream::ResourceStream(mozilla::MediaResource* aResource)
   : mResource(aResource)
@@ -64,4 +64,4 @@ ResourceStream::Length(int64_t* aSize)
   return true;
 }
 
-} // namespace mozilla
+} // namespace mp4_demuxer

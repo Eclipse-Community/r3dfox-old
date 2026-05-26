@@ -7,9 +7,11 @@
 #include "FetchUtil.h"
 
 #include "nsError.h"
+#include "nsIUnicodeDecoder.h"
 #include "nsString.h"
 #include "nsIDocument.h"
 
+#include "mozilla/dom/EncodingUtils.h"
 #include "mozilla/dom/InternalRequest.h"
 
 namespace mozilla {

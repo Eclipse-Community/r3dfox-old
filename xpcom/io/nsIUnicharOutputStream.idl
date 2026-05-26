@@ -34,6 +34,8 @@ interface nsIUnicharOutputStream : nsISupports
      * finish the current byte sequence.
      *
      * It does NOT flush the underlying stream.
+     *
+     * @see nsIUnicodeEncoder::Finish
      */
     void flush();
 

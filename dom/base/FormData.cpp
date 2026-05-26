@@ -10,7 +10,6 @@
 #include "mozilla/dom/File.h"
 #include "mozilla/dom/Directory.h"
 #include "mozilla/dom/HTMLFormElement.h"
-#include "mozilla/Encoding.h"
 
 #include "MultipartBlobImpl.h"
 
@@ -18,7 +17,7 @@ using namespace mozilla;
 using namespace mozilla::dom;
 
 FormData::FormData(nsISupports* aOwner)
-  : HTMLFormSubmission(WrapNotNull(UTF_8_ENCODING), nullptr)
+  : HTMLFormSubmission(NS_LITERAL_CSTRING("UTF-8"), nullptr)
   , mOwner(aOwner)
 {
 }
@@ -403,7 +402,7 @@ NS_IMETHODIMP
 FormData::GetSendInfo(nsIInputStream** aBody, uint64_t* aContentLength,
                       nsACString& aContentTypeWithCharset, nsACString& aCharset)
 {
-  FSMultipartFormData fs(WrapNotNull(UTF_8_ENCODING), nullptr);
+  FSMultipartFormData fs(NS_LITERAL_CSTRING("UTF-8"), nullptr);
 
   for (uint32_t i = 0; i < mFormData.Length(); ++i) {
     if (mFormData[i].wasNullBlob) {

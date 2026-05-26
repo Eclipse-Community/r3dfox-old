@@ -5,6 +5,7 @@
 #ifndef DECODER_DATA_H_
 #define DECODER_DATA_H_
 
+#include "MediaData.h"
 #include "MediaInfo.h"
 #include "mozilla/RefPtr.h"
 #include "mozilla/Result.h"
@@ -13,7 +14,10 @@
 #include "nsString.h"
 #include "nsTArray.h"
 #include "nsString.h"
-#include "mp4parse.h"
+
+namespace stagefright {
+class MetaData;
+}
 
 namespace mp4_demuxer {
 
@@ -53,6 +57,9 @@ class MP4AudioInfo : public mozilla::AudioInfo {
  public:
   MP4AudioInfo() = default;
 
+  void Update(const stagefright::MetaData* aMetaData,
+              const char* aMimeType);
+
   void Update(const Mp4parseTrackInfo* track,
               const Mp4parseTrackAudioInfo* audio);
 
@@ -62,6 +69,9 @@ class MP4AudioInfo : public mozilla::AudioInfo {
 class MP4VideoInfo : public mozilla::VideoInfo {
  public:
   MP4VideoInfo() = default;
+
+  void Update(const stagefright::MetaData* aMetaData,
+              const char* aMimeType);
 
   void Update(const Mp4parseTrackInfo* track,
               const Mp4parseTrackVideoInfo* video);

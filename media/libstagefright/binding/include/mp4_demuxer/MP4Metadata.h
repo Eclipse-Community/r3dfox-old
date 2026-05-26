@@ -17,36 +17,18 @@
 
 namespace mp4_demuxer {
 
-// The memory owner in mIndice.indices is rust mp4 parser, so lifetime of this
-// class SHOULD NOT longer than rust parser.
+class MP4MetadataStagefright;
+class MP4MetadataRust;
+
 class IndiceWrapper {
  public:
-  size_t Length() const;
+  virtual size_t Length() const = 0;
 
-  bool GetIndice(size_t aIndex, Index::Indice& aIndice) const;
+  // TODO: Index::Indice is from stagefright, we should use another struct once
+  //       stagefrigth is removed.
+  virtual bool GetIndice(size_t aIndex, Index::Indice& aIndice) const = 0;
 
-  explicit IndiceWrapper(Mp4parseByteData& aRustIndice);
-
- protected:
-  Mp4parseByteData mIndice;
-};
-
-struct FreeMP4Parser {
-  void operator()(Mp4parseParser* aPtr) { mp4parse_free(aPtr); }
-};
-
-// Wrap an mp4_demuxer::Stream to remember the read offset.
-class StreamAdaptor {
- public:
-  explicit StreamAdaptor(Stream* aSource) : mSource(aSource), mOffset(0) {}
-
-  ~StreamAdaptor() {}
-
-  bool Read(uint8_t* buffer, uintptr_t size, size_t* bytes_read);
-
- private:
-  Stream* mSource;
-  CheckedInt<size_t> mOffset;
+  virtual ~IndiceWrapper() {}
 };
 
 class MP4Metadata {
@@ -89,23 +71,21 @@ class MP4Metadata {
 
   bool CanSeek() const;
 
+  nsresult Parse() const;
+
   using ResultAndCryptoFile = ResultAndType<const CryptoFile*>;
   ResultAndCryptoFile Crypto() const;
 
   using ResultAndIndice = ResultAndType<mozilla::UniquePtr<IndiceWrapper>>;
   ResultAndIndice GetTrackIndice(mozilla::TrackID aTrackID);
 
-  nsresult Parse();
-
  private:
-  void UpdateCrypto();
-  Maybe<uint32_t> TrackTypeToGlobalTrackIndex(
-      mozilla::TrackInfo::TrackType aType, size_t aTrackNumber) const;
-
-  CryptoFile mCrypto;
-  RefPtr<Stream> mSource;
-  StreamAdaptor mSourceAdaptor;
-  mozilla::UniquePtr<Mp4parseParser, FreeMP4Parser> mParser;
+  UniquePtr<MP4MetadataStagefright> mStagefright;
+  UniquePtr<MP4MetadataRust> mRust;
+  mutable bool mDisableRust;
+  mutable bool mReportedAudioTrackTelemetry;
+  mutable bool mReportedVideoTrackTelemetry;
+  bool ShouldPreferRust() const;
 };
 
 }  // namespace mozilla

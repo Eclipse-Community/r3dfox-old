@@ -1524,11 +1524,7 @@ nsDocShell::SetForcedCharset(const nsACString& aCharset) {
 
 NS_IMETHODIMP
 nsDocShell::GetForcedCharset(nsACString& aResult) {
-  if (mForcedCharset) {
-    aResult = mForcedCharset;
-  } else {
-    aResult.Truncate();
-  }
+  aResult = mForcedCharset;
   return NS_OK;
 }
 
@@ -10917,16 +10913,18 @@ nsresult nsDocShell::ScrollToAnchor(bool aCurHasRef, bool aNewHasRef,
       NS_ENSURE_TRUE(mContentViewer, NS_ERROR_FAILURE);
       nsIDocument* doc = mContentViewer->GetDocument();
       NS_ENSURE_TRUE(doc, NS_ERROR_FAILURE);
-      const nsACString& charset = doc->GetDocumentCharacterSet();
+      const nsACString& aCharset = doc->GetDocumentCharacterSet();
 
       nsCOMPtr<nsITextToSubURI> textToSubURI =
           do_GetService(NS_ITEXTTOSUBURI_CONTRACTID, &rv);
       NS_ENSURE_SUCCESS(rv, rv);
 
       // Unescape and convert to unicode
-      nsAutoString uStr;
+      nsXPIDLString uStr;
 
-      rv = textToSubURI->UnEscapeAndConvert(charset, aNewHash, uStr);
+      rv = textToSubURI->UnEscapeAndConvert(PromiseFlatCString(aCharset).get(),
+                                            PromiseFlatCString(aNewHash).get(),
+                                            getter_Copies(uStr));
       NS_ENSURE_SUCCESS(rv, rv);
 
       // Ignore return value of GoToAnchor, since it will return an error

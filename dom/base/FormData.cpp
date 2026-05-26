@@ -9,7 +9,6 @@
 #include "mozilla/dom/File.h"
 #include "mozilla/dom/Directory.h"
 #include "mozilla/dom/HTMLFormElement.h"
-#include "mozilla/Encoding.h"
 
 #include "MultipartBlobImpl.h"
 
@@ -17,7 +16,7 @@ using namespace mozilla;
 using namespace mozilla::dom;
 
 FormData::FormData(nsISupports* aOwner)
-    : HTMLFormSubmission(nullptr, EmptyString(), WrapNotNull(UTF_8_ENCODING), nullptr),
+    : HTMLFormSubmission(nullptr, EmptyString(), NS_LITERAL_CSTRING("UTF-8"), nullptr),
       mOwner(aOwner) {}
 
 namespace {
@@ -300,7 +299,7 @@ void FormData::SetNameDirectoryPair(FormDataTuple* aData,
 nsresult FormData::GetSendInfo(nsIInputStream** aBody, uint64_t* aContentLength,
                                nsACString& aContentTypeWithCharset,
                                nsACString& aCharset) const {
-  FSMultipartFormData fs(nullptr, EmptyString(), WrapNotNull(UTF_8_ENCODING), nullptr);
+  FSMultipartFormData fs(nullptr, EmptyString(), NS_LITERAL_CSTRING("UTF-8"), nullptr);
 
   for (uint32_t i = 0; i < mFormData.Length(); ++i) {
     if (mFormData[i].wasNullBlob) {

@@ -227,14 +227,15 @@ nsresult nsDirIndexParser::ParseData(nsIDirIndex *aIdx, char *aDataStr,
         nsAutoString entryuri;
 
         if (gTextToSubURI) {
-          nsAutoString result;
+          char16_t *result = nullptr;
           if (NS_SUCCEEDED(rv = gTextToSubURI->UnEscapeAndConvert(
-                               mEncoding, filename, result))) {
-            if (!result.IsEmpty()) {
+                               mEncoding.get(), filename.get(), &result)) && (result)) {
+            if (*result) {
               aIdx->SetLocation(filename.get());
-              if (!mHasDescription) aIdx->SetDescription(result.get());
+              if (!mHasDescription) aIdx->SetDescription(result);
               success = true;
             }
+            free(result);
           } else {
             NS_WARNING("UnEscapeAndConvert error");
           }

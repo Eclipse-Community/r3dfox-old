@@ -13,7 +13,6 @@ extern crate webrender_bindings;
 #[cfg(feature = "cubeb_pulse_rust")]
 extern crate cubeb_pulse;
 extern crate encoding_c;
-extern crate encoding_glue;
 #[cfg(feature = "cubeb-remoting")]
 extern crate audioipc_client;
 #[cfg(feature = "cubeb-remoting")]

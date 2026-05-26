@@ -42,15 +42,18 @@
  * Implement the suggestion record.
  */
 
-NS_IMPL_ADDREF(mozPersonalDictionary)
-NS_IMPL_RELEASE(mozPersonalDictionary)
+NS_IMPL_CYCLE_COLLECTING_ADDREF(mozPersonalDictionary)
+NS_IMPL_CYCLE_COLLECTING_RELEASE(mozPersonalDictionary)
 
 NS_INTERFACE_MAP_BEGIN(mozPersonalDictionary)
   NS_INTERFACE_MAP_ENTRY(mozIPersonalDictionary)
   NS_INTERFACE_MAP_ENTRY(nsIObserver)
   NS_INTERFACE_MAP_ENTRY(nsISupportsWeakReference)
   NS_INTERFACE_MAP_ENTRY_AMBIGUOUS(nsISupports, mozIPersonalDictionary)
+  NS_INTERFACE_MAP_ENTRIES_CYCLE_COLLECTION(mozPersonalDictionary)
 NS_INTERFACE_MAP_END
+
+NS_IMPL_CYCLE_COLLECTION(mozPersonalDictionary, mEncoder)
 
 class mozPersonalDictionaryLoader final : public mozilla::Runnable {
  public:
@@ -63,7 +66,7 @@ class mozPersonalDictionaryLoader final : public mozilla::Runnable {
     // Release the dictionary on the main thread
     NS_ReleaseOnMainThreadSystemGroup(
         "mozPersonalDictionaryLoader::mDict",
-        mDict.forget().downcast<mozIPersonalDictionary>());
+        mDict.forget());
 
     return NS_OK;
   }
@@ -135,7 +138,7 @@ class mozPersonalDictionarySave final : public mozilla::Runnable {
     // Release the dictionary on the main thread.
     NS_ReleaseOnMainThreadSystemGroup(
         "mozPersonalDictionarySave::mDict",
-        mDict.forget().downcast<mozIPersonalDictionary>());
+        mDict.forget());
 
     return NS_OK;
   }

@@ -26,10 +26,6 @@
 class nsAtom;
 class nsINode;
 
-namespace mozilla {
-class Encoding;
-}
-
 class nsXMLContentSerializer : public nsIContentSerializer {
  public:
   nsXMLContentSerializer();
@@ -37,7 +33,7 @@ class nsXMLContentSerializer : public nsIContentSerializer {
   NS_DECL_ISUPPORTS
 
   NS_IMETHOD Init(uint32_t flags, uint32_t aWrapColumn,
-                  const mozilla::Encoding* aEncoding, bool aIsCopying,
+                  const char* aCharSet, bool aIsCopying,
                   bool aRewriteEncodingDeclaration,
                   bool* aNeedsPreformatScanning) override;
 

@@ -72,7 +72,7 @@ class ScriptLoadHandler final : public nsIIncrementalStreamLoaderObserver {
   nsresult mSRIStatus;
 
   // Unicode decoder for charset.
-  mozilla::UniquePtr<mozilla::Decoder> mDecoder;
+  nsCOMPtr<nsIUnicodeDecoder> mDecoder;
 };
 
 }  // namespace dom

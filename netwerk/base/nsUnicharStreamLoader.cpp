@@ -187,20 +187,17 @@ nsresult nsUnicharStreamLoader::WriteSegmentFun(nsIInputStream *,
                                                 uint32_t *aWriteCount) {
   nsUnicharStreamLoader *self = static_cast<nsUnicharStreamLoader *>(aClosure);
 
-  nsAString::size_type haveRead(self->mBuffer.Length());
+  uint32_t haveRead = self->mBuffer.Length();
+  int32_t srcLen = aCount;
+  int32_t dstLen;
 
-  CheckedInt<size_t> needed = self->mDecoder->MaxUTF16BufferLength(aCount);
-  if (!needed.isValid()) {
-    return NS_ERROR_OUT_OF_MEMORY;
+  nsresult rv = self->mDecoder->GetMaxLength(aSegment, srcLen, &dstLen);
+  if (NS_WARN_IF(NS_FAILED(rv))) {
+    return rv;
   }
 
-  CheckedInt<nsAString::size_type> capacity(needed.value());
-  capacity += haveRead;
-  if (!capacity.isValid()) {
-    return NS_ERROR_OUT_OF_MEMORY;
-  }
-
-  if (!self->mBuffer.SetCapacity(capacity.value(), fallible)) {
+  uint32_t capacity = haveRead + dstLen;
+  if (!self->mBuffer.SetCapacity(capacity, fallible)) {
     return NS_ERROR_OUT_OF_MEMORY;
   }
 
@@ -208,25 +205,18 @@ nsresult nsUnicharStreamLoader::WriteSegmentFun(nsIInputStream *,
     return NS_ERROR_OUT_OF_MEMORY;
   }
 
-  uint32_t result;
-  size_t read;
-  size_t written;
-  bool hadErrors;
-
-  Tie(result, read, written, hadErrors) = self->mDecoder->DecodeToUTF16(
-      AsBytes(MakeSpan(aSegment, aCount)),
-      MakeSpan(self->mBuffer.BeginWriting() + haveRead, needed.value()), false);
-  MOZ_ASSERT(result == kInputEmpty);
-  MOZ_ASSERT(read == aCount);
-  Unused << hadErrors;
-
-  CheckedInt<nsAString::size_type> newLen(written);
-  newLen += haveRead;
-  if (!newLen.isValid()) {
-    return NS_ERROR_OUT_OF_MEMORY;
+  rv = self->mDecoder->Convert(aSegment,
+                               &srcLen,
+                               self->mBuffer.BeginWriting() + haveRead,
+                               &dstLen);
+  if (NS_WARN_IF(NS_FAILED(rv))) {
+    return rv;
   }
 
-  self->mBuffer.SetLength(newLen.value());
+  MOZ_ASSERT(srcLen == static_cast<int32_t>(aCount));
+  haveRead += dstLen;
+
+  self->mBuffer.SetLength(haveRead);
   *aWriteCount = aCount;
   return NS_OK;
 }

@@ -24,10 +24,6 @@
 #include "mozilla/BinarySearch.h"
 #include "nsComputedDOMStyle.h"
 
-namespace mozilla {
-class Encoding;
-}
-
 using namespace mozilla;
 using namespace mozilla::dom;
 
@@ -136,7 +132,7 @@ nsPlainTextSerializer::~nsPlainTextSerializer() {
 
 NS_IMETHODIMP
 nsPlainTextSerializer::Init(uint32_t aFlags, uint32_t aWrapColumn,
-                            const Encoding* aEncoding, bool aIsCopying,
+                            const char* aCharSet, bool aIsCopying,
                             bool aIsWholeDocument,
                             bool* aNeedsPreformatScanning) {
 #ifdef DEBUG

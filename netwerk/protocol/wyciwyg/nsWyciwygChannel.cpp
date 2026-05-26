@@ -240,7 +240,7 @@ nsWyciwygChannel::SetContentType(const nsACString &aContentType) {
 
 NS_IMETHODIMP
 nsWyciwygChannel::GetContentCharset(nsACString &aContentCharset) {
-  aContentCharset.AssignLiteral("UTF-16LE");
+  aContentCharset.AssignLiteral("UTF-16");
   return NS_OK;
 }
 

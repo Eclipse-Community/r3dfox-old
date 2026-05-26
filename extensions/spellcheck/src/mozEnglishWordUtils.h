@@ -8,6 +8,8 @@
 
 #include "nsCOMPtr.h"
 #include "mozISpellI18NUtil.h"
+#include "nsIUnicodeEncoder.h"
+#include "nsIUnicodeDecoder.h"
 #include "nsString.h"
 
 #include "mozITXTToHTMLConv.h"

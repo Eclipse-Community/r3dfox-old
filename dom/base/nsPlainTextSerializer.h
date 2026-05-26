@@ -42,7 +42,7 @@ class nsPlainTextSerializer final : public nsIContentSerializer {
 
   // nsIContentSerializer
   NS_IMETHOD Init(uint32_t flags, uint32_t aWrapColumn,
-                  const mozilla::Encoding* aEncoding, bool aIsCopying,
+                  const char* aCharSet, bool aIsCopying,
                   bool aIsWholeDocument,
                   bool* aNeedsPreformatScanning) override;
 

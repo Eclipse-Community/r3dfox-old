@@ -30,7 +30,7 @@ interface nsIUTF8ConverterService : nsISupports
    *        true)
    * @return the converted string in UTF-8.
    * @throws NS_ERROR_UCONV_NOCONV when there is no decoder for aCharset
-   *         or NS_ERROR_UDEC_ILLEGALINPUT in case of conversion failure
+   *         or error code of nsIUnicodeDecoder in case of conversion failure
    */
 
     [optional_argc]
@@ -59,7 +59,7 @@ interface nsIUTF8ConverterService : nsISupports
    * @param aCharset the charset to convert from if |aSpec| is not in UTF-8
    * @return the converted spec in UTF-8.
    * @throws NS_ERROR_UCONV_NOCONV when there is no decoder for aCharset
-   *         or NS_ERROR_UDEC_ILLEGALINPUT in case of conversion failure
+   *         or error code of nsIUnicodeDecoder in case of conversion failure
    */
 
     AUTF8String convertURISpecToUTF8(in ACString aSpec,

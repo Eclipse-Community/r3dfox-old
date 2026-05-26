@@ -32,9 +32,7 @@
 #include "mozilla/dom/Element.h"
 #include "mozilla/intl/LineBreaker.h"
 #include "nsParserConstants.h"
-#include "mozilla/Encoding.h"
 
-using namespace mozilla;
 using namespace mozilla::dom;
 
 #define kXMLNS "xmlns"
@@ -72,7 +70,7 @@ NS_IMPL_ISUPPORTS(nsXMLContentSerializer, nsIContentSerializer)
 
 NS_IMETHODIMP
 nsXMLContentSerializer::Init(uint32_t aFlags, uint32_t aWrapColumn,
-                             const Encoding* aEncoding, bool aIsCopying,
+                             const char* aCharSet, bool aIsCopying,
                              bool aRewriteEncodingDeclaration,
                              bool* aNeedsPreformatScanning) {
   *aNeedsPreformatScanning = false;
@@ -87,9 +85,7 @@ nsXMLContentSerializer::Init(uint32_t aFlags, uint32_t aWrapColumn,
   mBodyOnly = false;
   mInBody = 0;
 
-  if (aEncoding) {
-    aEncoding->Name(mCharset);
-  }
+  mCharset = aCharSet;
   mFlags = aFlags;
 
   // Set the line break character:

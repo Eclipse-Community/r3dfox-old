@@ -21,6 +21,7 @@
 #include "nsFont.h"
 #include "gfxFontConstants.h"
 #include "nsIAtom.h"
+#include "nsIObserver.h"
 #include "nsITimer.h"
 #include "nsCRT.h"
 #include "nsIWidgetListener.h"
@@ -125,7 +126,7 @@ class nsRootPresContext;
 // An interface for presentation contexts. Presentation contexts are
 // objects that provide an outer context for a presentation shell.
 
-class nsPresContext : public nsISupports,
+class nsPresContext : public nsIObserver,
                       public mozilla::SupportsWeakPtr<nsPresContext> {
 public:
   using Encoding = mozilla::Encoding;
@@ -135,6 +136,7 @@ public:
   typedef mozilla::StaticPresData StaticPresData;
 
   NS_DECL_CYCLE_COLLECTING_ISUPPORTS
+  NS_DECL_NSIOBSERVER
   NS_DECL_CYCLE_COLLECTION_CLASS(nsPresContext)
   MOZ_DECLARE_WEAKREFERENCE_TYPENAME(nsPresContext)
 
@@ -172,8 +174,6 @@ public:
   }
 
   nsIPresShell* GetPresShell() const { return mShell; }
-
-  void DispatchCharSetChange(NotNull<const Encoding*> aCharSet);
 
   /**
    * Returns the parent prescontext for this one. Returns null if this is a

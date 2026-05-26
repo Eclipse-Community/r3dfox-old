@@ -35,14 +35,13 @@ void IDTracker::Reset(nsIContent* aFromContent, nsIURI* aURI, bool aWatch,
 
   nsAutoCString charset;
   aURI->GetOriginCharset(charset);
-  const Encoding* encoding = charset.IsEmpty() ?
-    UTF_8_ENCODING : Encoding::ForName(charset);
   nsAutoString ref;
-  nsresult rv = encoding->DecodeWithoutBOMHandling(refPart, ref);
+  nsresult rv = nsContentUtils::ConvertStringFromEncoding(charset,
+                                                          refPart,
+                                                          ref);
   if (NS_FAILED(rv) || ref.IsEmpty()) {
     return;
   }
-  rv = NS_OK;
 
   // Get the current document
   nsIDocument *doc = aFromContent->OwnerDoc();

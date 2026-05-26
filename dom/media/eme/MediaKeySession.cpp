@@ -16,8 +16,8 @@
 #include "mozilla/CDMProxy.h"
 #include "mozilla/AsyncEventDispatcher.h"
 #include "mozilla/Move.h"
+#include "nsContentUtils.h"
 #include "mozilla/EMEUtils.h"
-#include "mozilla/Encoding.h"
 #include "GMPUtils.h"
 #include "nsPrintfCString.h"
 #include "psshparser/PsshParser.h"
@@ -169,7 +169,7 @@ static bool ValidateInitData(const nsTArray<uint8_t>& aInitData,
     nsDependentCSubstring raw(
         reinterpret_cast<const char*>(aInitData.Elements()),
         aInitData.Length());
-    if (NS_FAILED(UTF_8_ENCODING->DecodeWithBOMRemoval(raw, json))) {
+    if (NS_FAILED(nsContentUtils::ConvertStringFromEncoding(NS_LITERAL_CSTRING("UTF-8"), raw, json))) {
       return false;
     }
     if (!keyIds.Init(json)) {

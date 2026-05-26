@@ -2655,7 +2655,7 @@ ScriptLoader::ConvertToUTF16(nsIChannel* aChannel, const uint8_t* aData,
   }
 
   if (!unicodeDecoder && aDocument) {
-    unicodeDecoder = aDocument->GetDocumentCharacterSet()
+    unicodeDecoder = Encoding::ForName(aDocument->GetDocumentCharacterSet())
                        ->NewDecoderWithoutBOMHandling();
   }
 

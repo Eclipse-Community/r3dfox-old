@@ -447,6 +447,7 @@ nsPresContext::~nsPresContext()
 
 NS_INTERFACE_MAP_BEGIN_CYCLE_COLLECTION(nsPresContext)
    NS_INTERFACE_MAP_ENTRY(nsISupports)
+   NS_INTERFACE_MAP_ENTRY(nsIObserver)
 NS_INTERFACE_MAP_END
 
 NS_IMPL_CYCLE_COLLECTING_ADDREF(nsPresContext)
@@ -1071,6 +1072,7 @@ nsPresContext::AttachShell(nsIPresShell* aShell, StyleBackendType aBackendType)
         mImageAnimationMode = imgIContainer::kNormalAnimMode;
     }
 
+    doc->AddCharSetObserver(this);
     UpdateCharSet(doc->GetDocumentCharacterSet());
   }
 }
@@ -1078,6 +1080,13 @@ nsPresContext::AttachShell(nsIPresShell* aShell, StyleBackendType aBackendType)
 void
 nsPresContext::DetachShell()
 {
+  // Remove ourselves as the charset observer from the shell's doc, because
+  // this shell may be going away for good.
+  nsIDocument *doc = mShell ? mShell->GetDocument() : nullptr;
+  if (doc) {
+    doc->RemoveCharSetObserver(this);
+  }
+
   // The counter style manager's destructor needs to deallocate with the
   // presshell arena. Disconnect it before nulling out the shell.
   //
@@ -1170,19 +1179,21 @@ nsPresContext::UpdateCharSet(NotNull<const Encoding*> aCharSet)
   }
 }
 
-void
-nsPresContext::DispatchCharSetChange(NotNull<const Encoding*> aEncoding)
+NS_IMETHODIMP
+nsPresContext::Observe(nsISupports* aSubject,
+                        const char* aTopic,
+                        const char16_t* aData)
 {
-#ifdef MOZ_OLD_STYLE
-  if (!Document()->IsStyledByServo()) {
+  if (!nsCRT::strcmp(aTopic, "charset")) {
+    auto encoding = Encoding::ForName(NS_LossyConvertUTF16toASCII(aData));
     RefPtr<CharSetChangingRunnable> runnable =
-      new CharSetChangingRunnable(this, aEncoding);
-    Document()->Dispatch(TaskCategory::Other, runnable.forget());
-    return;
+      new CharSetChangingRunnable(this, encoding);
+    return Document()->Dispatch(TaskCategory::Other,
+                                runnable.forget());
   }
-#endif
-  // In Servo RebuildAllStyleData is async, so no need to do the runnable dance.
-  DoChangeCharSet(aEncoding);
+
+  NS_WARNING("unrecognized topic in nsPresContext::Observe");
+  return NS_ERROR_FAILURE;
 }
 
 nsPresContext*

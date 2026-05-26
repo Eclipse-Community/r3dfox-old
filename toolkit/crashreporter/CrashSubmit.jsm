@@ -120,7 +120,7 @@ async function writeFileAsync(dirName, fileName, data) {
   let filePath = OS.Path.join(dirPath, fileName);
   // succeeds even with existing path, permissions 700
   await OS.File.makeDir(dirPath, { unixFlags: OS.Constants.libc.S_IRWXU });
-  await OS.File.writeAtomic(filePath, data, { encoding: "utf-8" });
+  await OS.File.writeAtomic(filePath, data, { encoding: "utf-8, 0, 0x0000" });
 }
 
 function getPendingMinidump(id) {

@@ -17,8 +17,8 @@
 #include "mozilla/dom/MediaKeyMessageEventBinding.h"
 #include "mozilla/gmp/GMPTypes.h"
 #include "mozilla/Unused.h"
-#include "AnnexB.h"
-#include "H264.h"
+#include "mp4_demuxer/AnnexB.h"
+#include "mp4_demuxer/H264.h"
 
 #define NS_DispatchToMainThread(...) CompileError_UseAbstractMainThreadInstead
 
@@ -917,8 +917,8 @@ ChromiumCDMParent::InitializeVideoDecoder(
 
   mMaxRefFrames =
     (aConfig.mCodec() == cdm::VideoDecoderConfig::kCodecH264)
-      ? H264::HasSPS(aInfo.mExtraData)
-          ? H264::ComputeMaxRefFrames(aInfo.mExtraData)
+      ? mp4_demuxer::H264::HasSPS(aInfo.mExtraData)
+          ? mp4_demuxer::H264::ComputeMaxRefFrames(aInfo.mExtraData)
           : 16
       : 0;
 

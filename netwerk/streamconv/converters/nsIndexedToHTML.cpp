@@ -500,7 +500,7 @@ nsIndexedToHTML::DoOnStartRequest(nsIRequest* request, nsISupports *aContext,
       encoding.AssignLiteral("UTF-8");
     }
 
-    nsXPIDLString unEscapeSpec;
+    nsString unEscapeSpec;
     rv = mTextToSubURI->UnEscapeAndConvert(encoding, titleUri.get(),
                                            getter_Copies(unEscapeSpec));
     // unescape may fail because

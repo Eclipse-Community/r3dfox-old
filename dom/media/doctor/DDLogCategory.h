@@ -23,12 +23,7 @@ MOZ_DEFINE_ENUM_CLASS(DDLogCategory,
                        Property,
                        Event,
                        API,
-                       Log,
-                       MozLogError,
-                       MozLogWarning,
-                       MozLogInfo,
-                       MozLogDebug,
-                       MozLogVerbose));
+                       Log));
 
 // Corresponding short strings, used as JSON property names when logs are
 // retrieved.

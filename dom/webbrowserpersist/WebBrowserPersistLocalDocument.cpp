@@ -128,7 +128,7 @@ WebBrowserPersistLocalDocument::GetContentType(nsACString& aContentType)
 NS_IMETHODIMP
 WebBrowserPersistLocalDocument::GetCharacterSet(nsACString& aCharSet)
 {
-    GetCharacterSet()->Name(aCharSet);
+    aCharSet = GetCharacterSet();
     return NS_OK;
 }
 
@@ -227,7 +227,7 @@ WebBrowserPersistLocalDocument::GetHistory()
     return history.forget();
 }
 
-NotNull<const Encoding*>
+const nsCString&
 WebBrowserPersistLocalDocument::GetCharacterSet() const
 {
     return mDocument->GetDocumentCharacterSet();
@@ -388,7 +388,7 @@ ResourceReader::OnWalkURI(const nsACString& aURISpec)
 
     rv = NS_NewURI(getter_AddRefs(uri),
                    aURISpec,
-                   mParent->GetCharacterSet(),
+                   mParent->GetCharacterSet().get(),
                    mCurrentBaseURI);
     NS_ENSURE_SUCCESS(rv, rv);
     return OnWalkURI(uri);
@@ -666,7 +666,7 @@ PersistNodeFixup::FixupURI(nsAString &aURI)
     // get the current location of the file (absolutized)
     nsCOMPtr<nsIURI> uri;
     nsresult rv = NS_NewURI(getter_AddRefs(uri), aURI,
-                            mParent->GetCharacterSet(), mCurrentBaseURI);
+                            mParent->GetCharacterSet().get(), mCurrentBaseURI);
     NS_ENSURE_SUCCESS(rv, rv);
     nsAutoCString spec;
     rv = uri->GetSpec(spec);
@@ -753,7 +753,7 @@ PersistNodeFixup::FixupAnchor(nsIDOMNode *aNode)
         // Make a new URI to replace the current one
         nsCOMPtr<nsIURI> newURI;
         rv = NS_NewURI(getter_AddRefs(newURI), oldCValue,
-                       mParent->GetCharacterSet(), relativeURI);
+                       mParent->GetCharacterSet().get(), relativeURI);
         if (NS_SUCCEEDED(rv) && newURI) {
             newURI->SetUserPass(EmptyCString());
             nsAutoCString uriSpec;

@@ -9402,8 +9402,8 @@ nsDocShell::SetupNewViewer(nsIContentViewer* aNewViewer)
                     NS_ERROR_FAILURE);
   nsCOMPtr<nsIDocShell> parent(do_QueryInterface(parentAsItem));
 
-  const Encoding* forceCharset = nullptr;
-  const Encoding* hintCharset = nullptr;
+  nsAutoCString forceCharset;
+  nsAutoCString hintCharset;
   int32_t hintCharsetSource;
   int32_t minFontSize;
   float textZoom;
@@ -9438,8 +9438,10 @@ nsDocShell::SetupNewViewer(nsIContentViewer* aNewViewer)
     if (oldCv) {
       newCv = aNewViewer;
       if (newCv) {
-        forceCharset = oldCv->GetForceCharset();
-        hintCharset = oldCv->GetHintCharset();
+        NS_ENSURE_SUCCESS(oldCv->GetForceCharacterSet(forceCharset),
+                          NS_ERROR_FAILURE);
+        NS_ENSURE_SUCCESS(oldCv->GetHintCharacterSet(hintCharset),
+                          NS_ERROR_FAILURE);
         NS_ENSURE_SUCCESS(oldCv->GetHintCharacterSetSource(&hintCharsetSource),
                           NS_ERROR_FAILURE);
         NS_ENSURE_SUCCESS(oldCv->GetMinFontSize(&minFontSize),
@@ -9506,8 +9508,10 @@ nsDocShell::SetupNewViewer(nsIContentViewer* aNewViewer)
   // If we have old state to copy, set the old state onto the new content
   // viewer
   if (newCv) {
-    newCv->SetForceCharset(forceCharset);
-    newCv->SetHintCharset(hintCharset);
+    NS_ENSURE_SUCCESS(newCv->SetForceCharacterSet(forceCharset),
+                      NS_ERROR_FAILURE);
+    NS_ENSURE_SUCCESS(newCv->SetHintCharacterSet(hintCharset),
+                      NS_ERROR_FAILURE);
     NS_ENSURE_SUCCESS(newCv->SetHintCharacterSetSource(hintCharsetSource),
                       NS_ERROR_FAILURE);
     NS_ENSURE_SUCCESS(newCv->SetMinFontSize(minFontSize),

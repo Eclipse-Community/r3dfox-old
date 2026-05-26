@@ -17,11 +17,7 @@ namespace mozilla {
 
 class TaskQueue;
 
-DDLoggedTypeDeclNameAndBase(AppleATDecoder, MediaDataDecoder);
-
-class AppleATDecoder
-  : public MediaDataDecoder
-  , public DecoderDoctorLifeLogger<AppleATDecoder>
+class AppleATDecoder : public MediaDataDecoder
 {
 public:
   AppleATDecoder(const AudioInfo& aConfig,

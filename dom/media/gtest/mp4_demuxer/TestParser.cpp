@@ -12,18 +12,11 @@
 #include "MP4Metadata.h"
 #include "MoofParser.h"
 
-class TestStream;
-namespace mozilla {
-DDLoggedTypeNameAndBase(::TestStream, ByteStream);
-} // namespace mozilla
-
 using namespace mozilla;
 
 static const uint32_t E = MP4Metadata::NumberTracksError();
 
-class TestStream
-  : public ByteStream
-  , public DecoderDoctorLifeLogger<TestStream>
+class TestStream : public ByteStream
 {
 public:
   TestStream(const uint8_t* aBuffer, size_t aSize)

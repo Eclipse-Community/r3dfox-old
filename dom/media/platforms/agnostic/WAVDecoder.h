@@ -11,11 +11,7 @@
 
 namespace mozilla {
 
-DDLoggedTypeDeclNameAndBase(WaveDataDecoder, MediaDataDecoder);
-
-class WaveDataDecoder
-  : public MediaDataDecoder
-  , public DecoderDoctorLifeLogger<WaveDataDecoder>
+class WaveDataDecoder : public MediaDataDecoder
 {
 public:
   explicit WaveDataDecoder(const CreateDecoderParams& aParams);

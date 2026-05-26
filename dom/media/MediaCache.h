@@ -7,7 +7,6 @@
 #ifndef MediaCache_h_
 #define MediaCache_h_
 
-#include "DecoderDoctorLogger.h"
 #include "Intervals.h"
 #include "mozilla/Result.h"
 #include "mozilla/UniquePtr.h"
@@ -182,15 +181,13 @@ class MonitorAutoLock;
  */
 class MediaCache;
 
-DDLoggedTypeDeclName(MediaCacheStream);
-
 /**
  * If the cache fails to initialize then Init will fail, so nonstatic
  * methods of this class can assume gMediaCache is non-null.
  *
  * This class can be directly embedded as a value.
  */
-class MediaCacheStream : public DecoderDoctorLifeLogger<MediaCacheStream>
+class MediaCacheStream
 {
   using AutoLock = MonitorAutoLock;
 

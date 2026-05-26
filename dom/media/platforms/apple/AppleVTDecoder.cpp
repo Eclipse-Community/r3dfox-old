@@ -20,9 +20,7 @@
 #include "VideoUtils.h"
 #include "gfxPlatform.h"
 
-#define LOG(...) DDMOZ_LOG(sPDMLog, mozilla::LogLevel::Debug, __VA_ARGS__)
-#define LOGEX(_this, ...)                                                      \
-  DDMOZ_LOGEX(_this, sPDMLog, mozilla::LogLevel::Debug, __VA_ARGS__)
+#define LOG(...) MOZ_LOG(sPDMLog, mozilla::LogLevel::Debug, (__VA_ARGS__))
 
 namespace mozilla {
 
@@ -293,14 +291,10 @@ PlatformCallback(void* decompressionOutputRefCon,
                  CMTime presentationTimeStamp,
                  CMTime presentationDuration)
 {
+  LOG("AppleVideoDecoder %s status %d flags %d", __func__, static_cast<int>(status), flags);
+
   AppleVTDecoder* decoder =
     static_cast<AppleVTDecoder*>(decompressionOutputRefCon);
-  LOGEX(decoder,
-        "AppleVideoDecoder %s status %d flags %d",
-        __func__,
-        static_cast<int>(status),
-        flags);
-
   nsAutoPtr<AppleVTDecoder::AppleFrameRef> frameRef(
     static_cast<AppleVTDecoder::AppleFrameRef*>(sourceFrameRefCon));
 
@@ -669,6 +663,3 @@ AppleVTDecoder::CreateOutputConfiguration()
 }
 
 } // namespace mozilla
-
-#undef LOG
-#undef LOGEX

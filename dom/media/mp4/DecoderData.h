@@ -13,7 +13,12 @@
 #include "nsString.h"
 #include "nsTArray.h"
 #include "nsString.h"
-#include "mp4parse.h"
+
+extern "C" {
+typedef struct mp4parse_track_info mp4parse_track_info;
+typedef struct mp4parse_track_audio_info mp4parse_track_audio_info;
+typedef struct mp4parse_track_video_info mp4parse_track_video_info;
+}
 
 namespace mozilla
 {
@@ -58,8 +63,8 @@ class MP4AudioInfo : public mozilla::AudioInfo
 public:
   MP4AudioInfo() = default;
 
-  void Update(const Mp4parseTrackInfo* track,
-              const Mp4parseTrackAudioInfo* audio);
+  void Update(const mp4parse_track_info* track,
+              const mp4parse_track_audio_info* audio);
 
   virtual bool IsValid() const override;
 };
@@ -69,8 +74,8 @@ class MP4VideoInfo : public mozilla::VideoInfo
 public:
   MP4VideoInfo() = default;
 
-  void Update(const Mp4parseTrackInfo* track,
-              const Mp4parseTrackVideoInfo* video);
+  void Update(const mp4parse_track_info* track,
+              const mp4parse_track_video_info* video);
 
   virtual bool IsValid() const override;
 };

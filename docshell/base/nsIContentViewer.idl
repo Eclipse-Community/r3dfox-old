@@ -21,9 +21,6 @@ class nsIPresShell;
 class nsPresContext;
 class nsView;
 class nsDOMNavigationTiming;
-namespace mozilla {
-class Encoding;
-}
 %}
 
 [ptr] native nsIWidgetPtr(nsIWidget);
@@ -33,7 +30,6 @@ class Encoding;
 [ptr] native nsViewPtr(nsView);
 [ptr] native nsDOMNavigationTimingPtr(nsDOMNavigationTiming);
 [ref] native nsIContentViewerTArray(nsTArray<nsCOMPtr<nsIContentViewer> >);
-[ptr] native Encoding(const mozilla::Encoding);
 
 [scriptable, builtinclass, uuid(2da17016-7851-4a45-a7a8-00b360e01595)]
 interface nsIContentViewer : nsISupports
@@ -298,9 +294,4 @@ interface nsIContentViewer : nsISupports
    * Restore the viewer's natural media type
    */
   void stopEmulatingMedium();
-
-  [noscript, notxpcom] Encoding getHintCharset();
-  [noscript, notxpcom] void setHintCharset(in Encoding aEncoding);
-  [noscript, notxpcom] Encoding getForceCharset();
-  [noscript, notxpcom] void setForceCharset(in Encoding aEncoding);
 };

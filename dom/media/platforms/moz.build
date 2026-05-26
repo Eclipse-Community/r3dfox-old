@@ -39,7 +39,6 @@ UNIFIED_SOURCES += [
 DIRS += [
     'agnostic/eme',
     'agnostic/gmp',
-    'agnostic/mp4_demuxer',
     'omx'
 ]
 

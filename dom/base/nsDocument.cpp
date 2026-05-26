@@ -177,7 +177,7 @@
 
 #include "mozAutoDocUpdate.h"
 #include "nsGlobalWindow.h"
-#include "mozilla/Encoding.h"
+#include "mozilla/dom/EncodingUtils.h"
 #include "nsDOMNavigationTiming.h"
 
 #include "nsSMILAnimationController.h"
@@ -4140,9 +4140,9 @@ nsDocument::TryChannelCharset(nsIChannel *aChannel,
     nsAutoCString charsetVal;
     nsresult rv = aChannel->GetContentCharset(charsetVal);
     if (NS_SUCCEEDED(rv)) {
-      const Encoding* preferred = Encoding::ForLabel(charsetVal);
-      if (preferred) {
-        preferred->Name(aCharset);
+      nsAutoCString preferred;
+      if(EncodingUtils::FindEncodingForLabel(charsetVal, preferred)) {
+        aCharset = preferred;
         aCharsetSource = kCharsetFromChannel;
         return;
       } else if (aExecutor && !charsetVal.IsEmpty()) {
@@ -10423,7 +10423,6 @@ nsDocument::ScrollToRef()
     // document's charset.
     if (NS_FAILED(rv)) {
       const nsACString &docCharset = GetDocumentCharacterSet();
-      const Encoding* encoding = Encoding::ForName(docCharset);
       char* tmpstr = ToNewCString(mScrollToRef);
       if (!tmpstr) {
         return;
@@ -10433,7 +10432,9 @@ nsDocument::ScrollToRef()
       unescapedRef.Assign(tmpstr);
       free(tmpstr);
 
-      rv = encoding->DecodeWithoutBOMHandling(unescapedRef, ref);
+      rv = nsContentUtils::ConvertStringFromEncoding(docCharset,
+                                                     unescapedRef,
+                                                     ref);
 
       if (NS_SUCCEEDED(rv) && !ref.IsEmpty()) {
         rv = shell->GoToAnchor(ref, mChangeScrollPosWhenScrollingToRef);

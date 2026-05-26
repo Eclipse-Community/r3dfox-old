@@ -119,7 +119,7 @@ nsXBLResourceLoader::LoadResources(nsIContent* aBoundElement)
       continue;
 
     if (NS_FAILED(NS_NewURI(getter_AddRefs(url), curr->mSrc,
-                            doc->GetDocumentCharacterSet(), docURL)))
+                            doc->GetDocumentCharacterSet().get(), docURL)))
       continue;
 
     if (curr->mType == nsGkAtoms::image) {

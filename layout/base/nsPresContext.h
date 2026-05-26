@@ -11,7 +11,6 @@
 
 #include "mozilla/Attributes.h"
 #include "mozilla/MediaFeatureChange.h"
-#include "mozilla/NotNull.h"
 #include "mozilla/UniquePtr.h"
 #include "mozilla/WeakPtr.h"
 #include "nsColor.h"
@@ -77,7 +76,6 @@ class gfxMissingFontRecorder;
 namespace mozilla {
 class AnimationEventDispatcher;
 class EffectCompositor;
-class Encoding;
 class EventStateManager;
 class CounterStyleManager;
 class RestyleManager;
@@ -132,8 +130,6 @@ class nsRootPresContext;
 class nsPresContext : public nsIObserver,
                       public mozilla::SupportsWeakPtr<nsPresContext> {
 public:
-  using Encoding = mozilla::Encoding;
-  template <typename T> using NotNull = mozilla::NotNull<T>;
   typedef mozilla::LangGroupFontPrefs LangGroupFontPrefs;
   typedef mozilla::ScrollbarStyles ScrollbarStyles;
   typedef mozilla::StaticPresData StaticPresData;
@@ -1241,7 +1237,7 @@ protected:
     return StaticPresData::Get()->GetFontPrefsForLangHelper(lang, &mLangGroupFontPrefs, aNeedsToCache);
   }
 
-  void UpdateCharSet(NotNull<const Encoding*> aCharSet);
+  void UpdateCharSet(const nsCString& aCharSet);
 
   static bool NotifyDidPaintSubdocumentCallback(nsIDocument* aDocument, void* aData);
 
@@ -1250,7 +1246,7 @@ public:
   // has been updated, potentially affecting font selection and layout.
   void ForceReflowForFontInfoUpdate();
 
-  void DoChangeCharSet(NotNull<const Encoding*> aCharSet);
+  void DoChangeCharSet(const nsCString& aCharSet);
 
   /**
    * Checks for MozAfterPaint listeners on the document

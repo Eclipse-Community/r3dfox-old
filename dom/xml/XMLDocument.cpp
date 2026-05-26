@@ -150,7 +150,7 @@ NS_NewDOMDocument(nsIDOMDocument** aInstancePtrResult,
 
   // XMLDocuments and documents "created in memory" get to be UTF-8 by default,
   // unlike the legacy HTML mess
-  doc->SetDocumentCharacterSet(UTF_8_ENCODING);
+  doc->SetDocumentCharacterSet(NS_LITERAL_CSTRING("UTF-8"));
 
   if (aDoctype) {
     nsCOMPtr<nsINode> doctypeAsNode = do_QueryInterface(aDoctype);
@@ -335,7 +335,7 @@ XMLDocument::Load(const nsAString& aUrl, CallerType aCallerType,
 
   if (callingDoc) {
     baseURI = callingDoc->GetDocBaseURI();
-    callingDoc->GetDocumentCharacterSet()->Name(charset);
+    charset = callingDoc->GetDocumentCharacterSet();
   }
 
   // Create a new URI
@@ -542,8 +542,8 @@ XMLDocument::StartDocumentLoad(const char* aCommand,
 
 
   int32_t charsetSource = kCharsetFromDocTypeDefault;
-  NotNull<const Encoding*> encoding = UTF_8_ENCODING;
-  TryChannelCharset(aChannel, charsetSource, encoding, nullptr);
+  nsAutoCString charset(NS_LITERAL_CSTRING("UTF-8"));
+  TryChannelCharset(aChannel, charsetSource, charset, nullptr);
 
   nsCOMPtr<nsIURI> aUrl;
   rv = aChannel->GetURI(getter_AddRefs(aUrl));
@@ -577,8 +577,8 @@ XMLDocument::StartDocumentLoad(const char* aCommand,
   NS_ASSERTION(mChannel, "How can we not have a channel here?");
   mChannelIsPending = true;
 
-  SetDocumentCharacterSet(encoding);
-  mParser->SetDocumentCharset(encoding, charsetSource);
+  SetDocumentCharacterSet(charset);
+  mParser->SetDocumentCharset(charset, charsetSource);
   mParser->SetCommand(aCommand);
   mParser->SetContentSink(sink);
   mParser->Parse(aUrl, nullptr, (void *)this);

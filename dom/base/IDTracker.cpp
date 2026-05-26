@@ -42,13 +42,15 @@ IDTracker::Reset(nsIContent* aFromContent, nsIURI* aURI,
     return;
   }
 
-  auto encoding = doc->GetDocumentCharacterSet();
+  nsAutoCString charset;
+  doc->GetDocumentCharacterSet(charset);
   nsAutoString ref;
-  nsresult rv = encoding->DecodeWithoutBOMHandling(refPart, ref);
+  nsresult rv = nsContentUtils::ConvertStringFromEncoding(charset,
+                                                          refPart,
+                                                          ref);
   if (NS_FAILED(rv) || ref.IsEmpty()) {
     return;
   }
-  rv = NS_OK;
 
   nsIContent* bindingParent = aFromContent->GetBindingParent();
   if (bindingParent) {

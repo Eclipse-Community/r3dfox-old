@@ -31,8 +31,6 @@ enum eHtml5SpeculativeLoad {
 };
 
 class nsHtml5SpeculativeLoad {
-    using Encoding = mozilla::Encoding;
-    template <typename T> using NotNull = mozilla::NotNull<T>;
   public:
     nsHtml5SpeculativeLoad();
     ~nsHtml5SpeculativeLoad();
@@ -192,14 +190,13 @@ class nsHtml5SpeculativeLoad {
      * sheets. Thus, encoding decisions by the parser thread have to maintain
      * the queue order relative to true speculative loads. See bug 675499.
      */
-    inline void InitSetDocumentCharset(NotNull<const Encoding*> aEncoding,
+    inline void InitSetDocumentCharset(nsACString& aCharset,
                                        int32_t aCharsetSource)
     {
       NS_PRECONDITION(mOpCode == eSpeculativeLoadUninitialized,
                       "Trying to reinitialize a speculative load!");
       mOpCode = eSpeculativeLoadSetDocumentCharset;
-      mCharsetOrSrcset.~nsString();
-      mEncoding = aEncoding;
+      CopyUTF8toUTF16(aCharset, mCharsetOrSrcset);
       mTypeOrCharsetSourceOrDocumentModeOrMetaCSPOrSizesOrIntegrity.Assign((char16_t)aCharsetSource);
     }
 
@@ -260,10 +257,7 @@ class nsHtml5SpeculativeLoad {
      * or eSpeculativeLoadPictureSource, this is the value of the "srcset" attribute.
      * If the attribute is not set, this will be a void string. Otherwise it's empty.
      */
-    union {
-      nsString mCharsetOrSrcset;
-      const Encoding* mEncoding;
-    };
+    nsString mCharsetOrSrcset;
     /**
      * If mOpCode is eSpeculativeLoadSetDocumentCharset, this is a
      * one-character string whose single character's code point is to be

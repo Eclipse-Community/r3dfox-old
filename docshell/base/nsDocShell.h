@@ -66,7 +66,6 @@
 #include "nsILoadURIDelegate.h"
 
 namespace mozilla {
-class Encoding;
 class HTMLEditor;
 enum class TaskCategory;
 namespace dom {
@@ -172,7 +171,6 @@ class nsDocShell final
 {
   friend class nsDSURIContentListener;
   friend class FramingChecker;
-  using Encoding = mozilla::Encoding;
 
 public:
   MOZ_DECLARE_WEAKREFERENCE_TYPENAME(nsDocShell)
@@ -297,8 +295,6 @@ public:
     mInFrameSwap = aInSwap;
   }
   bool InFrameSwap();
-
-  const Encoding* GetForcedCharset() { return mForcedCharset; }
 
   mozilla::HTMLEditor* GetHTMLEditorInternal();
   nsresult SetHTMLEditorInternal(mozilla::HTMLEditor* aHTMLEditor);
@@ -1159,8 +1155,8 @@ protected:
   uint32_t mDisplayMode;
 
 private:
-  const Encoding* mForcedCharset;
-  const Encoding* mParentCharset;
+  nsCString mForcedCharset;
+  nsCString mParentCharset;
   int32_t mParentCharsetSource;
   nsCOMPtr<nsIPrincipal> mParentCharsetPrincipal;
   nsTObserverArray<nsWeakPtr> mPrivacyObservers;

@@ -66,7 +66,7 @@ public:
 
   MediaResult ReadTrackIndice(Mp4parseByteData* aIndices, mozilla::TrackID aTrackID);
 
-  nsresult Init();
+  bool Init();
 
 private:
   void UpdateCrypto();
@@ -164,16 +164,11 @@ MP4Metadata::MP4Metadata(Stream* aSource)
  , mReportedAudioTrackTelemetry(false)
  , mReportedVideoTrackTelemetry(false)
 {
+  mRust->Init();
 }
 
 MP4Metadata::~MP4Metadata()
 {
-}
-
-nsresult
-MP4Metadata::Parse() const
-{
-  return mRust->Init();
 }
 
 /*static*/ MP4Metadata::ResultAndByteBuffer
@@ -289,13 +284,6 @@ MP4MetadataRust::MP4MetadataRust(Stream* aSource)
   : mSource(aSource)
   , mRustSource(aSource)
 {
-  Mp4parseIo io = { read_source, &mRustSource };
-  mRustParser.reset(mp4parse_new(&io));
-  MOZ_ASSERT(mRustParser);
-
-  if (MOZ_LOG_TEST(gMP4MetadataLog, LogLevel::Debug)) {
-    mp4parse_log(true);
-  }
 }
 
 MP4MetadataRust::~MP4MetadataRust()
@@ -305,16 +293,28 @@ MP4MetadataRust::~MP4MetadataRust()
 nsresult
 MP4MetadataRust::Init()
 {
-  Mp4parseStatus rv = mp4parse_read(mParser.get());
-  if (rv != MP4PARSE_STATUS_OK) {
-    MOZ_LOG(gMP4MetadataLog, LogLevel::Debug, ("Parse failed, return code %d\n", rv));
-    return rv == MP4PARSE_STATUS_OOM ? NS_ERROR_OUT_OF_MEMORY
-                                     : NS_ERROR_DOM_MEDIA_METADATA_ERR;
+  Mp4parseIo io = { read_source, &mRustSource };
+  mRustParser.reset(mp4parse_new(&io));
+  MOZ_ASSERT(mRustParser);
+
+  if (MOZ_LOG_TEST(gMP4MetadataLog, LogLevel::Debug)) {
+    mp4parse_log(true);
+  }
+
+  Mp4parseStatus rv = mp4parse_read(mRustParser.get());
+  MOZ_LOG(gMP4MetadataLog, LogLevel::Debug, ("rust parser returned %d\n", rv));
+  Telemetry::Accumulate(Telemetry::MEDIA_RUST_MP4PARSE_SUCCESS,
+                        rv == MP4PARSE_STATUS_OK);
+  if (rv != MP4PARSE_STATUS_OK && rv != MP4PARSE_STATUS_OOM) {
+    MOZ_LOG(gMP4MetadataLog, LogLevel::Info, ("Rust mp4 parser fails to parse this stream."));
+    MOZ_ASSERT(rv > 0);
+    Telemetry::Accumulate(Telemetry::MEDIA_RUST_MP4PARSE_ERROR_CODE, rv);
+    return false;
   }
 
   UpdateCrypto();
 
-  return NS_OK;
+  return true;
 }
 
 void

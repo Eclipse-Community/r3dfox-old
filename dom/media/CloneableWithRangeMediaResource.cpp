@@ -5,7 +5,6 @@
 
 #include "CloneableWithRangeMediaResource.h"
 
-#include "mozilla/AbstractThread.h"
 #include "mozilla/Monitor.h"
 #include "nsContentUtils.h"
 #include "nsIAsyncInputStream.h"

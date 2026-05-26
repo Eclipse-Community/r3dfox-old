@@ -124,10 +124,9 @@ nsJSPrincipals::ReadPrincipals(JSContext* aCx, JSStructuredCloneReader* aReader,
 }
 
 static bool
-ReadPrincipalInfo(JSStructuredCloneReader* aReader,
+ReadSuffixAndSpec(JSStructuredCloneReader* aReader,
                   OriginAttributes& aAttrs,
-                  nsACString& aSpec,
-                  nsACString& aOriginNoSuffix)
+                  nsACString& aSpec)
 {
     uint32_t suffixLength, specLength;
     if (!JS_ReadUint32Pair(aReader, &suffixLength, &specLength)) {
@@ -155,22 +154,6 @@ ReadPrincipalInfo(JSStructuredCloneReader* aReader,
         return false;
     }
 
-    uint32_t originNoSuffixLength, dummy;
-    if (!JS_ReadUint32Pair(aReader, &originNoSuffixLength, &dummy)) {
-        return false;
-    }
-
-    MOZ_ASSERT(dummy == 0);
-
-    if (!aOriginNoSuffix.SetLength(originNoSuffixLength, fallible)) {
-        return false;
-    }
-
-    if (!JS_ReadBytes(aReader, aOriginNoSuffix.BeginWriting(),
-                      originNoSuffixLength)) {
-        return false;
-    }
-
     return true;
 }
 
@@ -184,8 +167,7 @@ ReadPrincipalInfo(JSStructuredCloneReader* aReader,
     } else if (aTag == SCTAG_DOM_NULL_PRINCIPAL) {
         OriginAttributes attrs;
         nsAutoCString spec;
-        nsAutoCString originNoSuffix;
-        if (!ReadPrincipalInfo(aReader, attrs, spec, originNoSuffix)) {
+        if (!ReadSuffixAndSpec(aReader, attrs, spec)) {
             return false;
         }
         aInfo = NullPrincipalInfo(attrs, spec);
@@ -214,14 +196,11 @@ ReadPrincipalInfo(JSStructuredCloneReader* aReader,
     } else if (aTag == SCTAG_DOM_CONTENT_PRINCIPAL) {
         OriginAttributes attrs;
         nsAutoCString spec;
-        nsAutoCString originNoSuffix;
-        if (!ReadPrincipalInfo(aReader, attrs, spec, originNoSuffix)) {
+        if (!ReadSuffixAndSpec(aReader, attrs, spec)) {
             return false;
         }
 
-        MOZ_DIAGNOSTIC_ASSERT(!originNoSuffix.IsEmpty());
-
-        aInfo = ContentPrincipalInfo(attrs, originNoSuffix, spec);
+        aInfo = ContentPrincipalInfo(attrs, void_t(), spec);
     } else {
         MOZ_CRASH("unexpected principal structured clone tag");
     }
@@ -262,20 +241,16 @@ nsJSPrincipals::ReadKnownPrincipalType(JSContext* aCx,
 }
 
 static bool
-WritePrincipalInfo(JSStructuredCloneWriter* aWriter,
+WriteSuffixAndSpec(JSStructuredCloneWriter* aWriter,
                    const OriginAttributes& aAttrs,
-                   const nsCString& aSpec,
-                   const nsCString& aOriginNoSuffix)
+                   const nsCString& aSpec)
 {
   nsAutoCString suffix;
   aAttrs.CreateSuffix(suffix);
 
   return JS_WriteUint32Pair(aWriter, suffix.Length(), aSpec.Length()) &&
          JS_WriteBytes(aWriter, suffix.get(), suffix.Length()) &&
-         JS_WriteBytes(aWriter, aSpec.get(), aSpec.Length()) &&
-         JS_WriteUint32Pair(aWriter, aOriginNoSuffix.Length(), 0) &&
-         JS_WriteBytes(aWriter, aOriginNoSuffix.get(),
-                       aOriginNoSuffix.Length());
+         JS_WriteBytes(aWriter, aSpec.get(), aSpec.Length());
 }
 
 static bool
@@ -284,8 +259,7 @@ WritePrincipalInfo(JSStructuredCloneWriter* aWriter, const PrincipalInfo& aInfo)
     if (aInfo.type() == PrincipalInfo::TNullPrincipalInfo) {
         const NullPrincipalInfo& nullInfo = aInfo;
         return JS_WriteUint32Pair(aWriter, SCTAG_DOM_NULL_PRINCIPAL, 0) &&
-               WritePrincipalInfo(aWriter, nullInfo.attrs(), nullInfo.spec(),
-                                  EmptyCString());
+               WriteSuffixAndSpec(aWriter, nullInfo.attrs(), nullInfo.spec());
     }
     if (aInfo.type() == PrincipalInfo::TSystemPrincipalInfo) {
         return JS_WriteUint32Pair(aWriter, SCTAG_DOM_SYSTEM_PRINCIPAL, 0);
@@ -308,8 +282,7 @@ WritePrincipalInfo(JSStructuredCloneWriter* aWriter, const PrincipalInfo& aInfo)
     MOZ_ASSERT(aInfo.type() == PrincipalInfo::TContentPrincipalInfo);
     const ContentPrincipalInfo& cInfo = aInfo;
     return JS_WriteUint32Pair(aWriter, SCTAG_DOM_CONTENT_PRINCIPAL, 0) &&
-           WritePrincipalInfo(aWriter, cInfo.attrs(), cInfo.spec(),
-                              cInfo.originNoSuffix());
+           WriteSuffixAndSpec(aWriter, cInfo.attrs(), cInfo.spec());
 }
 
 bool

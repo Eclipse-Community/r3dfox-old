@@ -294,12 +294,17 @@ MediaDocument::GetFileName(nsAString& aResult, nsIChannel* aChannel)
   // the document viewer instead of a bogus value ("windows-1252" set in
   // |nsDocument|'s ctor), the priority is given to the current charset.
   // This is necessary to deal with a media document being opened in a new
-  // window or a new tab.
+  // window or a new tab, in which case |originCharset| of |nsIURI| is not
+  // reliable.
   if (mCharacterSetSource != kCharsetUninitialized) {
     mCharacterSet->Name(docCharset);
   } else {
-    // resort to UTF-8
-    SetDocumentCharacterSet(UTF_8_ENCODING);
+    // resort to |originCharset|
+    url->GetOriginCharset(docCharset);
+    auto encoding = Encoding::ForLabelNoReplacement(docCharset);
+    if (encoding) {
+      SetDocumentCharacterSet(WrapNotNull(encoding));
+    }
   }
 
   nsresult rv;

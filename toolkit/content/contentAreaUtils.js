@@ -382,6 +382,8 @@ function internalSave(aURL, aDocument, aDefaultFileName, aContentDisposition,
     var charset = null;
     if (aDocument)
       charset = aDocument.characterSet;
+    else if (aReferrer)
+      charset = aReferrer.originCharset;
     var fileInfo = new FileInfo(aDefaultFileName);
     initFileInfo(fileInfo, aURL, charset, aDocument,
                  aContentType, aContentDisposition);
@@ -1005,7 +1007,7 @@ function getDefaultFileName(aDefaultFileName, aURI, aDocument,
     var url = aURI.QueryInterface(Ci.nsIURL);
     if (url.fileName != "") {
       // 3) Use the actual file name, if present
-      return validateFileName(Services.textToSubURI.unEscapeURIForUI("UTF-8", url.fileName));
+      return validateFileName(Services.textToSubURI.unEscapeURIForUI(url.originCharset || "UTF-8", url.fileName));
     }
   } catch (e) {
     // This is something like a data: and so forth URI... no filename here.

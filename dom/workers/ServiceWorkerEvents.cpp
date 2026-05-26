@@ -32,6 +32,7 @@
 #include "mozilla/dom/BodyUtil.h"
 #include "mozilla/dom/DOMException.h"
 #include "mozilla/dom/DOMExceptionBinding.h"
+#include "mozilla/dom/EncodingUtils.h"
 #include "mozilla/dom/FetchEventBinding.h"
 #include "mozilla/dom/MessagePort.h"
 #include "mozilla/dom/PromiseNativeHandler.h"

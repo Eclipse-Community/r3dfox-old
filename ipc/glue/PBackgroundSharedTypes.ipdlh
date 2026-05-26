@@ -8,6 +8,12 @@ using struct mozilla::void_t from "ipc/IPCMessageUtils.h";
 namespace mozilla {
 namespace ipc {
 
+union ContentPrincipalInfoOriginNoSuffix
+{
+  nsCString;
+  void_t;
+};
+
 struct ContentPrincipalInfo
 {
   OriginAttributes attrs;
@@ -19,7 +25,7 @@ struct ContentPrincipalInfo
   // Another important reason why we have this attribute is that
   // ContentPrincipalInfo is used out of the main-thread. Having this value
   // here allows us to retrive the origin without creating a full nsIPrincipal.
-  nsCString originNoSuffix;
+  ContentPrincipalInfoOriginNoSuffix originNoSuffix;
 
   nsCString spec;
 };

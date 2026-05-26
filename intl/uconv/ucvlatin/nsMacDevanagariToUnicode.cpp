@@ -5,7 +5,6 @@
 
 #include "nsUCConstructors.h"
 #include "nsMacDevanagariToUnicode.h"
-#include "mozilla/Telemetry.h"
 
 using namespace mozilla;
 
@@ -20,7 +19,6 @@ nsMacDevanagariToUnicodeConstructor(nsISupports *aOuter, REFNSIID aIID,
 #include "macdevanaga.ut"
    };
 
-   Telemetry::Accumulate(Telemetry::DECODER_INSTANTIATED_MACDEVANAGARI, true);
    return CreateOneByteDecoder((uMappingTable*) &g_utMappingTable,
                                aOuter, aIID, aResult);
 }

@@ -5,7 +5,6 @@
 #ifndef nsShiftJISToUnicode_h__
 #define nsShiftJISToUnicode_h__
 #include "nsUCSupport.h"
-#include "mozilla/Telemetry.h"
 
 class nsShiftJISToUnicode : public nsBasicDecoderSupport
 {
@@ -83,8 +82,6 @@ public:
         mGB2312Decoder = nullptr;
         mEUCKRDecoder = nullptr;
         mISO88597Decoder = nullptr;
-        mozilla::Telemetry::Accumulate(
-          mozilla::Telemetry::DECODER_INSTANTIATED_ISO2022JP, true);
      }
  virtual ~nsISO2022JPToUnicodeV2()
      {

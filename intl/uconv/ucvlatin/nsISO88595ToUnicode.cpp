@@ -5,7 +5,6 @@
 
 #include "nsUCConstructors.h"
 #include "nsISO88595ToUnicode.h"
-#include "mozilla/Telemetry.h"
 
 using namespace mozilla;
 
@@ -20,7 +19,6 @@ nsISO88595ToUnicodeConstructor(nsISupports *aOuter, REFNSIID aIID,
 #include "8859-5.ut"
   };
 
-  Telemetry::Accumulate(Telemetry::DECODER_INSTANTIATED_ISO_8859_5, true);
   return CreateOneByteDecoder((uMappingTable*) &g_utMappingTable,
                               aOuter, aIID, aResult);
 }

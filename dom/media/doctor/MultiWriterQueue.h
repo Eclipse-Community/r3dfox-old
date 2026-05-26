@@ -8,7 +8,6 @@
 #define mozilla_MultiWriterQueue_h_
 
 #include "mozilla/Atomics.h"
-#include "mozilla/MemoryReporting.h"
 #include "mozilla/Move.h"
 #include "mozilla/Mutex.h"
 #include "prthread.h"
@@ -252,12 +251,6 @@ public:
 
       // We will loop and start reading the now-oldest buffer.
     }
-  }
-
-  // Size of all buffers (used, or recyclable), excluding external data.
-  size_t ShallowSizeOfExcludingThis(MallocSizeOf aMallocSizeOf) const
-  {
-    return mAllocatedBuffersStats.Count() * sizeof(Buffer);
   }
 
   struct CountAndWatermark
@@ -506,8 +499,6 @@ private:
       , mWatermark(aCount)
     {
     }
-
-    int Count() const { return int(mCount); }
 
     CountAndWatermark Get() const
     {

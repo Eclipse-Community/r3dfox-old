@@ -26,12 +26,7 @@ static const uint16_t DATA_CHUNK_SIZE = 768;
 
 class WAVTrackDemuxer;
 
-DDLoggedTypeDeclNameAndBase(WAVDemuxer, MediaDataDemuxer);
-DDLoggedTypeNameAndBase(WAVTrackDemuxer, MediaTrackDemuxer);
-
-class WAVDemuxer
-  : public MediaDataDemuxer
-  , public DecoderDoctorLifeLogger<WAVDemuxer>
+class WAVDemuxer : public MediaDataDemuxer
 {
 public:
   // MediaDataDemuxer interface.
@@ -181,9 +176,7 @@ private:
   DataChunk mChunk;
 };
 
-class WAVTrackDemuxer
-  : public MediaTrackDemuxer
-  , public DecoderDoctorLifeLogger<WAVTrackDemuxer>
+class WAVTrackDemuxer : public MediaTrackDemuxer
 {
 public:
   explicit WAVTrackDemuxer(MediaResource* aSource);

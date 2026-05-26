@@ -48,12 +48,10 @@ HTMLVideoElement::HTMLVideoElement(already_AddRefed<NodeInfo>& aNodeInfo)
   : HTMLMediaElement(aNodeInfo)
   , mIsOrientationLocked(false)
 {
-  DecoderDoctorLogger::LogConstruction(this);
 }
 
 HTMLVideoElement::~HTMLVideoElement()
 {
-  DecoderDoctorLogger::LogDestruction(this);
 }
 
 nsresult HTMLVideoElement::GetVideoSize(nsIntSize* size)

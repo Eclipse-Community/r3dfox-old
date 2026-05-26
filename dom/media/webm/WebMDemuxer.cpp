@@ -31,12 +31,7 @@
 #include <numeric>
 #include <stdint.h>
 
-#define WEBM_DEBUG(arg, ...)                                                   \
-  DDMOZ_LOG(gMediaDemuxerLog,                                                  \
-            mozilla::LogLevel::Debug,                                          \
-            "::%s: " arg,                                                      \
-            __func__,                                                          \
-            ##__VA_ARGS__)
+#define WEBM_DEBUG(arg, ...) MOZ_LOG(gMediaDemuxerLog, mozilla::LogLevel::Debug, ("WebMDemuxer(%p)::%s: " arg, this, __func__, ##__VA_ARGS__))
 extern mozilla::LazyLogModule gMediaDemuxerLog;
 
 namespace mozilla {
@@ -183,10 +178,6 @@ WebMDemuxer::WebMDemuxer(MediaResource* aResource, bool aIsMediaSource)
   , mLastWebMBlockOffset(-1)
   , mIsMediaSource(aIsMediaSource)
 {
-  DDLINKCHILD("resource", aResource);
-  // Audio/video contexts hold a MediaResourceIndex.
-  DDLINKCHILD("video context", mVideoContext.GetResource());
-  DDLINKCHILD("audio context", mAudioContext.GetResource());
 }
 
 WebMDemuxer::~WebMDemuxer()
@@ -256,7 +247,6 @@ WebMDemuxer::GetTrackDemuxer(TrackInfo::TrackType aType, uint32_t aTrackNumber)
   }
   RefPtr<WebMTrackDemuxer> e =
     new WebMTrackDemuxer(this, aType, aTrackNumber);
-  DDLINKCHILD("track demuxer", e.get());
   mDemuxers.AppendElement(e);
 
   return e.forget();

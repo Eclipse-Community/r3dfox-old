@@ -7,7 +7,6 @@
 #if !defined(MediaDataDemuxer_h)
 #define MediaDataDemuxer_h
 
-#include "DecoderDoctorLogger.h"
 #include "mozilla/MozPromise.h"
 #include "mozilla/UniquePtr.h"
 
@@ -24,14 +23,11 @@ namespace mozilla {
 class MediaTrackDemuxer;
 class TrackMetadataHolder;
 
-DDLoggedTypeDeclName(MediaDataDemuxer);
-DDLoggedTypeName(MediaTrackDemuxer);
-
 // Allows reading the media data: to retrieve the metadata and demux samples.
 // MediaDataDemuxer isn't designed to be thread safe.
 // When used by the MediaFormatDecoder, care is taken to ensure that the demuxer
 // will never be called from more than one thread at once.
-class MediaDataDemuxer : public DecoderDoctorLifeLogger<MediaDataDemuxer>
+class MediaDataDemuxer
 {
 public:
   NS_INLINE_DECL_THREADSAFE_REFCOUNTING(MediaDataDemuxer)
@@ -98,7 +94,7 @@ protected:
   }
 };
 
-class MediaTrackDemuxer : public DecoderDoctorLifeLogger<MediaTrackDemuxer>
+class MediaTrackDemuxer
 {
 public:
   NS_INLINE_DECL_THREADSAFE_REFCOUNTING(MediaTrackDemuxer)

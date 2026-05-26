@@ -6,7 +6,6 @@
 #if !defined(MediaResource_h_)
 #define MediaResource_h_
 
-#include "DecoderDoctorLogger.h"
 #include "Intervals.h"
 #include "MediaData.h"
 #include "mozilla/Attributes.h"
@@ -22,8 +21,6 @@ namespace mozilla {
 
 typedef media::Interval<int64_t> MediaByteRange;
 typedef media::IntervalSet<int64_t> MediaByteRangeSet;
-
-DDLoggedTypeDeclName(MediaResource);
 
 /**
  * Provides a thread-safe, seek/read interface to resources
@@ -48,7 +45,7 @@ DDLoggedTypeDeclName(MediaResource);
  * For cross-process blob URL, CloneableWithRangeMediaResource is used.
  * MediaResource::Create automatically chooses the best implementation class.
  */
-class MediaResource : public DecoderDoctorLifeLogger<MediaResource>
+class MediaResource
 {
 public:
   // Our refcounting is threadsafe, and when our refcount drops to zero
@@ -150,8 +147,6 @@ private:
   MOZ_DECL_USE_GUARD_OBJECT_NOTIFIER
 };
 
-DDLoggedTypeDeclName(MediaResourceIndex);
-
 /*
  * MediaResourceIndex provides a way to access MediaResource objects.
  * Read, Seek and Tell must only be called on non-main threads.
@@ -159,7 +154,7 @@ DDLoggedTypeDeclName(MediaResourceIndex);
  * example. You must ensure that no threads are calling these methods once
  * the MediaResource has been Closed.
  */
-class MediaResourceIndex : public DecoderDoctorLifeLogger<MediaResourceIndex>
+class MediaResourceIndex
 {
 public:
   explicit MediaResourceIndex(MediaResource* aResource);

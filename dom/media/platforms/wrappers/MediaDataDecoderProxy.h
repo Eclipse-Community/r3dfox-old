@@ -15,11 +15,7 @@
 
 namespace mozilla {
 
-DDLoggedTypeDeclNameAndBase(MediaDataDecoderProxy, MediaDataDecoder);
-
-class MediaDataDecoderProxy
-  : public MediaDataDecoder
-  , public DecoderDoctorLifeLogger<MediaDataDecoderProxy>
+class MediaDataDecoderProxy : public MediaDataDecoder
 {
 public:
   explicit MediaDataDecoderProxy(already_AddRefed<AbstractThread> aProxyThread)
@@ -37,14 +33,12 @@ public:
     , mIsShutdown(false)
 #endif
   {
-    DDLINKCHILD("proxy decoder", mProxyDecoder.get());
   }
 
   void SetProxyTarget(MediaDataDecoder* aProxyDecoder)
   {
     MOZ_ASSERT(aProxyDecoder);
     mProxyDecoder = aProxyDecoder;
-    DDLINKCHILD("proxy decoder", aProxyDecoder);
   }
 
   RefPtr<InitPromise> Init() override;

@@ -25,33 +25,15 @@
 
 extern mozilla::LogModule* GetMediaSourceLog();
 
-#define MSE_DEBUG(arg, ...)                                                    \
-  DDMOZ_LOG(GetMediaSourceLog(),                                               \
-            mozilla::LogLevel::Debug,                                          \
-            "(%s)::%s: " arg,                                                  \
-            mType.OriginalString().Data(),                                     \
-            __func__,                                                          \
-            ##__VA_ARGS__)
-#define MSE_DEBUGV(arg, ...)                                                   \
-  DDMOZ_LOG(GetMediaSourceLog(),                                               \
-            mozilla::LogLevel::Verbose,                                        \
-            "(%s)::%s: " arg,                                                  \
-            mType.OriginalString().Data(),                                     \
-            __func__,                                                          \
-            ##__VA_ARGS__)
+#define MSE_DEBUG(arg, ...) MOZ_LOG(GetMediaSourceLog(), mozilla::LogLevel::Debug, ("TrackBuffersManager(%p:%s)::%s: " arg, this, mType.OriginalString().Data(), __func__, ##__VA_ARGS__))
+#define MSE_DEBUGV(arg, ...) MOZ_LOG(GetMediaSourceLog(), mozilla::LogLevel::Verbose, ("TrackBuffersManager(%p:%s)::%s: " arg, this, mType.OriginalString().Data(), __func__, ##__VA_ARGS__))
 
 mozilla::LogModule* GetMediaSourceSamplesLog()
 {
   static mozilla::LazyLogModule sLogModule("MediaSourceSamples");
   return sLogModule;
 }
-#define SAMPLE_DEBUG(arg, ...)                                                 \
-  DDMOZ_LOG(GetMediaSourceSamplesLog(),                                        \
-            mozilla::LogLevel::Debug,                                          \
-            "(%s)::%s: " arg,                                                  \
-            mType.OriginalString().Data(),                                     \
-            __func__,                                                          \
-            ##__VA_ARGS__)
+#define SAMPLE_DEBUG(arg, ...) MOZ_LOG(GetMediaSourceSamplesLog(), mozilla::LogLevel::Debug, ("TrackBuffersManager(%p:%s)::%s: " arg, this, mType.OriginalString().Data(), __func__, ##__VA_ARGS__))
 
 namespace mozilla {
 
@@ -133,7 +115,6 @@ TrackBuffersManager::TrackBuffersManager(MediaSourceDecoder* aParentDecoder,
   , mTaskQueue(aParentDecoder->GetDemuxer()->GetTaskQueue())
 {
   MOZ_ASSERT(NS_IsMainThread(), "Must be instanciated on the main thread");
-  DDLINKCHILD("parser", mParser.get());
 }
 
 TrackBuffersManager::~TrackBuffersManager()
@@ -900,7 +881,6 @@ TrackBuffersManager::CreateDemuxerforMIMEType()
   if (mType.Type() == MEDIAMIMETYPE(VIDEO_WEBM) ||
       mType.Type() == MEDIAMIMETYPE(AUDIO_WEBM)) {
     mInputDemuxer = new WebMDemuxer(mCurrentInputBuffer, true /* IsMediaSource*/ );
-    DDLINKCHILD("demuxer", mInputDemuxer.get());
     return;
   }
 
@@ -908,7 +888,6 @@ TrackBuffersManager::CreateDemuxerforMIMEType()
   if (mType.Type() == MEDIAMIMETYPE(VIDEO_MP4) ||
       mType.Type() == MEDIAMIMETYPE(AUDIO_MP4)) {
     mInputDemuxer = new MP4Demuxer(mCurrentInputBuffer);
-    DDLINKCHILD("demuxer", mInputDemuxer.get());
     return;
   }
 #endif
@@ -973,7 +952,6 @@ TrackBuffersManager::OnDemuxerResetDone(const MediaResult& aResult)
     mVideoTracks.mDemuxer =
       mInputDemuxer->GetTrackDemuxer(TrackInfo::kVideoTrack, 0);
     MOZ_ASSERT(mVideoTracks.mDemuxer);
-    DDLINKCHILD("video demuxer", mVideoTracks.mDemuxer.get());
   }
 
   uint32_t numAudios = mInputDemuxer->GetNumberTracks(TrackInfo::kAudioTrack);
@@ -982,7 +960,6 @@ TrackBuffersManager::OnDemuxerResetDone(const MediaResult& aResult)
     mAudioTracks.mDemuxer =
       mInputDemuxer->GetTrackDemuxer(TrackInfo::kAudioTrack, 0);
     MOZ_ASSERT(mAudioTracks.mDemuxer);
-    DDLINKCHILD("audio demuxer", mAudioTracks.mDemuxer.get());
   }
 
   if (mPendingInputBuffer) {
@@ -1068,7 +1045,6 @@ TrackBuffersManager::OnDemuxerInitDone(const MediaResult& aResult)
     mVideoTracks.mDemuxer =
       mInputDemuxer->GetTrackDemuxer(TrackInfo::kVideoTrack, 0);
     MOZ_ASSERT(mVideoTracks.mDemuxer);
-    DDLINKCHILD("video demuxer", mVideoTracks.mDemuxer.get());
     info.mVideo = *mVideoTracks.mDemuxer->GetInfo()->GetAsVideoInfo();
     info.mVideo.mTrackId = 2;
   }
@@ -1079,7 +1055,6 @@ TrackBuffersManager::OnDemuxerInitDone(const MediaResult& aResult)
     mAudioTracks.mDemuxer =
       mInputDemuxer->GetTrackDemuxer(TrackInfo::kAudioTrack, 0);
     MOZ_ASSERT(mAudioTracks.mDemuxer);
-    DDLINKCHILD("audio demuxer", mAudioTracks.mDemuxer.get());
     info.mAudio = *mAudioTracks.mDemuxer->GetInfo()->GetAsAudioInfo();
     info.mAudio.mTrackId = 1;
   }
@@ -2076,11 +2051,7 @@ TrackBuffersManager::RecreateParser(bool aReuseInitData)
   // as it has parsed the entire InputBuffer provided.
   // Once the old TrackBuffer/MediaSource implementation is removed
   // we can optimize this part. TODO
-  if (mParser) {
-    DDUNLINKCHILD(mParser.get());
-  }
   mParser = ContainerParser::CreateForMIMEType(mType);
-  DDLINKCHILD("parser", mParser.get());
   if (aReuseInitData && mInitData) {
     int64_t start, end;
     mParser->ParseStartAndEndTimestamps(mInitData, start, end);

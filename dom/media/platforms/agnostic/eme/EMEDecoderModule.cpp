@@ -28,8 +28,6 @@ namespace mozilla {
 typedef MozPromiseRequestHolder<DecryptPromise> DecryptPromiseRequestHolder;
 extern already_AddRefed<PlatformDecoderModule> CreateBlankDecoderModule();
 
-DDLoggedTypeDeclNameAndBase(EMEDecryptor, MediaDataDecoder);
-
 class ADTSSampleConverter
 {
 public:
@@ -58,9 +56,7 @@ private:
   const uint8_t mFrequencyIndex;
 };
 
-class EMEDecryptor
-  : public MediaDataDecoder
-  , public DecoderDoctorLifeLogger<EMEDecryptor>
+class EMEDecryptor : public MediaDataDecoder
 {
 public:
   EMEDecryptor(MediaDataDecoder* aDecoder,
@@ -78,7 +74,6 @@ public:
     , mADTSSampleConverter(Move(aConverter))
     , mIsShutdown(false)
   {
-    DDLINKCHILD("decoder", mDecoder.get());
   }
 
   RefPtr<InitPromise> Init() override

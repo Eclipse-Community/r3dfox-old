@@ -27,12 +27,8 @@ struct GMPVideoDecoderParams
   RefPtr<GMPCrashHelper> mCrashHelper;
 };
 
-DDLoggedTypeDeclNameAndBase(GMPVideoDecoder, MediaDataDecoder);
-
-class GMPVideoDecoder
-  : public MediaDataDecoder
-  , public GMPVideoDecoderCallbackProxy
-  , public DecoderDoctorLifeLogger<GMPVideoDecoder>
+class GMPVideoDecoder : public MediaDataDecoder,
+                        public GMPVideoDecoderCallbackProxy
 {
 public:
   explicit GMPVideoDecoder(const GMPVideoDecoderParams& aParams);

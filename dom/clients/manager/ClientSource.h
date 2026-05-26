@@ -9,16 +9,12 @@
 #include "mozilla/dom/ClientInfo.h"
 #include "mozilla/dom/ClientThing.h"
 
-class nsIDocShell;
-class nsPIDOMWindowInner;
-
 namespace mozilla {
 namespace dom {
 
 class ClientManager;
 class ClientSourceChild;
 class ClientSourceConstructorArgs;
-class ClientSourceExecutionReadyArgs;
 class PClientManagerChild;
 
 namespace workers {
@@ -40,24 +36,10 @@ class ClientSource final : public ClientThing<ClientSourceChild>
   RefPtr<ClientManager> mManager;
   nsCOMPtr<nsISerialEventTarget> mEventTarget;
 
-  Variant<Nothing,
-          RefPtr<nsPIDOMWindowInner>,
-          nsCOMPtr<nsIDocShell>,
-          mozilla::dom::workers::WorkerPrivate*> mOwner;
-
   ClientInfo mClientInfo;
 
   void
   Shutdown();
-
-  void
-  ExecutionReady(const ClientSourceExecutionReadyArgs& aArgs);
-
-  mozilla::dom::workers::WorkerPrivate*
-  GetWorkerPrivate() const;
-
-  nsIDocShell*
-  GetDocShell() const;
 
   // Private methods called by ClientManager
   ClientSource(ClientManager* aManager,
@@ -69,18 +51,6 @@ class ClientSource final : public ClientThing<ClientSourceChild>
 
 public:
   ~ClientSource();
-
-  nsPIDOMWindowInner*
-  GetInnerWindow() const;
-
-  void
-  WorkerExecutionReady(mozilla::dom::workers::WorkerPrivate* aWorkerPrivate);
-
-  nsresult
-  WindowExecutionReady(nsPIDOMWindowInner* aInnerWindow);
-
-  nsresult
-  DocShellExecutionReady(nsIDocShell* aDocShell);
 
   void
   Freeze();

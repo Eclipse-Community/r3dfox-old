@@ -6,7 +6,6 @@
 #define nsHtml5OwningUTF16Buffer_h
 
 #include "nsHtml5UTF16Buffer.h"
-#include "mozilla/Span.h"
 
 class nsHtml5OwningUTF16Buffer : public nsHtml5UTF16Buffer
 {
@@ -49,16 +48,6 @@ public:
      * Swap start, end and buffer fields with another object.
      */
     void Swap(nsHtml5OwningUTF16Buffer* aOther);
-
-    /**
-     * Return a span from `end` to `aBufferSize`.
-     */
-    mozilla::Span<char16_t> TailAsSpan(int32_t aBufferSize);
-
-    /**
-     * Add the argument to `end`.
-     */
-    void AdvanceEnd(int32_t aNumberOfCodeUnits);
 
     nsrefcnt AddRef();
     nsrefcnt Release();

@@ -336,7 +336,7 @@ var gViewSourceUtils = {
           foStream.init(this.file, 0x02 | 0x08 | 0x20, -1, 0); // write | create | truncate
           var coStream = Cc["@mozilla.org/intl/converter-output-stream;1"]
                            .createInstance(Ci.nsIConverterOutputStream);
-          coStream.init(foStream, this.data.doc.characterSet);
+          coStream.init(foStream, this.data.doc.characterSet, 0, null);
 
           // write the source to the file
           coStream.writeString(webNavigation.document.body.textContent);

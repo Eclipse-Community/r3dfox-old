@@ -12,7 +12,7 @@
 #include "MediaResource.h"
 #include "mozilla/EndianUtils.h"
 #include "mp4_demuxer/AtomType.h"
-#include "BufferReader.h"
+#include "mp4_demuxer/BufferReader.h"
 
 using namespace mozilla;
 

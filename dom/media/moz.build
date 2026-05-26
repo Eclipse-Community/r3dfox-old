@@ -58,7 +58,7 @@ if CONFIG['MOZ_ANDROID_HLS_SUPPORT']:
     DIRS += ['hls']
 
 if CONFIG['MOZ_FMP4']:
-    DIRS += ['mp4']
+    DIRS += ['fmp4']
 
 if CONFIG['MOZ_WEBRTC']:
     DIRS += ['bridge']
@@ -100,10 +100,7 @@ EXPORTS += [
     'AutoplayPolicy.h',
     'BackgroundVideoDecodingPermissionObserver.h',
     'Benchmark.h',
-    'BitReader.h',
     'BufferMediaResource.h',
-    'BufferReader.h',
-    'ByteWriter.h',
     'ChannelMediaDecoder.h',
     'CubebUtils.h',
     'DecoderDoctorDiagnostics.h',
@@ -219,7 +216,6 @@ UNIFIED_SOURCES += [
     'BackgroundVideoDecodingPermissionObserver.cpp',
     'BaseMediaResource.cpp',
     'Benchmark.cpp',
-    'BitReader.cpp',
     'CanvasCaptureMediaStream.cpp',
     'ChannelMediaDecoder.cpp',
     'ChannelMediaResource.cpp',

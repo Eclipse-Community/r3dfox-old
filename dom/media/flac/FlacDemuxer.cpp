@@ -7,7 +7,7 @@
 #include "FlacDemuxer.h"
 
 #include "mozilla/Maybe.h"
-#include "BitReader.h"
+#include "mp4_demuxer/BitReader.h"
 #include "nsAutoPtr.h"
 #include "prenv.h"
 #include "FlacFrameParser.h"
@@ -44,7 +44,7 @@ class FrameHeader {
   // A valid header is one that can be decoded without error and that has a
   // valid CRC.
   bool Parse(const uint8_t* aPacket, size_t aBytes) {
-    BitReader br(aPacket, aBytes * 8);
+    mp4_demuxer::BitReader br(aPacket, aBytes * 8);
 
     // Frame sync code.
     if ((br.ReadBits(15) & 0x7fff) != 0x7ffc) {

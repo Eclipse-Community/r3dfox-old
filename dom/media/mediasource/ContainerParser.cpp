@@ -10,18 +10,16 @@
 #include "mozilla/EndianUtils.h"
 #include "mozilla/IntegerPrintfMacros.h"
 #include "mozilla/ErrorResult.h"
-#include "MoofParser.h"
+#include "mp4_demuxer/MoofParser.h"
 #include "mozilla/Logging.h"
 #include "mozilla/Maybe.h"
 #include "mozilla/Result.h"
 #include "MediaData.h"
 #include "nsMimeTypes.h"
 #ifdef MOZ_FMP4
-#include "AtomType.h"
-#include "BufferReader.h"
-#include "Index.h"
-#include "MP4Interval.h"
-#include "ByteStream.h"
+#include "mp4_demuxer/AtomType.h"
+#include "mp4_demuxer/BufferReader.h"
+#include "mp4_demuxer/Stream.h"
 #endif
 #include "nsAutoPtr.h"
 #include "SourceBufferResource.h"
@@ -307,7 +305,7 @@ class WebMContainerParser
 
 #ifdef MOZ_FMP4
 
-class MP4Stream : public ByteStream {
+class MP4Stream : public mp4_demuxer::Stream {
  public:
   explicit MP4Stream(SourceBufferResource* aResource);
   virtual ~MP4Stream();
@@ -399,13 +397,13 @@ class MP4ContainerParser : public ContainerParser {
     Result<Ok, nsresult> Init(const MediaContainerType& aType,
                               const MediaByteBuffer* aData, StopAt aStop) {
       const MediaContainerType mType(aType); // for logging macro.
-      BufferReader reader(aData);
-      AtomType initAtom("moov");
-      AtomType mediaAtom("moof");
-      AtomType dataAtom("mdat");
+      mp4_demuxer::BufferReader reader(aData);
+      mp4_demuxer::AtomType initAtom("moov");
+      mp4_demuxer::AtomType mediaAtom("moof");
+      mp4_demuxer::AtomType dataAtom("mdat");
 
       // Valid top-level boxes defined in ISO/IEC 14496-12 (Table 1)
-      static const AtomType validBoxes[] = {
+      static const mp4_demuxer::AtomType validBoxes[] = {
           "ftyp", "moov",          // init segment
           "pdin", "free", "sidx",  // optional prior moov box
           "styp", "moof", "mdat",  // media segment
@@ -421,7 +419,7 @@ class MP4ContainerParser : public ContainerParser {
         uint64_t size = tmp;
         const uint8_t* typec = reader.Peek(4);
         MOZ_TRY_VAR(tmp, reader.ReadU32());
-        AtomType type(tmp);
+        mp4_demuxer::AtomType type(tmp);
         MSE_DEBUGV(AtomParser, "Checking atom:'%c%c%c%c' @ %u", typec[0],
                      typec[1], typec[2], typec[3],
                      (uint32_t)reader.Offset() - 8);
@@ -435,13 +433,13 @@ class MP4ContainerParser : public ContainerParser {
           mLastInvalidBox[4] = '\0';
           return Err(NS_ERROR_FAILURE);
         }
-        if (mInitOffset.isNothing() && AtomType(type) == initAtom) {
+        if (mInitOffset.isNothing() && mp4_demuxer::AtomType(type) == initAtom) {
           mInitOffset = Some(reader.Offset());
         }
-        if (mMediaOffset.isNothing() && AtomType(type) == mediaAtom) {
+        if (mMediaOffset.isNothing() && mp4_demuxer::AtomType(type) == mediaAtom) {
           mMediaOffset = Some(reader.Offset());
         }
-        if (mDataOffset.isNothing() && AtomType(type) == dataAtom) {
+        if (mDataOffset.isNothing() && mp4_demuxer::AtomType(type) == dataAtom) {
           mDataOffset = Some(reader.Offset());
         }
         if (size == 1) {
@@ -507,7 +505,7 @@ class MP4ContainerParser : public ContainerParser {
       // consumers of ParseStartAndEndTimestamps to add their timestamp offset
       // manually. This allows the ContainerParser to be shared across different
       // timestampOffsets.
-      mParser = new MoofParser(mStream, 0, /* aIsAudio = */ false);
+      mParser = new mp4_demuxer::MoofParser(mStream, 0, /* aIsAudio = */ false);
       mInitData = new MediaByteBuffer();
       mCompleteInitSegmentRange = MediaByteRange();
       mCompleteMediaHeaderRange = MediaByteRange();
@@ -543,7 +541,7 @@ class MP4ContainerParser : public ContainerParser {
     }
     mTotalParsed += aData->Length();
 
-    MP4Interval<Microseconds> compositionRange =
+    mp4_demuxer::Interval<mp4_demuxer::Microseconds> compositionRange =
         mParser->GetCompositionRange(byteRanges);
 
     mCompleteMediaHeaderRange =
@@ -576,7 +574,7 @@ class MP4ContainerParser : public ContainerParser {
 
  private:
   RefPtr<MP4Stream> mStream;
-  nsAutoPtr<MoofParser> mParser;
+  nsAutoPtr<mp4_demuxer::MoofParser> mParser;
 };
 #endif  // MOZ_FMP4
 

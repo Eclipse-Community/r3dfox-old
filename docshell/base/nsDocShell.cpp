@@ -11308,7 +11308,7 @@ nsDocShell::ScrollToAnchor(bool aCurHasRef, bool aNewHasRef,
       NS_ENSURE_SUCCESS(rv, rv);
 
       // Unescape and convert to unicode
-      nsXPIDLString uStr;
+      nsAutoString uStr;
 
       rv = textToSubURI->UnEscapeAndConvert(PromiseFlatCString(aCharset).get(),
                                             PromiseFlatCString(aNewHash).get(),

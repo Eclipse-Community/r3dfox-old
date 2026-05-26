@@ -25,11 +25,11 @@ package nu.validator.htmlparser.impl;
 
 import java.io.IOException;
 
-import org.xml.sax.SAXException;
-
 import nu.validator.htmlparser.annotation.Auto;
 import nu.validator.htmlparser.annotation.Inline;
 import nu.validator.htmlparser.common.ByteReadable;
+
+import org.xml.sax.SAXException;
 
 public abstract class MetaScanner {
 
@@ -180,7 +180,6 @@ public abstract class MetaScanner {
         this.charset = null;
         this.httpEquivState = HTTP_EQUIV_NOT_SEEN;
         // CPPONLY: this.treeBuilder = tb;
-        // CPPONLY: this.mEncoding = null;
     }
 
     @SuppressWarnings("unused") private void destructor() {

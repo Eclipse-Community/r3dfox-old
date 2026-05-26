@@ -39,12 +39,15 @@ nsReferencedElement::Reset(nsIContent* aFromContent, nsIURI* aURI,
 
   const nsCString& doc_charset = doc->GetDocumentCharacterSet();
   const char *charset = doc_charset.IsEmpty() ? nullptr : doc_charset.get();
+  //nsAutoCString charset;
+  //aURI->GetOriginCharset(charset);
   nsAutoString ref;
-  nsresult rv = charset->DecodeWithoutBOMHandling(refPart, ref);
+  nsresult rv = nsContentUtils::ConvertStringFromEncoding(charset,
+                                                          refPart,
+                                                          ref);
   if (NS_FAILED(rv) || ref.IsEmpty()) {
     return;
   }
-  rv = NS_OK;
 
   nsIContent* bindingParent = aFromContent->GetBindingParent();
   if (bindingParent) {

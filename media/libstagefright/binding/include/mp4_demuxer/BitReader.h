@@ -7,7 +7,7 @@
 
 #include "MediaData.h"
 
-namespace mozilla {
+namespace mp4_demuxer {
 
 class BitReader {
  public:

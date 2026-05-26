@@ -12,9 +12,14 @@
 #include "MediaDataDemuxer.h"
 #include "MediaResource.h"
 
+namespace mp4_demuxer {
+class MP4Metadata;
+class ResourceStream;
+class SampleIterator;
+} // namespace mp4_demuxer
+
 namespace mozilla {
 class MP4TrackDemuxer;
-class ResourceStream;
 
 class MP4Demuxer : public MediaDataDemuxer {
  public:
@@ -38,7 +43,7 @@ class MP4Demuxer : public MediaDataDemuxer {
  private:
   friend class MP4TrackDemuxer;
   RefPtr<MediaResource> mResource;
-  RefPtr<ResourceStream> mStream;
+  RefPtr<mp4_demuxer::ResourceStream> mStream;
   AutoTArray<RefPtr<MP4TrackDemuxer>, 1> mAudioDemuxers;
   AutoTArray<RefPtr<MP4TrackDemuxer>, 1> mVideoDemuxers;
   nsTArray<uint8_t> mCryptoInitData;

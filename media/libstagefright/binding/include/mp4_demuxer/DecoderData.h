@@ -15,7 +15,7 @@
 #include "nsString.h"
 #include "mp4parse.h"
 
-namespace mozilla {
+namespace mp4_demuxer {
 
 class MP4Demuxer;
 

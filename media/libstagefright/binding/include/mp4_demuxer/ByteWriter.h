@@ -8,7 +8,7 @@
 #include "mozilla/EndianUtils.h"
 #include "nsTArray.h"
 
-namespace mozilla {
+namespace mp4_demuxer {
 
 class ByteWriter {
  public:

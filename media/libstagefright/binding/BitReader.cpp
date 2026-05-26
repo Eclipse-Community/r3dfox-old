@@ -4,9 +4,11 @@
 
 // Derived from Stagefright's ABitReader.
 
-#include "BitReader.h"
+#include "mp4_demuxer/BitReader.h"
 
-namespace mozilla {
+using namespace mozilla;
+
+namespace mp4_demuxer {
 
 BitReader::BitReader(const mozilla::MediaByteBuffer* aBuffer)
     : BitReader(aBuffer->Elements(), aBuffer->Length() * 8) {}

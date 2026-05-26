@@ -2,11 +2,11 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#include "MoofParser.h"
-#include "Box.h"
-#include "SinfParser.h"
+#include "mp4_demuxer/MoofParser.h"
+#include "mp4_demuxer/Box.h"
+#include "mp4_demuxer/SinfParser.h"
 #include <limits>
-#include "MP4Interval.h"
+#include "Intervals.h"
 
 #include "mozilla/CheckedInt.h"
 #include "mozilla/Logging.h"
@@ -23,7 +23,9 @@ extern mozilla::LogModule* GetDemuxerLog();
 #define LOG(...)
 #endif
 
-namespace mozilla {
+namespace mp4_demuxer {
+
+using namespace mozilla;
 
 const uint32_t kKeyIdSize = 16;
 
@@ -104,9 +106,9 @@ MediaByteRange MoofParser::FirstCompleteMediaSegment() {
   return MediaByteRange();
 }
 
-class BlockingStream : public ByteStream {
+class BlockingStream : public Stream {
  public:
-  explicit BlockingStream(ByteStream* aStream) : mStream(aStream) {
+  explicit BlockingStream(Stream* aStream) : mStream(aStream) {
   }
 
   bool ReadAt(int64_t offset, void* data, size_t size,
@@ -122,7 +124,7 @@ class BlockingStream : public ByteStream {
   virtual bool Length(int64_t* size) override { return mStream->Length(size); }
 
  private:
-  RefPtr<ByteStream> mStream;
+  RefPtr<Stream> mStream;
 };
 
 bool MoofParser::BlockingReadNextMoof() {
@@ -130,7 +132,7 @@ bool MoofParser::BlockingReadNextMoof() {
   mSource->Length(&length);
   MediaByteRangeSet byteRanges;
   byteRanges += MediaByteRange(0, length);
-  RefPtr<BlockingStream> stream = new BlockingStream(mSource);
+  RefPtr<mp4_demuxer::BlockingStream> stream = new BlockingStream(mSource);
 
   BoxContext context(stream, byteRanges);
   for (Box box(&context, mOffset); box.IsAvailable(); box = box.Next()) {
@@ -148,7 +150,7 @@ void MoofParser::ScanForMetadata(mozilla::MediaByteRange& aMoov) {
   mSource->Length(&length);
   MediaByteRangeSet byteRanges;
   byteRanges += MediaByteRange(0, length);
-  RefPtr<BlockingStream> stream = new BlockingStream(mSource);
+  RefPtr<mp4_demuxer::BlockingStream> stream = new BlockingStream(mSource);
 
   BoxContext context(stream, byteRanges);
   for (Box box(&context, mOffset); box.IsAvailable(); box = box.Next()) {
@@ -175,7 +177,7 @@ already_AddRefed<mozilla::MediaByteBuffer> MoofParser::Metadata() {
     return nullptr;
   }
 
-  RefPtr<BlockingStream> stream = new BlockingStream(mSource);
+  RefPtr<mp4_demuxer::BlockingStream> stream = new BlockingStream(mSource);
   size_t read;
   bool rv = stream->ReadAt(moov.mStart, metadata->Elements(),
                            moovLength.value(), &read);
@@ -185,9 +187,9 @@ already_AddRefed<mozilla::MediaByteBuffer> MoofParser::Metadata() {
   return metadata.forget();
 }
 
-MP4Interval<Microseconds> MoofParser::GetCompositionRange(
+Interval<Microseconds> MoofParser::GetCompositionRange(
     const MediaByteRangeSet& aByteRanges) {
-  MP4Interval<Microseconds> compositionRange;
+  Interval<Microseconds> compositionRange;
   BoxContext context(mSource, aByteRanges);
   for (size_t i = 0; i < mMoofs.Length(); i++) {
     Moof& moof = mMoofs[i];
@@ -393,7 +395,7 @@ Moof::Moof(Box& aBox, Trex& aTrex, Mvhd& aMvhd, Mdhd& aMdhd, Edts& aEdts,
         sample.mDecodeTime = dtsOffset + int64_t(compositionDuration * adjust);
         compositionDuration += sample.mCompositionRange.Length();
       }
-      mTimeRange = MP4Interval<Microseconds>(
+      mTimeRange = Interval<Microseconds>(
           ctsOrder[0]->mCompositionRange.start,
           ctsOrder.LastElement()->mCompositionRange.end);
     }
@@ -594,7 +596,7 @@ Result<Ok, nsresult> Moof::ParseTrun(Box& aBox, Tfhd& aTfhd, Mvhd& aMvhd,
     MOZ_TRY_VAR(firstSampleFlags, reader->ReadU32());
   }
   uint64_t decodeTime = *aDecodeTime;
-  nsTArray<MP4Interval<Microseconds>> timeRanges;
+  nsTArray<Interval<Microseconds>> timeRanges;
 
   if (!mIndex.SetCapacity(sampleCount, fallible)) {
     LOG(Moof, "Out of Memory");
@@ -635,7 +637,7 @@ Result<Ok, nsresult> Moof::ParseTrun(Box& aBox, Tfhd& aTfhd, Mvhd& aMvhd,
       MOZ_TRY_VAR(endCts,
                   aMdhd.ToMicroseconds((int64_t)decodeTime + ctsOffset +
                                        sampleDuration - aEdts.mMediaStart));
-      sample.mCompositionRange = MP4Interval<Microseconds>(
+      sample.mCompositionRange = Interval<Microseconds>(
           startCts + emptyOffset, endCts + emptyOffset);
       // Sometimes audio streams don't properly mark their samples as keyframes,
       // because every audio sample is a keyframe.

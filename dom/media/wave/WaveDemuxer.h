@@ -8,8 +8,13 @@
 #include "MediaDataDemuxer.h"
 #include "MediaResource.h"
 
-namespace mozilla {
+namespace mp4_demuxer {
 class BufferReader;
+}
+
+using mp4_demuxer::BufferReader;
+
+namespace mozilla {
 
 static const uint32_t FRMT_CODE = 0x666d7420;
 static const uint32_t DATA_CODE = 0x64617461;

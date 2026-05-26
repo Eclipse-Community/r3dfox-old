@@ -6,10 +6,10 @@
 #define SINF_PARSER_H_
 
 #include "mozilla/ResultExtensions.h"
-#include "Atom.h"
-#include "AtomType.h"
+#include "mp4_demuxer/Atom.h"
+#include "mp4_demuxer/AtomType.h"
 
-namespace mozilla {
+namespace mp4_demuxer {
 
 class Box;
 

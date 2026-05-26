@@ -7,11 +7,11 @@
 
 #include "nsISupportsImpl.h"
 
-namespace mozilla {
+namespace mp4_demuxer {
 
-class ByteStream {
+class Stream {
  public:
-  NS_INLINE_DECL_THREADSAFE_REFCOUNTING(ByteStream);
+  NS_INLINE_DECL_THREADSAFE_REFCOUNTING(Stream);
 
   virtual bool ReadAt(int64_t offset, void* data, size_t size,
                       size_t* bytes_read) = 0;
@@ -22,7 +22,7 @@ class ByteStream {
   virtual void DiscardBefore(int64_t offset) {}
 
  protected:
-  virtual ~ByteStream() {}
+  virtual ~Stream() {}
 };
 
 }  // namespace mozilla

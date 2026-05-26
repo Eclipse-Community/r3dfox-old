@@ -12,9 +12,12 @@ template <class T>
 struct already_AddRefed;
 
 namespace mozilla {
-class BufferReader;
 class MediaRawData;
 class MediaByteBuffer;
+}
+
+namespace mp4_demuxer {
+class BufferReader;
 
 class AnnexB {
  public:
@@ -39,7 +42,7 @@ class AnnexB {
  private:
   // AVCC box parser helper.
   static mozilla::Result<mozilla::Ok, nsresult> ConvertSPSOrPPS(
-      mozilla::BufferReader& aReader, uint8_t aCount,
+      BufferReader& aReader, uint8_t aCount,
       mozilla::MediaByteBuffer* aAnnexB);
 };
 

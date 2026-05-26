@@ -11,18 +11,21 @@
 #include "nsTArray.h"
 #include "MediaResource.h"
 #include "mozilla/EndianUtils.h"
-#include "AtomType.h"
-#include "BufferReader.h"
+#include "mp4_demuxer/AtomType.h"
+#include "mp4_demuxer/BufferReader.h"
 
-namespace mozilla {
-class ByteStream;
+using namespace mozilla;
+
+namespace mp4_demuxer {
+
+class Stream;
 
 class BoxContext {
  public:
-  BoxContext(ByteStream* aSource, const MediaByteRangeSet& aByteRanges)
+  BoxContext(Stream* aSource, const MediaByteRangeSet& aByteRanges)
       : mSource(aSource), mByteRanges(aByteRanges) {}
 
-  RefPtr<ByteStream> mSource;
+  RefPtr<Stream> mSource;
   const MediaByteRangeSet& mByteRanges;
 };
 

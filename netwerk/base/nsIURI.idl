@@ -41,13 +41,8 @@
 
 #undef GetPort  // XXX Windows!
 #undef SetPort  // XXX Windows!
-
-namespace mozilla {
-class Encoding;
-}
 %}
 
-[ptr] native Encoding(const mozilla::Encoding);
 interface nsIURIMutator;
 
 /**
@@ -219,6 +214,17 @@ interface nsIURI : nsISupports
      * ASCII for compatibility with existing internet infrasture.
      */
     readonly attribute ACString asciiHost;
+
+    /**
+     * The charset of the document from which this URI originated.  An empty
+     * value implies UTF-8.
+     *
+     * If this value is something other than UTF-8 then the URI components
+     * (e.g., spec, prePath, username, etc.) will all be fully URL-escaped.
+     * Otherwise, the URI components may contain unescaped multibyte UTF-8
+     * characters.
+     */
+    readonly attribute ACString originCharset;
 
     /************************************************************************
      * Additional attribute & methods added for .ref support:

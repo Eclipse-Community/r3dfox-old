@@ -12,7 +12,7 @@
 #include "MediaData.h"
 #include "MediaInfo.h"
 #include "MediaResult.h"
-#include "ByteStream.h"
+#include "Stream.h"
 #include "mp4parse.h"
 
 namespace mozilla {
@@ -23,7 +23,7 @@ public:
 
   // TODO: Index::Indice is from stagefright, we should use another struct once
   //       stagefrigth is removed.
-  virtual bool GetIndice(size_t aIndex, Index::Indice& aIndice) const = 0;
+  virtual bool GetIndice(size_t aIndex, mp4_demuxer::Index::Indice& aIndice) const = 0;
 
   virtual ~IndiceWrapper() {}
 };
@@ -33,7 +33,7 @@ struct FreeMP4Parser { void operator()(mp4parse_parser* aPtr) { mp4parse_free(aP
 // Wrap an Stream to remember the read offset.
 class StreamAdaptor {
 public:
-  explicit StreamAdaptor(ByteStream* aSource)
+  explicit StreamAdaptor(mp4_demuxer::Stream* aSource)
     : mSource(aSource)
     , mOffset(0)
   {
@@ -44,14 +44,14 @@ public:
   bool Read(uint8_t* buffer, uintptr_t size, size_t* bytes_read);
 
 private:
-  ByteStream* mSource;
+  mp4_demuxer::Stream* mSource;
   CheckedInt<size_t> mOffset;
 };
 
 class MP4Metadata
 {
 public:
-  explicit MP4Metadata(ByteStream* aSource);
+  explicit MP4Metadata(mp4_demuxer::Stream* aSource);
   ~MP4Metadata();
 
   // Simple template class containing a MediaResult and another type.
@@ -78,7 +78,7 @@ public:
   };
 
   using ResultAndByteBuffer = ResultAndType<RefPtr<mozilla::MediaByteBuffer>>;
-  static ResultAndByteBuffer Metadata(ByteStream* aSource);
+  static ResultAndByteBuffer Metadata(mp4_demuxer::Stream* aSource);
 
   static constexpr uint32_t NumberTracksError() { return UINT32_MAX; }
   using ResultAndTrackCount = ResultAndType<uint32_t>;
@@ -104,7 +104,7 @@ private:
   Maybe<uint32_t> TrackTypeToGlobalTrackIndex(mozilla::TrackInfo::TrackType aType, size_t aTrackNumber) const;
 
   CryptoFile mCrypto;
-  RefPtr<ByteStream> mSource;
+  RefPtr<mp4_demuxer::Stream> mSource;
   StreamAdaptor mSourceAdaptor;
   mozilla::UniquePtr<mp4parse_parser, FreeMP4Parser> mParser;
 };

@@ -7,7 +7,9 @@
 #include "MediaResource.h"
 #include <algorithm>
 
-namespace mozilla {
+using namespace mozilla;
+
+namespace mp4_demuxer {
 
 BufferStream::BufferStream()
   : mStartOffset(0)

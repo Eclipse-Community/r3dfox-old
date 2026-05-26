@@ -13,10 +13,11 @@
 #include "MoofParser.h"
 
 using namespace mozilla;
+using namespace mp4_demuxer;
 
 static const uint32_t E = MP4Metadata::NumberTracksError();
 
-class TestStream : public ByteStream
+class TestStream : public Stream
 {
 public:
   TestStream(const uint8_t* aBuffer, size_t aSize)
@@ -73,7 +74,7 @@ protected:
 
 TEST(stagefright_MP4Metadata, EmptyStream)
 {
-  RefPtr<ByteStream> stream = new TestStream(nullptr, 0);
+  RefPtr<Stream> stream = new TestStream(nullptr, 0);
 
   MP4Metadata::ResultAndByteBuffer metadataBuffer =
     MP4Metadata::Metadata(stream);
@@ -99,7 +100,7 @@ TEST(stagefright_MP4Metadata, EmptyStream)
 
 TEST(stagefright_MoofParser, EmptyStream)
 {
-  RefPtr<ByteStream> stream = new TestStream(nullptr, 0);
+  RefPtr<Stream> stream = new TestStream(nullptr, 0);
 
   MoofParser parser(stream, 0, false);
   EXPECT_EQ(0u, parser.mOffset);
@@ -242,7 +243,7 @@ TEST(stagefright_MPEG4Metadata, test_case_mp4)
   for (size_t test = 0; test < length; ++test) {
     nsTArray<uint8_t> buffer = ReadTestFile(tests[test].mFilename);
     ASSERT_FALSE(buffer.IsEmpty());
-    RefPtr<ByteStream> stream = new TestStream(buffer.Elements(), buffer.Length());
+    RefPtr<Stream> stream = new TestStream(buffer.Elements(), buffer.Length());
 
     MP4Metadata::ResultAndByteBuffer metadataBuffer =
       MP4Metadata::Metadata(stream);
@@ -380,7 +381,7 @@ TEST(stagefright_MoofParser, test_case_mp4)
   for (size_t test = 0; test < length; ++test) {
     nsTArray<uint8_t> buffer = ReadTestFile(tests[test].mFilename);
     ASSERT_FALSE(buffer.IsEmpty());
-    RefPtr<ByteStream> stream = new TestStream(buffer.Elements(), buffer.Length());
+    RefPtr<Stream> stream = new TestStream(buffer.Elements(), buffer.Length());
 
     MoofParser parser(stream, 0, false);
     EXPECT_EQ(0u, parser.mOffset) << tests[test].mFilename;

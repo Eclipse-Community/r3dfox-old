@@ -98,7 +98,6 @@
 #include "nsIContentPolicy.h"
 #include "mozilla/Telemetry.h"
 #include "DecoderDoctorDiagnostics.h"
-#include "DecoderDoctorLogger.h"
 #include "DecoderTraits.h"
 #include "MediaContainerType.h"
 #include "MP4Decoder.h"
@@ -1610,31 +1609,6 @@ HTMLMediaElement::MozRequestDebugInfo(ErrorResult& aRv)
   } else {
     promise->MaybeResolve(result);
   }
-
-  return promise.forget();
-}
-
-/* static */ void
-HTMLMediaElement::MozEnableDebugLog(const GlobalObject&)
-{
-  DecoderDoctorLogger::EnableLogging();
-}
-
-already_AddRefed<Promise>
-HTMLMediaElement::MozRequestDebugLog(ErrorResult& aRv)
-{
-  RefPtr<Promise> promise = CreateDOMPromise(aRv);
-  if (NS_WARN_IF(aRv.Failed())) {
-    return nullptr;
-  }
-
-  DecoderDoctorLogger::RetrieveMessages(this)->Then(
-    mAbstractMainThread,
-    __func__,
-    [promise](const nsACString& aString) {
-      promise->MaybeResolve(NS_ConvertUTF8toUTF16(aString));
-    },
-    [promise](nsresult rv) { promise->MaybeReject(rv); });
 
   return promise.forget();
 }

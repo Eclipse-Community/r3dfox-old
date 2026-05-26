@@ -21,7 +21,9 @@ nsConverterOutputStream::~nsConverterOutputStream() { Close(); }
 
 NS_IMETHODIMP
 nsConverterOutputStream::Init(nsIOutputStream* aOutStream,
-                              const char* aCharset) {
+                              const char* aCharset,
+                              uint32_t aBufferSize, /* ignored */
+                              char16_t aReplacementChar) /* ignored */ {
   NS_PRECONDITION(aOutStream, "Null output stream!");
 
   const Encoding* encoding;

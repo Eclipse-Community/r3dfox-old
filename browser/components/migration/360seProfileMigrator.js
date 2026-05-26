@@ -42,7 +42,7 @@ function copyToTempUTF8File(file, charset) {
     try {
       let converterOut = Cc["@mozilla.org/intl/converter-output-stream;1"]
                            .createInstance(Ci.nsIConverterOutputStream);
-      converterOut.init(bufferedOut, "utf-8");
+      converterOut.init(bufferedOut, "utf-8", 0, 0x0000);
       try {
         converterOut.writeString(inputStr || "");
         bufferedOut.QueryInterface(Ci.nsISafeOutputStream).finish();

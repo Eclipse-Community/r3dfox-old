@@ -5,7 +5,6 @@
 
 #include "nsUCConstructors.h"
 #include "nsMacArabicToUnicode.h"
-#include "mozilla/Telemetry.h"
 
 using namespace mozilla;
 
@@ -20,7 +19,6 @@ nsMacArabicToUnicodeConstructor(nsISupports *aOuter, REFNSIID aIID,
 #include "macarabic.ut"
    };
 
-   Telemetry::Accumulate(Telemetry::DECODER_INSTANTIATED_MACARABIC, true);
    return CreateOneByteDecoder((uMappingTable*) &g_utMappingTable,
                                aOuter, aIID, aResult);
 }

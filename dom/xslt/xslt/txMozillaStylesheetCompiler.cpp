@@ -37,10 +37,11 @@
 #include "nsError.h"
 #include "mozilla/Attributes.h"
 #include "mozilla/dom/Element.h"
-#include "mozilla/Encoding.h"
+#include "mozilla/dom/EncodingUtils.h"
 #include "mozilla/UniquePtr.h"
 
 using namespace mozilla;
+using mozilla::dom::EncodingUtils;
 using mozilla::net::ReferrerPolicy;
 
 static NS_DEFINE_CID(kCParserCID, NS_PARSER_CID);
@@ -256,21 +257,18 @@ txStylesheetSink::OnStartRequest(nsIRequest *aRequest, nsISupports *aContext)
     nsCOMPtr<nsIChannel> channel = do_QueryInterface(aRequest);
 
     // check channel's charset...
-    const Encoding* encoding = nullptr;
     nsAutoCString charsetVal;
+    nsAutoCString charset;
     if (NS_SUCCEEDED(channel->GetContentCharset(charsetVal))) {
-        encoding = Encoding::ForLabel(charsetVal);
-        if (encoding) {
+        if (EncodingUtils::FindEncodingForLabel(charsetVal, charset)) {
             charsetSource = kCharsetFromChannel;
         }
     }
 
-    if (!encoding) {
-        encoding = UTF_8_ENCODING;
+    if (charset.IsEmpty()) {
+      charset.AssignLiteral("UTF-8");
     }
 
-    nsAutoCString charset;
-    encoding->Name(charset);
     mParser->SetDocumentCharset(charset, charsetSource);
 
     nsAutoCString contentType;

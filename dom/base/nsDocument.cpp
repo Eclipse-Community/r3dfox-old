@@ -177,7 +177,7 @@
 
 #include "mozAutoDocUpdate.h"
 #include "nsGlobalWindow.h"
-#include "mozilla/Encoding.h"
+#include "mozilla/dom/EncodingUtils.h"
 #include "nsDOMNavigationTiming.h"
 
 #include "nsSMILAnimationController.h"
@@ -1479,7 +1479,7 @@ nsIDocument::nsIDocument()
     mBlockAllMixedContentPreloads(false),
     mUpgradeInsecureRequests(false),
     mUpgradeInsecurePreloads(false),
-    mCharacterSet(WINDOWS_1252_ENCODING),
+    mCharacterSet(NS_LITERAL_CSTRING("windows-1252")),
     mCharacterSetSource(0),
     mParentDocument(nullptr),
     mCachedRootElement(nullptr),
@@ -3948,17 +3948,39 @@ nsDocument::GetBaseTarget(nsAString &aBaseTarget)
 }
 
 void
-nsDocument::SetDocumentCharacterSet(NotNull<const Encoding*> aEncoding)
+nsDocument::SetDocumentCharacterSet(const nsACString& aCharSetID)
 {
-  if (mCharacterSet != aEncoding) {
-    mCharacterSet = aEncoding;
+  // XXX it would be a good idea to assert the sanity of the argument,
+  // but before we figure out what to do about non-Encoding Standard
+  // encodings in the charset menu and in mailnews, assertions are futile.
+  if (!mCharacterSet.Equals(aCharSetID)) {
+    mCharacterSet = aCharSetID;
 
-    if (nsIPresShell* shell = GetShell()) {
-      if (nsPresContext* context = shell->GetPresContext()) {
-        context->DispatchCharSetChange(aEncoding);
-      }
+    int32_t n = mCharSetObservers.Length();
+
+    for (int32_t i = 0; i < n; i++) {
+      nsIObserver* observer = mCharSetObservers.ElementAt(i);
+
+      observer->Observe(static_cast<nsIDocument *>(this), "charset",
+                        NS_ConvertASCIItoUTF16(aCharSetID).get());
     }
   }
+}
+
+nsresult
+nsDocument::AddCharSetObserver(nsIObserver* aObserver)
+{
+  NS_ENSURE_ARG_POINTER(aObserver);
+
+  NS_ENSURE_TRUE(mCharSetObservers.AppendElement(aObserver), NS_ERROR_FAILURE);
+
+  return NS_OK;
+}
+
+void
+nsDocument::RemoveCharSetObserver(nsIObserver* aObserver)
+{
+  mCharSetObservers.RemoveElement(aObserver);
 }
 
 void
@@ -4097,16 +4119,16 @@ nsDocument::SetHeaderData(nsAtom* aHeaderField, const nsAString& aData)
 void
 nsDocument::TryChannelCharset(nsIChannel *aChannel,
                               int32_t& aCharsetSource,
-                              NotNull<const Encoding*>& aEncoding,
+                              nsACString& aCharset,
                               nsHtml5TreeOpExecutor* aExecutor)
 {
   if (aChannel) {
     nsAutoCString charsetVal;
     nsresult rv = aChannel->GetContentCharset(charsetVal);
     if (NS_SUCCEEDED(rv)) {
-      const Encoding* preferred = Encoding::ForLabel(charsetVal);
-      if (preferred) {
-        aEncoding = WrapNotNull(preferred);
+      nsAutoCString preferred;
+      if(EncodingUtils::FindEncodingForLabel(charsetVal, preferred)) {
+        aCharset = preferred;
         aCharsetSource = kCharsetFromChannel;
         return;
       } else if (aExecutor && !charsetVal.IsEmpty()) {
@@ -6871,9 +6893,7 @@ nsDocument::GetCharacterSet(nsAString& aCharacterSet)
 void
 nsIDocument::GetCharacterSet(nsAString& aCharacterSet) const
 {
-  nsAutoCString charset;
-  GetDocumentCharacterSet()->Name(charset);
-  CopyASCIItoUTF16(charset, aCharacterSet);
+  CopyASCIItoUTF16(GetDocumentCharacterSet(), aCharacterSet);
 }
 
 already_AddRefed<nsINode>
@@ -6939,7 +6959,9 @@ nsIDocument::LoadBindingDocument(const nsAString& aURI,
                                  ErrorResult& rv)
 {
   nsCOMPtr<nsIURI> uri;
-  rv = NS_NewURI(getter_AddRefs(uri), aURI, mCharacterSet, GetDocBaseURI());
+  rv = NS_NewURI(getter_AddRefs(uri), aURI,
+                 mCharacterSet.get(),
+                 GetDocBaseURI());
   if (rv.Failed()) {
     return;
   }
@@ -10203,8 +10225,7 @@ NS_IMPL_ISUPPORTS(StubCSSLoaderObserver, nsICSSLoaderObserver)
 } // namespace
 
 void
-nsDocument::PreloadStyle(nsIURI* uri,
-                         const Encoding* aEncoding,
+nsDocument::PreloadStyle(nsIURI* uri, const nsAString& charset,
                          const nsAString& aCrossOriginAttr,
                          const ReferrerPolicy aReferrerPolicy,
                          const nsAString& aIntegrity)
@@ -10213,14 +10234,11 @@ nsDocument::PreloadStyle(nsIURI* uri,
   nsCOMPtr<nsICSSLoaderObserver> obs = new StubCSSLoaderObserver();
 
   // Charset names are always ASCII.
-  CSSLoader()->LoadSheet(uri,
-                         true,
-                         NodePrincipal(),
-                         aEncoding,
+  CSSLoader()->LoadSheet(uri, true, NodePrincipal(),
+                         NS_LossyConvertUTF16toASCII(charset),
                          obs,
                          Element::StringToCORSMode(aCrossOriginAttr),
-                         aReferrerPolicy,
-                         aIntegrity);
+                         aReferrerPolicy, aIntegrity);
 }
 
 nsresult
@@ -10397,7 +10415,7 @@ nsDocument::ScrollToRef()
     // If UTF-8 URI failed then try to assume the string as a
     // document's charset.
     if (NS_FAILED(rv)) {
-      auto encoding = GetDocumentCharacterSet();
+      const nsACString &docCharset = GetDocumentCharacterSet();
       char* tmpstr = ToNewCString(mScrollToRef);
       if (!tmpstr) {
         return;
@@ -10407,7 +10425,9 @@ nsDocument::ScrollToRef()
       unescapedRef.Assign(tmpstr);
       free(tmpstr);
 
-      rv = encoding->DecodeWithoutBOMHandling(unescapedRef, ref);
+      rv = nsContentUtils::ConvertStringFromEncoding(docCharset,
+                                                     unescapedRef,
+                                                     ref);
 
       if (NS_SUCCEEDED(rv) && !ref.IsEmpty()) {
         rv = shell->GoToAnchor(ref, mChangeScrollPosWhenScrollingToRef);

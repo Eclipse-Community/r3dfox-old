@@ -253,7 +253,7 @@ with modules["NETWORK"]:
     # The async request completed successfully.
     errors["NS_BINDING_SUCCEEDED"] = errors["NS_OK"]
 
-    # The async request failed for some unknown reason.
+    # The async request failed for some unknown reason. 
     errors["NS_BINDING_FAILED"] = FAILURE(1)
     # The async request failed because it was aborted by some user action.
     errors["NS_BINDING_ABORTED"] = FAILURE(2)
@@ -314,7 +314,7 @@ with modules["NETWORK"]:
     # The connection attempt failed, for example, because no server was
     # listening at specified host:port.
     errors["NS_ERROR_CONNECTION_REFUSED"] = FAILURE(13)
-    # The connection was lost due to a timeout error.
+    # The connection was lost due to a timeout error. 
     errors["NS_ERROR_NET_TIMEOUT"] = FAILURE(14)
     # The requested action could not be completed while the networking library
     # is in the offline state.
@@ -339,7 +339,7 @@ with modules["NETWORK"]:
     # This request is not resumable, but it was tried to resume it, or to
     # request resume-specific data.
     errors["NS_ERROR_NOT_RESUMABLE"] = FAILURE(25)
-    # The request failed as a result of a detected redirection loop.
+    # The request failed as a result of a detected redirection loop. 
     errors["NS_ERROR_REDIRECT_LOOP"] = FAILURE(31)
     # It was attempted to resume the request, but the entity has changed in the
     # meantime.
@@ -474,8 +474,6 @@ with modules["PLUGINS"]:
 with modules["LAYOUT"]:
     # Return code for nsITableLayout
     errors["NS_TABLELAYOUT_CELL_NOT_FOUND"] = SUCCESS(0)
-    # Return code for SheetLoadData::VerifySheetReadyToParse
-    errors["NS_OK_PARSE_SHEET"] = SUCCESS(1)
     # Return code for nsFrame::GetNextPrevLineFromeBlockFrame
     errors["NS_POSITION_BEFORE_TABLE"] = SUCCESS(3)
     # Return codes for nsPresState::GetProperty()
@@ -547,7 +545,6 @@ with modules["UCONV"]:
     errors["NS_ERROR_UCONV_NOCONV"] = FAILURE(1)
     errors["NS_ERROR_UDEC_ILLEGALINPUT"] = FAILURE(14)
 
-    errors["NS_OK_HAD_REPLACEMENTS"] = SUCCESS(3)
     errors["NS_SUCCESS_USING_FALLBACK_LOCALE"] = SUCCESS(2)
     errors["NS_OK_UDEC_EXACTLENGTH"] = SUCCESS(11)
     errors["NS_OK_UDEC_MOREINPUT"] = SUCCESS(12)

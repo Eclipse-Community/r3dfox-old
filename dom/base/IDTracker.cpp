@@ -6,7 +6,6 @@
 
 #include "IDTracker.h"
 
-#include "mozilla/Encoding.h"
 #include "nsContentUtils.h"
 #include "nsIURI.h"
 #include "nsBindingManager.h"
@@ -33,22 +32,23 @@ IDTracker::Reset(nsIContent* aFromContent, nsIURI* aURI,
   nsAutoCString refPart;
   aURI->GetRef(refPart);
   // Unescape %-escapes in the reference. The result will be in the
-  // document charset, hopefully...
+  // origin charset of the URL, hopefully...
   NS_UnescapeURL(refPart);
 
-  // Get the current document
-  nsIDocument *doc = aFromContent->OwnerDoc();
-  if (!doc) {
-    return;
-  }
-
-  auto encoding = doc->GetDocumentCharacterSet();
+  nsAutoCString charset;
+  aURI->GetOriginCharset(charset);
   nsAutoString ref;
-  nsresult rv = encoding->DecodeWithoutBOMHandling(refPart, ref);
+  nsresult rv = nsContentUtils::ConvertStringFromEncoding(charset,
+                                                          refPart,
+                                                          ref);
   if (NS_FAILED(rv) || ref.IsEmpty()) {
     return;
   }
-  rv = NS_OK;
+
+  // Get the current document
+  nsIDocument *doc = aFromContent->OwnerDoc();
+  if (!doc)
+    return;
 
   nsIContent* bindingParent = aFromContent->GetBindingParent();
   if (bindingParent) {

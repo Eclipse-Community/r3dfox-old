@@ -757,7 +757,7 @@ nsHtml5TreeOpExecutor::Start()
 }
 
 void
-nsHtml5TreeOpExecutor::NeedsCharsetSwitchTo(NotNull<const Encoding*> aEncoding,
+nsHtml5TreeOpExecutor::NeedsCharsetSwitchTo(const char* aEncoding,
                                             int32_t aSource,
                                             uint32_t aLineNumber)
 {
@@ -774,9 +774,7 @@ nsHtml5TreeOpExecutor::NeedsCharsetSwitchTo(NotNull<const Encoding*> aEncoding,
 
   // ask the webshellservice to load the URL
   if (NS_SUCCEEDED(wss->StopDocumentLoad())) {
-    nsAutoCString charset;
-    aEncoding->Name(charset);
-    wss->ReloadDocument(charset.get(), aSource);
+    wss->ReloadDocument(aEncoding, aSource);
   }
   // if the charset switch was accepted, wss has called Terminate() on the
   // parser by now
@@ -967,9 +965,9 @@ nsHtml5TreeOpExecutor::ConvertIfNotPreloadedYet(const nsAString& aURL)
   }
 
   nsIURI* base = BaseURIForPreload();
-  auto encoding = mDocument->GetDocumentCharacterSet();
+  const nsCString& charset = mDocument->GetDocumentCharacterSet();
   nsCOMPtr<nsIURI> uri;
-  nsresult rv = NS_NewURI(getter_AddRefs(uri), aURL, encoding, base);
+  nsresult rv = NS_NewURI(getter_AddRefs(uri), aURL, charset.get(), base);
   if (NS_FAILED(rv)) {
     NS_WARNING("Failed to create a URI");
     return nullptr;
@@ -1029,10 +1027,7 @@ nsHtml5TreeOpExecutor::PreloadStyle(const nsAString& aURL,
     referrerPolicy = styleReferrerPolicy;
   }
 
-  mDocument->PreloadStyle(uri,
-                          Encoding::ForLabel(aCharset),
-                          aCrossOrigin,
-                          referrerPolicy,
+  mDocument->PreloadStyle(uri, aCharset, aCrossOrigin, referrerPolicy,
                           aIntegrity);
 }
 
@@ -1086,9 +1081,9 @@ nsHtml5TreeOpExecutor::PreloadEndPicture()
 void
 nsHtml5TreeOpExecutor::AddBase(const nsAString& aURL)
 {
-  auto encoding = mDocument->GetDocumentCharacterSet();
+  const nsCString& charset = mDocument->GetDocumentCharacterSet();
   nsresult rv = NS_NewURI(getter_AddRefs(mViewSourceBaseURI), aURL,
-                          encoding, GetViewSourceBaseURI());
+                                     charset.get(), GetViewSourceBaseURI());
   if (NS_FAILED(rv)) {
     mViewSourceBaseURI = nullptr;
   }
@@ -1100,9 +1095,9 @@ nsHtml5TreeOpExecutor::SetSpeculationBase(const nsAString& aURL)
     // the first one wins
     return;
   }
-  auto encoding = mDocument->GetDocumentCharacterSet();
+  const nsCString& charset = mDocument->GetDocumentCharacterSet();
   DebugOnly<nsresult> rv = NS_NewURI(getter_AddRefs(mSpeculationBaseURI), aURL,
-                                     encoding, mDocument->GetDocumentURI());
+                                     charset.get(), mDocument->GetDocumentURI());
   NS_WARNING_ASSERTION(NS_SUCCEEDED(rv), "Failed to create a URI");
 }
 

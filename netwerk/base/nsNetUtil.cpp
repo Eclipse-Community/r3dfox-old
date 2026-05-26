@@ -7,15 +7,13 @@
 // HttpLog.h should generally be included first
 #include "HttpLog.h"
 
-#include "nsNetUtil.h"
-
-#include "mozilla/Encoding.h"
 #include "mozilla/LoadContext.h"
 #include "mozilla/LoadInfo.h"
 #include "mozilla/BasePrincipal.h"
 #include "mozilla/Monitor.h"
 #include "mozilla/TaskQueue.h"
 #include "mozilla/Telemetry.h"
+#include "nsNetUtil.h"
 #include "nsCategoryCache.h"
 #include "nsContentUtils.h"
 #include "nsHashKeys.h"
@@ -1788,34 +1786,12 @@ NS_NewURI(nsIURI **result,
 
 nsresult
 NS_NewURI(nsIURI **result,
-          const nsACString &spec,
-          NotNull<const Encoding*> encoding,
-          nsIURI *baseURI /* = nullptr */,
-          nsIIOService *ioService /* = nullptr */)     // pass in nsIIOService to optimize callers
-{
-    nsAutoCString charset;
-    encoding->Name(charset);
-    return NS_NewURI(result, spec, charset.get(), baseURI, ioService);
-}
-
-nsresult
-NS_NewURI(nsIURI **result,
           const nsAString &spec,
           const char *charset /* = nullptr */,
           nsIURI *baseURI /* = nullptr */,
           nsIIOService *ioService /* = nullptr */)     // pass in nsIIOService to optimize callers
 {
     return NS_NewURI(result, NS_ConvertUTF16toUTF8(spec), charset, baseURI, ioService);
-}
-
-nsresult
-NS_NewURI(nsIURI **result,
-          const nsAString &spec,
-          NotNull<const Encoding*> encoding,
-          nsIURI *baseURI /* = nullptr */,
-          nsIIOService *ioService /* = nullptr */)     // pass in nsIIOService to optimize callers
-{
-    return NS_NewURI(result, NS_ConvertUTF16toUTF8(spec), encoding, baseURI, ioService);
 }
 
 nsresult
@@ -2665,8 +2641,16 @@ NS_GetContentDispositionFromHeader(const nsACString &aHeader,
   if (NS_FAILED(rv))
     return nsIChannel::DISPOSITION_ATTACHMENT;
 
+  nsAutoCString fallbackCharset;
+  if (aChan) {
+    nsCOMPtr<nsIURI> uri;
+    aChan->GetURI(getter_AddRefs(uri));
+    if (uri)
+      uri->GetOriginCharset(fallbackCharset);
+  }
+
   nsAutoString dispToken;
-  rv = mimehdrpar->GetParameterHTTP(aHeader, "", EmptyCString(), true, nullptr,
+  rv = mimehdrpar->GetParameterHTTP(aHeader, "", fallbackCharset, true, nullptr,
                                     dispToken);
 
   if (NS_FAILED(rv)) {
@@ -2692,9 +2676,14 @@ NS_GetFilenameFromDisposition(nsAString &aFilename,
   if (NS_FAILED(rv))
     return rv;
 
+  nsCOMPtr<nsIURL> url = do_QueryInterface(aURI);
+
+  nsAutoCString fallbackCharset;
+  if (url)
+    url->GetOriginCharset(fallbackCharset);
   // Get the value of 'filename' parameter
   rv = mimehdrpar->GetParameterHTTP(aDisposition, "filename",
-                                    EmptyCString(), true, nullptr,
+                                    fallbackCharset, true, nullptr,
                                     aFilename);
 
   if (NS_FAILED(rv)) {

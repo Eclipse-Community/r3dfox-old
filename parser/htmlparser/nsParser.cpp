@@ -34,14 +34,16 @@
 #include "mozilla/CondVar.h"
 #include "mozilla/Mutex.h"
 #include "nsCharsetSource.h"
+#include "nsContentUtils.h"
 #include "nsThreadUtils.h"
 #include "nsIHTMLContentSink.h"
 
-#include "mozilla/BinarySearch.h"
+#include "mozilla/dom/EncodingUtils.h"
 #include "mozilla/dom/ScriptLoader.h"
-#include "mozilla/Encoding.h"
+#include "mozilla/BinarySearch.h"
 
 using namespace mozilla;
+using mozilla::dom::EncodingUtils;
 
 #define NS_PARSER_FLAG_OBSERVERS_ENABLED      0x00000004
 #define NS_PARSER_FLAG_PENDING_CONTINUE_EVENT 0x00000008
@@ -127,7 +129,6 @@ public:
  *  default constructor
  */
 nsParser::nsParser()
-  : mCharset(WINDOWS_1252_ENCODING)
 {
   Initialize(true);
 }
@@ -152,7 +153,7 @@ nsParser::Initialize(bool aConstructor)
 
   mContinueEvent = nullptr;
   mCharsetSource = kCharsetUninitialized;
-  mCharset = WINDOWS_1252_ENCODING;
+  mCharset.AssignLiteral("windows-1252");
   mInternalState = NS_OK;
   mStreamStatus = NS_OK;
   mCommand = eViewNormal;
@@ -285,9 +286,8 @@ nsParser::SetCommand(eParserCommands aParserCommand)
  *  @param   aCharset- the charset of a document
  *  @param   aCharsetSource- the source of the charset
  */
-void
-nsParser::SetDocumentCharset(NotNull<const Encoding*> aCharset,
-                             int32_t aCharsetSource)
+NS_IMETHODIMP_(void)
+nsParser::SetDocumentCharset(const nsACString& aCharset, int32_t aCharsetSource)
 {
   mCharset = aCharset;
   mCharsetSource = aCharsetSource;
@@ -297,7 +297,7 @@ nsParser::SetDocumentCharset(NotNull<const Encoding*> aCharset,
 }
 
 void
-nsParser::SetSinkCharset(NotNull<const Encoding*> aCharset)
+nsParser::SetSinkCharset(nsACString& aCharset)
 {
   if (mSink) {
     mSink->SetDocumentCharset(aCharset);
@@ -1334,27 +1334,23 @@ ParserWriteFunc(nsIInputStream* in,
   if (pws->mNeedCharsetCheck) {
     pws->mNeedCharsetCheck = false;
     int32_t source;
-    auto preferred = pws->mParser->GetDocumentCharset(source);
+    nsAutoCString preferred;
+    nsAutoCString maybePrefer;
+    pws->mParser->GetDocumentCharset(preferred, source);
 
     // This code was bogus when I found it. It expects the BOM or the XML
     // declaration to be entirely in the first network buffer. -- hsivonen
-    const Encoding* encoding;
-    size_t bomLength;
-    Tie(encoding, bomLength) = Encoding::ForBOM(MakeSpan(buf, count));
-    Unused << bomLength;
-    if (encoding) {
+    if (nsContentUtils::CheckForBOM(buf, count, maybePrefer)) {
       // The decoder will swallow the BOM. The UTF-16 will re-sniff for
-      // endianness. The value of preferred is now "UTF-8", "UTF-16LE"
-      // or "UTF-16BE".
-      preferred = WrapNotNull(encoding);
+      // endianness. The value of preferred is now either "UTF-8" or "UTF-16".
+      preferred.Assign(maybePrefer);
       source = kCharsetFromByteOrderMark;
     } else if (source < kCharsetFromChannel) {
       nsAutoCString declCharset;
 
       if (ExtractCharsetFromXmlDeclaration(buf, count, declCharset)) {
-        encoding = Encoding::ForLabel(declCharset);
-        if (encoding) {
-          preferred = WrapNotNull(encoding);
+        if (EncodingUtils::FindEncodingForLabel(declCharset, maybePrefer)) {
+          preferred.Assign(maybePrefer);
           source = kCharsetFromMetaTag;
         }
       }

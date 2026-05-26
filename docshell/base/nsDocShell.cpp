@@ -220,9 +220,9 @@
 #include "nsIURL.h"
 #include "nsIWebBrowserFind.h"
 #include "nsIWidget.h"
+#include "mozilla/dom/EncodingUtils.h"
 #include "mozilla/dom/PerformanceNavigation.h"
 #include "mozilla/dom/ScriptSettings.h"
-#include "mozilla/Encoding.h"
 #include "nsJSEnvironment.h"
 #include "IUrlClassifierUITelemetry.h"
 
@@ -381,15 +381,14 @@ ForEachPing(nsIContent* aContent, ForEachPingCallback aCallback, void* aClosure)
   }
 
   nsIDocument* doc = aContent->OwnerDoc();
-  nsAutoCString charset;
-  doc->GetDocumentCharacterSet()->Name(charset);
 
   nsWhitespaceTokenizer tokenizer(value);
 
   while (tokenizer.hasMoreTokens()) {
     nsCOMPtr<nsIURI> uri, baseURI = aContent->GetBaseURI();
     ios->NewURI(NS_ConvertUTF16toUTF8(tokenizer.nextToken()),
-                charset.get(), baseURI, getter_AddRefs(uri));
+                doc->GetDocumentCharacterSet().get(),
+                baseURI, getter_AddRefs(uri));
     // if we can't generate a valid URI, then there is nothing to do
     if (!uri) {
       continue;
@@ -836,8 +835,6 @@ nsDocShell::nsDocShell()
   , mFrameType(FRAME_TYPE_REGULAR)
   , mPrivateBrowsingId(0)
   , mDisplayMode(nsIDocShell::DISPLAY_MODE_BROWSER)
-  , mForcedCharset(nullptr)
-  , mParentCharset(nullptr)
   , mParentCharsetSource(0)
   , mJSRunToCompletionDepth(0)
   , mTouchEventsOverride(nsIDocShell::TOUCHEVENTS_OVERRIDE_NONE)
@@ -2082,7 +2079,7 @@ nsDocShell::GetCharset(nsACString& aCharset)
   NS_ENSURE_TRUE(presShell, NS_ERROR_FAILURE);
   nsIDocument* doc = presShell->GetDocument();
   NS_ENSURE_TRUE(doc, NS_ERROR_FAILURE);
-  doc->GetDocumentCharacterSet()->Name(aCharset);
+  aCharset = doc->GetDocumentCharacterSet();
   return NS_OK;
 }
 
@@ -2168,15 +2165,15 @@ NS_IMETHODIMP
 nsDocShell::SetForcedCharset(const nsACString& aCharset)
 {
   if (aCharset.IsEmpty()) {
-    mForcedCharset = nullptr;
+    mForcedCharset.Truncate();
     return NS_OK;
   }
-  const Encoding* encoding = Encoding::ForLabel(aCharset);
-  if (!encoding) {
+  nsAutoCString encoding;
+  if (!EncodingUtils::FindEncodingForLabel(aCharset, encoding)) {
     // Reject unknown labels
     return NS_ERROR_INVALID_ARG;
   }
-  if (!encoding->IsAsciiCompatible() && encoding != ISO_2022_JP_ENCODING) {
+  if (!EncodingUtils::IsAsciiCompatible(encoding)) {
     // Reject XSS hazards
     return NS_ERROR_INVALID_ARG;
   }
@@ -2187,16 +2184,12 @@ nsDocShell::SetForcedCharset(const nsACString& aCharset)
 NS_IMETHODIMP
 nsDocShell::GetForcedCharset(nsACString& aResult)
 {
-  if (mForcedCharset) {
-    mForcedCharset->Name(aResult);
-  } else {
-    aResult.Truncate();
-  }
+  aResult = mForcedCharset;
   return NS_OK;
 }
 
 void
-nsDocShell::SetParentCharset(const Encoding*& aCharset,
+nsDocShell::SetParentCharset(const nsACString& aCharset,
                              int32_t aCharsetSource,
                              nsIPrincipal* aPrincipal)
 {
@@ -2206,7 +2199,7 @@ nsDocShell::SetParentCharset(const Encoding*& aCharset,
 }
 
 void
-nsDocShell::GetParentCharset(const Encoding*& aCharset,
+nsDocShell::GetParentCharset(nsACString& aCharset,
                              int32_t* aCharsetSource,
                              nsIPrincipal** aPrincipal)
 {
@@ -4269,7 +4262,7 @@ nsDocShell::AddChild(nsIDocShellTreeItem* aChild)
     // the actual source charset, which is what we're trying to
     // expose here.
 
-    const Encoding* parentCS = doc->GetDocumentCharacterSet();
+    const nsACString& parentCS = doc->GetDocumentCharacterSet();
     int32_t charsetSource = doc->GetDocumentCharacterSetSource();
     // set the child's parentCharset
     childAsDocShell->SetParentCharset(parentCS,
@@ -5350,10 +5343,13 @@ nsDocShell::DisplayLoadError(nsresult aError, nsIURI* aURI,
         aURI->GetSpec(spec);
       }
 
+      nsAutoCString charset;
+      // unescape and convert from origin charset
+      aURI->GetOriginCharset(charset);
       nsCOMPtr<nsITextToSubURI> textToSubURI(
         do_GetService(NS_ITEXTTOSUBURI_CONTRACTID, &rv));
       if (NS_SUCCEEDED(rv)) {
-        rv = textToSubURI->UnEscapeURIForUI(NS_LITERAL_CSTRING("UTF-8"), spec,
+        rv = textToSubURI->UnEscapeURIForUI(charset, spec,
                                             formatStrs[formatStrCount]);
       }
     } else {
@@ -5446,8 +5442,11 @@ nsDocShell::LoadErrorPage(nsIURI* aURI, const char16_t* aURL,
   }
 
   nsAutoCString url;
+  nsAutoCString charset;
   if (aURI) {
     nsresult rv = aURI->GetSpec(url);
+    NS_ENSURE_SUCCESS(rv, rv);
+    rv = aURI->GetOriginCharset(charset);
     NS_ENSURE_SUCCESS(rv, rv);
   } else if (aURL) {
     CopyUTF16toUTF8(aURL, url);
@@ -5463,9 +5462,10 @@ nsDocShell::LoadErrorPage(nsIURI* aURI, const char16_t* aURL,
     return NS_ERROR_OUT_OF_MEMORY;                                             \
   }
 
-  nsCString escapedUrl, escapedError, escapedDescription,
+  nsCString escapedUrl, escapedCharset, escapedError, escapedDescription,
     escapedCSSClass;
   SAFE_ESCAPE(escapedUrl, url, url_Path);
+  SAFE_ESCAPE(escapedCharset, charset, url_Path);
   SAFE_ESCAPE(escapedError, nsDependentCString(aErrorType), url_Path);
   SAFE_ESCAPE(escapedDescription,
               NS_ConvertUTF16toUTF8(aDescription), url_Path);
@@ -5488,7 +5488,8 @@ nsDocShell::LoadErrorPage(nsIURI* aURI, const char16_t* aURL,
     errorPageUrl.AppendLiteral("&s=");
     errorPageUrl.AppendASCII(escapedCSSClass.get());
   }
-  errorPageUrl.AppendLiteral("&c=UTF-8");
+  errorPageUrl.AppendLiteral("&c=");
+  errorPageUrl.AppendASCII(escapedCharset.get());
 
   nsAutoCString frameType(FrameTypeToString(mFrameType));
   errorPageUrl.AppendLiteral("&f=");
@@ -9478,8 +9479,8 @@ nsDocShell::SetupNewViewer(nsIContentViewer* aNewViewer)
                     NS_ERROR_FAILURE);
   nsCOMPtr<nsIDocShell> parent(do_QueryInterface(parentAsItem));
 
-  const Encoding* forceCharset = nullptr;
-  const Encoding* hintCharset = nullptr;
+  nsAutoCString forceCharset;
+  nsAutoCString hintCharset;
   int32_t hintCharsetSource;
   int32_t minFontSize;
   float textZoom;
@@ -9514,8 +9515,10 @@ nsDocShell::SetupNewViewer(nsIContentViewer* aNewViewer)
     if (oldCv) {
       newCv = aNewViewer;
       if (newCv) {
-        forceCharset = oldCv->GetForceCharset();
-        hintCharset = oldCv->GetHintCharset();
+        NS_ENSURE_SUCCESS(oldCv->GetForceCharacterSet(forceCharset),
+                          NS_ERROR_FAILURE);
+        NS_ENSURE_SUCCESS(oldCv->GetHintCharacterSet(hintCharset),
+                          NS_ERROR_FAILURE);
         NS_ENSURE_SUCCESS(oldCv->GetHintCharacterSetSource(&hintCharsetSource),
                           NS_ERROR_FAILURE);
         NS_ENSURE_SUCCESS(oldCv->GetMinFontSize(&minFontSize),
@@ -9582,8 +9585,10 @@ nsDocShell::SetupNewViewer(nsIContentViewer* aNewViewer)
   // If we have old state to copy, set the old state onto the new content
   // viewer
   if (newCv) {
-    newCv->SetForceCharset(forceCharset);
-    newCv->SetHintCharset(hintCharset);
+    NS_ENSURE_SUCCESS(newCv->SetForceCharacterSet(forceCharset),
+                      NS_ERROR_FAILURE);
+    NS_ENSURE_SUCCESS(newCv->SetHintCharacterSet(hintCharset),
+                      NS_ERROR_FAILURE);
     NS_ENSURE_SUCCESS(newCv->SetHintCharacterSetSource(hintCharsetSource),
                       NS_ERROR_FAILURE);
     NS_ENSURE_SUCCESS(newCv->SetMinFontSize(minFontSize),
@@ -11818,8 +11823,7 @@ nsDocShell::ScrollToAnchor(bool aCurHasRef, bool aNewHasRef,
       NS_ENSURE_TRUE(mContentViewer, NS_ERROR_FAILURE);
       nsIDocument* doc = mContentViewer->GetDocument();
       NS_ENSURE_TRUE(doc, NS_ERROR_FAILURE);
-      nsAutoCString charset;
-      doc->GetDocumentCharacterSet()->Name(charset);
+      const nsACString& aCharset = doc->GetDocumentCharacterSet();
 
       nsCOMPtr<nsITextToSubURI> textToSubURI =
         do_GetService(NS_ITEXTTOSUBURI_CONTRACTID, &rv);
@@ -11828,7 +11832,9 @@ nsDocShell::ScrollToAnchor(bool aCurHasRef, bool aNewHasRef,
       // Unescape and convert to unicode
       nsAutoString uStr;
 
-      rv = textToSubURI->UnEscapeAndConvert(charset, aNewHash, uStr);
+      rv = textToSubURI->UnEscapeAndConvert(PromiseFlatCString(aCharset).get(),
+                                            PromiseFlatCString(aNewHash).get(),
+                                            getter_Copies(uStr));
       NS_ENSURE_SUCCESS(rv, rv);
 
       // Ignore return value of GoToAnchor, since it will return an error
@@ -12287,8 +12293,11 @@ nsDocShell::AddState(JS::Handle<JS::Value> aData, const nsAString& aTitle,
     nsAutoCString spec;
     docBaseURI->GetSpec(spec);
 
-    rv = NS_NewURI(getter_AddRefs(newURI), aURL,
-                   document->GetDocumentCharacterSet(), docBaseURI);
+    nsAutoCString charset;
+    rv = docBaseURI->GetOriginCharset(charset);
+    NS_ENSURE_SUCCESS(rv, NS_ERROR_FAILURE);
+
+    rv = NS_NewURI(getter_AddRefs(newURI), aURL, charset.get(), docBaseURI);
 
     // 2b: If 2a fails, raise a SECURITY_ERR
     if (NS_FAILED(rv)) {

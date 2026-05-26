@@ -8,7 +8,6 @@
 
 #include "mozilla/ArrayUtils.h"
 #include "mozilla/DebugOnly.h"
-#include "mozilla/Encoding.h"
 #include "mozilla/EventDispatcher.h"
 #include "mozilla/EventStateManager.h"
 
@@ -127,7 +126,7 @@ class CharSetChangingRunnable : public Runnable
 {
 public:
   CharSetChangingRunnable(nsPresContext* aPresContext,
-                          NotNull<const Encoding*> aCharSet)
+                          const nsCString& aCharSet)
     : Runnable("CharSetChangingRunnable"),
       mPresContext(aPresContext),
       mCharSet(aCharSet)
@@ -142,7 +141,7 @@ public:
 
 private:
   RefPtr<nsPresContext> mPresContext;
-  NotNull<const Encoding*> mCharSet;
+  nsCString mCharSet;
 };
 
 } // namespace
@@ -215,9 +214,15 @@ nsPresContext::PrefChangedUpdateTimerCallback(nsITimer *aTimer, void *aClosure)
 }
 
 static bool
-IsVisualCharset(NotNull<const Encoding*> aCharset)
+IsVisualCharset(const nsCString& aCharset)
 {
-  return aCharset == ISO_8859_8_ENCODING;
+  if (aCharset.LowerCaseEqualsLiteral("ibm862")             // Hebrew
+      || aCharset.LowerCaseEqualsLiteral("iso-8859-8") ) {  // Hebrew
+    return true; // visual text type
+  }
+  else {
+    return false; // logical text type
+  }
 }
 
 nsPresContext::nsPresContext(nsIDocument* aDocument, nsPresContextType aType)
@@ -420,6 +425,7 @@ nsPresContext::~nsPresContext()
 
 NS_INTERFACE_MAP_BEGIN_CYCLE_COLLECTION(nsPresContext)
    NS_INTERFACE_MAP_ENTRY(nsISupports)
+   NS_INTERFACE_MAP_ENTRY(nsIObserver)
 NS_INTERFACE_MAP_END
 
 NS_IMPL_CYCLE_COLLECTING_ADDREF(nsPresContext)
@@ -1037,6 +1043,7 @@ nsPresContext::AttachShell(nsIPresShell* aShell, StyleBackendType aBackendType)
         mImageAnimationMode = imgIContainer::kNormalAnimMode;
     }
 
+    doc->AddCharSetObserver(this);
     UpdateCharSet(doc->GetDocumentCharacterSet());
   }
 }
@@ -1044,6 +1051,13 @@ nsPresContext::AttachShell(nsIPresShell* aShell, StyleBackendType aBackendType)
 void
 nsPresContext::DetachShell()
 {
+  // Remove ourselves as the charset observer from the shell's doc, because
+  // this shell may be going away for good.
+  nsIDocument *doc = mShell ? mShell->GetDocument() : nullptr;
+  if (doc) {
+    doc->RemoveCharSetObserver(this);
+  }
+
   // The counter style manager's destructor needs to deallocate with the
   // presshell arena. Disconnect it before nulling out the shell.
   //
@@ -1091,7 +1105,7 @@ nsPresContext::DetachShell()
 }
 
 void
-nsPresContext::DoChangeCharSet(NotNull<const Encoding*> aCharSet)
+nsPresContext::DoChangeCharSet(const nsCString& aCharSet)
 {
   UpdateCharSet(aCharSet);
   mDeviceContext->FlushFontCache();
@@ -1104,7 +1118,7 @@ nsPresContext::DoChangeCharSet(NotNull<const Encoding*> aCharSet)
 }
 
 void
-nsPresContext::UpdateCharSet(NotNull<const Encoding*> aCharSet)
+nsPresContext::UpdateCharSet(const nsCString& aCharSet)
 {
   mLanguage = mLangService->LookupCharSet(aCharSet);
   // this will be a language group (or script) code rather than a true language code
@@ -1132,12 +1146,20 @@ nsPresContext::UpdateCharSet(NotNull<const Encoding*> aCharSet)
   }
 }
 
-void
-nsPresContext::DispatchCharSetChange(NotNull<const Encoding*> aEncoding)
+NS_IMETHODIMP
+nsPresContext::Observe(nsISupports* aSubject,
+                        const char* aTopic,
+                        const char16_t* aData)
 {
-  RefPtr<CharSetChangingRunnable> runnable =
-    new CharSetChangingRunnable(this, aEncoding);
-  Document()->Dispatch(TaskCategory::Other, runnable.forget());
+  if (!nsCRT::strcmp(aTopic, "charset")) {
+    RefPtr<CharSetChangingRunnable> runnable =
+      new CharSetChangingRunnable(this, NS_LossyConvertUTF16toASCII(aData));
+    return Document()->Dispatch(TaskCategory::Other,
+                                runnable.forget());
+  }
+
+  NS_WARNING("unrecognized topic in nsPresContext::Observe");
+  return NS_ERROR_FAILURE;
 }
 
 nsPresContext*

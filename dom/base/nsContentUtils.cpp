@@ -55,6 +55,7 @@
 #include "mozilla/dom/Promise.h"
 #include "mozilla/dom/ScriptSettings.h"
 #include "mozilla/dom/TabParent.h"
+#include "mozilla/dom/TextDecoder.h"
 #include "mozilla/dom/TouchEvent.h"
 #include "mozilla/dom/ShadowRoot.h"
 #include "mozilla/dom/XULCommandEvent.h"
@@ -225,7 +226,6 @@
 #include "nsIWebNavigationInfo.h"
 #include "nsPluginHost.h"
 #include "mozilla/HangAnnotations.h"
-#include "mozilla/Encoding.h"
 
 #include "nsIBidiKeyboard.h"
 
@@ -3273,12 +3273,9 @@ nsContentUtils::NewURIWithDocumentCharset(nsIURI** aResult,
                                           nsIDocument* aDocument,
                                           nsIURI* aBaseURI)
 {
-  if (aDocument) {
-    return NS_NewURI(aResult, aSpec,
-                     aDocument->GetDocumentCharacterSet(),
-                     aBaseURI, sIOService);
-  }
-  return NS_NewURI(aResult, aSpec, nullptr, aBaseURI, sIOService);
+  return NS_NewURI(aResult, aSpec,
+                   aDocument ? aDocument->GetDocumentCharacterSet().get() : nullptr,
+                   aBaseURI, sIOService);
 }
 
 // static
@@ -4683,6 +4680,62 @@ nsContentUtils::GetSubdocumentWithOuterWindowId(nsIDocument *aDocument,
   }
 
   return nullptr;
+}
+
+// Convert the string from the given encoding to Unicode.
+/* static */
+nsresult
+nsContentUtils::ConvertStringFromEncoding(const nsACString& aEncoding,
+                                          const char* aInput,
+                                          uint32_t aInputLen,
+                                          nsAString& aOutput)
+{
+  CheckedInt32 len = aInputLen;
+  if (!len.isValid()) {
+    return NS_ERROR_OUT_OF_MEMORY;
+  }
+
+  nsAutoCString encoding;
+  if (aEncoding.IsEmpty()) {
+    encoding.AssignLiteral("UTF-8");
+  } else {
+    encoding.Assign(aEncoding);
+  }
+
+  ErrorResult rv;
+  nsAutoPtr<TextDecoder> decoder(new TextDecoder());
+  decoder->InitWithEncoding(encoding, false);
+
+  decoder->Decode(aInput, len.value(), false,
+                  aOutput, rv);
+  return rv.StealNSResult();
+}
+
+/* static */
+bool
+nsContentUtils::CheckForBOM(const unsigned char* aBuffer, uint32_t aLength,
+                            nsACString& aCharset)
+{
+  bool found = true;
+  aCharset.Truncate();
+  if (aLength >= 3 &&
+      aBuffer[0] == 0xEF &&
+      aBuffer[1] == 0xBB &&
+      aBuffer[2] == 0xBF) {
+    aCharset = "UTF-8";
+  }
+  else if (aLength >= 2 &&
+           aBuffer[0] == 0xFE && aBuffer[1] == 0xFF) {
+    aCharset = "UTF-16BE";
+  }
+  else if (aLength >= 2 &&
+           aBuffer[0] == 0xFF && aBuffer[1] == 0xFE) {
+    aCharset = "UTF-16LE";
+  } else {
+    found = false;
+  }
+
+  return found;
 }
 
 /* static */

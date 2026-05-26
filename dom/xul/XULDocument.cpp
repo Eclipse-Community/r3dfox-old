@@ -212,7 +212,7 @@ XULDocument::XULDocument(void)
       mHandlingDelayedBroadcasters(false)
 {
     // Override the default in nsDocument
-    mCharacterSet = UTF_8_ENCODING;
+    mCharacterSet.AssignLiteral("UTF-8");
 
     mDefaultElementType = kNameSpaceID_XUL;
     mType = eXUL;
@@ -2018,7 +2018,7 @@ XULDocument::PrepareToLoadPrototype(nsIURI* aURI, const char* aCommand,
     parser->SetCommand(nsCRT::strcmp(aCommand, "view-source") ? eViewNormal :
                        eViewSource);
 
-    parser->SetDocumentCharset(UTF_8_ENCODING,
+    parser->SetDocumentCharset(NS_LITERAL_CSTRING("UTF-8"),
                                kCharsetFromDocTypeDefault);
     parser->SetContentSink(sink); // grabs a reference to the parser
 
@@ -3731,8 +3731,10 @@ XULDocument::AddPrototypeSheets()
         nsCOMPtr<nsIURI> uri = sheets[i];
 
         RefPtr<StyleSheet> incompleteSheet;
-        rv = CSSLoader()->LoadSheet(
-          uri, mCurrentPrototype->DocumentPrincipal(), this, &incompleteSheet);
+        rv = CSSLoader()->LoadSheet(uri,
+                                    mCurrentPrototype->DocumentPrincipal(),
+                                    EmptyCString(), this,
+                                    &incompleteSheet);
 
         // XXXldb We need to prevent bogus sheets from being held in the
         // prototype's list, but until then, don't propagate the failure

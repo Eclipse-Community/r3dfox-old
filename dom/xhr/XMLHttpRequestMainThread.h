@@ -44,7 +44,6 @@
 #include "mozilla/dom/XMLHttpRequestBinding.h"
 #include "mozilla/dom/XMLHttpRequestEventTarget.h"
 #include "mozilla/dom/XMLHttpRequestString.h"
-#include "mozilla/Encoding.h"
 
 #ifdef Status
 /* Xlib headers insist on this for some reason... Nuke it because
@@ -54,6 +53,7 @@
 
 class nsIJARChannel;
 class nsILoadGroup;
+class nsIUnicodeDecoder;
 class nsIJSID;
 
 namespace mozilla {
@@ -657,9 +657,9 @@ protected:
   // carries the state to remember this. Next time we receive more data we
   // simply feed the new data into the decoder which will handle the second
   // part of the surrogate.
-  mozilla::UniquePtr<mozilla::Decoder> mDecoder;
+  nsCOMPtr<nsIUnicodeDecoder> mDecoder;
 
-  const Encoding* mResponseCharset;
+  nsCString mResponseCharset;
 
   void MatchCharsetAndDecoderToResponseDocument();
 

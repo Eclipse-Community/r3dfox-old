@@ -41,8 +41,8 @@
 #include "mozilla/a11y/DocAccessible.h"
 #endif
 #include "mozilla/BasicEvents.h"
-#include "mozilla/Encoding.h"
 #include "mozilla/Preferences.h"
+#include "mozilla/dom/EncodingUtils.h"
 #include "mozilla/WeakPtr.h"
 #include "mozilla/StyleSheet.h"
 #include "mozilla/StyleSheetInlines.h"
@@ -390,9 +390,9 @@ protected:
 
   /* character set member data */
   int32_t mHintCharsetSource;
-  const Encoding* mHintCharset;
-  const Encoding* mForceCharacterSet;
-
+  nsCString mHintCharset;
+  nsCString mForceCharacterSet;
+  
   bool mIsPageMode;
   bool mInitializedForPrintPreview;
   bool mHidden;
@@ -520,8 +520,6 @@ nsDocumentViewer::nsDocumentViewer()
 #endif // NS_PRINT_PREVIEW
 #endif // NS_PRINTING
     mHintCharsetSource(kCharsetUninitialized),
-    mHintCharset(nullptr),
-    mForceCharacterSet(nullptr),
     mIsPageMode(false),
     mInitializedForPrintPreview(false),
     mHidden(false)
@@ -3327,74 +3325,51 @@ nsDocumentViewer::StopEmulatingMedium()
 
 NS_IMETHODIMP nsDocumentViewer::GetForceCharacterSet(nsACString& aForceCharacterSet)
 {
-  auto encoding = nsDocumentViewer::GetForceCharset();
-  if (encoding) {
-    encoding->Name(aForceCharacterSet);
-  } else {
-    aForceCharacterSet.Truncate();
-  }
+  aForceCharacterSet = mForceCharacterSet;
   return NS_OK;
-}
-
-/* [noscript,notxpcom] Encoding getForceCharset (); */
-NS_IMETHODIMP_(const Encoding *)
-nsDocumentViewer::GetForceCharset()
-{
-  return mForceCharacterSet;
 }
 
 static void
 SetChildForceCharacterSet(nsIContentViewer* aChild, void* aClosure)
 {
-  auto encoding = static_cast<const Encoding*>(aClosure);
-  aChild->SetForceCharset(encoding);
+  const nsACString* charset = static_cast<nsACString*>(aClosure);
+  aChild->SetForceCharacterSet(*charset);
 }
 
 NS_IMETHODIMP
 nsDocumentViewer::SetForceCharacterSet(const nsACString& aForceCharacterSet)
 {
-  // The empty string means no hint.
-  const Encoding* encoding = nullptr;
+  // This method is scriptable, so add-ons could pass in something other
+  // than a canonical name. However, in case where the input is a canonical
+  // name, "replacement" doesn't survive label resolution. Additionally, the
+  // empty string means no hint.
+  nsAutoCString encoding;
   if (!aForceCharacterSet.IsEmpty()) {
-    if (!(encoding = Encoding::ForLabel(aForceCharacterSet))) {
+    if (aForceCharacterSet.EqualsLiteral("replacement")) {
+      encoding.AssignLiteral("replacement");
+    } else if (!EncodingUtils::FindEncodingForLabel(aForceCharacterSet,
+                                                    encoding)) {
       // Reject unknown labels
       return NS_ERROR_INVALID_ARG;
     }
   }
-  nsDocumentViewer::SetForceCharset(encoding);
-  return NS_OK;
-}
-
-/* [noscript,notxpcom] void setForceCharset (in Encoding aEncoding); */
-NS_IMETHODIMP_(void)
-nsDocumentViewer::SetForceCharset(const Encoding *aEncoding)
-{
-  mForceCharacterSet = aEncoding;
+  mForceCharacterSet = encoding;
   // now set the force char set on all children of mContainer
-  CallChildren(SetChildForceCharacterSet, (void*) aEncoding);
+  CallChildren(SetChildForceCharacterSet, (void*) &aForceCharacterSet);
+  return NS_OK;
 }
 
 NS_IMETHODIMP nsDocumentViewer::GetHintCharacterSet(nsACString& aHintCharacterSet)
 {
-  auto encoding = nsDocumentViewer::GetHintCharset();
-  if (encoding) {
-    encoding->Name(aHintCharacterSet);
-  } else {
+
+  if(kCharsetUninitialized == mHintCharsetSource) {
     aHintCharacterSet.Truncate();
+  } else {
+    aHintCharacterSet = mHintCharset;
+    // this can't possibly be right.  we can't set a value just because somebody got a related value!
+    //mHintCharsetSource = kCharsetUninitialized;
   }
   return NS_OK;
-}
-
-/* [noscript,notxpcom] Encoding getHintCharset (); */
-NS_IMETHODIMP_(const Encoding *)
-nsDocumentViewer::GetHintCharset()
-{
-  if(kCharsetUninitialized == mHintCharsetSource) {
-    return nullptr;
-  }
-  // this can't possibly be right.  we can't set a value just because somebody got a related value!
-  //mHintCharsetSource = kCharsetUninitialized;
-  return mHintCharset;
 }
 
 NS_IMETHODIMP nsDocumentViewer::GetHintCharacterSetSource(int32_t *aHintCharacterSetSource)
@@ -3424,32 +3399,31 @@ nsDocumentViewer::SetHintCharacterSetSource(int32_t aHintCharacterSetSource)
 static void
 SetChildHintCharacterSet(nsIContentViewer* aChild, void* aClosure)
 {
-  auto encoding = static_cast<const Encoding*>(aClosure);
-  aChild->SetHintCharset(encoding);
+  const nsACString* charset = static_cast<nsACString*>(aClosure);
+  aChild->SetHintCharacterSet(*charset);
 }
 
 NS_IMETHODIMP
 nsDocumentViewer::SetHintCharacterSet(const nsACString& aHintCharacterSet)
 {
-  // The empty string means no hint.
-  const Encoding* encoding = nullptr;
+  // This method is scriptable, so add-ons could pass in something other
+  // than a canonical name. However, in case where the input is a canonical
+  // name, "replacement" doesn't survive label resolution. Additionally, the
+  // empty string means no hint.
+  nsAutoCString encoding;
   if (!aHintCharacterSet.IsEmpty()) {
-    if (!(encoding = Encoding::ForLabel(aHintCharacterSet))) {
+    if (aHintCharacterSet.EqualsLiteral("replacement")) {
+      encoding.AssignLiteral("replacement");
+    } else if (!EncodingUtils::FindEncodingForLabel(aHintCharacterSet,
+                                                    encoding)) {
       // Reject unknown labels
       return NS_ERROR_INVALID_ARG;
     }
   }
-  nsDocumentViewer::SetHintCharset(encoding);
-  return NS_OK;
-}
-
-/* [noscript,notxpcom] void setHintCharset (in Encoding aEncoding); */
-NS_IMETHODIMP_(void)
-nsDocumentViewer::SetHintCharset(const Encoding *aEncoding)
-{
-  mHintCharset = aEncoding;
+  mHintCharset = encoding;
   // now set the hint char set on all children of mContainer
-  CallChildren(SetChildHintCharacterSet, (void*) aEncoding);
+  CallChildren(SetChildHintCharacterSet, (void*) &aHintCharacterSet);
+  return NS_OK;
 }
 
 static void

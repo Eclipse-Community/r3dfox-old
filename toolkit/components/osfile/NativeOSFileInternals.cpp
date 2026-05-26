@@ -8,8 +8,6 @@
  * Native implementation of some OS.File operations.
  */
 
-#include "NativeOSFileInternals.h"
-
 #include "nsString.h"
 #include "nsNetCID.h"
 #include "nsThreadUtils.h"
@@ -19,11 +17,13 @@
 #include "nsProxyRelease.h"
 
 #include "nsINativeOSFileInternals.h"
+#include "NativeOSFileInternals.h"
 #include "mozilla/dom/NativeOSFileInternalsBinding.h"
 
-#include "mozilla/Encoding.h"
+#include "nsIUnicodeDecoder.h"
 #include "nsIEventTarget.h"
 
+#include "mozilla/dom/EncodingUtils.h"
 #include "mozilla/DebugOnly.h"
 #include "mozilla/Scoped.h"
 #include "mozilla/HoldDropJSObjects.h"
@@ -843,12 +843,12 @@ protected:
     // Obtain the decoder. We do this before reading to avoid doing
     // any unnecessary I/O in case the name of the encoding is incorrect.
     MOZ_ASSERT(!NS_IsMainThread());
-    const Encoding* encoding = Encoding::ForLabel(mEncoding);
-    if (!encoding) {
+    nsAutoCString encodingName;
+    if (!dom::EncodingUtils::FindEncodingForLabel(mEncoding, encodingName)) {
       Fail(NS_LITERAL_CSTRING("Decode"), mResult.forget(), OS_ERROR_INVAL);
       return NS_ERROR_FAILURE;
     }
-    mDecoder = encoding->NewDecoderWithBOMRemoval();
+    mDecoder = dom::EncodingUtils::DecoderForEncoding(encodingName);
     if (!mDecoder) {
       Fail(NS_LITERAL_CSTRING("DecoderForEncoding"), mResult.forget(), OS_ERROR_INVAL);
       return NS_ERROR_FAILURE;
@@ -861,41 +861,37 @@ protected:
                  ScopedArrayBufferContents& aBuffer) override {
     MOZ_ASSERT(!NS_IsMainThread());
 
-    auto src = MakeSpan(aBuffer.get().data, aBuffer.get().nbytes);
+    int32_t maxChars;
+    const char* sourceChars = reinterpret_cast<const char*>(aBuffer.get().data);
+    int32_t sourceBytes = aBuffer.get().nbytes;
+    if (sourceBytes < 0) {
+      Fail(NS_LITERAL_CSTRING("arithmetics"), mResult.forget(), OS_ERROR_TOO_LARGE);
+      return;
+    }
 
-    CheckedInt<size_t> needed = mDecoder->MaxUTF16BufferLength(src.Length());
-    if (!needed.isValid() ||
-        needed.value() > MaxValue<nsAString::size_type>::value) {
+    nsresult rv = mDecoder->GetMaxLength(sourceChars, sourceBytes, &maxChars);
+    if (NS_FAILED(rv)) {
+      Fail(NS_LITERAL_CSTRING("GetMaxLength"), mResult.forget(), OS_ERROR_INVAL);
+      return;
+    }
+
+    if (maxChars < 0) {
       Fail(NS_LITERAL_CSTRING("arithmetics"), mResult.forget(), OS_ERROR_TOO_LARGE);
       return;
     }
 
     nsString resultString;
-    bool ok = resultString.SetLength(needed.value(), fallible);
-    if (!ok) {
+    resultString.SetLength(maxChars);
+    if (resultString.Length() != (nsString::size_type)maxChars) {
       Fail(NS_LITERAL_CSTRING("allocation"), mResult.forget(), OS_ERROR_TOO_LARGE);
       return;
     }
 
-    // Yoric said on IRC that this method is normally called for the entire file,
-    // but that's not guaranteed. Retaining the bug that EOF in conversion isn't
-    // handled anywhere.
-    uint32_t result;
-    size_t read;
-    size_t written;
-    bool hadErrors;
-    Tie(result, read, written, hadErrors) =
-      mDecoder->DecodeToUTF16(src, resultString, false);
-    MOZ_ASSERT(result == kInputEmpty);
-    MOZ_ASSERT(read == src.Length());
-    MOZ_ASSERT(written <= needed.value());
-    Unused << hadErrors;
-    ok = resultString.SetLength(written, fallible);
-    if (!ok) {
-      Fail(
-        NS_LITERAL_CSTRING("allocation"), mResult.forget(), OS_ERROR_TOO_LARGE);
-      return;
-    }
+
+    rv = mDecoder->Convert(sourceChars, &sourceBytes,
+                           resultString.BeginWriting(), &maxChars);
+    MOZ_ASSERT(NS_SUCCEEDED(rv));
+    resultString.SetLength(maxChars);
 
     mResult->Init(aDispatchDate, TimeStamp::Now() - aDispatchDate, resultString);
     Succeed(mResult.forget());
@@ -903,7 +899,7 @@ protected:
 
  private:
   nsCString mEncoding;
-  mozilla::UniquePtr<mozilla::Decoder> mDecoder;
+  nsCOMPtr<nsIUnicodeDecoder> mDecoder;
   RefPtr<StringResult> mResult;
 };
 

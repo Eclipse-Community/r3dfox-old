@@ -113,7 +113,7 @@ nsXBLResourceLoader::LoadResources(nsIContent* aBoundElement)
       continue;
 
     if (NS_FAILED(NS_NewURI(getter_AddRefs(url), curr->mSrc,
-                            doc->GetDocumentCharacterSet(), docURL)))
+                            doc->GetDocumentCharacterSet().get(), docURL)))
       continue;
 
     if (curr->mType == nsGkAtoms::image) {
@@ -151,7 +151,7 @@ nsXBLResourceLoader::LoadResources(nsIContent* aBoundElement)
       }
       else
       {
-        rv = cssLoader->LoadSheet(url, false, docPrincipal, nullptr, this);
+        rv = cssLoader->LoadSheet(url, false, docPrincipal, EmptyCString(), this);
         if (NS_SUCCEEDED(rv))
           ++mPendingSheets;
       }

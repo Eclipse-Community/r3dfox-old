@@ -39,6 +39,7 @@
 #include "nsAHtml5TreeBuilderState.h"
 #include "nsGkAtoms.h"
 #include "nsHtml5ByteReadable.h"
+#include "nsIUnicodeDecoder.h"
 #include "nsHtml5Macros.h"
 #include "nsIContentHandle.h"
 #include "nsHtml5Portability.h"
@@ -78,7 +79,6 @@ nsHtml5MetaScanner::nsHtml5MetaScanner(nsHtml5TreeBuilder* tb)
   , charset(nullptr)
   , httpEquivState(HTTP_EQUIV_NOT_SEEN)
   , treeBuilder(tb)
-  , mEncoding(nullptr)
 {
   MOZ_COUNT_CTOR(nsHtml5MetaScanner);
 }

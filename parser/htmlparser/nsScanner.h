@@ -22,7 +22,7 @@
 #include "nsCOMPtr.h"
 #include "nsString.h"
 #include "nsIParser.h"
-#include "mozilla/Encoding.h"
+#include "nsIUnicodeDecoder.h"
 #include "nsScannerString.h"
 #include "mozilla/CheckedInt.h"
 
@@ -36,9 +36,7 @@ private:
   void operator=(const nsReadEndCondition& aOther); // No assigning
 };
 
-class nsScanner final {
-      using Encoding = mozilla::Encoding;
-      template <typename T> using NotNull = mozilla::NotNull<T>;
+class nsScanner {
   public:
 
       /**
@@ -144,8 +142,7 @@ class nsScanner final {
        *  @param   aCharsetSource- where the charset info came from
        *  @return  
        */
-      nsresult SetDocumentCharset(NotNull<const Encoding*> aEncoding,
-                                  int32_t aSource);
+      nsresult SetDocumentCharset(const nsACString& aCharset, int32_t aSource);
 
       void BindSubstring(nsScannerSubstring& aSubstring, const nsScannerIterator& aStart, const nsScannerIterator& aEnd);
       void CurrentPosition(nsScannerIterator& aPosition);
@@ -182,9 +179,9 @@ class nsScanner final {
       bool            mIncremental;
       int32_t         mCharsetSource;
       nsCString       mCharset;
-      mozilla::UniquePtr<mozilla::Decoder> mUnicodeDecoder;
+      nsCOMPtr<nsIUnicodeDecoder> mUnicodeDecoder;
 
-    private:
+  private:
       nsScanner &operator =(const nsScanner &); // Not implemented.
 };
 

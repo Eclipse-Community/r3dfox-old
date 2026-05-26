@@ -10,7 +10,6 @@
 #define nsPresContext_h___
 
 #include "mozilla/Attributes.h"
-#include "mozilla/NotNull.h"
 #include "mozilla/UniquePtr.h"
 #include "mozilla/WeakPtr.h"
 #include "nsColor.h"
@@ -22,7 +21,7 @@
 #include "nsFont.h"
 #include "gfxFontConstants.h"
 #include "nsAtom.h"
-#include "nsITimer.h"
+#include "nsIObserver.h"
 #include "nsCRT.h"
 #include "nsIWidgetListener.h"
 #include "nsLanguageAtomService.h"
@@ -74,7 +73,6 @@ class gfxMissingFontRecorder;
 
 namespace mozilla {
 class EffectCompositor;
-class Encoding;
 class EventStateManager;
 class CounterStyleManager;
 class RestyleManager;
@@ -126,16 +124,15 @@ class nsRootPresContext;
 // An interface for presentation contexts. Presentation contexts are
 // objects that provide an outer context for a presentation shell.
 
-class nsPresContext : public nsISupports,
+class nsPresContext : public nsIObserver,
                       public mozilla::SupportsWeakPtr<nsPresContext> {
 public:
-  using Encoding = mozilla::Encoding;
-  template <typename T> using NotNull = mozilla::NotNull<T>;
   typedef mozilla::LangGroupFontPrefs LangGroupFontPrefs;
   typedef mozilla::ScrollbarStyles ScrollbarStyles;
   typedef mozilla::StaticPresData StaticPresData;
 
   NS_DECL_CYCLE_COLLECTING_ISUPPORTS
+  NS_DECL_NSIOBSERVER
   NS_DECL_CYCLE_COLLECTION_CLASS(nsPresContext)
   MOZ_DECLARE_WEAKREFERENCE_TYPENAME(nsPresContext)
 
@@ -173,8 +170,6 @@ public:
   }
 
   nsIPresShell* GetPresShell() const { return mShell; }
-
-  void DispatchCharSetChange(NotNull<const Encoding*> aCharSet);
 
   /**
    * Returns the parent prescontext for this one. Returns null if this is a
@@ -1225,12 +1220,12 @@ protected:
     return StaticPresData::Get()->GetFontPrefsForLangHelper(lang, &mLangGroupFontPrefs, aNeedsToCache);
   }
 
-  void UpdateCharSet(NotNull<const Encoding*> aCharSet);
+  void UpdateCharSet(const nsCString& aCharSet);
 
   static bool NotifyDidPaintSubdocumentCallback(nsIDocument* aDocument, void* aData);
 
 public:
-  void DoChangeCharSet(NotNull<const Encoding*> aCharSet);
+  void DoChangeCharSet(const nsCString& aCharSet);
 
   /**
    * Checks for MozAfterPaint listeners on the document

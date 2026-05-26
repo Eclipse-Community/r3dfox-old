@@ -25,7 +25,6 @@
 #include "mozilla/dom/XMLDocument.h"
 #include "mozilla/dom/URLSearchParams.h"
 #include "mozilla/dom/PromiseNativeHandler.h"
-#include "mozilla/Encoding.h"
 #include "mozilla/EventDispatcher.h"
 #include "mozilla/EventListenerManager.h"
 #include "mozilla/EventStateManager.h"
@@ -78,6 +77,8 @@
 #include "mozilla/Telemetry.h"
 #include "jsfriendapi.h"
 #include "GeckoProfiler.h"
+#include "mozilla/dom/EncodingUtils.h"
+#include "nsIUnicodeDecoder.h"
 #include "mozilla/dom/XMLHttpRequestBinding.h"
 #include "mozilla/Attributes.h"
 #include "MultipartBlobImpl.h"
@@ -195,7 +196,6 @@ XMLHttpRequestMainThread::sDontWarnAboutSyncXHR = false;
 
 XMLHttpRequestMainThread::XMLHttpRequestMainThread()
   : mResponseBodyDecodedPos(0),
-    mResponseCharset(nullptr),
     mResponseType(XMLHttpRequestResponseType::_empty),
     mRequestObserver(nullptr),
     mState(State::unsent),
@@ -506,7 +506,7 @@ XMLHttpRequestMainThread::GetResponseXML(ErrorResult& aRv)
 nsresult
 XMLHttpRequestMainThread::DetectCharset()
 {
-  mResponseCharset = nullptr;
+  mResponseCharset.Truncate();
   mDecoder = nullptr;
 
   if (mResponseType != XMLHttpRequestResponseType::_empty &&
@@ -516,24 +516,22 @@ XMLHttpRequestMainThread::DetectCharset()
   }
 
   nsAutoCString charsetVal;
-  const Encoding* encoding;
   bool ok = mChannel &&
             NS_SUCCEEDED(mChannel->GetContentCharset(charsetVal)) &&
-            (encoding = Encoding::ForLabel(charsetVal));
-  if (!ok) {
+            EncodingUtils::FindEncodingForLabel(charsetVal, mResponseCharset);
+  if (!ok || mResponseCharset.IsEmpty()) {
     // MS documentation states UTF-8 is default for responseText
-    encoding = UTF_8_ENCODING;
+    mResponseCharset.AssignLiteral("UTF-8");
   }
 
   if (mResponseType == XMLHttpRequestResponseType::Json &&
-      encoding != UTF_8_ENCODING) {
+      !mResponseCharset.EqualsLiteral("UTF-8")) {
     // The XHR spec says only UTF-8 is supported for responseType == "json"
     LogMessage("JSONCharsetWarning", GetOwner());
-    encoding = UTF_8_ENCODING;
+    mResponseCharset.AssignLiteral("UTF-8");
   }
 
-  mResponseCharset = encoding;
-  mDecoder = encoding->NewDecoderWithBOMRemoval();
+  mDecoder = EncodingUtils::DecoderForEncoding(mResponseCharset);
 
   return NS_OK;
 }
@@ -544,38 +542,35 @@ XMLHttpRequestMainThread::AppendToResponseText(const char * aSrcBuffer,
 {
   NS_ENSURE_STATE(mDecoder);
 
-  CheckedInt<size_t> destBufferLen =
-    mDecoder->MaxUTF16BufferLength(aSrcBufferLen);
-  if (!destBufferLen.isValid()) {
-    return NS_ERROR_OUT_OF_MEMORY;
-  }
+  int32_t destBufferLen;
+  nsresult rv = mDecoder->GetMaxLength(aSrcBuffer, aSrcBufferLen,
+                                       &destBufferLen);
+  NS_ENSURE_SUCCESS(rv, rv);
 
   CheckedInt32 size = mResponseText.Length();
-  size += destBufferLen.value();
+  size += destBufferLen;
   if (!size.isValid()) {
     return NS_ERROR_OUT_OF_MEMORY;
   }
 
   XMLHttpRequestStringWriterHelper helper(mResponseText);
 
-  if (!helper.AddCapacity(destBufferLen.value())) {
+  if (!helper.AddCapacity(destBufferLen)) {
     return NS_ERROR_OUT_OF_MEMORY;
   }
 
-  // XXX there's no handling for incomplete byte sequences on EOF!
-  uint32_t result;
-  size_t read;
-  size_t written;
-  bool hadErrors;
-  Tie(result, read, written, hadErrors) = mDecoder->DecodeToUTF16(
-    AsBytes(MakeSpan(aSrcBuffer, aSrcBufferLen)),
-    MakeSpan(helper.EndOfExistingData(), destBufferLen.value()),
-    false);
-  MOZ_ASSERT(result == kInputEmpty);
-  MOZ_ASSERT(read == aSrcBufferLen);
-  MOZ_ASSERT(written <= destBufferLen.value());
-  Unused << hadErrors;
-  helper.AddLength(written);
+  // This code here is basically a copy of a similar thing in
+  // nsScanner::Append(const char* aBuffer, uint32_t aLen).
+  int32_t srclen = (int32_t)aSrcBufferLen;
+  int32_t destlen = (int32_t)destBufferLen;
+  rv = mDecoder->Convert(aSrcBuffer,
+                         &srclen,
+                         helper.EndOfExistingData(),
+                         &destlen);
+  MOZ_ASSERT(NS_SUCCEEDED(rv));
+  MOZ_ASSERT(destlen <= destBufferLen);
+
+  helper.AddLength(destlen);
   return NS_OK;
 }
 
@@ -1578,17 +1573,8 @@ XMLHttpRequestMainThread::Open(const nsACString& aMethod,
   } else if (responsibleDocument) {
     baseURI = responsibleDocument->GetBaseURI();
   }
-
-  // Use the responsible document's encoding for the URL if we have one,
-  // except for dedicated workers. Use UTF-8 otherwise.
-  NotNull<const Encoding*> originCharset = UTF_8_ENCODING;
-  if (responsibleDocument &&
-      responsibleDocument->NodePrincipal() == mPrincipal) {
-    originCharset = responsibleDocument->GetDocumentCharacterSet();
-  }
-
   nsCOMPtr<nsIURI> parsedURL;
-  rv = NS_NewURI(getter_AddRefs(parsedURL), aUrl, originCharset, baseURI);
+  rv = NS_NewURI(getter_AddRefs(parsedURL), aUrl, nullptr, baseURI);
   if (NS_FAILED(rv)) {
     if (rv ==  NS_ERROR_MALFORMED_URI) {
       return NS_ERROR_DOM_MALFORMED_URI;
@@ -2401,7 +2387,7 @@ XMLHttpRequestMainThread::MatchCharsetAndDecoderToResponseDocument()
     mResponseCharset = mResponseXML->GetDocumentCharacterSet();
     TruncateResponseText();
     mResponseBodyDecodedPos = 0;
-    mDecoder = mResponseCharset->NewDecoderWithBOMRemoval();
+    mDecoder = EncodingUtils::DecoderForEncoding(mResponseCharset);
   }
 }
 

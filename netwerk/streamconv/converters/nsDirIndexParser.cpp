@@ -5,17 +5,17 @@
 
 /* This parsing code originally lived in xpfe/components/directory/ - bbaetz */
 
-#include "nsDirIndexParser.h"
-
 #include "mozilla/ArrayUtils.h"
-#include "mozilla/dom/FallbackEncoding.h"
-#include "mozilla/Encoding.h"
+
 #include "prprf.h"
-#include "nsCRT.h"
+
+#include "nsDirIndexParser.h"
 #include "nsEscape.h"
-#include "nsIDirIndex.h"
 #include "nsIInputStream.h"
+#include "nsCRT.h"
+#include "mozilla/dom/FallbackEncoding.h"
 #include "nsITextToSubURI.h"
+#include "nsIDirIndex.h"
 #include "nsServiceManagerUtils.h"
 
 using namespace mozilla;
@@ -33,8 +33,7 @@ nsDirIndexParser::Init() {
   mLineStart = 0;
   mHasDescription = false;
   mFormat[0] = -1;
-  auto encoding = mozilla::dom::FallbackEncoding::FromLocale();
-  encoding->Name(mEncoding);
+  mozilla::dom::FallbackEncoding::FromLocale(mEncoding);
 
   nsresult rv;
   // XXX not threadsafe
@@ -240,15 +239,16 @@ nsDirIndexParser::ParseData(nsIDirIndex *aIdx, char* aDataStr, int32_t aLineLen)
       nsAutoString entryuri;
 
       if (gTextToSubURI) {
-        nsAutoString result;
-        if (NS_SUCCEEDED(rv = gTextToSubURI->UnEscapeAndConvert(
-                           mEncoding, filename, result))) {
-          if (!result.IsEmpty()) {
+        char16_t   *result = nullptr;
+        if (NS_SUCCEEDED(rv = gTextToSubURI->UnEscapeAndConvert(mEncoding.get(), filename.get(),
+                                                                &result)) && (result)) {
+          if (*result) {
             aIdx->SetLocation(filename.get());
             if (!mHasDescription)
-              aIdx->SetDescription(result.get());
+              aIdx->SetDescription(result);
             success = true;
           }
+          free(result);
         } else {
           NS_WARNING("UnEscapeAndConvert error");
         }

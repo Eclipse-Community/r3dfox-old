@@ -5,7 +5,6 @@
 
 #include "nsUCConstructors.h"
 #include "nsMacGreekToUnicode.h"
-#include "mozilla/Telemetry.h"
 
 using namespace mozilla;
 
@@ -20,7 +19,6 @@ nsMacGreekToUnicodeConstructor(nsISupports *aOuter, REFNSIID aIID,
 #include "macgreek.ut"
   };
 
-  Telemetry::Accumulate(Telemetry::DECODER_INSTANTIATED_MACGREEK, true);
   return CreateOneByteDecoder((uMappingTable*) &g_MacGreekMappingTable,
                             aOuter, aIID, aResult);
 }

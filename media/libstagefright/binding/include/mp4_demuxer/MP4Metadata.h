@@ -74,8 +74,6 @@ public:
 
   bool CanSeek() const;
 
-  nsresult Parse() const;
-
   using ResultAndCryptoFile = ResultAndType<const CryptoFile*>;
   ResultAndCryptoFile Crypto() const;
 

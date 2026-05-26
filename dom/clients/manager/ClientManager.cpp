@@ -9,7 +9,6 @@
 #include "ClientHandle.h"
 #include "ClientManagerChild.h"
 #include "ClientManagerOpChild.h"
-#include "ClientPrefs.h"
 #include "ClientSource.h"
 #include "mozilla/dom/WorkerPrivate.h"
 #include "mozilla/dom/workers/bindings/WorkerHolderToken.h"
@@ -205,8 +204,6 @@ ClientManager::Startup()
 #endif
     PR_NewThreadPrivateIndex(&sClientManagerThreadLocalIndex, nullptr);
   MOZ_DIAGNOSTIC_ASSERT(status == PR_SUCCESS);
-
-  ClientPrefsInit();
 }
 
 // static

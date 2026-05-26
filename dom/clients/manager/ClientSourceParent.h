@@ -20,7 +20,6 @@ class ClientSourceParent final : public PClientSourceParent
   ClientInfo mClientInfo;
   RefPtr<ClientManagerService> mService;
   nsTArray<ClientHandleParent*> mHandleList;
-  bool mExecutionReady;
 
   void
   KillInvalidChild();
@@ -28,9 +27,6 @@ class ClientSourceParent final : public PClientSourceParent
   // PClientSourceParent
   mozilla::ipc::IPCResult
   RecvTeardown() override;
-
-  mozilla::ipc::IPCResult
-  RecvExecutionReady(const ClientSourceExecutionReadyArgs& aArgs) override;
 
   void
   ActorDestroy(ActorDestroyReason aReason) override;

@@ -19,13 +19,10 @@ template <typename ActorType> class ClientThing;
 
 class ClientHandleChild final : public PClientHandleChild
 {
-  ClientHandle* mHandle;
+  ClientThing<ClientHandleChild>* mHandle;
   bool mTeardownStarted;
 
   // PClientHandleChild interface
-  mozilla::ipc::IPCResult
-  RecvExecutionReady(const IPCClientInfo& aClientInfo) override;
-
   void
   ActorDestroy(ActorDestroyReason aReason) override;
 

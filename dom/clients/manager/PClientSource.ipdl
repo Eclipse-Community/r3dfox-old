@@ -21,7 +21,6 @@ sync protocol PClientSource
 
 parent:
   async Teardown();
-  async ExecutionReady(ClientSourceExecutionReadyArgs aArgs);
 
 child:
   async PClientSourceOp(ClientOpConstructorArgs aArgs);

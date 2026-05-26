@@ -9,7 +9,7 @@
 #include "OggCodecState.h"
 #include "OpusParser.h"
 #include "VideoUtils.h"
-#include "BufferReader.h"
+#include "mp4_demuxer/BufferReader.h"
 #include "mozilla/ResultExtensions.h"
 
 using mp4_demuxer::BufferReader;

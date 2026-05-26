@@ -27,7 +27,7 @@ interface nsIJSON : nsISupports
    * The encode() method is only present for backward compatibility.
    * encode() is not a conforming JSON stringify implementation!
    */
-  [deprecated,implicit_jscontext,optional_argc]
+  [implicit_jscontext,optional_argc]
   AString encode([optional] in jsval value);
 
   /**
@@ -37,7 +37,7 @@ interface nsIJSON : nsISupports
    * The encodeToStream() method is only present for backward compatibility.
    * encodeToStream() is not a conforming JSON stringify implementation!
    */
-  [deprecated,implicit_jscontext,optional_argc]
+  [implicit_jscontext,optional_argc]
   void encodeToStream(in nsIOutputStream stream,
                       in string charset,
                       in boolean writeBOM,
@@ -47,7 +47,7 @@ interface nsIJSON : nsISupports
    * New users should use JSON.parse!
    * The decode() method is only present for backward compatibility.
    */
-  [deprecated,implicit_jscontext]
+  [implicit_jscontext]
   jsval decode(in AString str);
 
   [implicit_jscontext]

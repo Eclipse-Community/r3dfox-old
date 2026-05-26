@@ -42,8 +42,6 @@
 #undef SetPort  // XXX Windows!
 %}
 
-interface nsIURIMutator;
-
 /**
  * nsIURI - interface for an uniform resource identifier w/ i18n support.
  *
@@ -332,12 +330,4 @@ interface nsIURI : nsISupports
      * the network.IDN_show_punycode pref is false)
      */
     readonly attribute AUTF8String displayPrePath;
-
-    /**
-     * Returns an nsIURIMutator that can be used to make changes to the URI.
-     * After performing the setter operations on the mutator, one may call
-     * mutator.finalize() to get a new immutable URI with the desired
-     * properties.
-     */
-    nsIURIMutator mutate();
 };

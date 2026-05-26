@@ -8,7 +8,9 @@
 #include "mozilla/ArrayUtils.h"
 #include "nsAutoPtr.h"
 
-namespace mozilla
+using namespace mozilla;
+
+namespace mp4_demuxer
 {
 
 int8_t

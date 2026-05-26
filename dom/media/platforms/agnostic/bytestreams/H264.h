@@ -9,6 +9,9 @@
 
 namespace mozilla {
 class BitReader;
+}
+
+namespace mp4_demuxer {
 
 // Spec 7.4.2.1
 #define MAX_SPS_COUNT 32
@@ -494,6 +497,6 @@ private:
                                 SEIRecoveryData& aDest);
 };
 
-} // namespace mozilla
+} // namespace mp4_demuxer
 
 #endif // MP4_DEMUXER_H264_H_

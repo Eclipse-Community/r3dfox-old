@@ -13,6 +13,9 @@
 #include "nsStreamUtils.h"
 #include "nsIInputStream.h"
 #include "nsStringStream.h"
+#include "mozilla/dom/EncodingUtils.h"
+#include "nsIUnicodeEncoder.h"
+#include "nsIUnicodeDecoder.h"
 #include "nsNetUtil.h"
 #include "nsIURI.h"
 #include "nsComponentManagerUtils.h"
@@ -24,7 +27,7 @@
 #include "mozilla/Maybe.h"
 #include <algorithm>
 
-using namespace mozilla;
+using mozilla::dom::EncodingUtils;
 
 #define JSON_STREAM_BUFSIZE 4096
 
@@ -88,12 +91,11 @@ nsJSONWriter::nsJSONWriter() : mStream(nullptr),
 {
 }
 
-nsJSONWriter::nsJSONWriter(nsIOutputStream* aStream)
-  : mStream(aStream)
-  , mBuffer(nullptr)
-  , mBufferCount(0)
-  , mDidWrite(false)
-  , mEncoder(UTF_8_ENCODING->NewEncoder())
+nsJSONWriter::nsJSONWriter(nsIOutputStream *aStream) : mStream(aStream),
+                                                       mBuffer(nullptr),
+                                                       mBufferCount(0),
+                                                       mDidWrite(false),
+                                                       mEncoder(nullptr)
 {
 }
 
@@ -103,10 +105,24 @@ nsJSONWriter::~nsJSONWriter()
 }
 
 nsresult
+nsJSONWriter::SetCharset(const char* aCharset)
+{
+  nsresult rv = NS_OK;
+  if (mStream) {
+    mEncoder = EncodingUtils::EncoderForEncoding(aCharset);
+    rv = mEncoder->SetOutputErrorBehavior(nsIUnicodeEncoder::kOnError_Signal,
+                                          nullptr, '\0');
+    NS_ENSURE_SUCCESS(rv, rv);
+  }
+
+  return rv;
+}
+
+nsresult
 nsJSONWriter::Write(const char16_t *aBuffer, uint32_t aLength)
 {
   if (mStream) {
-    return WriteToStream(mStream, mEncoder.get(), aBuffer, aLength);
+    return WriteToStream(mStream, mEncoder, aBuffer, aLength);
   }
 
   if (!mDidWrite) {
@@ -142,35 +158,33 @@ nsJSONWriter::FlushBuffer()
 }
 
 nsresult
-nsJSONWriter::WriteToStream(nsIOutputStream* aStream,
-                            Encoder* encoder,
-                            const char16_t* aBuffer,
+nsJSONWriter::WriteToStream(nsIOutputStream *aStream,
+                            nsIUnicodeEncoder *encoder,
+                            const char16_t *aBuffer,
                             uint32_t aLength)
 {
-  uint8_t buffer[1024];
-  auto dst = MakeSpan(buffer);
-  auto src = MakeSpan(aBuffer, aLength);
+  nsresult rv;
+  int32_t srcLength = aLength;
+  uint32_t bytesWritten;
 
-  for (;;) {
-    uint32_t result;
-    size_t read;
-    size_t written;
-    bool hadErrors;
-    Tie(result, read, written, hadErrors) =
-      encoder->EncodeFromUTF16(src, dst, false);
-    Unused << hadErrors;
-    src = src.From(read);
-    uint32_t ignored;
-    nsresult rv =
-      aStream->Write(reinterpret_cast<const char*>(buffer), written, &ignored);
-    if (NS_FAILED(rv)) {
-      return rv;
-    }
-    if (result == kInputEmpty) {
-      mDidWrite = true;
-      return NS_OK;
-    }
-  }
+  // The bytes written to the stream might differ from the char16_t size
+  int32_t aDestLength;
+  rv = encoder->GetMaxLength(aBuffer, srcLength, &aDestLength);
+  NS_ENSURE_SUCCESS(rv, rv);
+
+  // create the buffer we need
+  char* destBuf = (char *) moz_xmalloc(aDestLength);
+  if (!destBuf)
+    return NS_ERROR_OUT_OF_MEMORY;
+
+  rv = encoder->Convert(aBuffer, &srcLength, destBuf, &aDestLength);
+  if (NS_SUCCEEDED(rv))
+    rv = aStream->Write(destBuf, aDestLength, &bytesWritten);
+
+  free(destBuf);
+  mDidWrite = true;
+
+  return rv;
 }
 
 NS_IMETHODIMP
@@ -307,6 +321,7 @@ NS_IMPL_RELEASE(nsJSONListener)
 NS_IMETHODIMP
 nsJSONListener::OnStartRequest(nsIRequest *aRequest, nsISupports *aContext)
 {
+  mSniffBuffer.Truncate();
   mDecoder = nullptr;
 
   return NS_OK;
@@ -316,6 +331,15 @@ NS_IMETHODIMP
 nsJSONListener::OnStopRequest(nsIRequest *aRequest, nsISupports *aContext,
                               nsresult aStatusCode)
 {
+  nsresult rv;
+
+  // This can happen with short UTF-8 messages (<4 bytes)
+  if (!mSniffBuffer.IsEmpty()) {
+    // Just consume mSniffBuffer
+    rv = ProcessBytes(nullptr, 0);
+    NS_ENSURE_SUCCESS(rv, rv);
+  }
+
   JS::Rooted<JS::Value> reviver(mCx, JS::NullValue()), value(mCx);
 
   JS::ConstTwoByteChars chars(reinterpret_cast<const char16_t*>(mBufferedChars.Elements()),
@@ -336,8 +360,17 @@ nsJSONListener::OnDataAvailable(nsIRequest *aRequest, nsISupports *aContext,
 {
   nsresult rv = NS_OK;
 
+  if (mNeedsConverter && mSniffBuffer.Length() < 4) {
+    uint32_t readCount = (aLength < 4) ? aLength : 4;
+    rv = NS_ConsumeStream(aStream, readCount, mSniffBuffer);
+    NS_ENSURE_SUCCESS(rv, rv);
+
+    if (mSniffBuffer.Length() < 4)
+      return NS_OK;
+  }
+
   char buffer[JSON_STREAM_BUFSIZE];
-  unsigned long bytesRemaining = aLength;
+  unsigned long bytesRemaining = aLength - mSniffBuffer.Length();
   while (bytesRemaining) {
     unsigned int bytesRead;
     rv = aStream->Read(buffer,
@@ -355,15 +388,46 @@ nsJSONListener::OnDataAvailable(nsIRequest *aRequest, nsISupports *aContext,
 nsresult
 nsJSONListener::ProcessBytes(const char* aBuffer, uint32_t aByteLength)
 {
+  nsresult rv;
+  // Check for BOM, or sniff charset
+  nsAutoCString charset;
   if (mNeedsConverter && !mDecoder) {
-    // BOM sniffing is built into the decoder.
-    mDecoder = UTF_8_ENCODING->NewDecoder();
+    if (!nsContentUtils::CheckForBOM((const unsigned char*) mSniffBuffer.get(),
+                                      mSniffBuffer.Length(), charset)) {
+      // OK, found no BOM, sniff the first character to see what this is
+      // See section 3 of RFC4627 for details on why this works.
+      const char *buffer = mSniffBuffer.get();
+      if (mSniffBuffer.Length() >= 4) {
+        if (buffer[0] == 0x00 && buffer[1] != 0x00 &&
+            buffer[2] == 0x00 && buffer[3] != 0x00) {
+          charset = "UTF-16BE";
+        } else if (buffer[0] != 0x00 && buffer[1] == 0x00 &&
+                   buffer[2] != 0x00 && buffer[3] == 0x00) {
+          charset = "UTF-16LE";
+        } else if (buffer[0] != 0x00 && buffer[1] != 0x00 &&
+                   buffer[2] != 0x00 && buffer[3] != 0x00) {
+          charset = "UTF-8";
+        }
+      } else {
+        // Not enough bytes to sniff, assume UTF-8
+        charset = "UTF-8";
+      }
+    }
+
+    // We should have a unicode charset by now
+    rv = CheckCharset(charset.get());
+    NS_ENSURE_SUCCESS(rv, rv);
+    mDecoder = EncodingUtils::DecoderForEncoding(charset);
+
+    // consume the sniffed bytes
+    rv = ConsumeConverted(mSniffBuffer.get(), mSniffBuffer.Length());
+    NS_ENSURE_SUCCESS(rv, rv);
+    mSniffBuffer.Truncate();
   }
 
   if (!aBuffer)
     return NS_OK;
 
-  nsresult rv;
   if (mNeedsConverter) {
     rv = ConsumeConverted(aBuffer, aByteLength);
   } else {
@@ -377,36 +441,21 @@ nsJSONListener::ProcessBytes(const char* aBuffer, uint32_t aByteLength)
 nsresult
 nsJSONListener::ConsumeConverted(const char* aBuffer, uint32_t aByteLength)
 {
-  CheckedInt<size_t> needed = mDecoder->MaxUTF16BufferLength(aByteLength);
-  if (!needed.isValid()) {
-    return NS_ERROR_OUT_OF_MEMORY;
-  }
+  nsresult rv;
+  int32_t unicharLength = 0;
+  int32_t srcLen = aByteLength;
 
-  CheckedInt<size_t> total(needed);
-  total += mBufferedChars.Length();
-  if (!total.isValid()) {
-    return NS_ERROR_OUT_OF_MEMORY;
-  }
+  rv = mDecoder->GetMaxLength(aBuffer, srcLen, &unicharLength);
+  NS_ENSURE_SUCCESS(rv, rv);
 
-  char16_t* endelems = mBufferedChars.AppendElements(needed.value(), fallible);
-  if (!endelems) {
-    return NS_ERROR_OUT_OF_MEMORY;
-  }
-
-  auto src = AsBytes(MakeSpan(aBuffer, aByteLength));
-  auto dst = MakeSpan(endelems, needed.value());
-  uint32_t result;
-  size_t read;
-  size_t written;
-  bool hadErrors;
-  // Ignoring EOF like the old code
-  Tie(result, read, written, hadErrors) =
-    mDecoder->DecodeToUTF16(src, dst, false);
-  MOZ_ASSERT(result == kInputEmpty);
-  MOZ_ASSERT(read == src.Length());
-  MOZ_ASSERT(written <= needed.value());
-  Unused << hadErrors;
-  mBufferedChars.TruncateLength(total.value() - (needed.value() - written));
+  char16_t* endelems = mBufferedChars.AppendElements(unicharLength);
+  int32_t preLength = unicharLength;
+  rv = mDecoder->Convert(aBuffer, &srcLen, endelems, &unicharLength);
+  if (NS_FAILED(rv))
+    return rv;
+  MOZ_ASSERT(preLength >= unicharLength, "GetMaxLength lied");
+  if (preLength > unicharLength)
+    mBufferedChars.TruncateLength(mBufferedChars.Length() - (preLength - unicharLength));
   return NS_OK;
 }
 

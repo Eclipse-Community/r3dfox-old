@@ -1,7 +1,7 @@
 // Tests encoding of unmapped characters
 load('CharsetConversionTests.js');
 
-const inString = "\uE5E5";
+const inString = "\u2764";
 const expectedString = "?";
 
 function run_test() {
@@ -13,8 +13,7 @@ function run_test() {
         "Big5",
         "EUC-JP",
         "EUC-KR",
-        "GBK",
-        "gb18030",
+        "gbk",
         "IBM866",
         "ISO-2022-JP",
         "ISO-8859-3",

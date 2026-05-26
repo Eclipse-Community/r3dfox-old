@@ -31,10 +31,10 @@ public:
   static already_AddRefed<ClientManagerService>
   GetOrCreateInstance();
 
-  bool
+  void
   AddSource(ClientSourceParent* aSource);
 
-  bool
+  void
   RemoveSource(ClientSourceParent* aSource);
 
   ClientSourceParent*

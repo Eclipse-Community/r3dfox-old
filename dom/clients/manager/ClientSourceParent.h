@@ -21,9 +21,6 @@ class ClientSourceParent final : public PClientSourceParent
   RefPtr<ClientManagerService> mService;
   nsTArray<ClientHandleParent*> mHandleList;
 
-  void
-  KillInvalidChild();
-
   // PClientSourceParent
   mozilla::ipc::IPCResult
   RecvTeardown() override;
@@ -40,9 +37,6 @@ class ClientSourceParent final : public PClientSourceParent
 public:
   explicit ClientSourceParent(const ClientSourceConstructorArgs& aArgs);
   ~ClientSourceParent();
-
-  void
-  Init();
 
   const ClientInfo&
   Info() const;

@@ -6,7 +6,9 @@
 
 #include "BitReader.h"
 
-namespace mozilla
+using namespace mozilla;
+
+namespace mp4_demuxer
 {
 
 BitReader::BitReader(const mozilla::MediaByteBuffer* aBuffer)
@@ -157,4 +159,4 @@ BitReader::FillReservoir()
   mReservoir <<= 32 - mNumBitsLeft;
 }
 
-} // namespace mozilla
+} // namespace mp4_demuxer

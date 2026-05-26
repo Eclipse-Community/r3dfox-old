@@ -15,7 +15,8 @@ namespace mozilla {
 
 extern LazyLogModule gMediaDecoderLog;
 #define LOG(x, ...)                                                            \
-  DDMOZ_LOG(gMediaDecoderLog, LogLevel::Debug, x, ##__VA_ARGS__)
+  MOZ_LOG(                                                                     \
+    gMediaDecoderLog, LogLevel::Debug, ("Decoder=%p " x, this, ##__VA_ARGS__))
 
 ChannelMediaDecoder::ResourceCallback::ResourceCallback(
   AbstractThread* aMainThread)

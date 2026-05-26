@@ -49,8 +49,8 @@ namespace mozilla {
 #undef DUMP
 
 LazyLogModule gMediaDecoderLog("MediaDecoder");
-#define LOG(x, ...)                                                            \
-  DDMOZ_LOG(gMediaDecoderLog, LogLevel::Debug, x, ##__VA_ARGS__)
+#define LOG(x, ...) \
+  MOZ_LOG(gMediaDecoderLog, LogLevel::Debug, ("Decoder=%p " x, this, ##__VA_ARGS__))
 
 #define DUMP(x, ...) printf_stderr(x "\n", ##__VA_ARGS__)
 
@@ -838,6 +838,8 @@ MediaDecoder::ChangeState(PlayState aState)
   if (mPlayState != aState) {
     DDLOG(DDLogCategory::Property, "play_state", ToPlayStateStr(aState));
   }
+
+  LOG("ChangeState %s => %s", PlayStateStr(), ToPlayStateStr(aState));
   mPlayState = aState;
 
   if (mPlayState == PLAY_STATE_PLAYING) {

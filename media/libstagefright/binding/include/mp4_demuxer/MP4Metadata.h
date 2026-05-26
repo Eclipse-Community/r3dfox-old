@@ -7,15 +7,15 @@
 
 #include "mozilla/TypeTraits.h"
 #include "mozilla/UniquePtr.h"
-#include "DecoderData.h"
-#include "Index.h"
+#include "mp4_demuxer/DecoderData.h"
+#include "mp4_demuxer/Index.h"
 #include "MediaData.h"
 #include "MediaInfo.h"
 #include "MediaResult.h"
-#include "ByteStream.h"
+#include "Stream.h"
 #include "mp4parse.h"
 
-namespace mozilla {
+namespace mp4_demuxer {
 
 // The memory owner in mIndice.indices is rust mp4 parser, so lifetime of this
 // class SHOULD NOT longer than rust parser.
@@ -34,10 +34,10 @@ protected:
 
 struct FreeMP4Parser { void operator()(Mp4parseParser* aPtr) { mp4parse_free(aPtr); } };
 
-// Wrap an Stream to remember the read offset.
+// Wrap an mp4_demuxer::Stream to remember the read offset.
 class StreamAdaptor {
 public:
-  explicit StreamAdaptor(ByteStream* aSource)
+  explicit StreamAdaptor(Stream* aSource)
     : mSource(aSource)
     , mOffset(0)
   {
@@ -48,14 +48,14 @@ public:
   bool Read(uint8_t* buffer, uintptr_t size, size_t* bytes_read);
 
 private:
-  ByteStream* mSource;
+  Stream* mSource;
   CheckedInt<size_t> mOffset;
 };
 
 class MP4Metadata
 {
 public:
-  explicit MP4Metadata(ByteStream* aSource);
+  explicit MP4Metadata(Stream* aSource);
   ~MP4Metadata();
 
   // Simple template class containing a MediaResult and another type.
@@ -82,7 +82,7 @@ public:
   };
 
   using ResultAndByteBuffer = ResultAndType<RefPtr<mozilla::MediaByteBuffer>>;
-  static ResultAndByteBuffer Metadata(ByteStream* aSource);
+  static ResultAndByteBuffer Metadata(Stream* aSource);
 
   static constexpr uint32_t NumberTracksError() { return UINT32_MAX; }
   using ResultAndTrackCount = ResultAndType<uint32_t>;
@@ -108,11 +108,11 @@ private:
   Maybe<uint32_t> TrackTypeToGlobalTrackIndex(mozilla::TrackInfo::TrackType aType, size_t aTrackNumber) const;
 
   CryptoFile mCrypto;
-  RefPtr<ByteStream> mSource;
+  RefPtr<Stream> mSource;
   StreamAdaptor mSourceAdaptor;
   mozilla::UniquePtr<Mp4parseParser, FreeMP4Parser> mParser;
 };
 
-} // namespace mozilla
+} // namespace mp4_demuxer
 
 #endif // MP4METADATA_H_

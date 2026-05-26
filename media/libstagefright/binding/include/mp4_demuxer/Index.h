@@ -8,20 +8,18 @@
 #include "MediaData.h"
 #include "MediaResource.h"
 #include "TimeUnits.h"
-#include "MoofParser.h"
-#include "MP4Interval.h"
-#include "ByteStream.h"
+#include "mp4_demuxer/MoofParser.h"
+#include "mp4_demuxer/Interval.h"
+#include "mp4_demuxer/Stream.h"
 #include "nsISupportsImpl.h"
 
 template<class T> class nsAutoPtr;
 
-namespace mozilla
+namespace mp4_demuxer
 {
-class IndiceWrapper;
-struct Sample;
-struct CencSampleEncryptionInfoEntry;
 
 class Index;
+class IndiceWrapper;
 
 typedef int64_t Microseconds;
 
@@ -93,11 +91,11 @@ public:
     uint32_t mIndex;
     int64_t mStartOffset;
     int64_t mEndOffset;
-    MP4Interval<Microseconds> mTime;
+    Interval<Microseconds> mTime;
   };
 
-  Index(const mozilla::IndiceWrapper& aIndices,
-        ByteStream* aSource,
+  Index(const IndiceWrapper& aIndices,
+        Stream* aSource,
         uint32_t aTrackId,
         bool aIsAudio);
 
@@ -118,7 +116,7 @@ private:
   void RegisterIterator(SampleIterator* aIterator);
   void UnregisterIterator(SampleIterator* aIterator);
 
-  ByteStream* mSource;
+  Stream* mSource;
   FallibleTArray<Sample> mIndex;
   FallibleTArray<MP4DataOffset> mDataOffset;
   nsAutoPtr<MoofParser> mMoofParser;

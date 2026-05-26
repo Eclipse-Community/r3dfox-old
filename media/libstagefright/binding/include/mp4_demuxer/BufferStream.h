@@ -5,14 +5,17 @@
 #ifndef BUFFER_STREAM_H_
 #define BUFFER_STREAM_H_
 
-#include "ByteStream.h"
+#include "mp4_demuxer/Stream.h"
 #include "nsTArray.h"
 #include "MediaResource.h"
 
 namespace mozilla {
 class MediaByteBuffer;
+}
 
-class BufferStream : public ByteStream
+namespace mp4_demuxer {
+
+class BufferStream : public Stream
 {
 public:
   /* BufferStream does not take ownership of aData nor does it make a copy.

@@ -7,7 +7,7 @@
 #include "AppleATDecoder.h"
 #include "AppleUtils.h"
 #include "MP4Decoder.h"
-#include "Adts.h"
+#include "mp4_demuxer/Adts.h"
 #include "MediaInfo.h"
 #include "mozilla/Logging.h"
 #include "mozilla/SyncRunnable.h"
@@ -683,12 +683,13 @@ AppleATDecoder::GetImplicitAACMagicCookie(const MediaRawData* aSample)
   if (!adtssample) {
     return NS_ERROR_OUT_OF_MEMORY;
   }
-  int8_t frequency_index = Adts::GetFrequencyIndex(mConfig.mRate);
+  int8_t frequency_index =
+    mp4_demuxer::Adts::GetFrequencyIndex(mConfig.mRate);
 
-  bool rv = Adts::ConvertSample(mConfig.mChannels,
-                                frequency_index,
-                                mConfig.mProfile,
-                                adtssample);
+  bool rv = mp4_demuxer::Adts::ConvertSample(mConfig.mChannels,
+                                             frequency_index,
+                                             mConfig.mProfile,
+                                             adtssample);
   if (!rv) {
     NS_WARNING("Failed to apply ADTS header");
     return NS_ERROR_FAILURE;

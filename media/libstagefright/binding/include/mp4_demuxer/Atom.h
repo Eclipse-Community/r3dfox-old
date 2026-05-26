@@ -5,7 +5,7 @@
 #ifndef ATOM_H_
 #define ATOM_H_
 
-namespace mozilla {
+namespace mp4_demuxer {
 
 class Atom
 {

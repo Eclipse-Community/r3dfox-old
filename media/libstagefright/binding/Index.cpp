@@ -2,20 +2,21 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#include "BufferReader.h"
-#include "Index.h"
-#include "MP4Interval.h"
-#include "MP4Metadata.h"
-#include "SinfParser.h"
+#include "mp4_demuxer/BufferReader.h"
+#include "mp4_demuxer/Index.h"
+#include "mp4_demuxer/Interval.h"
+#include "mp4_demuxer/MP4Metadata.h"
+#include "mp4_demuxer/SinfParser.h"
 #include "nsAutoPtr.h"
 #include "mozilla/RefPtr.h"
 
 #include <algorithm>
 #include <limits>
 
+using namespace mozilla;
 using namespace mozilla::media;
 
-namespace mozilla
+namespace mp4_demuxer
 {
 
 class MOZ_STACK_CLASS RangeFinder
@@ -323,7 +324,7 @@ SampleIterator::GetNextKeyframeTime()
 }
 
 Index::Index(const IndiceWrapper& aIndices,
-             ByteStream* aSource,
+             Stream* aSource,
              uint32_t aTrackId,
              bool aIsAudio)
   : mSource(aSource)
@@ -357,8 +358,8 @@ Index::Index(const IndiceWrapper& aIndices,
       Sample sample;
       sample.mByteRange = MediaByteRange(indice.start_offset,
                                          indice.end_offset);
-      sample.mCompositionRange = MP4Interval<Microseconds>(indice.start_composition,
-                                                           indice.end_composition);
+      sample.mCompositionRange = Interval<Microseconds>(indice.start_composition,
+                                                        indice.end_composition);
       sample.mDecodeTime = indice.start_decode;
       sample.mSync = indice.sync || mIsAudio;
       // FIXME: Make this infallible after bug 968520 is done.
@@ -399,7 +400,7 @@ Index::Index(const IndiceWrapper& aIndices,
       }
       auto& last = mDataOffset.LastElement();
       last.mEndOffset = indice.end_offset;
-      last.mTime = MP4Interval<int64_t>(intervalTime.GetStart(), intervalTime.GetEnd());
+      last.mTime = Interval<int64_t>(intervalTime.GetStart(), intervalTime.GetEnd());
     } else {
       mDataOffset.Clear();
     }
@@ -523,7 +524,7 @@ Index::ConvertByteRangesToTimeRanges(const MediaByteRangeSet& aByteRanges)
   }
 
   RangeFinder rangeFinder(aByteRanges);
-  nsTArray<MP4Interval<Microseconds>> timeRanges;
+  nsTArray<Interval<Microseconds>> timeRanges;
   nsTArray<FallibleTArray<Sample>*> indexes;
   if (mMoofParser) {
     // We take the index out of the moof parser and move it into a local
@@ -535,7 +536,7 @@ Index::ConvertByteRangesToTimeRanges(const MediaByteRangeSet& aByteRanges)
       // We need the entire moof in order to play anything
       if (rangeFinder.Contains(moof.mRange)) {
         if (rangeFinder.Contains(moof.mMdatRange)) {
-          MP4Interval<Microseconds>::SemiNormalAppend(timeRanges, moof.mTimeRange);
+          Interval<Microseconds>::SemiNormalAppend(timeRanges, moof.mTimeRange);
         } else {
           indexes.AppendElement(&moof.mIndex);
         }
@@ -562,14 +563,14 @@ Index::ConvertByteRangesToTimeRanges(const MediaByteRangeSet& aByteRanges)
         continue;
       }
 
-      MP4Interval<Microseconds>::SemiNormalAppend(timeRanges,
+      Interval<Microseconds>::SemiNormalAppend(timeRanges,
                                                sample.mCompositionRange);
     }
   }
 
   // This fixes up when the compositon order differs from the byte range order
-  nsTArray<MP4Interval<Microseconds>> timeRangesNormalized;
-  MP4Interval<Microseconds>::Normalize(timeRanges, &timeRangesNormalized);
+  nsTArray<Interval<Microseconds>> timeRangesNormalized;
+  Interval<Microseconds>::Normalize(timeRanges, &timeRangesNormalized);
   // convert timeRanges.
   media::TimeIntervals ranges;
   for (size_t i = 0; i < timeRangesNormalized.Length(); i++) {

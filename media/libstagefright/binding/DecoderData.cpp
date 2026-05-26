@@ -2,10 +2,10 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#include "Adts.h"
-#include "AnnexB.h"
-#include "BufferReader.h"
-#include "DecoderData.h"
+#include "mp4_demuxer/Adts.h"
+#include "mp4_demuxer/AnnexB.h"
+#include "mp4_demuxer/BufferReader.h"
+#include "mp4_demuxer/DecoderData.h"
 #include "mozilla/ArrayUtils.h"
 #include "mozilla/EndianUtils.h"
 #include "VideoUtils.h"
@@ -16,7 +16,7 @@
 
 using mozilla::media::TimeUnit;
 
-namespace mozilla
+namespace mp4_demuxer
 {
 
 mozilla::Result<mozilla::Ok, nsresult>

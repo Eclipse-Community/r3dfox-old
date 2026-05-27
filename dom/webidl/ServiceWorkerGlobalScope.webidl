@@ -15,8 +15,7 @@
 [Global=(Worker,ServiceWorker),
  Exposed=ServiceWorker]
 interface ServiceWorkerGlobalScope : WorkerGlobalScope {
-  [SameObject, BinaryName="GetClients"]
-  readonly attribute Clients clients;
+  [SameObject] readonly attribute Clients clients;
   [SameObject] readonly attribute ServiceWorkerRegistration registration;
 
   [Throws, NewObject]

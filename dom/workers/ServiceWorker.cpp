@@ -8,13 +8,12 @@
 
 #include "nsIDocument.h"
 #include "nsPIDOMWindow.h"
+#include "ServiceWorkerClient.h"
 #include "ServiceWorkerManager.h"
 #include "ServiceWorkerPrivate.h"
 #include "WorkerPrivate.h"
 
 #include "mozilla/Preferences.h"
-#include "mozilla/dom/ClientIPCTypes.h"
-#include "mozilla/dom/ClientState.h"
 #include "mozilla/dom/Promise.h"
 #include "mozilla/dom/ServiceWorkerGlobalScopeBinding.h"
 
@@ -103,17 +102,9 @@ ServiceWorker::PostMessage(JSContext* aCx, JS::Handle<JS::Value> aMessage,
     return;
   }
 
-  Maybe<ClientInfo> clientInfo = window->GetClientInfo();
-  Maybe<ClientState> clientState = window->GetClientState();
-  if (clientInfo.isNothing() || clientState.isNothing()) {
-    aRv.Throw(NS_ERROR_DOM_INVALID_STATE_ERR);
-    return;
-  }
-
+  UniquePtr<ServiceWorkerClientInfo> clientInfo(new ServiceWorkerClientInfo(window->GetExtantDoc()));
   ServiceWorkerPrivate* workerPrivate = mInfo->WorkerPrivate();
-  aRv = workerPrivate->SendMessageEvent(aCx, aMessage, aTransferable,
-                                        ClientInfoAndState(clientInfo.ref().ToIPC(),
-                                                           clientState.ref().ToIPC()));
+  aRv = workerPrivate->SendMessageEvent(aCx, aMessage, aTransferable, Move(clientInfo));
 }
 
 } // namespace workers

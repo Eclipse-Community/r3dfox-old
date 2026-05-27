@@ -19,7 +19,6 @@ namespace dom {
 
 class AnyCallback;
 struct ChannelPixelLayout;
-class Clients;
 class Console;
 class Crypto;
 class Function;
@@ -41,6 +40,7 @@ class CacheStorage;
 
 namespace workers {
 
+class ServiceWorkerClients;
 class WorkerPrivate;
 
 } // namespace workers
@@ -282,7 +282,7 @@ public:
 class ServiceWorkerGlobalScope final : public WorkerGlobalScope
 {
   const nsString mScope;
-  RefPtr<Clients> mClients;
+  RefPtr<workers::ServiceWorkerClients> mClients;
   RefPtr<ServiceWorkerRegistration> mRegistration;
 
   ~ServiceWorkerGlobalScope();
@@ -306,8 +306,8 @@ public:
     aScope = mScope;
   }
 
-  already_AddRefed<Clients>
-  GetClients();
+  workers::ServiceWorkerClients*
+  Clients();
 
   ServiceWorkerRegistration*
   Registration();

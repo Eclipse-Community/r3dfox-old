@@ -13,7 +13,6 @@ interface Client {
   readonly attribute USVString url;
 
   // Remove frameType in bug 1290936
-  [BinaryName="GetFrameType"]
   readonly attribute FrameType frameType;
 
   readonly attribute ClientType type;
@@ -28,7 +27,6 @@ interface Client {
 
 [Exposed=ServiceWorker]
 interface WindowClient : Client {
-  [BinaryName="GetVisibilityState"]
   readonly attribute VisibilityState visibilityState;
   readonly attribute boolean focused;
 

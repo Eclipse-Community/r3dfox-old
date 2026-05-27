@@ -7,6 +7,7 @@
 #include "ServiceWorkerPrivate.h"
 
 #include "ServiceWorkerManager.h"
+#include "ServiceWorkerWindowClient.h"
 #include "nsContentUtils.h"
 #include "nsICacheInfoChannel.h"
 #include "nsIHttpChannelInternal.h"
@@ -25,8 +26,6 @@
 #include "WorkerRunnable.h"
 #include "WorkerScope.h"
 #include "mozilla/Assertions.h"
-#include "mozilla/dom/Client.h"
-#include "mozilla/dom/ClientIPCTypes.h"
 #include "mozilla/dom/FetchUtil.h"
 #include "mozilla/dom/IndexedDatabaseManager.h"
 #include "mozilla/dom/InternalHeaders.h"
@@ -40,8 +39,6 @@ using namespace mozilla;
 using namespace mozilla::dom;
 
 BEGIN_WORKERS_NAMESPACE
-
-using mozilla::ipc::PrincipalInfo;
 
 NS_IMPL_CYCLE_COLLECTING_NATIVE_ADDREF(ServiceWorkerPrivate)
 NS_IMPL_CYCLE_COLLECTING_NATIVE_RELEASE(ServiceWorkerPrivate)
@@ -487,21 +484,22 @@ public:
   }
 };
 
-class SendMessageEventRunnable final : public ExtendableEventWorkerRunnable
-                                     , public StructuredCloneHolder
+class SendMesssageEventRunnable final : public ExtendableEventWorkerRunnable
+                                      , public StructuredCloneHolder
 {
-  const ClientInfoAndState mClientInfoAndState;
+  UniquePtr<ServiceWorkerClientInfo> mEventSource;
 
 public:
-  SendMessageEventRunnable(WorkerPrivate*  aWorkerPrivate,
-                           KeepAliveToken* aKeepAliveToken,
-                           const ClientInfoAndState& aClientInfoAndState)
+  SendMesssageEventRunnable(WorkerPrivate*  aWorkerPrivate,
+                            KeepAliveToken* aKeepAliveToken,
+                            UniquePtr<ServiceWorkerClientInfo>&& aEventSource)
     : ExtendableEventWorkerRunnable(aWorkerPrivate, aKeepAliveToken)
     , StructuredCloneHolder(CloningSupported, TransferringSupported,
                             StructuredCloneScope::SameProcessDifferentThread)
-    , mClientInfoAndState(aClientInfoAndState)
+    , mEventSource(Move(aEventSource))
   {
     AssertIsOnMainThread();
+    MOZ_ASSERT(mEventSource);
   }
 
   bool
@@ -520,6 +518,8 @@ public:
       return true;
     }
 
+    RefPtr<ServiceWorkerClient> client = new ServiceWorkerWindowClient(sgo,
+                                                                       *mEventSource);
     RootedDictionary<ExtendableMessageEventInit> init(aCx);
 
     init.mBubbles = false;
@@ -527,8 +527,7 @@ public:
 
     init.mData = messageData;
     init.mPorts = ports;
-    init.mSource.SetValue().SetAsClient() =
-      new Client(sgo, mClientInfoAndState);
+    init.mSource.SetValue().SetAsClient() = client;
 
     RefPtr<EventTarget> target = aWorkerPrivate->GlobalScope();
     RefPtr<ExtendableMessageEvent> extendableEvent =
@@ -554,7 +553,7 @@ nsresult
 ServiceWorkerPrivate::SendMessageEvent(JSContext* aCx,
                                        JS::Handle<JS::Value> aMessage,
                                        const Sequence<JSObject*>& aTransferable,
-                                       const ClientInfoAndState& aClientInfoAndState)
+                                       UniquePtr<ServiceWorkerClientInfo>&& aClientInfo)
 {
   AssertIsOnMainThread();
 
@@ -572,8 +571,8 @@ ServiceWorkerPrivate::SendMessageEvent(JSContext* aCx,
   }
 
   RefPtr<KeepAliveToken> token = CreateEventKeepAliveToken();
-  RefPtr<SendMessageEventRunnable> runnable =
-    new SendMessageEventRunnable(mWorkerPrivate, token, aClientInfoAndState);
+  RefPtr<SendMesssageEventRunnable> runnable =
+    new SendMesssageEventRunnable(mWorkerPrivate, token, Move(aClientInfo));
 
   runnable->Write(aCx, aMessage, transferable, JS::CloneDataPolicy(), rv);
   if (NS_WARN_IF(rv.Failed())) {

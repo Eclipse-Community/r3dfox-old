@@ -9,7 +9,6 @@
 #include "jsapi.h"
 #include "mozilla/EventListenerManager.h"
 #include "mozilla/dom/BindingDeclarations.h"
-#include "mozilla/dom/Clients.h"
 #include "mozilla/dom/Console.h"
 #include "mozilla/dom/DedicatedWorkerGlobalScopeBinding.h"
 #include "mozilla/dom/Fetch.h"
@@ -45,6 +44,7 @@
 #include "ScriptLoader.h"
 #include "WorkerPrivate.h"
 #include "WorkerRunnable.h"
+#include "ServiceWorkerClients.h"
 #include "ServiceWorkerManager.h"
 #include "ServiceWorkerRegistration.h"
 
@@ -634,15 +634,14 @@ ServiceWorkerGlobalScope::WrapGlobalObject(JSContext* aCx,
                                                true, aReflector);
 }
 
-already_AddRefed<Clients>
-ServiceWorkerGlobalScope::GetClients()
+ServiceWorkerClients*
+ServiceWorkerGlobalScope::Clients()
 {
   if (!mClients) {
-    mClients = new Clients(this);
+    mClients = new ServiceWorkerClients(this);
   }
 
-  RefPtr<Clients> ref = mClients;
-  return ref.forget();
+  return mClients;
 }
 
 ServiceWorkerRegistration*

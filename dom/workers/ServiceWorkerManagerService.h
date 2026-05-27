@@ -9,7 +9,6 @@
 
 #include "nsISupportsImpl.h"
 #include "nsHashKeys.h"
-#include "nsTArray.h"
 #include "nsTHashtable.h"
 
 namespace mozilla {

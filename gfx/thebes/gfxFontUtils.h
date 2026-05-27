@@ -10,7 +10,6 @@
 #include "nsComponentManagerUtils.h"
 #include "nsTArray.h"
 #include "mozilla/Likely.h"
-#include "mozilla/Encoding.h"
 #include "mozilla/EndianUtils.h"
 #include "mozilla/MemoryReporting.h"
 #include "mozilla/UniquePtr.h"
@@ -1007,24 +1006,24 @@ protected:
     ReadNames(const char *aNameData, uint32_t aDataLen, uint32_t aNameID,
               int32_t aLangID, int32_t aPlatformID, nsTArray<nsString>& aNames);
 
-    // convert opentype name-table platform/encoding/language values to an
-    // Encoding object we can use to convert the name data to unicode
-    static const mozilla::Encoding*
+    // convert opentype name-table platform/encoding/language values to a charset name
+    // we can use to convert the name data to unicode, or "" if data is UTF16BE
+    static const char*
     GetCharsetForFontName(uint16_t aPlatform, uint16_t aScript, uint16_t aLanguage);
 
     struct MacFontNameCharsetMapping {
-        uint16_t    mScript;
+        uint16_t    mEncoding;
         uint16_t    mLanguage;
-        const mozilla::Encoding* mEncoding;
+        const char *mCharsetName;
 
         bool operator<(const MacFontNameCharsetMapping& rhs) const {
-            return (mScript < rhs.mScript) ||
-                   ((mScript == rhs.mScript) && (mLanguage < rhs.mLanguage));
+            return (mEncoding < rhs.mEncoding) ||
+                   ((mEncoding == rhs.mEncoding) && (mLanguage < rhs.mLanguage));
         }
     };
     static const MacFontNameCharsetMapping gMacFontNameCharsets[];
-    static const mozilla::Encoding* gISOFontNameCharsets[];
-    static const mozilla::Encoding* gMSFontNameCharsets[];
+    static const char* gISOFontNameCharsets[];
+    static const char* gMSFontNameCharsets[];
 };
 
 #endif /* GFX_FONT_UTILS_H */

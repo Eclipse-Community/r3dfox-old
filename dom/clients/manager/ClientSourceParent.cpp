@@ -225,12 +225,6 @@ ClientSourceParent::ExecutionReady() const
   return mExecutionReady;
 }
 
-const Maybe<ServiceWorkerDescriptor>&
-ClientSourceParent::GetController() const
-{
-  return mController;
-}
-
 void
 ClientSourceParent::AttachHandle(ClientHandleParent* aClientHandle)
 {

@@ -22,7 +22,6 @@ class ClientGetInfoAndStateArgs;
 class ClientHandle;
 class ClientInfo;
 class ClientManagerChild;
-class ClientMatchAllArgs;
 class ClientOpConstructorArgs;
 class ClientSource;
 enum class ClientType : uint8_t;
@@ -94,9 +93,6 @@ public:
   static already_AddRefed<ClientHandle>
   CreateHandle(const ClientInfo& aClientInfo,
                nsISerialEventTarget* aSerialEventTarget);
-
-  static RefPtr<ClientOpPromise>
-  MatchAll(const ClientMatchAllArgs& aArgs, nsISerialEventTarget* aTarget);
 
   static RefPtr<ClientOpPromise>
   GetInfoAndState(const ClientGetInfoAndStateArgs& aArgs,

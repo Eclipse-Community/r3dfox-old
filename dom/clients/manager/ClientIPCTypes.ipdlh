@@ -67,19 +67,6 @@ struct ClientControlledArgs
   IPCServiceWorkerDescriptor serviceWorker;
 };
 
-union ClientEndPoint
-{
-  IPCClientInfo;
-  IPCServiceWorkerDescriptor;
-};
-
-struct ClientMatchAllArgs
-{
-  ClientEndPoint endpoint;
-  ClientType type;
-  bool includeUncontrolled;
-};
-
 struct ClientGetInfoAndStateArgs
 {
   nsID id;
@@ -93,13 +80,7 @@ struct ClientOpenWindowArgs
 union ClientOpConstructorArgs
 {
   ClientControlledArgs;
-  ClientMatchAllArgs;
   ClientGetInfoAndStateArgs;
-};
-
-struct ClientList
-{
-  ClientInfoAndState[] values;
 };
 
 struct ClientNavigateOpConstructorArgs
@@ -110,7 +91,6 @@ union ClientOpResult
 {
   nsresult;
   ClientInfoAndState;
-  ClientList;
 };
 
 } // namespace dom

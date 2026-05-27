@@ -70,13 +70,6 @@ struct ClientControlledArgs
   IPCServiceWorkerDescriptor serviceWorker;
 };
 
-struct ClientNavigateArgs
-{
-  IPCClientInfo target;
-  nsCString url;
-  nsCString baseURL;
-};
-
 union ClientEndPoint
 {
   IPCClientInfo;
@@ -108,7 +101,6 @@ struct ClientOpenWindowArgs
 union ClientOpConstructorArgs
 {
   ClientControlledArgs;
-  ClientNavigateArgs;
   ClientMatchAllArgs;
   ClientClaimArgs;
   ClientGetInfoAndStateArgs;
@@ -121,9 +113,6 @@ struct ClientList
 
 struct ClientNavigateOpConstructorArgs
 {
-  PClientSource target;
-  nsCString url;
-  nsCString baseURL;
 };
 
 union ClientOpResult

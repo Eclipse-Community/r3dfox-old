@@ -47,7 +47,6 @@ class ThrottledEventQueue;
 namespace dom {
 class AudioContext;
 class ClientInfo;
-class ClientState;
 class DocGroup;
 class TabGroup;
 class Element;
@@ -328,7 +327,6 @@ public:
   bool HasOpenWebSockets() const;
 
   mozilla::Maybe<mozilla::dom::ClientInfo> GetClientInfo() const;
-  mozilla::Maybe<mozilla::dom::ClientState> GetClientState() const;
   mozilla::Maybe<mozilla::dom::ServiceWorkerDescriptor> GetController() const;
 
   mozilla::dom::TabGroup* TabGroup();

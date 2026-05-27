@@ -60,9 +60,6 @@ public:
   RemoveManager(ClientManagerParent* aManager);
 
   RefPtr<ClientOpPromise>
-  Navigate(const ClientNavigateArgs& aArgs);
-
-  RefPtr<ClientOpPromise>
   MatchAll(const ClientMatchAllArgs& aArgs);
 
   RefPtr<ClientOpPromise>

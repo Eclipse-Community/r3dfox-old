@@ -21,17 +21,16 @@
 #include "nsNetCID.h"
 #include "nsSimpleNestedURI.h"
 #include "nsThreadUtils.h"
-#include "nsIURIMutator.h"
 
 using namespace mozilla::ipc;
 using mozilla::ArrayLength;
 
 namespace {
 
-NS_DEFINE_CID(kSimpleURIMutatorCID, NS_SIMPLEURIMUTATOR_CID);
-NS_DEFINE_CID(kStandardURLMutatorCID, NS_STANDARDURLMUTATOR_CID);
-NS_DEFINE_CID(kJARURIMutatorCID, NS_JARURIMUTATOR_CID);
-NS_DEFINE_CID(kIconURIMutatorCID, NS_MOZICONURIMUTATOR_CID);
+NS_DEFINE_CID(kSimpleURICID, NS_SIMPLEURI_CID);
+NS_DEFINE_CID(kStandardURLCID, NS_STANDARDURL_CID);
+NS_DEFINE_CID(kJARURICID, NS_JARURI_CID);
+NS_DEFINE_CID(kIconURICID, NS_MOZICONURI_CID);
 
 } // namespace
 
@@ -77,57 +76,54 @@ DeserializeURI(const URIParams& aParams)
 {
   MOZ_ASSERT(NS_IsMainThread());
 
-  nsCOMPtr<nsIURIMutator> mutator;
+  nsCOMPtr<nsIIPCSerializableURI> serializable;
 
   switch (aParams.type()) {
     case URIParams::TSimpleURIParams:
-      mutator = do_CreateInstance(kSimpleURIMutatorCID);
+      serializable = do_CreateInstance(kSimpleURICID);
       break;
 
     case URIParams::TStandardURLParams:
-      mutator = do_CreateInstance(kStandardURLMutatorCID);
+      serializable = do_CreateInstance(kStandardURLCID);
       break;
 
     case URIParams::TJARURIParams:
-      mutator = do_CreateInstance(kJARURIMutatorCID);
+      serializable = do_CreateInstance(kJARURICID);
       break;
 
     case URIParams::TJSURIParams:
-      mutator = new nsJSURI::Mutator();
+      serializable = new nsJSURI();
       break;
 
     case URIParams::TIconURIParams:
-      mutator = do_CreateInstance(kIconURIMutatorCID);
+      serializable = do_CreateInstance(kIconURICID);
       break;
 
     case URIParams::TNullPrincipalURIParams:
-      mutator = new NullPrincipalURI::Mutator();
+      serializable = new NullPrincipalURI();
       break;
 
     case URIParams::TSimpleNestedURIParams:
-      mutator = new nsSimpleNestedURI::Mutator();
+      serializable = new nsSimpleNestedURI();
       break;
 
     case URIParams::THostObjectURIParams:
-      mutator = new nsHostObjectURI::Mutator();
+      serializable = new nsHostObjectURI();
       break;
 
     default:
       MOZ_CRASH("Unknown params!");
   }
 
-  MOZ_ASSERT(mutator);
+  MOZ_ASSERT(serializable);
 
-  nsresult rv = mutator->Deserialize(aParams);
-  if (NS_FAILED(rv)) {
+  if (!serializable->Deserialize(aParams)) {
     MOZ_ASSERT(false, "Deserialize failed!");
     return nullptr;
   }
 
-  nsCOMPtr<nsIURI> uri;
-  DebugOnly<nsresult> rv2 = mutator->Finalize(getter_AddRefs(uri));
+  nsCOMPtr<nsIURI> uri = do_QueryInterface(serializable);
   MOZ_ASSERT(uri);
-  MOZ_ASSERT(NS_SUCCEEDED(rv2));
 
   return uri.forget();
 }

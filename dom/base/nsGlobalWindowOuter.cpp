@@ -1997,11 +1997,6 @@ nsGlobalWindowOuter::SetNewDocument(nsIDocument* aDocument,
         newInnerWindow->mSessionStorage = nullptr;
 
         newInnerWindow->ClearDocumentDependentSlots(cx);
-
-        // When replacing an initial about:blank document we call
-        // ExecutionReady again to update the client creation URL.
-        rv = newInnerWindow->ExecutionReady();
-        NS_ENSURE_SUCCESS(rv, rv);
       }
     } else {
       newInnerWindow->InnerSetNewDocument(cx, aDocument);
@@ -2009,9 +2004,6 @@ nsGlobalWindowOuter::SetNewDocument(nsIDocument* aDocument,
       // Initialize DOM classes etc on the inner window.
       JS::Rooted<JSObject*> obj(cx, newInnerGlobal);
       rv = kungFuDeathGrip->InitClasses(obj);
-      NS_ENSURE_SUCCESS(rv, rv);
-
-      rv = newInnerWindow->ExecutionReady();
       NS_ENSURE_SUCCESS(rv, rv);
     }
 

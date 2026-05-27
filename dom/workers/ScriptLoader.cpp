@@ -570,7 +570,6 @@ class ScriptLoaderRunnable final : public nsIRunnable,
   nsCOMPtr<nsIEventTarget> mSyncLoopTarget;
   nsTArray<ScriptLoadInfo> mLoadInfos;
   RefPtr<CacheCreator> mCacheCreator;
-  Maybe<ServiceWorkerDescriptor> mController;
   bool mIsMainScript;
   WorkerScriptType mWorkerScriptType;
   bool mCanceled;
@@ -1230,10 +1229,6 @@ private:
       if (parent) {
         // XHR Params Allowed
         mWorkerPrivate->SetXHRParamsAllowed(parent->XHRParamsAllowed());
-      }
-
-      if (chanLoadInfo) {
-        mController = chanLoadInfo->GetController();
       }
     }
 
@@ -2003,11 +1998,8 @@ ScriptExecutorRunnable::WorkerRun(JSContext* aCx, WorkerPrivate* aWorkerPrivate)
     }
 
     // If this is a top level script that succeeded, then mark the
-    // Client execution ready and possible controlled by a service worker.
+    // Client execution ready.
     if (mIsWorkerScript) {
-      if (mScriptLoader.mController.isSome()) {
-        aWorkerPrivate->Control(mScriptLoader.mController.ref());
-      }
       aWorkerPrivate->ExecutionReady();
     }
 

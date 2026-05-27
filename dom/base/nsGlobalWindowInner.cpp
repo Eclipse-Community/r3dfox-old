@@ -1789,13 +1789,6 @@ nsGlobalWindowInner::EnsureClientSource()
   // the client in the docshell.  This mainly occurs in situations where
   // the principal is not clearly inherited from the parent; e.g. sandboxed
   // iframes, window.open(), etc.
-  // TODO: We may not be marking initial about:blank documents created
-  //       this way as controlled by a service worker properly.  The
-  //       controller should be coming from the same place as the inheritted
-  //       principal.  We do this in docshell, but as mentioned we aren't
-  //       smart enough to handle all cases yet.  For example, a
-  //       window.open() with new URL should inherit the controller from
-  //       the opener, but we probably don't handle that yet.
   if (!mClientSource) {
     mClientSource = ClientManager::CreateSource(ClientType::Window,
                                                 EventTargetFor(TaskCategory::Other),
@@ -1803,16 +1796,6 @@ nsGlobalWindowInner::EnsureClientSource()
     MOZ_DIAGNOSTIC_ASSERT(mClientSource);
     newClientSource = true;
   }
-
-  // The load may have started controlling the Client as well.  If
-  // so, mark it as controlled immediately here.  The actor may
-  // or may not have been notified by the parent side about being
-  // controlled yet.
-  if (loadInfo) {
-    const Maybe<ServiceWorkerDescriptor> controller = loadInfo->GetController();
-    if (controller.isSome()) {
-      mClientSource->SetController(controller.ref());
-    }
 
   // Its possible that we got a client just after being frozen in
   // the bfcache.  In that case freeze the client immediately.
@@ -2294,12 +2277,6 @@ Maybe<ClientInfo>
 nsPIDOMWindowInner::GetClientInfo() const
 {
   return Move(nsGlobalWindowInner::Cast(this)->GetClientInfo());
-}
-
-Maybe<ServiceWorkerDescriptor>
-nsPIDOMWindowInner::GetController() const
-{
-  return Move(nsGlobalWindowInner::Cast(this)->GetController());
 }
 
 void
@@ -6134,17 +6111,6 @@ nsGlobalWindowInner::GetClientInfo() const
     clientInfo.emplace(mClientSource->Info());
   }
   return Move(clientInfo);
-}
-
-Maybe<ServiceWorkerDescriptor>
-nsGlobalWindowInner::GetController() const
-{
-  MOZ_ASSERT(NS_IsMainThread());
-  Maybe<ServiceWorkerDescriptor> controller;
-  if (mClientSource) {
-    controller = mClientSource->GetController();
-  }
-  return Move(controller);
 }
 
 nsresult

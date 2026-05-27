@@ -270,23 +270,6 @@ ClientSource::Info() const
 }
 
 void
-ClientSource::WorkerSyncPing(WorkerPrivate* aWorkerPrivate)
-{
-  NS_ASSERT_OWNINGTHREAD(ClientSource);
-  MOZ_DIAGNOSTIC_ASSERT(aWorkerPrivate);
-
-  if (IsShutdown()) {
-    return;
-  }
-
-  MOZ_DIAGNOSTIC_ASSERT(aWorkerPrivate == mManager->GetWorkerPrivate());
-  aWorkerPrivate->AssertIsOnWorkerThread();
-  MOZ_DIAGNOSTIC_ASSERT(GetActor());
-
-  GetActor()->SendWorkerSyncPing();
-}
-
-void
 ClientSource::SetController(const ServiceWorkerDescriptor& aServiceWorker)
 {
   NS_ASSERT_OWNINGTHREAD(ClientSource);

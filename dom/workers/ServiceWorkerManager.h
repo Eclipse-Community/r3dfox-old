@@ -15,7 +15,6 @@
 #include "mozilla/AutoRestore.h"
 #include "mozilla/ConsoleReportCollector.h"
 #include "mozilla/LinkedList.h"
-#include "mozilla/MozPromise.h"
 #include "mozilla/Preferences.h"
 #include "mozilla/TypedEnumBits.h"
 #include "mozilla/UniquePtr.h"
@@ -391,7 +390,7 @@ private:
   void
   NotifyServiceWorkerRegistrationRemoved(ServiceWorkerRegistrationInfo* aRegistration);
 
-  RefPtr<GenericPromise>
+  void
   StartControllingADocument(ServiceWorkerRegistrationInfo* aRegistration,
                             nsIDocument* aDoc,
                             const nsAString& aDocumentId);

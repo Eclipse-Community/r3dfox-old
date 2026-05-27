@@ -37,7 +37,6 @@ class WorkerPrivate;
 class ClientManager final : public ClientThing<ClientManagerChild>
 {
   friend class ClientManagerChild;
-  friend class ClientSource;
 
   ClientManager();
   ~ClientManager();

@@ -51,7 +51,6 @@ class DocGroup;
 class TabGroup;
 class Element;
 class Performance;
-class ServiceWorkerDescriptor;
 class ServiceWorkerRegistration;
 class Timeout;
 class TimeoutManager;
@@ -327,7 +326,6 @@ public:
   bool HasOpenWebSockets() const;
 
   mozilla::Maybe<mozilla::dom::ClientInfo> GetClientInfo() const;
-  mozilla::Maybe<mozilla::dom::ServiceWorkerDescriptor> GetController() const;
 
   mozilla::dom::TabGroup* TabGroup();
 

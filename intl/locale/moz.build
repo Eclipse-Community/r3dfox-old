@@ -12,10 +12,12 @@ if toolkit == 'windows':
     DIRS += ['windows']
 elif toolkit == 'cocoa':
     DIRS += ['mac']
-elif 'gtk' in toolkit:
-    DIRS += ['gtk']
-elif toolkit == 'android':
-    DIRS += ['android']
+else:
+    DIRS += ['unix']
+    if 'gtk' in CONFIG['MOZ_WIDGET_TOOLKIT']:
+        DIRS += ['gtk']
+    elif CONFIG['MOZ_WIDGET_TOOLKIT'] == 'android':
+        DIRS += ['android']
 
 XPIDL_SOURCES += [
     'mozILocaleService.idl',
@@ -28,6 +30,7 @@ XPIDL_MODULE = 'locale'
 EXPORTS += [
     'DateTimeFormat.h',
     'nsCollationCID.h',
+    'nsIPlatformCharset.h',
     'nsLanguageAtomService.h',
     'nsUConvPropertySearch.h',
 ]

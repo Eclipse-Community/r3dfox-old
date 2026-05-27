@@ -139,7 +139,6 @@ namespace indexedDB {
 
 using namespace mozilla::dom::quota;
 using namespace mozilla::ipc;
-using mozilla::dom::quota::Client;
 
 namespace {
 

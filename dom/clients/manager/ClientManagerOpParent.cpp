@@ -54,11 +54,6 @@ ClientManagerOpParent::Init(const ClientOpConstructorArgs& aArgs)
                   aArgs.get_ClientMatchAllArgs());
       break;
     }
-    case ClientOpConstructorArgs::TClientClaimArgs:
-    {
-      DoServiceOp(&ClientManagerService::Claim, aArgs.get_ClientClaimArgs());
-      break;
-    }
     case ClientOpConstructorArgs::TClientGetInfoAndStateArgs:
     {
       DoServiceOp(&ClientManagerService::GetInfoAndState,

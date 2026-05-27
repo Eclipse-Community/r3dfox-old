@@ -1077,11 +1077,6 @@ nsHtml5TreeOperation::Perform(nsHtml5TreeOpExecutor* aBuilder,
       aBuilder->MaybeComplainAboutCharset(msgId, error, (uint32_t)lineNumber);
       return NS_OK;
     }
-    case eTreeOpDisableEncodingMenu: {
-      nsIDocument* doc = aBuilder->GetDocument();
-      doc->DisableEncodingMenu();
-      return NS_OK;
-    }
     case eTreeOpAddClass: {
       Element* element = (*(mOne.node))->AsElement();
       char16_t* str = mTwo.unicharPtr;

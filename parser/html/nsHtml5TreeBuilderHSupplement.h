@@ -124,8 +124,6 @@
                                    bool aError,
                                    int32_t aLineNumber);
 
-    void TryToDisableEncodingMenu();
-
     void AddSnapshotToScript(nsAHtml5TreeBuilderState* aSnapshot, int32_t aLine);
 
     void DropHandles();

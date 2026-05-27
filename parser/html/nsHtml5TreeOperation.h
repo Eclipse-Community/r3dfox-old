@@ -60,8 +60,7 @@ enum eHtml5TreeOperation
   eTreeOpAddViewSourceBase,
   eTreeOpAddError,
   eTreeOpAddLineNumberId,
-  eTreeOpStartLayout,
-  eTreeOpDisableEncodingMenu
+  eTreeOpStartLayout
 };
 
 class nsHtml5TreeOperationStringPair {

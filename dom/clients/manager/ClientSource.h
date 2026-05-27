@@ -52,12 +52,6 @@ class ClientSource final : public ClientThing<ClientSourceChild>
 public:
   ~ClientSource();
 
-  void
-  Freeze();
-
-  void
-  Thaw();
-
   const ClientInfo&
   Info() const;
 

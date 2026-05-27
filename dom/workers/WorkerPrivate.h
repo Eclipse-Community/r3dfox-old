@@ -63,8 +63,6 @@ struct RuntimeStats;
 namespace mozilla {
 class ThrottledEventQueue;
 namespace dom {
-class ClientInfo;
-class ClientSource;
 class Function;
 class MessagePort;
 class MessagePortIdentifier;
@@ -1069,7 +1067,6 @@ class WorkerPrivate : public WorkerPrivateParent<WorkerPrivate>
   uint32_t mErrorHandlerRecursionCount;
   uint32_t mNextTimeoutId;
   Status mStatus;
-  UniquePtr<ClientSource> mClientSource;
   bool mFrozen;
   bool mTimerRunning;
   bool mRunningExpiredTimeouts;
@@ -1506,15 +1503,6 @@ public:
 
   void
   DumpCrashInformation(nsACString& aString);
-
-  void
-  EnsureClientSource();
-
-  const ClientInfo&
-  GetClientInfo() const;
-
-  void
-  ExecutionReady();
 
 private:
   WorkerPrivate(WorkerPrivate* aParent,

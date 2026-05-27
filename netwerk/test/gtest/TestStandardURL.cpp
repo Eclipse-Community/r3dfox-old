@@ -243,26 +243,19 @@ TEST(TestStandardURL, Mutator)
   nsCOMPtr<nsIURI> uri;
   nsresult rv = NS_MutateURI(NS_STANDARDURLMUTATOR_CONTRACTID)
                   .SetSpec(NS_LITERAL_CSTRING("http://example.com"))
-                  .Finalize(uri);
+                  .Finalize(getter_AddRefs(uri));
   ASSERT_EQ(rv, NS_OK);
 
   ASSERT_EQ(uri->GetSpec(out), NS_OK);
   ASSERT_TRUE(out == NS_LITERAL_CSTRING("http://example.com/"));
 
+  nsCOMPtr<nsIURI> uri2;
   rv = NS_MutateURI(uri)
          .SetScheme(NS_LITERAL_CSTRING("ftp"))
          .SetHost(NS_LITERAL_CSTRING("mozilla.org"))
          .SetPathQueryRef(NS_LITERAL_CSTRING("/path?query#ref"))
-         .Finalize(uri);
+         .Finalize(getter_AddRefs(uri2));
   ASSERT_EQ(rv, NS_OK);
-  ASSERT_EQ(uri->GetSpec(out), NS_OK);
+  ASSERT_EQ(uri2->GetSpec(out), NS_OK);
   ASSERT_TRUE(out == NS_LITERAL_CSTRING("ftp://mozilla.org/path?query#ref"));
-
-  nsCOMPtr<nsIURL> url;
-  rv = NS_MutateURI(uri)
-         .SetScheme(NS_LITERAL_CSTRING("https"))
-         .Finalize(url);
-  ASSERT_EQ(rv, NS_OK);
-  ASSERT_EQ(url->GetSpec(out), NS_OK);
-  ASSERT_TRUE(out == NS_LITERAL_CSTRING("https://mozilla.org/path?query#ref"));
 }

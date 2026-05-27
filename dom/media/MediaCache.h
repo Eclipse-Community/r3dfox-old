@@ -15,8 +15,6 @@
 #include "nsTArray.h"
 #include "nsTHashtable.h"
 
-#include "MediaChannelStatistics.h"
-
 class nsIEventTarget;
 class nsIPrincipal;
 
@@ -315,8 +313,6 @@ public:
   // are used, to ensure no data is evicted.
   nsresult GetCachedRanges(MediaByteRangeSet& aRanges);
 
-  double GetDownloadRate(bool* aIsReliable);
-
   // Reads from buffered data only. Will fail if not all data to be read is
   // in the cache. Will not mark blocks as read. Can be called from the main
   // thread. It's the caller's responsibility to wrap the call in a pin/unpin,
@@ -460,8 +456,6 @@ private:
                                nsresult aStatus,
                                bool aReopenOnError);
 
-  void UpdateDownloadStatistics(AutoLock&);
-
   // Instance of MediaCache to use with this MediaCacheStream.
   RefPtr<MediaCache> mMediaCache;
 
@@ -546,8 +540,6 @@ private:
 
   // True if the client is suspended. Accessed on the owner thread only.
   bool mClientSuspended = false;
-
-  MediaChannelStatistics mDownloadStatistics;
 };
 
 } // namespace mozilla

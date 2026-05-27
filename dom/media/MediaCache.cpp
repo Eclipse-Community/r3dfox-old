@@ -2032,8 +2032,6 @@ MediaCacheStream::NotifyDataStartedInternal(uint32_t aLoadID,
   // Reset these flags since a new load has begun.
   mChannelEnded = false;
   mDidNotifyDataEnded = false;
-
-  UpdateDownloadStatistics(lock);
 }
 
 void
@@ -2079,8 +2077,6 @@ MediaCacheStream::NotifyDataReceived(uint32_t aLoadID,
     // stored to the wrong positoin.
     return;
   }
-
-  mDownloadStatistics.AddBytes(aCount);
 
   auto source = MakeSpan<const uint8_t>(aData, aCount);
 
@@ -2170,16 +2166,6 @@ MediaCacheStream::FlushPartialBlockInternal(AutoLock& aLock, bool aNotifyAll)
 }
 
 void
-MediaCacheStream::UpdateDownloadStatistics(AutoLock&)
-{
-  if (mChannelEnded || mClientSuspended) {
-    mDownloadStatistics.Stop();
-  } else {
-    mDownloadStatistics.Start();
-  }
-}
-
-void
 MediaCacheStream::NotifyDataEndedInternal(uint32_t aLoadID,
                                           nsresult aStatus,
                                           bool aReopenOnError)
@@ -2235,8 +2221,6 @@ MediaCacheStream::NotifyDataEndedInternal(uint32_t aLoadID,
   // CacheClientNotifyDataEnded() which will read |mChannelEnded|.
   mChannelEnded = true;
   mMediaCache->QueueUpdate(lock);
-
-  UpdateDownloadStatistics(lock);
 
   if (NS_FAILED(aStatus)) {
     // Notify the client about this network error.
@@ -2294,7 +2278,6 @@ MediaCacheStream::NotifyClientSuspended(bool aSuspended)
         mClientSuspended = aSuspended;
         // mClientSuspended changes the decision of reading streams.
         mMediaCache->QueueUpdate(lock);
-        UpdateDownloadStatistics(lock);
       }
     });
   OwnerThread()->Dispatch(r.forget());
@@ -2868,8 +2851,6 @@ MediaCacheStream::InitAsClone(MediaCacheStream* aOriginal)
   // Grab cache blocks from aOriginal as readahead blocks for our stream
   mStreamLength = aOriginal->mStreamLength;
   mIsTransportSeekable = aOriginal->mIsTransportSeekable;
-  mDownloadStatistics = aOriginal->mDownloadStatistics;
-  mDownloadStatistics.Stop();
 
   // Cloned streams are initially suspended, since there is no channel open
   // initially for a clone.
@@ -2928,14 +2909,6 @@ nsresult MediaCacheStream::GetCachedRanges(MediaByteRangeSet& aRanges)
       "Must have advanced to start of next range, or hit end of stream");
   }
   return NS_OK;
-}
-
-double
-MediaCacheStream::GetDownloadRate(bool* aIsReliable)
-{
-  MOZ_ASSERT(!NS_IsMainThread());
-  AutoLock lock(mMediaCache->Monitor());
-  return mDownloadStatistics.GetRate(aIsReliable);
 }
 
 nsCString

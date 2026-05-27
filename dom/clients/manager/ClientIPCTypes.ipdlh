@@ -70,10 +70,6 @@ struct ClientControlledArgs
   IPCServiceWorkerDescriptor serviceWorker;
 };
 
-struct ClientFocusArgs
-{
-};
-
 struct ClientNavigateArgs
 {
   IPCClientInfo target;
@@ -115,7 +111,6 @@ struct ClientOpenWindowArgs
 union ClientOpConstructorArgs
 {
   ClientControlledArgs;
-  ClientFocusArgs;
   ClientNavigateArgs;
   ClientMatchAllArgs;
   ClientClaimArgs;
@@ -138,7 +133,6 @@ struct ClientNavigateOpConstructorArgs
 union ClientOpResult
 {
   nsresult;
-  IPCClientState;
   ClientInfoAndState;
   ClientList;
 };

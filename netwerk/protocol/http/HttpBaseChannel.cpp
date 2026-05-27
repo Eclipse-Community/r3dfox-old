@@ -176,7 +176,6 @@ HttpBaseChannel::HttpBaseChannel()
   , mChannelIsForDownload(false)
   , mTracingEnabled(true)
   , mTimingEnabled(false)
-  , mReportTiming(true)
   , mAllowSpdy(true)
   , mAllowAltSvc(true)
   , mBeConservative(false)
@@ -4203,18 +4202,6 @@ HttpBaseChannel::GetPerformance()
   }
 
   return docPerformance;
-}
-
-NS_IMETHODIMP
-HttpBaseChannel::SetReportResourceTiming(bool enabled) {
-  mReportTiming = enabled;
-  return NS_OK;
-}
-
-NS_IMETHODIMP
-HttpBaseChannel::GetReportResourceTiming(bool* _retval) {
-  *_retval = mReportTiming;
-  return NS_OK;
 }
 
 nsIURI*

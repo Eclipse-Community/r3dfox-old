@@ -81,6 +81,12 @@ struct ClientNavigateArgs
   nsCString baseURL;
 };
 
+union ClientEndPoint
+{
+  IPCClientInfo;
+  IPCServiceWorkerDescriptor;
+};
+
 struct ClientPostMessageArgs
 {
   ClonedMessageData clonedData;
@@ -89,7 +95,7 @@ struct ClientPostMessageArgs
 
 struct ClientMatchAllArgs
 {
-  IPCServiceWorkerDescriptor serviceWorker;
+  ClientEndPoint endpoint;
   ClientType type;
   bool includeUncontrolled;
 };

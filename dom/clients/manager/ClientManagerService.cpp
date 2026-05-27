@@ -437,8 +437,12 @@ ClientManagerService::MatchAll(const ClientMatchAllArgs& aArgs)
 {
   AssertIsOnBackgroundThread();
 
-  ServiceWorkerDescriptor swd(aArgs.serviceWorker());
-  const PrincipalInfo& principalInfo = swd.PrincipalInfo();
+  const ClientEndPoint& endpoint = aArgs.endpoint();
+
+  const PrincipalInfo& principalInfo =
+    endpoint.type() == ClientEndPoint::TIPCClientInfo
+      ? endpoint.get_IPCClientInfo().principalInfo()
+      : endpoint.get_IPCServiceWorkerDescriptor().principalInfo();
 
   RefPtr<PromiseListHolder> promiseList = new PromiseListHolder();
 
@@ -460,14 +464,21 @@ ClientManagerService::MatchAll(const ClientMatchAllArgs& aArgs)
     }
 
     if (!aArgs.includeUncontrolled()) {
+      if (endpoint.type() != ClientEndPoint::TIPCServiceWorkerDescriptor) {
+        continue;
+      }
+
       const Maybe<ServiceWorkerDescriptor>& controller =
         source->GetController();
       if (controller.isNothing()) {
         continue;
       }
 
-      if(controller.ref().Id() != swd.Id() ||
-         controller.ref().Scope() != swd.Scope()) {
+      const IPCServiceWorkerDescriptor& serviceWorker =
+        endpoint.get_IPCServiceWorkerDescriptor();
+
+      if(controller.ref().Id() != serviceWorker.id() ||
+         controller.ref().Scope() != serviceWorker.scope()) {
         continue;
       }
     }

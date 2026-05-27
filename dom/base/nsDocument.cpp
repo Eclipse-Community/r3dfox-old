@@ -1537,7 +1537,6 @@ nsIDocument::nsIDocument()
     mDidCallBeginLoad(false),
     mBufferingCSPViolations(false),
     mAllowPaymentRequest(false),
-    mEncodingMenuDisabled(false),
     mIsScopedStyleEnabled(eScopedStyle_Unknown),
     mCompatMode(eCompatibility_FullStandards),
     mReadyState(ReadyState::READYSTATE_UNINITIALIZED),

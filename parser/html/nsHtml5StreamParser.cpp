@@ -182,7 +182,6 @@ nsHtml5StreamParser::nsHtml5StreamParser(nsHtml5TreeOpExecutor* aExecutor,
   , mLoadFlusher(new nsHtml5LoadFlusher(aExecutor))
   , mFeedChardet(false)
   , mInitialEncodingWasFromParentFrame(false)
-  , mHasHadErrors(false)
   , mFlushTimer(NS_NewTimer())
   , mFlushTimerMutex("nsHtml5StreamParser mFlushTimerMutex")
   , mFlushTimerArmed(false)
@@ -1436,9 +1435,6 @@ nsHtml5StreamParser::ParseAvailableData()
               return;
             }
             mAtEOF = true;
-            if (mEncoding == UTF_8_ENCODING && !mHasHadErrors) {
-              mTreeBuilder->TryToDisableEncodingMenu();
-            }
             if (mCharsetSource < kCharsetFromMetaTag) {
               if (mInitialEncodingWasFromParentFrame) {
                 // Unfortunately, this check doesn't take effect for

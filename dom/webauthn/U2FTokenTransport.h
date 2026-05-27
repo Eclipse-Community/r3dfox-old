@@ -24,6 +24,7 @@ typedef MozPromise<WebAuthnGetAssertionResult, nsresult, true> U2FSignPromise;
 
 class U2FTokenTransport {
  public:
+  // unthreadsafe this maybe?
   NS_INLINE_DECL_THREADSAFE_REFCOUNTING(U2FTokenTransport);
   U2FTokenTransport() {}
 

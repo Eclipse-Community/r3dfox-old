@@ -6,7 +6,6 @@
 
 #include "mozilla/dom/U2FTokenManager.h"
 #include "mozilla/dom/U2FTokenTransport.h"
-#include "mozilla/dom/U2FHIDTokenManager.h"
 #include "mozilla/dom/U2FSoftTokenManager.h"
 #include "mozilla/dom/PWebAuthnTransactionParent.h"
 #include "mozilla/MozPromise.h"
@@ -26,8 +25,6 @@
 #define PREF_U2F_NSSTOKEN_COUNTER "security.webauth.softtoken_counter"
 #define PREF_WEBAUTHN_SOFTTOKEN_ENABLED \
   "security.webauth.webauthn_enable_softtoken"
-#define PREF_WEBAUTHN_USBTOKEN_ENABLED \
-  "security.webauth.webauthn_enable_usbtoken"
 #define PREF_WEBAUTHN_ALLOW_DIRECT_ATTESTATION \
   "security.webauth.webauthn_testing_allow_direct_attestation"
 
@@ -73,8 +70,6 @@ class U2FPrefManager final : public nsIObserver {
                                      PREF_WEBAUTHN_SOFTTOKEN_ENABLED);
       Preferences::AddStrongObserver(gPrefManager, PREF_U2F_NSSTOKEN_COUNTER);
       Preferences::AddStrongObserver(gPrefManager,
-                                     PREF_WEBAUTHN_USBTOKEN_ENABLED);
-      Preferences::AddStrongObserver(gPrefManager,
                                      PREF_WEBAUTHN_ALLOW_DIRECT_ATTESTATION);
       ClearOnShutdown(&gPrefManager, ShutdownPhase::ShutdownThreads);
     }
@@ -91,11 +86,6 @@ class U2FPrefManager final : public nsIObserver {
   int GetSoftTokenCounter() {
     MutexAutoLock lock(mPrefMutex);
     return mSoftTokenCounter;
-  }
-
-  bool GetUsbTokenEnabled() {
-    MutexAutoLock lock(mPrefMutex);
-    return mUsbTokenEnabled;
   }
 
   bool GetAllowDirectAttestationForTesting() {
@@ -116,7 +106,6 @@ class U2FPrefManager final : public nsIObserver {
     MutexAutoLock lock(mPrefMutex);
     mSoftTokenEnabled = Preferences::GetBool(PREF_WEBAUTHN_SOFTTOKEN_ENABLED);
     mSoftTokenCounter = Preferences::GetUint(PREF_U2F_NSSTOKEN_COUNTER);
-    mUsbTokenEnabled = Preferences::GetBool(PREF_WEBAUTHN_USBTOKEN_ENABLED);
     mAllowDirectAttestation =
         Preferences::GetBool(PREF_WEBAUTHN_ALLOW_DIRECT_ATTESTATION);
   }
@@ -124,7 +113,6 @@ class U2FPrefManager final : public nsIObserver {
   Mutex mPrefMutex;
   bool mSoftTokenEnabled;
   int mSoftTokenCounter;
-  bool mUsbTokenEnabled;
   bool mAllowDirectAttestation;
 };
 
@@ -247,14 +235,6 @@ RefPtr<U2FTokenTransport> U2FTokenManager::GetTokenManagerImpl() {
   }
 
   auto pm = U2FPrefManager::Get();
-
-  // Prefer the HW token, even if the softtoken is enabled too.
-  // We currently don't support soft and USB tokens enabled at the
-  // same time as the softtoken would always win the race to register.
-  // We could support it for signing though...
-  if (pm->GetUsbTokenEnabled()) {
-    return new U2FHIDTokenManager();
-  }
 
   if (pm->GetSoftTokenEnabled()) {
     return new U2FSoftTokenManager(pm->GetSoftTokenCounter());

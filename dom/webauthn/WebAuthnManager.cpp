@@ -552,24 +552,6 @@ already_AddRefed<Promise> WebAuthnManager::GetAssertion(
       CryptoBuffer cb;
       cb.Assign(s.mId);
       c.id() = cb;
-
-      // Serialize transports.
-      if (s.mTransports.WasPassed()) {
-        uint8_t transports = 0;
-        for (const auto& t : s.mTransports.Value()) {
-          if (t == AuthenticatorTransport::Usb) {
-            transports |= U2F_AUTHENTICATOR_TRANSPORT_USB;
-          }
-          if (t == AuthenticatorTransport::Nfc) {
-            transports |= U2F_AUTHENTICATOR_TRANSPORT_NFC;
-          }
-          if (t == AuthenticatorTransport::Ble) {
-            transports |= U2F_AUTHENTICATOR_TRANSPORT_BLE;
-          }
-        }
-        c.transports() = transports;
-      }
-
       allowList.AppendElement(c);
     }
   }

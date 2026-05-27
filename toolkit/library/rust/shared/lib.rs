@@ -22,7 +22,6 @@ extern crate encoding_glue;
 extern crate audioipc_client;
 #[cfg(feature = "cubeb-remoting")]
 extern crate audioipc_server;
-extern crate u2fhid;
 extern crate log;
 extern crate syn;
 

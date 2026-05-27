@@ -22,7 +22,6 @@ EXPORTS.mozilla.dom += [
     'AuthenticatorAttestationResponse.h',
     'AuthenticatorResponse.h',
     'PublicKeyCredential.h',
-    'U2FHIDTokenManager.h',
     'U2FSoftTokenManager.h',
     'U2FTokenManager.h',
     'U2FTokenTransport.h',
@@ -41,7 +40,6 @@ UNIFIED_SOURCES += [
     'cbor-cpp/src/encoder.cpp',
     'cbor-cpp/src/output_dynamic.cpp',
     'PublicKeyCredential.cpp',
-    'U2FHIDTokenManager.cpp',
     'U2FSoftTokenManager.cpp',
     'U2FTokenManager.cpp',
     'WebAuthnCBORUtil.cpp',
@@ -63,11 +61,6 @@ LOCAL_INCLUDES += [
     '/security/pkix/include',
     '/security/pkix/lib',
 ]
-
-if CONFIG['OS_ARCH'] == 'WINNT':
-    OS_LIBS += [
-        'hid',
-    ]
 
 MOCHITEST_MANIFESTS += ['tests/mochitest.ini']
 BROWSER_CHROME_MANIFESTS += ['tests/browser/browser.ini']

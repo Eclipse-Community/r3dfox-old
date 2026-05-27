@@ -103,9 +103,6 @@ struct ClientGetInfoAndStateArgs
 
 struct ClientOpenWindowArgs
 {
-  PrincipalInfo principalInfo;
-  nsCString url;
-  nsCString baseURL;
 };
 
 union ClientOpConstructorArgs
@@ -115,7 +112,6 @@ union ClientOpConstructorArgs
   ClientMatchAllArgs;
   ClientClaimArgs;
   ClientGetInfoAndStateArgs;
-  ClientOpenWindowArgs;
 };
 
 struct ClientList

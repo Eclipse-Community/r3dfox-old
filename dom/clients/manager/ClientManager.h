@@ -26,7 +26,6 @@ class ClientManagerChild;
 class ClientMatchAllArgs;
 class ClientNavigateArgs;
 class ClientOpConstructorArgs;
-class ClientOpenWindowArgs;
 class ClientSource;
 enum class ClientType : uint8_t;
 
@@ -111,10 +110,6 @@ public:
   static RefPtr<ClientOpPromise>
   Navigate(const ClientNavigateArgs& aArgs,
            nsISerialEventTarget* aSerialEventTarget);
-
-  static RefPtr<ClientOpPromise>
-  OpenWindow(const ClientOpenWindowArgs& aArgs,
-             nsISerialEventTarget* aSerialEventTarget);
 
   NS_INLINE_DECL_REFCOUNTING(mozilla::dom::ClientManager)
 };

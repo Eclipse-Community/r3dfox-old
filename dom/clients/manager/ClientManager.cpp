@@ -293,14 +293,5 @@ ClientManager::Navigate(const ClientNavigateArgs& aArgs,
   return mgr->StartOp(aArgs, aSerialEventTarget);
 }
 
-// static
-RefPtr<ClientOpPromise>
-ClientManager::OpenWindow(const ClientOpenWindowArgs& aArgs,
-                          nsISerialEventTarget* aSerialEventTarget)
-{
-  RefPtr<ClientManager> mgr = GetOrCreateForCurrentThread();
-  return mgr->StartOp(aArgs, aSerialEventTarget);
-}
-
 } // namespace dom
 } // namespace mozilla

@@ -2838,42 +2838,22 @@ ServiceWorkerManager::GetDocumentController(nsPIDOMWindowInner* aWindow,
     return NS_ERROR_DOM_INVALID_STATE_ERR;
   }
 
-  Maybe<ServiceWorkerDescriptor> controller = aWindow->GetController();
-  if (controller.isNothing()) {
-    return NS_ERROR_DOM_INVALID_STATE_ERR;
-  }
-
   nsCOMPtr<nsIDocument> doc = aWindow->GetExtantDoc();
-  if (NS_WARN_IF(!doc)) {
+  if (!doc) {
     return NS_ERROR_DOM_INVALID_STATE_ERR;
   }
 
-  nsCOMPtr<nsIPrincipal> principal = doc->NodePrincipal();
-  if (NS_WARN_IF(!principal)) {
-    return NS_ERROR_DOM_INVALID_STATE_ERR;
-  }
-
-  nsAutoCString scopeKey;
-  nsresult rv = PrincipalToScopeKey(principal, scopeKey);
+  RefPtr<ServiceWorkerRegistrationInfo> registration;
+  nsresult rv = GetDocumentRegistration(doc, getter_AddRefs(registration));
   if (NS_WARN_IF(NS_FAILED(rv))) {
     return rv;
   }
 
-  RefPtr<ServiceWorkerRegistrationInfo> registration =
-    GetRegistration(scopeKey, controller.ref().Scope());
-  if (NS_WARN_IF(!registration)) {
-    return NS_ERROR_DOM_INVALID_STATE_ERR;
-  }
+  MOZ_ASSERT(registration->GetActive());
+  RefPtr<ServiceWorker> serviceWorker =
+    registration->GetActive()->GetOrCreateInstance(aWindow);
 
-  RefPtr<ServiceWorkerInfo> active = registration->GetActive();
-  if (NS_WARN_IF(!active) ||
-      NS_WARN_IF(active->Descriptor().Id() != controller.ref().Id())) {
-    return NS_ERROR_DOM_INVALID_STATE_ERR;
-  }
-
-  RefPtr<ServiceWorker> serviceWorker = active->GetOrCreateInstance(aWindow);
   serviceWorker.forget(aServiceWorker);
-
   return NS_OK;
 }
 
@@ -3178,19 +3158,46 @@ ServiceWorkerManager::UpdateInternal(nsIPrincipal* aPrincipal,
   queue->ScheduleJob(job);
 }
 
-already_AddRefed<GenericPromise>
+namespace {
+
+static void
+FireControllerChangeOnDocument(nsIDocument* aDocument)
+{
+  AssertIsOnMainThread();
+  MOZ_ASSERT(aDocument);
+
+  nsCOMPtr<nsPIDOMWindowInner> w = aDocument->GetInnerWindow();
+  if (!w) {
+    NS_WARNING("Failed to dispatch controllerchange event");
+    return;
+  }
+
+  auto* window = nsGlobalWindowInner::Cast(w.get());
+  dom::Navigator* navigator = window->Navigator();
+  if (!navigator) {
+    return;
+  }
+
+  RefPtr<ServiceWorkerContainer> container = navigator->ServiceWorker();
+  ErrorResult result;
+  container->ControllerChanged(result);
+  if (result.Failed()) {
+    NS_WARNING("Failed to dispatch controllerchange event");
+  }
+}
+
+} // anonymous namespace
+
+void
 ServiceWorkerManager::MaybeClaimClient(nsIDocument* aDocument,
                                        ServiceWorkerRegistrationInfo* aWorkerRegistration)
 {
   MOZ_ASSERT(aWorkerRegistration);
   MOZ_ASSERT(aWorkerRegistration->GetActive());
 
-  RefPtr<GenericPromise> ref;
-
   // Same origin check
   if (!aWorkerRegistration->mPrincipal->Equals(aDocument->NodePrincipal())) {
-    ref = GenericPromise::CreateAndReject(NS_ERROR_DOM_SECURITY_ERR, __func__);
-    return ref.forget();
+    return;
   }
 
   // The registration that should be controlling the client
@@ -3202,41 +3209,16 @@ ServiceWorkerManager::MaybeClaimClient(nsIDocument* aDocument,
   GetDocumentRegistration(aDocument, getter_AddRefs(controllingRegistration));
 
   if (aWorkerRegistration != matchingRegistration ||
-      aWorkerRegistration == controllingRegistration) {
-    ref = GenericPromise::CreateAndResolve(true, __func__);
-    return ref.forget();
+        aWorkerRegistration == controllingRegistration) {
+    return;
   }
 
   if (controllingRegistration) {
     StopControllingADocument(controllingRegistration);
   }
 
-  ref = StartControllingADocument(aWorkerRegistration, aDocument);
-  return ref.forget();
-}
-
-already_AddRefed<GenericPromise>
-ServiceWorkerManager::MaybeClaimClient(nsIDocument* aDoc,
-                                       const ServiceWorkerDescriptor& aServiceWorker)
-{
-  RefPtr<GenericPromise> ref;
-
-  nsCOMPtr<nsIPrincipal> principal =
-    PrincipalInfoToPrincipal(aServiceWorker.PrincipalInfo());
-  if (!principal) {
-    ref = GenericPromise::CreateAndResolve(false, __func__);
-    return ref.forget();
-  }
-
-  RefPtr<ServiceWorkerRegistrationInfo> registration =
-    GetRegistration(principal, aServiceWorker.Scope());
-  if (!registration) {
-    ref = GenericPromise::CreateAndResolve(false, __func__);
-    return ref.forget();
-  }
-
-  ref = MaybeClaimClient(aDoc, registration);
-  return ref.forget();
+  StartControllingADocument(aWorkerRegistration, aDocument);
+  FireControllerChangeOnDocument(aDocument);
 }
 
 void
@@ -3265,14 +3247,11 @@ ServiceWorkerManager::SetSkipWaitingFlag(nsIPrincipal* aPrincipal,
 }
 
 void
-ServiceWorkerManager::UpdateClientControllers(ServiceWorkerRegistrationInfo* aRegistration)
+ServiceWorkerManager::FireControllerChange(ServiceWorkerRegistrationInfo* aRegistration)
 {
   AssertIsOnMainThread();
 
-  RefPtr<ServiceWorkerInfo> activeWorker = aRegistration->GetActive();
-  MOZ_DIAGNOSTIC_ASSERT(activeWorker);
-
-  AutoTArray<nsCOMPtr<nsPIDOMWindowInner>, 16> innerWindows;
+  AutoTArray<nsCOMPtr<nsIDocument>, 16> documents;
   for (auto iter = mControlledDocuments.Iter(); !iter.Done(); iter.Next()) {
     if (iter.UserData() != aRegistration) {
       continue;
@@ -3283,24 +3262,13 @@ ServiceWorkerManager::UpdateClientControllers(ServiceWorkerRegistrationInfo* aRe
       continue;
     }
 
-    nsPIDOMWindowInner* innerWindow = doc->GetInnerWindow();
-    if (NS_WARN_IF(!innerWindow)) {
-      continue;
-    }
-
-    innerWindows.AppendElement(innerWindow);
+    documents.AppendElement(doc);
   }
 
   // Fire event after iterating mControlledDocuments is done to prevent
   // modification by reentering from the event handlers during iteration.
-  for (auto& innerWindow : innerWindows) {
-    Maybe<ClientInfo> clientInfo = innerWindow->GetClientInfo();
-    if (clientInfo.isSome()) {
-      RefPtr<ClientHandle> clientHandle =
-        ClientManager::CreateHandle(clientInfo.ref(),
-                                    innerWindow->EventTargetFor(TaskCategory::Other));
-      clientHandle->Control(activeWorker->Descriptor());
-    }
+  for (auto& doc : documents) {
+    FireControllerChangeOnDocument(doc);
   }
 }
 

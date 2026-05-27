@@ -271,13 +271,9 @@ public:
               uint32_t aFlags,
               JSExnType aExnType);
 
-  already_AddRefed<GenericPromise>
+  void
   MaybeClaimClient(nsIDocument* aDocument,
                    ServiceWorkerRegistrationInfo* aWorkerRegistration);
-
-  already_AddRefed<GenericPromise>
-  MaybeClaimClient(nsIDocument* aDoc,
-                   const ServiceWorkerDescriptor& aServiceWorker);
 
   void
   SetSkipWaitingFlag(nsIPrincipal* aPrincipal, const nsCString& aScope,
@@ -427,7 +423,7 @@ private:
   FireUpdateFoundOnServiceWorkerRegistrations(ServiceWorkerRegistrationInfo* aRegistration);
 
   void
-  UpdateClientControllers(ServiceWorkerRegistrationInfo* aRegistration);
+  FireControllerChange(ServiceWorkerRegistrationInfo* aRegistration);
 
   void
   StorePendingReadyPromise(nsPIDOMWindowInner* aWindow, nsIURI* aURI,

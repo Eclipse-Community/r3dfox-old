@@ -58,7 +58,7 @@ public:
       , public BaseURIMutator<NullPrincipalURI>
   {
     NS_DECL_ISUPPORTS
-    NS_FORWARD_SAFE_NSIURISETTERS_RET(mURI)
+    NS_FORWARD_SAFE_NSIURISETTERS(mURI)
 
     NS_IMETHOD Deserialize(const mozilla::ipc::URIParams& aParams) override
     {
@@ -76,12 +76,8 @@ public:
       return NS_OK;
     }
 
-    NS_IMETHOD SetSpec(const nsACString & aSpec, nsIURIMutator** aMutator) override
+    NS_IMETHOD SetSpec(const nsACString & aSpec) override
     {
-      if (aMutator) {
-        nsCOMPtr<nsIURIMutator> mutator = this;
-        mutator.forget(aMutator);
-      }
       return NS_ERROR_NOT_IMPLEMENTED;
     }
 

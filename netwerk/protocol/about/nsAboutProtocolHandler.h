@@ -92,7 +92,7 @@ public:
         , public BaseURIMutator<nsNestedAboutURI>
     {
         NS_DECL_ISUPPORTS
-        NS_FORWARD_SAFE_NSIURISETTERS_RET(mURI)
+        NS_FORWARD_SAFE_NSIURISETTERS(mURI)
 
         explicit Mutator() { }
     private:

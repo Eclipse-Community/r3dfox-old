@@ -6,7 +6,8 @@
 #ifndef _mozilla_dom_ClientManagerService_h
 #define _mozilla_dom_ClientManagerService_h
 
-#include "ClientOpPromise.h"
+#include "mozilla/ipc/PBackgroundSharedTypes.h"
+#include "mozilla/MozPromise.h"
 #include "nsDataHashtable.h"
 
 namespace mozilla {
@@ -58,9 +59,6 @@ public:
 
   void
   RemoveManager(ClientManagerParent* aManager);
-
-  RefPtr<ClientOpPromise>
-  GetInfoAndState(const ClientGetInfoAndStateArgs& aArgs);
 
   NS_INLINE_DECL_REFCOUNTING(mozilla::dom::ClientManagerService)
 };

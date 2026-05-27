@@ -257,14 +257,5 @@ ClientManager::CreateHandle(const ClientInfo& aClientInfo,
   return mgr->CreateHandleInternal(aClientInfo, aSerialEventTarget);
 }
 
-// static
-RefPtr<ClientOpPromise>
-ClientManager::GetInfoAndState(const ClientGetInfoAndStateArgs& aArgs,
-                               nsISerialEventTarget* aSerialEventTarget)
-{
-  RefPtr<ClientManager> mgr = GetOrCreateForCurrentThread();
-  return mgr->StartOp(aArgs, aSerialEventTarget);
-}
-
 } // namespace dom
 } // namespace mozilla

@@ -219,12 +219,6 @@ ClientSourceParent::IsFrozen() const
   return mFrozen;
 }
 
-bool
-ClientSourceParent::ExecutionReady() const
-{
-  return mExecutionReady;
-}
-
 void
 ClientSourceParent::AttachHandle(ClientHandleParent* aClientHandle)
 {

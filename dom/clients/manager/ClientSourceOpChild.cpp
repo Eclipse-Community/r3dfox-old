@@ -79,12 +79,6 @@ ClientSourceOpChild::Init(const ClientOpConstructorArgs& aArgs)
       DoSourceOp(&ClientSource::Control, aArgs.get_ClientControlledArgs());
       break;
     }
-    case ClientOpConstructorArgs::TClientGetInfoAndStateArgs:
-    {
-      DoSourceOp(&ClientSource::GetInfoAndState,
-                 aArgs.get_ClientGetInfoAndStateArgs());
-      break;
-    }
     default:
     {
       MOZ_ASSERT_UNREACHABLE("unknown client operation!");

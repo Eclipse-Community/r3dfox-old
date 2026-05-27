@@ -65,12 +65,6 @@ class ClientSource final : public ClientThing<ClientSourceChild>
   nsIDocShell*
   GetDocShell() const;
 
-  void
-  MaybeCreateInitialDocument();
-
-  nsresult
-  SnapshotWindowState(ClientState* aStateOut);
-
   // Private methods called by ClientManager
   ClientSource(ClientManager* aManager,
                nsISerialEventTarget* aEventTarget,
@@ -130,12 +124,6 @@ public:
   // been set.
   const Maybe<ServiceWorkerDescriptor>&
   GetController() const;
-
-  RefPtr<ClientOpPromise>
-  GetInfoAndState(const ClientGetInfoAndStateArgs& aArgs);
-
-  nsresult
-  SnapshotState(ClientState* aStateOut);
 
   nsISerialEventTarget*
   EventTarget() const;

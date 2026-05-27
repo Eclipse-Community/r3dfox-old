@@ -50,12 +50,6 @@ union IPCClientState
   IPCClientWorkerState;
 };
 
-struct ClientInfoAndState
-{
-  IPCClientInfo info;
-  IPCClientState state;
-};
-
 struct ClientSourceExecutionReadyArgs
 {
   nsCString url;
@@ -67,12 +61,6 @@ struct ClientControlledArgs
   IPCServiceWorkerDescriptor serviceWorker;
 };
 
-struct ClientGetInfoAndStateArgs
-{
-  nsID id;
-  PrincipalInfo principalInfo;
-};
-
 struct ClientOpenWindowArgs
 {
 };
@@ -80,7 +68,6 @@ struct ClientOpenWindowArgs
 union ClientOpConstructorArgs
 {
   ClientControlledArgs;
-  ClientGetInfoAndStateArgs;
 };
 
 struct ClientNavigateOpConstructorArgs
@@ -90,7 +77,6 @@ struct ClientNavigateOpConstructorArgs
 union ClientOpResult
 {
   nsresult;
-  ClientInfoAndState;
 };
 
 } // namespace dom

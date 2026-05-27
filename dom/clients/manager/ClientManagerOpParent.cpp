@@ -11,31 +11,9 @@
 namespace mozilla {
 namespace dom {
 
-template <typename Method, typename... Args>
-void
-ClientManagerOpParent::DoServiceOp(Method aMethod, Args&&... aArgs)
-{
-  // Note, we need perfect forarding of the template type in order
-  // to allow already_AddRefed<> to be passed as an arg.
-  RefPtr<ClientOpPromise> p = (mService->*aMethod)(Forward<Args>(aArgs)...);
-
-  // Capturing `this` is safe here because we disconnect the promise in
-  // ActorDestroy() which ensures neither lambda is called if the actor
-  // is destroyed before the source operation completes.
-  p->Then(GetCurrentThreadSerialEventTarget(), __func__,
-    [this] (const mozilla::dom::ClientOpResult& aResult) {
-      mPromiseRequestHolder.Complete();
-      Unused << PClientManagerOpParent::Send__delete__(this, aResult);
-    }, [this] (nsresult aRv) {
-      mPromiseRequestHolder.Complete();
-      Unused << PClientManagerOpParent::Send__delete__(this, aRv);
-    })->Track(mPromiseRequestHolder);
-}
-
 void
 ClientManagerOpParent::ActorDestroy(ActorDestroyReason aReason)
 {
-  mPromiseRequestHolder.DisconnectIfExists();
 }
 
 ClientManagerOpParent::ClientManagerOpParent(ClientManagerService* aService)
@@ -47,19 +25,6 @@ ClientManagerOpParent::ClientManagerOpParent(ClientManagerService* aService)
 void
 ClientManagerOpParent::Init(const ClientOpConstructorArgs& aArgs)
 {
-  switch (aArgs.type()) {
-    case ClientOpConstructorArgs::TClientGetInfoAndStateArgs:
-    {
-      DoServiceOp(&ClientManagerService::GetInfoAndState,
-                  aArgs.get_ClientGetInfoAndStateArgs());
-      break;
-    }
-    default:
-    {
-      MOZ_ASSERT_UNREACHABLE("Unknown Client operation!");
-      break;
-    }
-  }
 }
 
 } // namespace dom

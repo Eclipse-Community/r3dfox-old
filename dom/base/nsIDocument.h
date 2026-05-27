@@ -1092,6 +1092,10 @@ public:
     return mAnonymousContents;
   }
 
+  static nsresult GenerateDocumentId(nsAString& aId);
+  nsresult GetOrCreateId(nsAString& aId);
+  void SetId(const nsAString& aId);
+
   mozilla::TimeStamp GetPageUnloadingEventTimeStamp() const
   {
     if (!mParentDocument) {
@@ -3325,6 +3329,11 @@ protected:
     FlushUserFontSet();
   }
 
+  const nsString& GetId() const
+  {
+    return mId;
+  }
+
   // Update our frame request callback scheduling state, if needed.  This will
   // schedule or unschedule them, if necessary, and update
   // mFrameRequestCallbacksScheduled.  aOldShell should only be passed when
@@ -3682,6 +3691,7 @@ protected:
   nsCOMPtr<nsIChannel> mChannel;
 private:
   nsCString mContentType;
+  nsString mId;
 protected:
 
   // The document's security info

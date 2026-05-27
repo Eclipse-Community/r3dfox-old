@@ -359,6 +359,7 @@ class nsDocument : public nsIDocument,
                    public nsIRadioGroupContainer,
                    public nsIApplicationCacheContainer,
                    public nsStubMutationObserver,
+                   public nsIObserver,
                    public nsIDOMXPathEvaluator
 {
   friend class nsIDocument;
@@ -705,6 +706,9 @@ public:
 
   // nsIApplicationCacheContainer
   NS_DECL_NSIAPPLICATIONCACHECONTAINER
+
+  // nsIObserver
+  NS_DECL_NSIOBSERVER
 
   NS_DECL_NSIDOMXPATHEVALUATOR
 

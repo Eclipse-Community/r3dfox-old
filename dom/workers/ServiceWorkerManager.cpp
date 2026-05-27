@@ -2301,7 +2301,8 @@ ServiceWorkerManager::MaybeRemoveRegistrationInfo(const nsACString& aScopeKey)
 }
 
 void
-ServiceWorkerManager::MaybeStartControlling(nsIDocument* aDoc)
+ServiceWorkerManager::MaybeStartControlling(nsIDocument* aDoc,
+                                            const nsAString& aDocumentId)
 {
   AssertIsOnMainThread();
   MOZ_ASSERT(aDoc);
@@ -2309,7 +2310,7 @@ ServiceWorkerManager::MaybeStartControlling(nsIDocument* aDoc)
     GetServiceWorkerRegistrationInfo(aDoc);
   if (registration) {
     MOZ_ASSERT(!mControlledDocuments.Contains(aDoc));
-    StartControllingADocument(registration, aDoc);
+    StartControllingADocument(registration, aDoc, aDocumentId);
   }
 }
 
@@ -2351,7 +2352,8 @@ ServiceWorkerManager::MaybeCheckNavigationUpdate(nsIDocument* aDoc)
 
 RefPtr<GenericPromise>
 ServiceWorkerManager::StartControllingADocument(ServiceWorkerRegistrationInfo* aRegistration,
-                                                nsIDocument* aDoc)
+                                                nsIDocument* aDoc,
+                                                const nsAString& aDocumentId)
 {
   MOZ_ASSERT(aRegistration);
   MOZ_ASSERT(aDoc);
@@ -2365,6 +2367,9 @@ ServiceWorkerManager::StartControllingADocument(ServiceWorkerRegistrationInfo* a
 
   aRegistration->StartControllingADocument();
   mControlledDocuments.Put(aDoc, aRegistration);
+  if (!aDocumentId.IsEmpty()) {
+    aDoc->SetId(aDocumentId);
+  }
 
   // Mark the document's ClientSource as controlled using the ClientHandle
   // interface.  While we could get at the ClientSource directly from the
@@ -2558,17 +2563,20 @@ class ContinueDispatchFetchEventRunnable : public Runnable
   RefPtr<ServiceWorkerPrivate> mServiceWorkerPrivate;
   nsCOMPtr<nsIInterceptedChannel> mChannel;
   nsCOMPtr<nsILoadGroup> mLoadGroup;
+  nsString mDocumentId;
   bool mIsReload;
 public:
   ContinueDispatchFetchEventRunnable(
     ServiceWorkerPrivate* aServiceWorkerPrivate,
     nsIInterceptedChannel* aChannel,
     nsILoadGroup* aLoadGroup,
+    const nsAString& aDocumentId,
     bool aIsReload)
     : Runnable("dom::workers::ContinueDispatchFetchEventRunnable")
     , mServiceWorkerPrivate(aServiceWorkerPrivate)
     , mChannel(aChannel)
     , mLoadGroup(aLoadGroup)
+    , mDocumentId(aDocumentId)
     , mIsReload(aIsReload)
   {
     MOZ_ASSERT(aServiceWorkerPrivate);
@@ -2609,19 +2617,8 @@ public:
       return NS_OK;
     }
 
-    nsString clientId;
-    nsCOMPtr<nsILoadInfo> loadInfo = channel->GetLoadInfo();
-    if (loadInfo) {
-      Maybe<ClientInfo> clientInfo = loadInfo->GetClientInfo();
-      if (clientInfo.isSome()) {
-        char buf[NSID_LENGTH];
-        clientInfo.ref().Id().ToProvidedString(buf);
-        CopyUTF8toUTF16(nsDependentCString(buf), clientId);
-      }
-    }
-
-    rv = mServiceWorkerPrivate->SendFetchEvent(mChannel, mLoadGroup, clientId,
-                                               mIsReload);
+    rv = mServiceWorkerPrivate->SendFetchEvent(mChannel, mLoadGroup,
+                                               mDocumentId, mIsReload);
     if (NS_WARN_IF(NS_FAILED(rv))) {
       HandleError();
     }
@@ -2635,6 +2632,7 @@ public:
 void
 ServiceWorkerManager::DispatchFetchEvent(const OriginAttributes& aOriginAttributes,
                                          nsIDocument* aDoc,
+                                         const nsAString& aDocumentIdForTopLevelNavigation,
                                          nsIInterceptedChannel* aChannel,
                                          bool aIsReload,
                                          bool aIsSubresourceLoad,
@@ -2645,6 +2643,7 @@ ServiceWorkerManager::DispatchFetchEvent(const OriginAttributes& aOriginAttribut
 
   RefPtr<ServiceWorkerInfo> serviceWorker;
   nsCOMPtr<nsILoadGroup> loadGroup;
+  nsAutoString documentId;
 
   if (aIsSubresourceLoad) {
     MOZ_ASSERT(aDoc);
@@ -2656,6 +2655,10 @@ ServiceWorkerManager::DispatchFetchEvent(const OriginAttributes& aOriginAttribut
     }
 
     loadGroup = aDoc->GetDocumentLoadGroup();
+    nsresult rv = aDoc->GetOrCreateId(documentId);
+    if (NS_WARN_IF(NS_FAILED(rv))) {
+      return;
+    }
   } else {
     nsCOMPtr<nsIChannel> internalChannel;
     aRv = aChannel->GetChannel(getter_AddRefs(internalChannel));
@@ -2664,6 +2667,9 @@ ServiceWorkerManager::DispatchFetchEvent(const OriginAttributes& aOriginAttribut
     }
 
     internalChannel->GetLoadGroup(getter_AddRefs(loadGroup));
+
+    // TODO: Use aDocumentIdForTopLevelNavigation for potentialClientId, pending
+    // the spec change.
 
     nsCOMPtr<nsIURI> uri;
     aRv = aChannel->GetSecureUpgradedChannelURI(getter_AddRefs(uri));
@@ -2744,7 +2750,8 @@ ServiceWorkerManager::DispatchFetchEvent(const OriginAttributes& aOriginAttribut
 
   nsCOMPtr<nsIRunnable> continueRunnable =
     new ContinueDispatchFetchEventRunnable(serviceWorker->WorkerPrivate(),
-                                           aChannel, loadGroup, aIsReload);
+                                           aChannel, loadGroup,
+                                           documentId, aIsReload);
 
   // When this service worker was registered, we also sent down the permissions
   // for the runnable. They should have arrived by now, but we still need to
@@ -3217,7 +3224,7 @@ ServiceWorkerManager::MaybeClaimClient(nsIDocument* aDocument,
     StopControllingADocument(controllingRegistration);
   }
 
-  StartControllingADocument(aWorkerRegistration, aDocument);
+  StartControllingADocument(aWorkerRegistration, aDocument, NS_LITERAL_STRING(""));
   FireControllerChangeOnDocument(aDocument);
 }
 

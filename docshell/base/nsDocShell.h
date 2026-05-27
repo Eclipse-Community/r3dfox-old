@@ -370,6 +370,11 @@ public:
 
   nsresult SetOriginAttributes(const mozilla::OriginAttributes& aAttrs);
 
+  void GetInterceptedDocumentId(nsAString& aId)
+  {
+    aId = mInterceptedDocumentId;
+  }
+
 private:
   // An observed docshell wrapper is created when recording markers is enabled.
   mozilla::UniquePtr<mozilla::ObservedDocShell> mObserved;
@@ -1141,6 +1146,8 @@ protected:
   // On chrome docshells this value will be set, but not have the corresponding
   // origin attribute set.
   uint32_t mPrivateBrowsingId;
+
+  nsString mInterceptedDocumentId;
 
   // This represents the CSS display-mode we are currently using.
   // It can be any of the following values from nsIDocShell.idl:

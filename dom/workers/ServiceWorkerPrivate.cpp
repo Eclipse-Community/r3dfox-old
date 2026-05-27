@@ -1347,14 +1347,14 @@ public:
                      // later on.
                      const nsACString& aScriptSpec,
                      nsMainThreadPtrHandle<ServiceWorkerRegistrationInfo>& aRegistration,
-                     const nsAString& aClientId,
+                     const nsAString& aDocumentId,
                      bool aIsReload,
                      bool aMarkLaunchServiceWorkerEnd)
     : ExtendableFunctionalEventWorkerRunnable(
         aWorkerPrivate, aKeepAliveToken, aRegistration)
     , mInterceptedChannel(aChannel)
     , mScriptSpec(aScriptSpec)
-    , mClientId(aClientId)
+    , mClientId(aDocumentId)
     , mIsReload(aIsReload)
     , mMarkLaunchServiceWorkerEnd(aMarkLaunchServiceWorkerEnd)
     , mCacheMode(RequestCache::Default)
@@ -1641,11 +1641,7 @@ private:
     init.mRequest = request;
     init.mBubbles = false;
     init.mCancelable = true;
-    // Only expose the FetchEvent.clientId on subresource requests for now.
-    // Once we implement .resultingClientId and .targetClientId we can then
-    // start exposing .clientId on non-subresource requests as well.  See
-    // bug 1264177.
-    if (!mClientId.IsEmpty() && !internalReq->IsNavigationRequest()) {
+    if (!mClientId.IsEmpty()) {
       init.mClientId = mClientId;
     }
     init.mIsReload = mIsReload;
@@ -1691,7 +1687,8 @@ NS_IMPL_ISUPPORTS_INHERITED(FetchEventRunnable, WorkerRunnable, nsIHttpHeaderVis
 nsresult
 ServiceWorkerPrivate::SendFetchEvent(nsIInterceptedChannel* aChannel,
                                      nsILoadGroup* aLoadGroup,
-                                     const nsAString& aClientId, bool aIsReload)
+                                     const nsAString& aDocumentId,
+                                     bool aIsReload)
 {
   AssertIsOnMainThread();
 
@@ -1768,7 +1765,7 @@ ServiceWorkerPrivate::SendFetchEvent(nsIInterceptedChannel* aChannel,
   RefPtr<FetchEventRunnable> r =
     new FetchEventRunnable(mWorkerPrivate, token, handle,
                            mInfo->ScriptSpec(), regInfo,
-                           aClientId, aIsReload, newWorkerCreated);
+                           aDocumentId, aIsReload, newWorkerCreated);
   rv = r->Init();
   if (NS_WARN_IF(NS_FAILED(rv))) {
     return rv;
@@ -1917,7 +1914,7 @@ ServiceWorkerPrivate::SpawnWorkerIfNeeded(WakeUpReason aWhy,
                                               scriptSpec,
                                               false, WorkerTypeService,
                                               VoidString(),
-                                              EmptyCString(),
+                                              mInfo->Scope(),
                                               &info, error);
   if (NS_WARN_IF(error.Failed())) {
     return error.StealNSResult();

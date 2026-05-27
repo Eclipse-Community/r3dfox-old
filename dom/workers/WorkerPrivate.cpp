@@ -600,9 +600,7 @@ private:
   {
     aWorkerPrivate->AssertIsOnWorkerThread();
 
-    if (NS_WARN_IF(!aWorkerPrivate->EnsureClientSource())) {
-      return false;
-    }
+    aWorkerPrivate->EnsureClientSource();
 
     ErrorResult rv;
     scriptloader::LoadMainScript(aWorkerPrivate, mScriptURL, WorkerScript, rv);
@@ -674,9 +672,7 @@ private:
       return false;
     }
 
-    if (NS_WARN_IF(!aWorkerPrivate->EnsureClientSource())) {
-      return false;
-    }
+    aWorkerPrivate->EnsureClientSource();
 
     JS::Rooted<JSObject*> global(aCx, globalScope->GetWrapper());
 
@@ -5299,13 +5295,13 @@ WorkerPrivate::HybridEventTarget()
   return mWorkerHybridEventTarget;
 }
 
-bool
+void
 WorkerPrivate::EnsureClientSource()
 {
   AssertIsOnWorkerThread();
 
   if (mClientSource) {
-    return true;
+    return;
   }
 
   ClientType type;
@@ -5325,15 +5321,9 @@ WorkerPrivate::EnsureClientSource()
 
   mClientSource = ClientManager::CreateSource(type, mWorkerHybridEventTarget,
                                               GetPrincipalInfo());
-  if (!mClientSource) {
-    return false;
-  }
-
   if (mFrozen) {
     mClientSource->Freeze();
   }
-
-  return true;
 }
 
 const ClientInfo&

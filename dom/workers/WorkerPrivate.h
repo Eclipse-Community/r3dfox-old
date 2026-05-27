@@ -1497,7 +1497,7 @@ public:
   void
   DumpCrashInformation(nsACString& aString);
 
-  bool
+  void
   EnsureClientSource();
 
   const ClientInfo&

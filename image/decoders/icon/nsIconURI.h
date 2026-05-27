@@ -12,8 +12,6 @@
 #include "nsString.h"
 #include "nsIIPCSerializableURI.h"
 #include "nsINestedURI.h"
-#include "nsIURIMutator.h"
-
 
 class nsMozIconURI final
   : public nsIMozIconURI
@@ -44,41 +42,6 @@ protected:
                        // kSizeStrings
   int32_t mIconState;  // -1 if not specified, otherwise index into
                        // kStateStrings
-
-public:
-  class Mutator
-      : public nsIURIMutator
-      , public BaseURIMutator<nsMozIconURI>
-  {
-    NS_DECL_ISUPPORTS
-    NS_FORWARD_SAFE_NSIURISETTERS(mURI)
-
-    NS_IMETHOD Deserialize(const mozilla::ipc::URIParams& aParams) override
-    {
-      return InitFromIPCParams(aParams);
-    }
-
-    NS_IMETHOD Read(nsIObjectInputStream* aStream) override
-    {
-      return NS_ERROR_NOT_IMPLEMENTED;
-    }
-
-    NS_IMETHOD Finalize(nsIURI** aURI) override
-    {
-      mURI.forget(aURI);
-      return NS_OK;
-    }
-
-    NS_IMETHOD SetSpec(const nsACString & aSpec) override {
-      return InitFromSpec(aSpec);
-    }
-
-    explicit Mutator() { }
-  private:
-    virtual ~Mutator() { }
-
-    friend class nsMozIconURI;
-  };
 };
 
 #endif // mozilla_image_decoders_icon_nsIconURI_h

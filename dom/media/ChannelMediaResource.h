@@ -8,6 +8,7 @@
 
 #include "BaseMediaResource.h"
 #include "MediaCache.h"
+#include "MediaChannelStatistics.h"
 #include "mozilla/Mutex.h"
 #include "nsIChannelEventSink.h"
 #include "nsIHttpChannel.h"
@@ -67,7 +68,11 @@ public:
   ChannelMediaResource(MediaResourceCallback* aDecoder,
                        nsIChannel* aChannel,
                        nsIURI* aURI,
-                       bool aIsPrivateBrowsing = false);
+                       bool aIsPrivateBrowsing);
+  ChannelMediaResource(MediaResourceCallback* aDecoder,
+                       nsIChannel* aChannel,
+                       nsIURI* aURI,
+                       const MediaChannelStatistics& aStatistics);
   ~ChannelMediaResource();
 
   // These are called on the main thread by MediaCache. These must
@@ -133,6 +138,7 @@ public:
   size_t SizeOfExcludingThis(MallocSizeOf aMallocSizeOf) const override {
     // Might be useful to track in the future:
     //   - mListener (seems minor)
+    //   - mChannelStatistics (seems minor)
     size_t size = BaseMediaResource::SizeOfExcludingThis(aMallocSizeOf);
     size += mCacheStream.SizeOfExcludingThis(aMallocSizeOf);
 
@@ -246,6 +252,7 @@ protected:
   // Any thread access
   MediaCacheStream mCacheStream;
 
+  MediaChannelStatistics mChannelStatistics;
   ChannelSuspendAgent mSuspendAgent;
 };
 

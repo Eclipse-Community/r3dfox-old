@@ -21,8 +21,6 @@ sync protocol PClientSource
 
 parent:
   async Teardown();
-  async Freeze();
-  async Thaw();
 
 child:
   async PClientSourceOp(ClientOpConstructorArgs aArgs);

@@ -5328,10 +5328,6 @@ WorkerPrivate::EnsureClientSource()
 
   mClientSource = ClientManager::CreateSource(type, mWorkerHybridEventTarget,
                                               GetPrincipalInfo());
-
-  if (mFrozen) {
-    mClientSource->Freeze();
-  }
 }
 
 const ClientInfo&
@@ -5689,10 +5685,6 @@ WorkerPrivate::FreezeInternal()
 
   NS_ASSERTION(!mFrozen, "Already frozen!");
 
-  if (mClientSource) {
-    mClientSource->Freeze();
-  }
-
   mFrozen = true;
 
   for (uint32_t index = 0; index < mChildWorkers.Length(); index++) {
@@ -5714,11 +5706,6 @@ WorkerPrivate::ThawInternal()
   }
 
   mFrozen = false;
-
-  if (mClientSource) {
-    mClientSource->Thaw();
-  }
-
   return true;
 }
 

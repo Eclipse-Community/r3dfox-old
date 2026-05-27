@@ -10,6 +10,7 @@
 #include "nsCollationCID.h"
 #include "mozilla/ModuleUtils.h"
 #include "nsIServiceManager.h"
+#include "nsPlatformCharset.h"
 #include "LocaleService.h"
 #include "OSPreferences.h"
 
@@ -32,6 +33,7 @@ ctor_(nsISupports* aOuter, REFNSIID aIID, void** aResult) \
 
 NS_GENERIC_FACTORY_CONSTRUCTOR(nsCollation)
 NS_GENERIC_FACTORY_CONSTRUCTOR(nsCollationFactory)
+NS_GENERIC_FACTORY_CONSTRUCTOR_INIT(nsPlatformCharset, Init)
 
 namespace mozilla {
 namespace intl {

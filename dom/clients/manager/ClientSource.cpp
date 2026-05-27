@@ -67,22 +67,6 @@ ClientSource::~ClientSource()
   Shutdown();
 }
 
-void
-ClientSource::Freeze()
-{
-  MaybeExecute([](PClientSourceChild* aActor) {
-    aActor->SendFreeze();
-  });
-}
-
-void
-ClientSource::Thaw()
-{
-  MaybeExecute([](PClientSourceChild* aActor) {
-    aActor->SendThaw();
-  });
-}
-
 const ClientInfo&
 ClientSource::Info() const
 {

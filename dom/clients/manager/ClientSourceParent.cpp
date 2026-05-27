@@ -25,30 +25,6 @@ ClientSourceParent::RecvTeardown()
   return IPC_OK();
 }
 
-IPCResult
-ClientSourceParent::RecvFreeze()
-{
-  MOZ_DIAGNOSTIC_ASSERT(!mFrozen);
-  mFrozen = true;
-
-  // Frozen clients should not be observable.  Act as if the client has
-  // been destroyed.
-  nsTArray<ClientHandleParent*> handleList(mHandleList);
-  for (ClientHandleParent* handle : handleList) {
-    Unused << ClientHandleParent::Send__delete__(handle);
-  }
-
-  return IPC_OK();
-}
-
-IPCResult
-ClientSourceParent::RecvThaw()
-{
-  MOZ_DIAGNOSTIC_ASSERT(mFrozen);
-  mFrozen = false;
-  return IPC_OK();
-}
-
 void
 ClientSourceParent::ActorDestroy(ActorDestroyReason aReason)
 {
@@ -80,7 +56,6 @@ ClientSourceParent::DeallocPClientSourceOpParent(PClientSourceOpParent* aActor)
 ClientSourceParent::ClientSourceParent(const ClientSourceConstructorArgs& aArgs)
   : mClientInfo(aArgs.id(), aArgs.type(), aArgs.principalInfo(), aArgs.creationTime())
   , mService(ClientManagerService::GetOrCreateInstance())
-  , mFrozen(false)
 {
   mService->AddSource(this);
 }
@@ -96,17 +71,10 @@ ClientSourceParent::Info() const
   return mClientInfo;
 }
 
-bool
-ClientSourceParent::IsFrozen() const
-{
-  return mFrozen;
-}
-
 void
 ClientSourceParent::AttachHandle(ClientHandleParent* aClientHandle)
 {
   MOZ_DIAGNOSTIC_ASSERT(aClientHandle);
-  MOZ_DIAGNOSTIC_ASSERT(!mFrozen);
   MOZ_ASSERT(!mHandleList.Contains(aClientHandle));
   mHandleList.AppendElement(aClientHandle);
 }

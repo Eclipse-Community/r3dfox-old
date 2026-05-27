@@ -358,8 +358,8 @@ protected:
                         int32_t& charsetSource,
                         NotNull<const Encoding*>& aEncoding);
   void TryTLD(int32_t& aCharsetSource, NotNull<const Encoding*>& aCharset);
-  void TryFallback(int32_t& aCharsetSource,
-                   NotNull<const Encoding*>& aEncoding);
+  static void TryFallback(int32_t& aCharsetSource,
+                          NotNull<const Encoding*>& aEncoding);
 
   // Override so we can munge the charset on our wyciwyg channel as needed.
   virtual void

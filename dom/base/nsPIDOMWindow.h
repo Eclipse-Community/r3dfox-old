@@ -46,7 +46,6 @@ namespace mozilla {
 class ThrottledEventQueue;
 namespace dom {
 class AudioContext;
-class ClientInfo;
 class DocGroup;
 class TabGroup;
 class Element;
@@ -324,8 +323,6 @@ public:
   // Return true if there are any open WebSockets that could block
   // timeout-throttling.
   bool HasOpenWebSockets() const;
-
-  mozilla::Maybe<mozilla::dom::ClientInfo> GetClientInfo() const;
 
   mozilla::dom::TabGroup* TabGroup();
 

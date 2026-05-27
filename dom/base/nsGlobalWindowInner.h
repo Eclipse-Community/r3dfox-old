@@ -97,7 +97,6 @@ class ThrottledEventQueue;
 namespace dom {
 class BarProp;
 struct ChannelPixelLayout;
-class ClientSource;
 class Console;
 class Crypto;
 class CustomElementRegistry;
@@ -347,8 +346,6 @@ public:
   void Thaw();
   virtual bool IsFrozen() const override;
   void SyncStateFromParentWindow();
-
-  mozilla::Maybe<mozilla::dom::ClientInfo> GetClientInfo() const;
 
   virtual nsresult FireDelayedDOMEvents() override;
 
@@ -1082,9 +1079,6 @@ protected:
   // aDocument must not be null.
   void InnerSetNewDocument(JSContext* aCx, nsIDocument* aDocument);
 
-  nsresult EnsureClientSource();
-  nsresult ExecutionReady();
-
   // Inner windows only.
   nsresult DefineArgumentsProperty(nsIArray *aArguments);
 
@@ -1404,8 +1398,6 @@ protected:
   int64_t mBeforeUnloadListenerCount;
 
   RefPtr<mozilla::dom::IntlUtils> mIntlUtils;
-
-  mozilla::UniquePtr<mozilla::dom::ClientSource> mClientSource;
 
   static InnerWindowByIdTable* sInnerWindowsById;
 

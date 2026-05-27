@@ -257,9 +257,6 @@
 #include "mozilla/dom/SpeechSynthesis.h"
 #endif
 
-#include "mozilla/dom/ClientManager.h"
-#include "mozilla/dom/ClientSource.h"
-
 // Apple system headers seem to have a check() macro.  <sigh>
 #ifdef check
 class nsIScriptTimeoutHandler;
@@ -1348,9 +1345,6 @@ nsGlobalWindowInner::FreeInnerObjects()
   mHasVRDisplayActivateEvents = false;
   mVRDisplays.Clear();
 
-  // This breaks a cycle between the window and the ClientSource object.
-  mClientSource.reset();
-
   if (mTabChild) {
     // Remove any remaining listeners, and reset mBeforeUnloadListenerCount.
     for (int i = 0; i < mBeforeUnloadListenerCount; ++i) {
@@ -1592,8 +1586,6 @@ NS_IMPL_CYCLE_COLLECTION_UNLINK_BEGIN(nsGlobalWindowInner)
   // that IdleRequest objects have been traced and will remove
   // themselves while unlinking.
 
-  tmp->mClientSource.reset();
-
   if (tmp->IsChromeWindow()) {
     if (tmp->mChromeFields.mMessageManager) {
       static_cast<nsFrameMessageManager*>(
@@ -1736,71 +1728,6 @@ nsGlobalWindowInner::InnerSetNewDocument(JSContext* aCx, nsIDocument* aDocument)
 
   // Clear our mutation bitfield.
   mMutationBits = 0;
-}
-
-nsresult
-nsGlobalWindowInner::EnsureClientSource()
-{
-  MOZ_DIAGNOSTIC_ASSERT(mDoc);
-
-  nsCOMPtr<nsIChannel> channel = mDoc->GetChannel();
-  nsCOMPtr<nsILoadInfo> loadInfo = channel ? channel->GetLoadInfo() : nullptr;
-
-  // Take the initial client source from the docshell immediately.  Even if we
-  // don't end up using it here we should consume it.
-  UniquePtr<ClientSource> initialClientSource;
-  nsIDocShell* docshell = GetDocShell();
-  if (docshell) {
-    initialClientSource = docshell->TakeInitialClientSource();
-  }
-
-  // Try to get the reserved client from the LoadInfo.  A Client is
-  // reserved at the start of the channel load if there is not an
-  // initial about:blank document that will be reused.  It is also
-  // created if the channel load encounters a cross-origin redirect.
-  if (loadInfo) {
-    UniquePtr<ClientSource> reservedClient = loadInfo->TakeReservedClientSource();
-    if (reservedClient) {
-      mClientSource.reset();
-      mClientSource = Move(reservedClient);
-    }
-  }
-
-  // We don't have a LoadInfo reserved client, but maybe we should
-  // be inheriting an initial one from the docshell.  This means
-  // that the docshell started the channel load before creating the
-  // initial about:blank document.  This is an optimization, though,
-  // and it created an initial Client as a placeholder for the document.
-  // In this case we want to inherit this placeholder Client here.
-  if (!mClientSource) {
-    mClientSource = Move(initialClientSource);
-  }
-
-  // If we don't have a reserved client or an initial client, then create
-  // one now.  This can happen in certain cases where we avoid preallocating
-  // the client in the docshell.  This mainly occurs in situations where
-  // the principal is not clearly inherited from the parent; e.g. sandboxed
-  // iframes, window.open(), etc.
-  if (!mClientSource) {
-    mClientSource = ClientManager::CreateSource(ClientType::Window,
-                                                EventTargetFor(TaskCategory::Other),
-                                                mDoc->NodePrincipal());
-    MOZ_DIAGNOSTIC_ASSERT(mClientSource);
-  }
-
-  return NS_OK;
-}
-
-nsresult
-nsGlobalWindowInner::ExecutionReady()
-{
-  nsresult rv = EnsureClientSource();
-  NS_ENSURE_SUCCESS(rv, rv);
-
-  rv = mClientSource->WindowExecutionReady(AsInner());
-  NS_ENSURE_SUCCESS(rv, rv);
-
-  return NS_OK;
 }
 
 void
@@ -2256,12 +2183,6 @@ void
 nsPIDOMWindowInner::SyncStateFromParentWindow()
 {
   nsGlobalWindowInner::Cast(this)->SyncStateFromParentWindow();
-}
-
-Maybe<ClientInfo>
-nsPIDOMWindowInner::GetClientInfo() const
-{
-  return Move(nsGlobalWindowInner::Cast(this)->GetClientInfo());
 }
 
 void
@@ -6079,17 +6000,6 @@ nsGlobalWindowInner::CallOnChildren(Method aMethod)
 
     (inner->*aMethod)();
   }
-}
-
-Maybe<ClientInfo>
-nsGlobalWindowInner::GetClientInfo() const
-{
-  MOZ_ASSERT(NS_IsMainThread());
-  Maybe<ClientInfo> clientInfo;
-  if (mClientSource) {
-    clientInfo.emplace(mClientSource->Info());
-  }
-  return Move(clientInfo);
 }
 
 nsresult

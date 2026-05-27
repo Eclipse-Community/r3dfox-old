@@ -10,7 +10,6 @@ include ProtocolTypes;
 using class mozilla::TimeStamp from "mozilla/TimeStamp.h";
 using ClientType from "mozilla/dom/ClientIPCUtils.h";
 using FrameType from "mozilla/dom/ClientIPCUtils.h";
-using nsContentUtils::StorageAccess from "mozilla/dom/ClientIPCUtils.h";
 using VisibilityState from "mozilla/dom/ClientIPCUtils.h";
 
 namespace mozilla {
@@ -38,13 +37,11 @@ struct IPCClientWindowState
 {
   VisibilityState visibilityState;
   TimeStamp lastFocusTime;
-  StorageAccess storageAccess;
   bool focused;
 };
 
 struct IPCClientWorkerState
 {
-  StorageAccess storageAccess;
 };
 
 union IPCClientState

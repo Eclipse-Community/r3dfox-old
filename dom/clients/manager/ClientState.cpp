@@ -13,10 +13,9 @@ namespace dom {
 
 ClientWindowState::ClientWindowState(mozilla::dom::VisibilityState aVisibilityState,
                                      const TimeStamp& aLastFocusTime,
-                                     nsContentUtils::StorageAccess aStorageAccess,
                                      bool aFocused)
   : mData(MakeUnique<IPCClientWindowState>(aVisibilityState, aLastFocusTime,
-                                           aStorageAccess, aFocused))
+                                           aFocused))
 {
 }
 
@@ -73,20 +72,14 @@ ClientWindowState::Focused() const
   return mData->focused();
 }
 
-nsContentUtils::StorageAccess
-ClientWindowState::GetStorageAccess() const
-{
-  return mData->storageAccess();
-}
-
 const IPCClientWindowState&
 ClientWindowState::ToIPC() const
 {
   return *mData;
 }
 
-ClientWorkerState::ClientWorkerState(nsContentUtils::StorageAccess aStorageAccess)
-  : mData(MakeUnique<IPCClientWorkerState>(aStorageAccess))
+ClientWorkerState::ClientWorkerState()
+  : mData(MakeUnique<IPCClientWorkerState>())
 {
 }
 
@@ -123,12 +116,6 @@ ClientWorkerState::operator=(ClientWorkerState&& aRight)
 
 ClientWorkerState::~ClientWorkerState()
 {
-}
-
-nsContentUtils::StorageAccess
-ClientWorkerState::GetStorageAccess() const
-{
-  return mData->storageAccess();
 }
 
 const IPCClientWorkerState&
@@ -213,16 +200,6 @@ const ClientWorkerState&
 ClientState::AsWorkerState() const
 {
   return mData.ref().as<ClientWorkerState>();
-}
-
-nsContentUtils::StorageAccess
-ClientState::GetStorageAccess() const
-{
-  if (IsWindowState()) {
-    return AsWindowState().GetStorageAccess();
-  }
-
-  return AsWorkerState().GetStorageAccess();
 }
 
 const IPCClientState

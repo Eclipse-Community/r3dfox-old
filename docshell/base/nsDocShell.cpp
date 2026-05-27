@@ -953,8 +953,7 @@ nsDocShell::DestroyChildren()
 NS_IMPL_CYCLE_COLLECTION_INHERITED(nsDocShell,
                                    nsDocLoader,
                                    mSessionStorageManager,
-                                   mScriptGlobal,
-                                   mInitialClientSource)
+                                   mScriptGlobal)
 
 NS_IMPL_ADDREF_INHERITED(nsDocShell, nsDocLoader)
 NS_IMPL_RELEASE_INHERITED(nsDocShell, nsDocLoader)

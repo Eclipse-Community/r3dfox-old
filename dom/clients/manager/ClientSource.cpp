@@ -306,21 +306,5 @@ ClientSource::EventTarget() const
   return mEventTarget;
 }
 
-void
-ClientSource::Traverse(nsCycleCollectionTraversalCallback& aCallback,
-                       const char* aName,
-                       uint32_t aFlags)
-{
-  if (mOwner.is<RefPtr<nsPIDOMWindowInner>>()) {
-    ImplCycleCollectionTraverse(aCallback,
-                                mOwner.as<RefPtr<nsPIDOMWindowInner>>(),
-                                aName, aFlags);
-  } else if (mOwner.is<nsCOMPtr<nsIDocShell>>()) {
-    ImplCycleCollectionTraverse(aCallback,
-                                mOwner.as<nsCOMPtr<nsIDocShell>>(),
-                                aName, aFlags);
-  }
-}
-
 } // namespace dom
 } // namespace mozilla

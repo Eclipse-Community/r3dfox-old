@@ -7,9 +7,7 @@
 #define _mozilla_dom_ClientSourceParent_h
 
 #include "ClientInfo.h"
-#include "ClientOpPromise.h"
 #include "mozilla/dom/PClientSourceParent.h"
-#include "mozilla/dom/ServiceWorkerDescriptor.h"
 
 namespace mozilla {
 namespace dom {
@@ -20,7 +18,6 @@ class ClientManagerService;
 class ClientSourceParent final : public PClientSourceParent
 {
   ClientInfo mClientInfo;
-  Maybe<ServiceWorkerDescriptor> mController;
   RefPtr<ClientManagerService> mService;
   nsTArray<ClientHandleParent*> mHandleList;
   bool mExecutionReady;
@@ -69,9 +66,6 @@ public:
 
   void
   DetachHandle(ClientHandleParent* aClientSource);
-
-  RefPtr<ClientOpPromise>
-  StartOp(const ClientOpConstructorArgs& aArgs);
 };
 
 } // namespace dom

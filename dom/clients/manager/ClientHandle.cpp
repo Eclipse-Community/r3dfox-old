@@ -10,7 +10,6 @@
 #include "ClientHandleOpChild.h"
 #include "ClientManager.h"
 #include "mozilla/dom/PClientManagerChild.h"
-#include "mozilla/dom/ServiceWorkerDescriptor.h"
 
 namespace mozilla {
 namespace dom {
@@ -100,26 +99,6 @@ const ClientInfo&
 ClientHandle::Info() const
 {
   return mClientInfo;
-}
-
-RefPtr<GenericPromise>
-ClientHandle::Control(const ServiceWorkerDescriptor& aServiceWorker)
-{
-  RefPtr<GenericPromise::Private> outerPromise =
-    new GenericPromise::Private(__func__);
-
-  RefPtr<ClientOpPromise> innerPromise =
-    StartOp(ClientControlledArgs(aServiceWorker.ToIPC()));
-
-  innerPromise->Then(mSerialEventTarget, __func__,
-    [outerPromise](const ClientOpResult& aResult) {
-      outerPromise->Resolve(true, __func__);
-    },
-    [outerPromise](const ClientOpResult& aResult) {
-      outerPromise->Reject(aResult.get_nsresult(), __func__);
-    });
-
-  return outerPromise.forget();
 }
 
 } // namespace dom

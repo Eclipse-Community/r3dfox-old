@@ -25,7 +25,7 @@ function makePersona(id) {
 add_task(async function run_test() {
   _("Test fixtures.");
   // read our custom prefs file before doing anything.
-  Services.prefs.readDefaultPrefsFromFile(do_get_file("prefs_test_prefs_store.js"));
+  Services.prefs.readUserPrefsFromFile(do_get_file("prefs_test_prefs_store.js"));
 
   let engine = Service.engineManager.get("prefs");
   let store = engine._store;
@@ -200,7 +200,7 @@ add_task(async function run_test() {
 add_task(async function test_dangerously_allow() {
   _("services.sync.prefs.dangerously_allow_arbitrary");
   // read our custom prefs file before doing anything.
-  Services.prefs.readDefaultPrefsFromFile(do_get_file("prefs_test_prefs_store.js"));
+  Services.prefs.readUserPrefsFromFile(do_get_file("prefs_test_prefs_store.js"));
   // configure so that arbitrary prefs are synced.
   Services.prefs.setBoolPref("services.sync.prefs.dangerously_allow_arbitrary", true);
 

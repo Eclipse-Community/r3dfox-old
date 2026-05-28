@@ -41,8 +41,7 @@ class PrefValue;
 
 struct PrefsSizes;
 
-// Keep this in sync with PrefType in parser/src/lib.rs.
-enum class PrefValueKind : uint8_t { Default, User };
+enum class PrefValueKind : bool { Default, User };
 
 class Preferences final : public nsIPrefService,
                           public nsIObserver,

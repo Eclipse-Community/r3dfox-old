@@ -121,7 +121,6 @@ static const uint32_t MAX_PREF_LENGTH = 1 * 1024 * 1024;
 // Actually, 4kb should be enough for everyone.
 static const uint32_t MAX_ADVISABLE_PREF_LENGTH = 4 * 1024;
 
-// Keep this in sync with PrefType in parser/src/lib.rs.
 enum class PrefType : uint8_t {
   None = 0,  // only used when neither the default nor user value is set
   String = 1,
@@ -129,7 +128,6 @@ enum class PrefType : uint8_t {
   Bool = 3,
 };
 
-// Keep this in sync with PrefValue in prefs_parser/src/lib.rs.
 union PrefValue {
   const char* mStringVal;
   int32_t mIntVal;
@@ -565,8 +563,7 @@ class Pref {
   }
 
   nsresult SetDefaultValue(PrefType aType, PrefValue aValue, bool aIsSticky,
-                           bool aIsLocked, bool aFromFile,
-                           bool* aValueChanged) {
+                           bool aFromFile, bool* aValueChanged) {
     // Types must always match when setting the default value.
     if (!IsType(aType)) {
       return NS_ERROR_UNEXPECTED;
@@ -574,25 +571,20 @@ class Pref {
 
     // Should we set the default value? Only if the pref is not locked, and
     // doing so would change the default value.
-    if (!IsLocked()) {
-      if (aIsLocked) {
-        SetIsLocked(true);
+    if (!IsLocked() && !ValueMatches(PrefValueKind::Default, aType, aValue)) {
+      mDefaultValue.Replace(Type(), aType, aValue);
+      mHasDefaultValue = true;
+      if (!aFromFile) {
+        mHasChangedSinceInit = true;
       }
-      if (!ValueMatches(PrefValueKind::Default, aType, aValue)) {
-        mDefaultValue.Replace(Type(), aType, aValue);
-        mHasDefaultValue = true;
-        if (!aFromFile) {
-          mHasChangedSinceInit = true;
-        }
-        if (aIsSticky) {
-          mIsSticky = true;
-        }
-        if (!mHasUserValue) {
-          *aValueChanged = true;
-        }
-        // What if we change the default to be the same as the user value?
-        // Should we clear the user value? Currently we don't.
+      if (aIsSticky) {
+        mIsSticky = true;
       }
+      if (!mHasUserValue) {
+        *aValueChanged = true;
+      }
+      // What if we change the default to be the same as the user value?
+      // Should we clear the user value? Currently we don't.
     }
     return NS_OK;
   }
@@ -774,6 +766,8 @@ static PLDHashTable* gHashTable;
 static CallbackNode* gFirstCallback = nullptr;
 static CallbackNode* gLastPriorityNode = nullptr;
 
+static bool gIsAnyPrefLocked = false;
+
 // These are only used during the call to NotifyCallbacks().
 static bool gCallbacksInProgress = false;
 static bool gShouldCleanupDeadNodes = false;
@@ -878,7 +872,7 @@ static Pref* pref_HashTableLookup(const char* aPrefName) {
 
 static nsresult pref_SetPref(const char* aPrefName, PrefType aType,
                              PrefValueKind aKind, PrefValue aValue,
-                             bool aIsSticky, bool aIsLocked, bool aFromFile) {
+                             bool aIsSticky, bool aFromFile) {
   MOZ_ASSERT(NS_IsMainThread());
 
   if (!gHashTable) {
@@ -899,10 +893,9 @@ static nsresult pref_SetPref(const char* aPrefName, PrefType aType,
   bool valueChanged = false;
   nsresult rv;
   if (aKind == PrefValueKind::Default) {
-    rv = pref->SetDefaultValue(aType, aValue, aIsSticky, aIsLocked, aFromFile,
+    rv = pref->SetDefaultValue(aType, aValue, aIsSticky, aFromFile,
                                &valueChanged);
   } else {
-    MOZ_ASSERT(!aIsLocked);  // `locked` is disallowed in user pref files
     rv = pref->SetUserValue(aType, aValue, aFromFile, &valueChanged);
   }
   if (NS_FAILED(rv)) {
@@ -998,103 +991,626 @@ struct TelemetryLoadData {
 
 static nsDataHashtable<nsCStringHashKey, TelemetryLoadData>* gTelemetryLoadData;
 
-extern "C" {
-
-// Keep this in sync with PrefFn in prefs_parser/src/lib.rs.
-typedef void (*PrefsParserPrefFn)(const char* aPrefName, PrefType aType,
-                                  PrefValueKind aKind, PrefValue aValue,
-                                  bool aIsSticky, bool aIsLocked);
-
-// Keep this in sync with ErrorFn in prefs_parser/src/lib.rs.
-//
-// `aMsg` is just a borrow of the string, and must be copied if it is used
-// outside the lifetime of the prefs_parser_parse() call.
-typedef void (*PrefsParserErrorFn)(const char* aMsg);
-
-// Keep this in sync with prefs_parser_parse() in prefs_parser/src/lib.rs.
-bool prefs_parser_parse(const char* aPath, PrefValueKind aKind,
-                        const char* aBuf, size_t aLen,
-                        PrefsParserPrefFn aPrefFn, PrefsParserErrorFn aErrorFn);
-}
-
 class Parser {
  public:
-  Parser() = default;
-  ~Parser() = default;
-
-  bool Parse(const nsCString& aName, PrefValueKind aKind, const char* aPath,
-             const TimeStamp& aStartTime, const nsCString& aBuf) {
-    sNumPrefs = 0;
-    bool ok = prefs_parser_parse(aPath, aKind, aBuf.get(), aBuf.Length(),
-                                 HandlePref, HandleError);
-    if (!ok) {
-      return false;
-    }
-
-    uint32_t loadTime_us = (TimeStamp::Now() - aStartTime).ToMicroseconds();
-
-    // Most prefs files are read before telemetry initializes, so we have to
-    // save these measurements now and send them to telemetry later.
-    TelemetryLoadData loadData = {uint32_t(aBuf.Length()), sNumPrefs,
-                                  loadTime_us};
-    gTelemetryLoadData->Put(aName, loadData);
-
-    return true;
+  Parser()
+    : mState()
+    , mNextState()
+    , mStrMatch()
+    , mStrIndex()
+    , mUtf16()
+    , mEscLen()
+    , mEscTmp()
+    , mQuoteChar()
+    , mLb()
+    , mLbCur()
+    , mLbEnd()
+    , mVb()
+    , mVtype()
+    , mIsDefault()
+    , mIsSticky()
+  {
   }
 
- private:
-  static void HandlePref(const char* aPrefName, PrefType aType,
-                         PrefValueKind aKind, PrefValue aValue, bool aIsSticky,
-                         bool aIsLocked) {
-    sNumPrefs++;
-    pref_SetPref(aPrefName, aType, aKind, aValue, aIsSticky, aIsLocked,
-                 /* fromFile */ true);
-  }
+  ~Parser() { free(mLb); }
 
-  static void HandleError(const char* aMsg) {
-    nsresult rv;
-    nsCOMPtr<nsIConsoleService> console =
-        do_GetService("@mozilla.org/consoleservice;1", &rv);
-    if (NS_SUCCEEDED(rv)) {
-      console->LogStringMessage(NS_ConvertUTF8toUTF16(aMsg).get());
-    }
-#ifdef DEBUG
-    NS_ERROR(aMsg);
-#else
-    printf_stderr("%s\n", aMsg);
-#endif
-  }
+  bool Parse(const nsCString& aName, const TimeStamp& aStartTime,
+             const char* aBuf, size_t aBufLen);
+  bool GrowBuf();
 
-  // This is static so that HandlePref() can increment it easily. This is ok
-  // because prefs files are read one at a time.
-  static uint32_t sNumPrefs;
+  void HandleValue(const char* aPrefName, PrefType aType,
+                   PrefValue aValue, bool aIsDefault, bool aIsSticky);
+
+  void ReportProblem(const char* aMessage, int aLine, bool aError);
+
+  private:
+    // Pref parser states.
+    enum class State
+    {
+      eInit,
+      eMatchString,
+      eUntilName,
+      eQuotedString,
+      eUntilComma,
+      eUntilValue,
+      eIntValue,
+      eCommentMaybeStart,
+      eCommentBlock,
+      eCommentBlockMaybeEnd,
+      eEscapeSequence,
+      eHexEscape,
+      eUTF16LowSurrogate,
+      eUntilOpenParen,
+      eUntilCloseParen,
+      eUntilSemicolon,
+      eUntilEOL
+    };
+
+  static const int kUTF16EscapeNumDigits = 4;
+  static const int kHexEscapeNumDigits = 2;
+  static const int KBitsPerHexDigit = 4;
+
+  static constexpr const char* kUserPref = "user_pref";
+  static constexpr const char* kPref = "pref";
+  static constexpr const char* kStickyPref = "sticky_pref";
+  static constexpr const char* kTrue = "true";
+  static constexpr const char* kFalse = "false";
+
+  State mState;           // current parse state
+  State mNextState;       // sometimes used...
+  const char* mStrMatch;  // string to match
+  int mStrIndex;          // next char of smatch to check;
+                          // also, counter in \u parsing
+  char16_t mUtf16[2];     // parsing UTF16 (\u) escape
+  int mEscLen;            // length in mEscTmp
+  char mEscTmp[6];        // raw escape to put back if err
+  char mQuoteChar;        // char delimiter for quotations
+  char* mLb;              // line buffer (only allocation)
+  char* mLbCur;           // line buffer cursor
+  char* mLbEnd;           // line buffer end
+  char* mVb;              // value buffer (ptr into mLb)
+  Maybe<PrefType> mVtype; // pref value type
+  bool mIsDefault;        // true if (default) pref
+  bool mIsSticky;         // true if (sticky) pref
 };
 
-uint32_t Parser::sNumPrefs = 0;
+// This function will increase the size of the buffer owned by the given pref
+// parse state. We currently use a simple doubling algorithm, but the only hard
+// requirement is that it increase the buffer by at least the size of the
+// mEscTmp buffer used for escape processing (currently 6 bytes).
+//
+// The buffer is used to store partial pref lines. It is freed when the parse
+// state is destroyed.
+//
+// This function updates all pointers that reference an address within mLb
+// since realloc may relocate the buffer.
+//
+// Returns false on failure.
+bool
+Parser::GrowBuf()
+{
+  int bufLen, curPos, valPos;
 
-// The following code is test code for the gtest.
+  bufLen = mLbEnd - mLb;
+  curPos = mLbCur - mLb;
+  valPos = mVb - mLb;
 
-static void TestParseErrorHandlePref(const char* aPrefName, PrefType aType,
-                                     PrefValueKind aKind, PrefValue aValue,
-                                     bool aIsSticky, bool aIsLocked) {}
+  if (bufLen == 0) {
+    bufLen = 128; // default buffer size
+  } else {
+    bufLen <<= 1; // double buffer size
+  }
 
-static nsCString gTestParseErrorMsgs;
+  mLb = (char*)realloc(mLb, bufLen);
+  if (!mLb) {
+    return false;
+  }
 
-static void TestParseErrorHandleError(const char* aMsg) {
-  gTestParseErrorMsgs.Append(aMsg);
-  gTestParseErrorMsgs.Append('\n');
+  mLbCur = mLb + curPos;
+  mLbEnd = mLb + bufLen;
+  mVb = mLb + valPos;
+
+  return true;
 }
 
-// Keep this in sync with the declaration in test/gtest/Parser.cpp.
-void TestParseError(PrefValueKind aKind, const char* aText,
-                    nsCString& aErrorMsg) {
-  prefs_parser_parse("test", aKind, aText, strlen(aText),
-                     TestParseErrorHandlePref, TestParseErrorHandleError);
+void
+Parser::HandleValue(const char* aPrefName,
+                    PrefType aType,
+                    PrefValue aValue,
+                    bool aIsDefault,
+                    bool aIsSticky)
+{
+  PrefValueKind kind =
+    aIsDefault ? PrefValueKind::Default : PrefValueKind::User;
+  pref_SetPref(aPrefName, aType, kind, aValue, aIsSticky, /* fromFile */ true);
+}
 
-  // Copy the error messages into the outparam, then clear them from
-  // gTestParseErrorMsgs.
-  aErrorMsg.Assign(gTestParseErrorMsgs);
-  gTestParseErrorMsgs.Truncate();
+// Report an error or a warning. If not specified, just dump to stderr.
+void
+Parser::ReportProblem(const char* aMessage, int aLine, bool aError)
+{
+  nsPrintfCString message("** Preference parsing %s (line %d) = %s **\n",
+                          (aError ? "error" : "warning"),
+                          aLine,
+                          aMessage);
+  nsresult rv;
+  nsCOMPtr<nsIConsoleService> console =
+    do_GetService("@mozilla.org/consoleservice;1", &rv);
+  if (NS_SUCCEEDED(rv)) {
+    console->LogStringMessage(NS_ConvertUTF8toUTF16(message).get());
+  } else {
+    printf_stderr("%s", message.get());
+  }
+}
+
+// Parse a buffer containing some portion of a preference file. This function
+// may be called repeatedly as new data is made available. The PrefReader
+// callback function passed to Parser's constructor will be called as preference
+// name value pairs are extracted from the data. Returns false if buffer
+// contains malformed content.
+//
+// Pseudo-BNF
+// ----------
+// function      = LJUNK function-name JUNK function-args
+// function-name = "user_pref" | "pref" | "sticky_pref"
+// function-args = "(" JUNK pref-name JUNK "," JUNK pref-value JUNK ")" JUNK ";"
+// pref-name     = quoted-string
+// pref-value    = quoted-string | "true" | "false" | integer-value
+// JUNK          = *(WS | comment-block | comment-line)
+// LJUNK         = *(WS | comment-block | comment-line | bcomment-line)
+// WS            = SP | HT | LF | VT | FF | CR
+// SP            = <US-ASCII SP, space (32)>
+// HT            = <US-ASCII HT, horizontal-tab (9)>
+// LF            = <US-ASCII LF, linefeed (10)>
+// VT            = <US-ASCII HT, vertical-tab (11)>
+// FF            = <US-ASCII FF, form-feed (12)>
+// CR            = <US-ASCII CR, carriage return (13)>
+// comment-block = <C/C++ style comment block>
+// comment-line  = <C++ style comment line>
+// bcomment-line = <bourne-shell style comment line>
+//
+bool
+Parser::Parse(const nsCString& aName,
+              const TimeStamp& aStartTime,
+              const char* aBuf,
+              size_t aBufLen)
+{
+  // The line number is currently only used for the error/warning reporting.
+  int lineNum = 0;
+
+  uint32_t numPrefs = 0;
+
+  State state = mState;
+  for (const char* end = aBuf + aBufLen; aBuf != end; ++aBuf) {
+    char c = *aBuf;
+    if (c == '\r' || c == '\n' || c == 0x1A) {
+      lineNum++;
+    }
+
+    switch (state) {
+      // initial state
+      case State::eInit:
+        if (mLbCur != mLb) { // reset state
+          mLbCur = mLb;
+          mVb = nullptr;
+          mVtype = Nothing();
+          mIsDefault = false;
+          mIsSticky = false;
+        }
+        switch (c) {
+          case '/': // begin comment block or line?
+            state = State::eCommentMaybeStart;
+            break;
+          case '#': // accept shell style comments
+            state = State::eUntilEOL;
+            break;
+          case 'u': // indicating user_pref
+          case 's': // indicating sticky_pref
+          case 'p': // indicating pref
+            if (c == 'u') {
+              mStrMatch = kUserPref;
+            } else if (c == 's') {
+              mStrMatch = kStickyPref;
+            } else {
+              mStrMatch = kPref;
+            }
+            mStrIndex = 1;
+            mNextState = State::eUntilOpenParen;
+            state = State::eMatchString;
+            break;
+            // else skip char
+        }
+        break;
+
+      // string matching
+      case State::eMatchString:
+        if (c == mStrMatch[mStrIndex++]) {
+          // If we've matched all characters, then move to next state.
+          if (mStrMatch[mStrIndex] == '\0') {
+            state = mNextState;
+            mNextState = State::eInit; // reset next state
+          }
+          // else wait for next char
+        } else {
+          ReportProblem("non-matching string", lineNum, true);
+          NS_WARNING("malformed pref file");
+          return false;
+        }
+        break;
+
+      // quoted string parsing
+      case State::eQuotedString:
+        // we assume that the initial quote has already been consumed
+        if (mLbCur == mLbEnd && !GrowBuf()) {
+          return false; // out of memory
+        }
+        if (c == '\\') {
+          state = State::eEscapeSequence;
+        } else if (c == mQuoteChar) {
+          *mLbCur++ = '\0';
+          state = mNextState;
+          mNextState = State::eInit; // reset next state
+        } else {
+          *mLbCur++ = c;
+        }
+        break;
+
+      // name parsing
+      case State::eUntilName:
+        if (c == '\"' || c == '\'') {
+          mIsDefault = (mStrMatch == kPref || mStrMatch == kStickyPref);
+          mIsSticky = (mStrMatch == kStickyPref);
+          mQuoteChar = c;
+          mNextState = State::eUntilComma; // return here when done
+          state = State::eQuotedString;
+        } else if (c == '/') { // allow embedded comment
+          mNextState = state;  // return here when done with comment
+          state = State::eCommentMaybeStart;
+        } else if (!isspace(c)) {
+          ReportProblem("need space, comment or quote", lineNum, true);
+          NS_WARNING("malformed pref file");
+          return false;
+        }
+        break;
+
+      // parse until we find a comma separating name and value
+      case State::eUntilComma:
+        if (c == ',') {
+          mVb = mLbCur;
+          state = State::eUntilValue;
+        } else if (c == '/') { // allow embedded comment
+          mNextState = state;  // return here when done with comment
+          state = State::eCommentMaybeStart;
+        } else if (!isspace(c)) {
+          ReportProblem("need space, comment or comma", lineNum, true);
+          NS_WARNING("malformed pref file");
+          return false;
+        }
+        break;
+
+      // value parsing
+      case State::eUntilValue:
+        // The pref value type is unknown. So, we scan for the first character
+        // of the value, and determine the type from that.
+        if (c == '\"' || c == '\'') {
+          mVtype = Some(PrefType::String);
+          mQuoteChar = c;
+          mNextState = State::eUntilCloseParen;
+          state = State::eQuotedString;
+        } else if (c == 't' || c == 'f') {
+          mVb = (char*)(c == 't' ? kTrue : kFalse);
+          mVtype = Some(PrefType::Bool);
+          mStrMatch = mVb;
+          mStrIndex = 1;
+          mNextState = State::eUntilCloseParen;
+          state = State::eMatchString;
+        } else if (isdigit(c) || (c == '-') || (c == '+')) {
+          mVtype = Some(PrefType::Int);
+          // write c to line buffer...
+          if (mLbCur == mLbEnd && !GrowBuf()) {
+            return false; // out of memory
+          }
+          *mLbCur++ = c;
+          state = State::eIntValue;
+        } else if (c == '/') { // allow embedded comment
+          mNextState = state;  // return here when done with comment
+          state = State::eCommentMaybeStart;
+        } else if (!isspace(c)) {
+          ReportProblem("need value, comment or space", lineNum, true);
+          NS_WARNING("malformed pref file");
+          return false;
+        }
+        break;
+
+      case State::eIntValue:
+        // grow line buffer if necessary...
+        if (mLbCur == mLbEnd && !GrowBuf()) {
+          return false; // out of memory
+        }
+        if (isdigit(c)) {
+          *mLbCur++ = c;
+        } else {
+          *mLbCur++ = '\0'; // stomp null terminator; we are done.
+          if (c == ')') {
+            state = State::eUntilSemicolon;
+          } else if (c == '/') { // allow embedded comment
+            mNextState = State::eUntilCloseParen;
+            state = State::eCommentMaybeStart;
+          } else if (isspace(c)) {
+            state = State::eUntilCloseParen;
+          } else {
+            ReportProblem("while parsing integer", lineNum, true);
+            NS_WARNING("malformed pref file");
+            return false;
+          }
+        }
+        break;
+
+      // comment parsing
+      case State::eCommentMaybeStart:
+        switch (c) {
+          case '*': // comment block
+            state = State::eCommentBlock;
+            break;
+          case '/': // comment line
+            state = State::eUntilEOL;
+            break;
+          default:
+            // pref file is malformed
+            ReportProblem("while parsing comment", lineNum, true);
+            NS_WARNING("malformed pref file");
+            return false;
+        }
+        break;
+
+      case State::eCommentBlock:
+        if (c == '*') {
+          state = State::eCommentBlockMaybeEnd;
+        }
+        break;
+
+      case State::eCommentBlockMaybeEnd:
+        switch (c) {
+          case '/':
+            state = mNextState;
+            mNextState = State::eInit;
+            break;
+          case '*': // stay in this state
+            break;
+          default:
+            state = State::eCommentBlock;
+            break;
+        }
+        break;
+
+      // string escape sequence parsing
+      case State::eEscapeSequence:
+        // It's not necessary to resize the buffer here since we should be
+        // writing only one character and the resize check would have been done
+        // for us in the previous state.
+        switch (c) {
+          case '\"':
+          case '\'':
+          case '\\':
+            break;
+          case 'r':
+            c = '\r';
+            break;
+          case 'n':
+            c = '\n';
+            break;
+          case 'x': // hex escape -- always interpreted as Latin-1
+          case 'u': // UTF16 escape
+            mEscTmp[0] = c;
+            mEscLen = 1;
+            mUtf16[0] = mUtf16[1] = 0;
+            mStrIndex =
+              (c == 'x') ? kHexEscapeNumDigits : kUTF16EscapeNumDigits;
+            state = State::eHexEscape;
+            continue;
+          default:
+            ReportProblem(
+              "preserving unexpected JS escape sequence", lineNum, false);
+            NS_WARNING("preserving unexpected JS escape sequence");
+            // Invalid escape sequence so we do have to write more than one
+            // character. Grow line buffer if necessary...
+            if ((mLbCur + 1) == mLbEnd && !GrowBuf()) {
+              return false; // out of memory
+            }
+            *mLbCur++ = '\\'; // preserve the escape sequence
+            break;
+        }
+        *mLbCur++ = c;
+        state = State::eQuotedString;
+        break;
+
+      // parsing a hex (\xHH) or mUtf16 escape (\uHHHH)
+      case State::eHexEscape: {
+        char udigit;
+        if (c >= '0' && c <= '9') {
+          udigit = (c - '0');
+        } else if (c >= 'A' && c <= 'F') {
+          udigit = (c - 'A') + 10;
+        } else if (c >= 'a' && c <= 'f') {
+          udigit = (c - 'a') + 10;
+        } else {
+          // bad escape sequence found, write out broken escape as-is
+          ReportProblem(
+            "preserving invalid or incomplete hex escape", lineNum, false);
+          NS_WARNING("preserving invalid or incomplete hex escape");
+          *mLbCur++ = '\\'; // original escape slash
+          if ((mLbCur + mEscLen) >= mLbEnd && !GrowBuf()) {
+            return false;
+          }
+          for (int i = 0; i < mEscLen; ++i) {
+            *mLbCur++ = mEscTmp[i];
+          }
+
+          // Push the non-hex character back for re-parsing. (++aBuf at the top
+          // of the loop keeps this safe.)
+          --aBuf;
+          state = State::eQuotedString;
+          continue;
+        }
+
+        // have a digit
+        mEscTmp[mEscLen++] = c; // preserve it
+        mUtf16[1] <<= KBitsPerHexDigit;
+        mUtf16[1] |= udigit;
+        mStrIndex--;
+        if (mStrIndex == 0) {
+          // we have the full escape, convert to UTF8
+          int utf16len = 0;
+          if (mUtf16[0]) {
+            // already have a high surrogate, this is a two char seq
+            utf16len = 2;
+          } else if (0xD800 == (0xFC00 & mUtf16[1])) {
+            // a high surrogate, can't convert until we have the low
+            mUtf16[0] = mUtf16[1];
+            mUtf16[1] = 0;
+            state = State::eUTF16LowSurrogate;
+            break;
+          } else {
+            // a single mUtf16 character
+            mUtf16[0] = mUtf16[1];
+            utf16len = 1;
+          }
+
+          // The actual conversion.
+          // Make sure there's room, 6 bytes is max utf8 len (in theory; 4
+          // bytes covers the actual mUtf16 range).
+          if (mLbCur + 6 >= mLbEnd && !GrowBuf()) {
+            return false;
+          }
+
+          ConvertUTF16toUTF8 converter(mLbCur);
+          converter.write(mUtf16, utf16len);
+          mLbCur += converter.Size();
+          state = State::eQuotedString;
+        }
+        break;
+      }
+
+      // looking for beginning of mUtf16 low surrogate
+      case State::eUTF16LowSurrogate:
+        if (mStrIndex == 0 && c == '\\') {
+          ++mStrIndex;
+        } else if (mStrIndex == 1 && c == 'u') {
+          // escape sequence is correct, now parse hex
+          mStrIndex = kUTF16EscapeNumDigits;
+          mEscTmp[0] = 'u';
+          mEscLen = 1;
+          state = State::eHexEscape;
+        } else {
+          // Didn't find expected low surrogate. Ignore high surrogate (it
+          // would just get converted to nothing anyway) and start over with
+          // this character.
+          --aBuf;
+          if (mStrIndex == 1) {
+            state = State::eEscapeSequence;
+          } else {
+            state = State::eQuotedString;
+          }
+          continue;
+        }
+        break;
+
+      // function open and close parsing
+      case State::eUntilOpenParen:
+        // tolerate only whitespace and embedded comments
+        if (c == '(') {
+          state = State::eUntilName;
+        } else if (c == '/') {
+          mNextState = state; // return here when done with comment
+          state = State::eCommentMaybeStart;
+        } else if (!isspace(c)) {
+          ReportProblem(
+            "need space, comment or open parentheses", lineNum, true);
+          NS_WARNING("malformed pref file");
+          return false;
+        }
+        break;
+
+      case State::eUntilCloseParen:
+        // tolerate only whitespace and embedded comments
+        if (c == ')') {
+          state = State::eUntilSemicolon;
+        } else if (c == '/') {
+          mNextState = state; // return here when done with comment
+          state = State::eCommentMaybeStart;
+        } else if (!isspace(c)) {
+          ReportProblem(
+            "need space, comment or closing parentheses", lineNum, true);
+          NS_WARNING("malformed pref file");
+          return false;
+        }
+        break;
+
+      // function terminator ';' parsing
+      case State::eUntilSemicolon:
+        // tolerate only whitespace and embedded comments
+        if (c == ';') {
+
+          PrefValue value;
+
+          switch (*mVtype) {
+            case PrefType::String:
+              value.mStringVal = mVb;
+              break;
+
+            case PrefType::Int:
+              if ((mVb[0] == '-' || mVb[0] == '+') && mVb[1] == '\0') {
+                ReportProblem("invalid integer value", 0, true);
+                NS_WARNING("malformed integer value");
+                return false;
+              }
+              value.mIntVal = atoi(mVb);
+              break;
+
+            case PrefType::Bool:
+              value.mBoolVal = (mVb == kTrue);
+              break;
+
+            default:
+              MOZ_CRASH();
+          }
+
+          // We've extracted a complete name/value pair.
+          HandleValue(mLb, *mVtype, value, mIsDefault, mIsSticky);
+          numPrefs++;
+
+          state = State::eInit;
+        } else if (c == '/') {
+          mNextState = state; // return here when done with comment
+          state = State::eCommentMaybeStart;
+        } else if (!isspace(c)) {
+          ReportProblem("need space, comment or semicolon", lineNum, true);
+          NS_WARNING("malformed pref file");
+          return false;
+        }
+        break;
+
+      // eol parsing
+      case State::eUntilEOL:
+        // Need to handle mac, unix, or dos line endings. State::eInit will
+        // eat the next \n in case we have \r\n.
+        if (c == '\r' || c == '\n' || c == 0x1A) {
+          state = mNextState;
+          mNextState = State::eInit; // reset next state
+        }
+        break;
+    }
+  }
+  mState = state;
+
+  uint32_t loadTime_us = (TimeStamp::Now() - aStartTime).ToMicroseconds();
+
+  // Most prefs files are read before telemetry initializes, so we have to save
+  // these measurements now and send them to telemetry later.
+  TelemetryLoadData loadData = { uint32_t(aBufLen), numPrefs, loadTime_us };
+  gTelemetryLoadData->Put(aName, loadData);
+
+  return true;
 }
 
 void SendTelemetryLoadData() {
@@ -2242,7 +2758,7 @@ void Preferences::HandleDirty() {
   }
 }
 
-static nsresult openPrefFile(nsIFile* aFile, PrefValueKind aKind);
+static nsresult openPrefFile(nsIFile* aFile);
 
 static const char kTelemetryPref[] = "toolkit.telemetry.enabled";
 static const char kChannelPref[] = "app.update.channel";
@@ -2872,18 +3388,6 @@ Preferences::Observe(nsISupports* aSubject, const char* aTopic,
 }
 
 NS_IMETHODIMP
-Preferences::ReadDefaultPrefsFromFile(nsIFile* aFile) {
-  ENSURE_PARENT_PROCESS("Preferences::ReadDefaultPrefsFromFile", "all prefs");
-
-  if (!aFile) {
-    NS_ERROR("ReadDefaultPrefsFromFile requires a parameter");
-    return NS_ERROR_INVALID_ARG;
-  }
-
-  return openPrefFile(aFile, PrefValueKind::Default);
-}
-
-NS_IMETHODIMP
 Preferences::ReadUserPrefsFromFile(nsIFile* aFile) {
   ENSURE_PARENT_PROCESS("Preferences::ReadUserPrefsFromFile", "all prefs");
 
@@ -2892,7 +3396,7 @@ Preferences::ReadUserPrefsFromFile(nsIFile* aFile) {
     return NS_ERROR_INVALID_ARG;
   }
 
-  return openPrefFile(aFile, PrefValueKind::User);
+  return openPrefFile(aFile);
 }
 
 NS_IMETHODIMP
@@ -3115,7 +3619,7 @@ already_AddRefed<nsIFile> Preferences::ReadSavedPrefs() {
     return nullptr;
   }
 
-  rv = openPrefFile(file, PrefValueKind::User);
+  rv = openPrefFile(file);
   if (rv == NS_ERROR_FILE_NOT_FOUND) {
     // This is a normal case for new users.
     Telemetry::ScalarSet(
@@ -3142,7 +3646,7 @@ void Preferences::ReadUserOverridePrefs() {
   }
 
   aFile->AppendNative(NS_LITERAL_CSTRING("user.js"));
-  rv = openPrefFile(aFile, PrefValueKind::User);
+  rv = openPrefFile(aFile);
   if (rv != NS_ERROR_FILE_NOT_FOUND) {
     // If the file exists and was at least partially read, record that in
     // telemetry as it may be a sign of pref injection.
@@ -3277,7 +3781,7 @@ nsresult Preferences::WritePrefFile(nsIFile* aFile, SaveMethod aSaveMethod) {
   return PreferencesWriter::Write(aFile, prefsData);
 }
 
-static nsresult openPrefFile(nsIFile* aFile, PrefValueKind aKind) {
+static nsresult openPrefFile(nsIFile* aFile) {
   TimeStamp startTime = TimeStamp::Now();
 
   nsCString data;
@@ -3287,12 +3791,8 @@ static nsresult openPrefFile(nsIFile* aFile, PrefValueKind aKind) {
   aFile->GetLeafName(filenameUtf16);
   NS_ConvertUTF16toUTF8 filename(filenameUtf16);
 
-  nsAutoString path;
-  aFile->GetPath(path);
-
   Parser parser;
-  if (!parser.Parse(filename, aKind, NS_ConvertUTF16toUTF8(path).get(),
-                    startTime, data)) {
+  if (!parser.Parse(filename, startTime, data.get(), data.Length())) {
     return NS_ERROR_FILE_CORRUPTED;
   }
 
@@ -3389,7 +3889,7 @@ static nsresult pref_LoadPrefsInDir(nsIFile* aDir,
   uint32_t arrayCount = prefFiles.Count();
   uint32_t i;
   for (i = 0; i < arrayCount; ++i) {
-    rv2 = openPrefFile(prefFiles[i], PrefValueKind::Default);
+    rv2 = openPrefFile(prefFiles[i]);
     if (NS_FAILED(rv2)) {
       NS_ERROR("Default pref file not parsed successfully.");
       rv = rv2;
@@ -3401,7 +3901,7 @@ static nsresult pref_LoadPrefsInDir(nsIFile* aDir,
     // This may be a sparse array; test before parsing.
     nsIFile* file = specialFiles[i];
     if (file) {
-      rv2 = openPrefFile(file, PrefValueKind::Default);
+      rv2 = openPrefFile(file);
       if (NS_FAILED(rv2)) {
         NS_ERROR("Special default pref file not parsed successfully.");
         rv = rv2;
@@ -3420,9 +3920,9 @@ static nsresult pref_ReadPrefFromJar(nsZipArchive* aJarReader,
   MOZ_TRY_VAR(manifest,
               URLPreloader::ReadZip(aJarReader, nsDependentCString(aName)));
 
+  nsDependentCString name(aName);
   Parser parser;
-  if (!parser.Parse(nsDependentCString(aName), PrefValueKind::Default, aName,
-                    startTime, manifest)) {
+  if (!parser.Parse(name, startTime, manifest.get(), manifest.Length())) {
     return NS_ERROR_FILE_CORRUPTED;
   }
 
@@ -3500,7 +4000,7 @@ static nsresult pref_ReadPrefFromJar(nsZipArchive* aJarReader,
     rv = greprefsFile->AppendNative(NS_LITERAL_CSTRING("greprefs.js"));
     NS_ENSURE_SUCCESS(rv, Err("greprefsFile->AppendNative() failed"));
 
-    rv = openPrefFile(greprefsFile, PrefValueKind::Default);
+    rv = openPrefFile(greprefsFile);
     if (NS_FAILED(rv)) {
       NS_WARNING(
           "Error parsing GRE default preferences. Is this an old-style "
@@ -3636,7 +4136,8 @@ static nsresult pref_ReadPrefFromJar(nsZipArchive* aJarReader,
 
   if (!strcmp(NS_STRINGIFY(MOZ_UPDATE_CHANNEL), "nightly") ||
       !strcmp(NS_STRINGIFY(MOZ_UPDATE_CHANNEL), "aurora") ||
-      !strcmp(NS_STRINGIFY(MOZ_UPDATE_CHANNEL), "beta") || developerBuild ||
+      !strcmp(NS_STRINGIFY(MOZ_UPDATE_CHANNEL), "beta") ||
+      developerBuild ||
       releaseCandidateOnBeta) {
     Preferences::SetBoolInAnyProcess(kTelemetryPref, true,
                                      PrefValueKind::Default);
@@ -3763,7 +4264,6 @@ static nsresult pref_ReadPrefFromJar(nsZipArchive* aJarReader,
   prefValue.mStringVal = flat.get();
   return pref_SetPref(aPrefName, PrefType::String, aKind, prefValue,
                       /* isSticky */ false,
-                      /* isLocked */ false,
                       /* fromFile */ false);
 }
 
@@ -3783,7 +4283,6 @@ static nsresult pref_ReadPrefFromJar(nsZipArchive* aJarReader,
   prefValue.mBoolVal = aValue;
   return pref_SetPref(aPrefName, PrefType::Bool, aKind, prefValue,
                       /* isSticky */ false,
-                      /* isLocked */ false,
                       /* fromFile */ false);
 }
 
@@ -3802,7 +4301,6 @@ static nsresult pref_ReadPrefFromJar(nsZipArchive* aJarReader,
   prefValue.mIntVal = aValue;
   return pref_SetPref(aPrefName, PrefType::Int, aKind, prefValue,
                       /* isSticky */ false,
-                      /* isLocked */ false,
                       /* fromFile */ false);
 }
 
@@ -3830,6 +4328,7 @@ static nsresult pref_ReadPrefFromJar(nsZipArchive* aJarReader,
 
   if (!pref->IsLocked()) {
     pref->SetIsLocked(true);
+    gIsAnyPrefLocked = true;
     NotifyCallbacks(aPrefName);
   }
 
@@ -3861,8 +4360,14 @@ static nsresult pref_ReadPrefFromJar(nsZipArchive* aJarReader,
 /* static */ bool Preferences::IsLocked(const char* aPrefName) {
   NS_ENSURE_TRUE(InitStaticMembers(), false);
 
-  Pref* pref = pref_HashTableLookup(aPrefName);
-  return pref && pref->IsLocked();
+  if (gIsAnyPrefLocked) {
+    Pref* pref = pref_HashTableLookup(aPrefName);
+    if (pref && pref->IsLocked()) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 /* static */ nsresult Preferences::ClearUserInAnyProcess(

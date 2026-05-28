@@ -32,7 +32,6 @@ with Files('GetUserMedia*'):
     BUG_COMPONENT = component_av
 
 DIRS += [
-    'doctor',
     'eme',
     'encoder',
     'fake-cdm',
@@ -107,6 +106,7 @@ EXPORTS += [
     'ByteWriter.h',
     'ChannelMediaDecoder.h',
     'CubebUtils.h',
+    'DecoderDoctorDiagnostics.h',
     'DecoderTraits.h',
     'DOMMediaStream.h',
     'FileBlockCache.h',
@@ -224,6 +224,7 @@ UNIFIED_SOURCES += [
     'ChannelMediaDecoder.cpp',
     'ChannelMediaResource.cpp',
     'CloneableWithRangeMediaResource.cpp',
+    'DecoderDoctorDiagnostics.cpp',
     'DOMMediaStream.cpp',
     'FileBlockCache.cpp',
     'FileMediaResource.cpp',

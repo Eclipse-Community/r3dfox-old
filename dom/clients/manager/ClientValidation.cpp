@@ -41,7 +41,8 @@ bool ClientIsValidPrincipalInfo(const PrincipalInfo& aPrincipalInfo) {
 
       // Verify the principal originNoSuffix parses.
       RefPtr<MozURL> originURL;
-      rv = MozURL::Init(getter_AddRefs(originURL), content.originNoSuffix());
+      rv = MozURL::Init(getter_AddRefs(originURL),
+                        content.originNoSuffix().get_nsCString());
       NS_ENSURE_SUCCESS(rv, false);
 
       nsAutoCString originOrigin;
@@ -87,7 +88,8 @@ bool ClientIsValidCreationURL(const PrincipalInfo& aPrincipalInfo,
       // Parse the principal origin URL as well.  This ensures any MozURL
       // parser issues effect both URLs equally.
       RefPtr<MozURL> principalURL;
-      rv = MozURL::Init(getter_AddRefs(principalURL), content.originNoSuffix());
+      rv = MozURL::Init(getter_AddRefs(principalURL),
+                        content.originNoSuffix().get_nsCString());
       NS_ENSURE_SUCCESS(rv, false);
 
       nsAutoCString origin;

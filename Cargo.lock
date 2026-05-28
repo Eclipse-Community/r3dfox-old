@@ -713,10 +713,8 @@ dependencies = [
  "geckoservo 0.0.1",
  "log 0.3.9 (registry+https://github.com/rust-lang/crates.io-index)",
  "mp4parse_capi 0.10.0",
- "netwerk_helper 0.0.1",
  "nserror 0.1.0",
  "nsstring 0.1.0",
- "rust_url_capi 0.0.1",
  "syn 0.11.11 (registry+https://github.com/rust-lang/crates.io-index)",
  "webrender_bindings 0.1.0",
  "xpcom 0.1.0",
@@ -1115,14 +1113,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "netwerk_helper"
-version = "0.0.1"
-dependencies = [
- "nserror 0.1.0",
- "nsstring 0.1.0",
-]
-
-[[package]]
 name = "nodrop"
 version = "0.1.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1450,16 +1440,6 @@ version = "0.10.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "log 0.4.1 (registry+https://github.com/rust-lang/crates.io-index)",
-]
-
-[[package]]
-name = "rust_url_capi"
-version = "0.0.1"
-dependencies = [
- "libc 0.2.43 (registry+https://github.com/rust-lang/crates.io-index)",
- "nserror 0.1.0",
- "nsstring 0.1.0",
- "url 1.6.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]

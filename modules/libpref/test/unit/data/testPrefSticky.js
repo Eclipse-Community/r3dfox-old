@@ -1,2 +1,2 @@
 pref("testPref.unsticky.bool", true);
-pref("testPref.sticky.bool", false, sticky);
+sticky_pref("testPref.sticky.bool", false);

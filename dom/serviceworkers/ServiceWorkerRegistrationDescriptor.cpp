@@ -182,12 +182,6 @@ bool IsValidWorker(
     return false;
   }
 
-  auto& contentPrincipal = principalInfo.get_ContentPrincipalInfo();
-  if (contentPrincipal.originNoSuffix() != aContentPrincipal.originNoSuffix() ||
-      contentPrincipal.attrs() != aContentPrincipal.attrs()) {
-    return false;
-  }
-
   return true;
 }
 

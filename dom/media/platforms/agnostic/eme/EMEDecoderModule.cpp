@@ -8,7 +8,7 @@
 
 #include <inttypes.h>
 
-#include "mp4_demuxer/Adts.h"
+#include "Adts.h"
 #include "GMPDecoderModule.h"
 #include "GMPService.h"
 #include "MediaInfo.h"
@@ -24,10 +24,6 @@
 #include "nsServiceManagerUtils.h"
 #include "DecryptThroughputLimit.h"
 #include "ChromiumCDMVideoDecoder.h"
-
-namespace mp4_demuxer {
-class Adts;
-} // namespace mp4_demuxer
 
 namespace mozilla {
 
@@ -47,7 +43,7 @@ class ADTSSampleConverter {
         // doesn't care what is set.
         ,
         mProfile(aInfo.mProfile < 1 || aInfo.mProfile > 4 ? 2 : aInfo.mProfile),
-        mFrequencyIndex(mp4_demuxer:Adts::GetFrequencyIndex(aInfo.mRate)) {
+        mFrequencyIndex(Adts::GetFrequencyIndex(aInfo.mRate)) {
     EME_LOG("ADTSSampleConvertor(): aInfo.mProfile=%" PRIi8
             " aInfo.mExtendedProfile=%" PRIi8,
             aInfo.mProfile, aInfo.mExtendedProfile);
@@ -58,11 +54,11 @@ class ADTSSampleConverter {
     }
   }
   bool Convert(MediaRawData* aSample) const {
-    return mp4_demuxer:Adts::ConvertSample(mNumChannels, mFrequencyIndex, mProfile,
+    return Adts::ConvertSample(mNumChannels, mFrequencyIndex, mProfile,
                                aSample);
   }
   bool Revert(MediaRawData* aSample) const {
-    return mp4_demuxer:Adts::RevertSample(aSample);
+    return Adts::RevertSample(aSample);
   }
 
  private:

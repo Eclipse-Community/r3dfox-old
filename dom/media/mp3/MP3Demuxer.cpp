@@ -21,7 +21,7 @@ extern mozilla::LazyLogModule gMediaDemuxerLog;
 #define MP3LOGV(msg, ...) \
   MOZ_LOG(gMediaDemuxerLog, LogLevel::Verbose, ("MP3Demuxer " msg, ##__VA_ARGS__))
 
-using mp4_demuxer::BufferReader;
+using mozilla::BufferReader;
 using mozilla::media::TimeInterval;
 using mozilla::media::TimeIntervals;
 using mozilla::media::TimeUnit;

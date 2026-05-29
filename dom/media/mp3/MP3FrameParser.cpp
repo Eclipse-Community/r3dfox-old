@@ -22,8 +22,6 @@ extern mozilla::LazyLogModule gMediaDemuxerLog;
   MOZ_LOG(gMediaDemuxerLog, LogLevel::Verbose, \
           ("MP3Demuxer " msg, ##__VA_ARGS__))
 
-using mp4_demuxer::BufferReader;
-
 namespace mozilla {
 
 // FrameParser

@@ -16,6 +16,7 @@ simd-accel = ["gkrust-shared/simd-accel"]
 no-static-ideograph-encoder-tables = ["gkrust-shared/no-static-ideograph-encoder-tables"]
 
 [dependencies]
+mp4parse-gtest = { path = "../../../../dom/media/gtest" }
 nsstring-gtest = { path = "../../../../xpcom/rust/gtest/nsstring" }
 xpcom-gtest = { path = "../../../../xpcom/rust/gtest/xpcom" }
 gkrust-shared = { path = "../../rust/shared" }

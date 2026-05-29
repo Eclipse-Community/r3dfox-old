@@ -24,6 +24,7 @@ UNIFIED_SOURCES += [
     'TestMediaMIMETypes.cpp',
     'TestMP3Demuxer.cpp',
     'TestMP4Demuxer.cpp',
+    'TestRust.cpp',
     'TestVideoSegment.cpp',
     'TestVideoUtils.cpp',
     'TestVPXDecoding.cpp',
@@ -35,9 +36,6 @@ if CONFIG['MOZ_WEBM_ENCODER']:
         'TestVideoTrackEncoder.cpp',
         'TestWebMWriter.cpp',
     ]
-
-if CONFIG['MOZ_RUST']:
-    UNIFIED_SOURCES += ['TestRust.cpp',]
 
 TEST_HARNESS_FILES.gtest += [
     '../test/gizmo-frag.mp4',
@@ -59,13 +57,17 @@ TEST_HARNESS_FILES.gtest += [
     'test_case_1224369.vp8.ivf',
 ]
 
+TEST_DIRS += [
+    'mp4_demuxer',
+]
+
 include('/ipc/chromium/chromium-config.mozbuild')
 
 LOCAL_INCLUDES += [
     '/dom/media',
     '/dom/media/encoder',
-    '/dom/media/fmp4',
     '/dom/media/gmp',
+    '/dom/media/mp4',
     '/dom/media/platforms',
     '/dom/media/platforms/agnostic',
     '/security/certverifier',

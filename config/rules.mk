@@ -833,7 +833,6 @@ else ifdef MOZ_CRASHREPORTER
 $(foreach file,$(DUMP_SYMS_TARGETS),$(eval $(call syms_template,$(file),$(notdir $(file))_syms.track)))
 endif
 
-ifdef MOZ_RUST
 cargo_host_flag := --target=$(RUST_HOST_TARGET)
 cargo_target_flag := --target=$(RUST_TARGET)
 
@@ -1046,7 +1045,6 @@ else
 force-cargo-host-program-check:
 	@true
 endif # HOST_RUST_PROGRAMS
-endif # MOZ_RUST
 
 $(SOBJS):
 	$(REPORT_BUILD)

@@ -12,8 +12,6 @@ using namespace mozilla;
 
 namespace mp4_demuxer {
 
-static const int kADTSHeaderSize = 7;
-
 int8_t Adts::GetFrequencyIndex(uint32_t aSamplesPerSecond) {
   static const uint32_t freq_lookup[] = {96000, 88200, 64000, 48000, 44100,
                                          32000, 24000, 22050, 16000, 12000,
@@ -33,6 +31,8 @@ int8_t Adts::GetFrequencyIndex(uint32_t aSamplesPerSecond) {
 
 bool Adts::ConvertSample(uint16_t aChannelCount, int8_t aFrequencyIndex,
                          int8_t aProfile, MediaRawData* aSample) {
+  static const int kADTSHeaderSize = 7;
+
   size_t newSize = aSample->Size() + kADTSHeaderSize;
 
   // ADTS header uses 13 bits for packet size.
@@ -63,32 +63,6 @@ bool Adts::ConvertSample(uint16_t aChannelCount, int8_t aFrequencyIndex,
                                                     kADTSHeaderSize);
     } else {
       writer->mCrypto.mPlainSizes[0] += kADTSHeaderSize;
-    }
-  }
-
-  return true;
-}
-
-bool Adts::RevertSample(MediaRawData* aSample) {
-  if (aSample->Size() < kADTSHeaderSize) {
-    return false;
-  }
-
-  {
-    const uint8_t* header = aSample->Data();
-    if (header[0] != 0xff || header[1] != 0xf1 || header[6] != 0xfc) {
-      // Not ADTS.
-      return false;
-    }
-  }
-
-  nsAutoPtr<MediaRawDataWriter> writer(aSample->CreateWriter());
-  writer->PopFront(kADTSHeaderSize);
-
-  if (aSample->mCrypto.mValid) {
-    if (aSample->mCrypto.mPlainSizes.Length() > 0 &&
-        writer->mCrypto.mPlainSizes[0] >= kADTSHeaderSize) {
-      writer->mCrypto.mPlainSizes[0] -= kADTSHeaderSize;
     }
   }
 

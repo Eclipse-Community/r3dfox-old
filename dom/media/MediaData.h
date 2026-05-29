@@ -179,12 +179,6 @@ class AlignedBuffer {
   // Size in bytes of extra space allocated for padding.
   static size_t AlignmentPaddingSize() { return AlignmentOffset() * 2; }
 
-  void PopFront(size_t aSize) {
-    MOZ_ASSERT(mLength >= aSize);
-    PodMove(mData, mData + aSize, mLength - aSize);
-    mLength -= aSize;
-  }
-
  private:
   static size_t AlignmentOffset() { return Alignment ? Alignment - 1 : 0; }
 
@@ -541,8 +535,6 @@ class MediaRawDataWriter {
   bool Replace(const uint8_t* aData, size_t aSize);
   // Clear the memory buffer. Will set target mData and mSize to 0.
   void Clear();
-  // Remove aSize bytes from the front of the sample.
-  void PopFront(size_t aSize);
 
  private:
   friend class MediaRawData;

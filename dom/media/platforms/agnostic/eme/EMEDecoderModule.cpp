@@ -6,9 +6,6 @@
 
 #include "EMEDecoderModule.h"
 
-#include <inttypes.h>
-
-#include "mp4_demuxer/Adts.h"
 #include "GMPDecoderModule.h"
 #include "GMPService.h"
 #include "MediaInfo.h"
@@ -17,7 +14,6 @@
 #include "mozIGeckoMediaPluginService.h"
 #include "mozilla/CDMProxy.h"
 #include "mozilla/EMEUtils.h"
-#include "mozilla/UniquePtr.h"
 #include "mozilla/Unused.h"
 #include "nsAutoPtr.h"
 #include "nsClassHashtable.h"
@@ -25,65 +21,22 @@
 #include "DecryptThroughputLimit.h"
 #include "ChromiumCDMVideoDecoder.h"
 
-namespace mp4_demuxer {
-class Adts;
-} // namespace mp4_demuxer
-
 namespace mozilla {
 
 typedef MozPromiseRequestHolder<DecryptPromise> DecryptPromiseRequestHolder;
 extern already_AddRefed<PlatformDecoderModule> CreateBlankDecoderModule();
 
-class ADTSSampleConverter {
- public:
-  explicit ADTSSampleConverter(const AudioInfo& aInfo)
-      : mNumChannels(aInfo.mChannels)
-        // Note: we set profile to 2 if we encounter an extended profile (which
-        // set mProfile to 0 and then set mExtendedProfile) such as HE-AACv2
-        // (profile 5). These can then pass through conversion to ADTS and back.
-        // This is done as ADTS only has 2 bits for profile, and the transform
-        // subtracts one from the value. We check if the profile supplied is > 4
-        // for safety. 2 is used as a fallback value, though it seems the CDM
-        // doesn't care what is set.
-        ,
-        mProfile(aInfo.mProfile < 1 || aInfo.mProfile > 4 ? 2 : aInfo.mProfile),
-        mFrequencyIndex(mp4_demuxer:Adts::GetFrequencyIndex(aInfo.mRate)) {
-    EME_LOG("ADTSSampleConvertor(): aInfo.mProfile=%" PRIi8
-            " aInfo.mExtendedProfile=%" PRIi8,
-            aInfo.mProfile, aInfo.mExtendedProfile);
-    if (aInfo.mProfile < 1 || aInfo.mProfile > 4) {
-      EME_LOG(
-          "ADTSSampleConvertor(): Profile not in [1, 4]! Samples will "
-          "their profile set to 2!");
-    }
-  }
-  bool Convert(MediaRawData* aSample) const {
-    return mp4_demuxer:Adts::ConvertSample(mNumChannels, mFrequencyIndex, mProfile,
-                               aSample);
-  }
-  bool Revert(MediaRawData* aSample) const {
-    return mp4_demuxer:Adts::RevertSample(aSample);
-  }
-
- private:
-  const uint32_t mNumChannels;
-  const uint8_t mProfile;
-  const uint8_t mFrequencyIndex;
-};
-
 class EMEDecryptor : public MediaDataDecoder {
  public:
   EMEDecryptor(MediaDataDecoder* aDecoder, CDMProxy* aProxy,
                TaskQueue* aDecodeTaskQueue, TrackInfo::TrackType aType,
-               MediaEventProducer<TrackInfo::TrackType>* aOnWaitingForKey,
-               UniquePtr<ADTSSampleConverter> aConverter = nullptr)
+               MediaEventProducer<TrackInfo::TrackType>* aOnWaitingForKey)
       : mDecoder(aDecoder),
         mTaskQueue(aDecodeTaskQueue),
         mProxy(aProxy),
         mSamplesWaitingForKey(
             new SamplesWaitingForKey(mProxy, aType, aOnWaitingForKey)),
         mThroughputLimiter(aDecodeTaskQueue),
-        mADTSSampleConverter(Move(aConverter)),
         mIsShutdown(false) {
   }
 
@@ -131,15 +84,6 @@ class EMEDecryptor : public MediaDataDecoder {
       return;
     }
 
-    if (mADTSSampleConverter && !mADTSSampleConverter->Convert(aSample)) {
-      mDecodePromise.RejectIfExists(
-          MediaResult(
-              NS_ERROR_DOM_MEDIA_FATAL_ERR,
-              RESULT_DETAIL("Failed to convert encrypted AAC sample to ADTS")),
-          __func__);
-      return;
-    }
-
     mDecrypts.Put(aSample, new DecryptPromiseRequestHolder());
     mProxy->Decrypt(aSample)
         ->Then(mTaskQueue, __func__, this, &EMEDecryptor::Decrypted,
@@ -158,16 +102,6 @@ class EMEDecryptor : public MediaDataDecoder {
     } else {
       // Decryption is not in the list of decrypt operations waiting
       // for a result. It must have been flushed or drained. Ignore result.
-      return;
-    }
-
-    if (mADTSSampleConverter &&
-        !mADTSSampleConverter->Revert(aDecrypted.mSample)) {
-      mDecodePromise.RejectIfExists(
-          MediaResult(
-              NS_ERROR_DOM_MEDIA_FATAL_ERR,
-              RESULT_DETAIL("Failed to revert decrypted ADTS sample to AAC")),
-          __func__);
       return;
     }
 
@@ -273,7 +207,7 @@ class EMEDecryptor : public MediaDataDecoder {
   MozPromiseHolder<DecodePromise> mDrainPromise;
   MozPromiseHolder<FlushPromise> mFlushPromise;
   MozPromiseRequestHolder<DecodePromise> mDecodeRequest;
-  UniquePtr<ADTSSampleConverter> mADTSSampleConverter;
+
   bool mIsShutdown;
 };
 
@@ -405,13 +339,6 @@ already_AddRefed<MediaDataDecoder> EMEDecoderModule::CreateAudioDecoder(
     return m->CreateAudioDecoder(aParams);
   }
 
-  UniquePtr<ADTSSampleConverter> converter = nullptr;
-  if (MP4Decoder::IsAAC(aParams.mConfig.mMimeType)) {
-    // The CDM expects encrypted AAC to be in ADTS format.
-    // See bug 1433344.
-    converter = MakeUnique<ADTSSampleConverter>(aParams.AudioConfig());
-  }
-
   RefPtr<MediaDataDecoder> decoder(mPDM->CreateDecoder(aParams));
   if (!decoder) {
     return nullptr;
@@ -419,7 +346,7 @@ already_AddRefed<MediaDataDecoder> EMEDecoderModule::CreateAudioDecoder(
 
   RefPtr<MediaDataDecoder> emeDecoder(new EMEDecryptor(
       decoder, mProxy, AbstractThread::GetCurrent()->AsTaskQueue(),
-      aParams.mType, aParams.mOnWaitingForKeyEvent, Move(converter)));
+      aParams.mType, aParams.mOnWaitingForKeyEvent));
   return emeDecoder.forget();
 }
 

@@ -27,7 +27,6 @@
 #include "nsContentUtils.h"
 #include "prprf.h"
 #include "nsReadableUtils.h"
-#include "rust-url-capi/src/rust-url-capi.h"
 
 //
 // setenv MOZ_LOG nsStandardURL:5
@@ -747,10 +746,6 @@ nsresult nsStandardURL::BuildNormalizedSpec(const char *spec,
       if (encHost.Length() > 0 && encHost.First() == '[' &&
           encHost.Last() == ']' &&
           ValidIPv6orHostname(encHost.get(), encHost.Length())) {
-        rv = (nsresult)rusturl_parse_ipv6addr(&encHost, &ipString);
-        if (NS_FAILED(rv)) {
-          return rv;
-        }
         encHost = ipString;
       } else if (NS_SUCCEEDED(NormalizeIPv4(encHost, ipString))) {
         encHost = ipString;
@@ -1951,10 +1946,6 @@ nsresult nsStandardURL::SetHost(const nsACString &input) {
     if (hostBuf.Length() > 0 && hostBuf.First() == '[' &&
         hostBuf.Last() == ']' &&
         ValidIPv6orHostname(hostBuf.get(), hostBuf.Length())) {
-      rv = (nsresult)rusturl_parse_ipv6addr(&hostBuf, &ipString);
-      if (NS_FAILED(rv)) {
-        return rv;
-      }
       hostBuf = ipString;
     } else if (NS_SUCCEEDED(NormalizeIPv4(hostBuf, ipString))) {
       hostBuf = ipString;

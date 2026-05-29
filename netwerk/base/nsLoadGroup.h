@@ -94,8 +94,6 @@ class nsLoadGroup : public nsILoadGroup,
 
   /* For nsPILoadGroupInternal */
   uint32_t mTimedNonCachedRequestsUntilOnEndPageLoad;
-
-  nsCString mUserAgentOverrideCache;
 };
 
 }  // namespace net

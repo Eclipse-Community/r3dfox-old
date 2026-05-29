@@ -1,5 +1,8 @@
 "use strict";
 
+
+const kExpectedNotificationId = "automigration-undo";
+
 /**
  * Pretend we can undo something, trigger a notification, pick the undo option,
  * and verify that the notifications are all dismissed immediately.
@@ -9,6 +12,8 @@ add_task(async function checkNotificationsDismissed() {
     ["browser.migrate.automigrate.enabled", true],
     ["browser.migrate.automigrate.ui.enabled", true],
   ]});
+  let getNotification = browser =>
+    gBrowser.getNotificationBox(browser).getNotificationWithValue(kExpectedNotificationId);
 
   Services.prefs.setCharPref("browser.migrate.automigrate.browser", "someunknownbrowser");
 
@@ -32,9 +37,15 @@ add_task(async function checkNotificationsDismissed() {
   });
 
   let firstTab = await BrowserTestUtils.openNewForegroundTab(gBrowser, "about:home", false);
+  if (!getNotification(firstTab.linkedBrowser)) {
+    info(`Notification not immediately present on first tab, waiting for it.`);
+    await BrowserTestUtils.waitForNotificationBar(gBrowser, firstTab.linkedBrowser, kExpectedNotificationId);
+  }
   let secondTab = await BrowserTestUtils.openNewForegroundTab(gBrowser, "about:home", false);
-  let firstNotification = await getOrWaitForNotification(firstTab.linkedBrowser, "first tab");
-  let secondNotification = await getOrWaitForNotification(secondTab.linkedBrowser, "second tab");
+  if (!getNotification(secondTab.linkedBrowser)) {
+    info(`Notification not immediately present on second tab, waiting for it.`);
+    await BrowserTestUtils.waitForNotificationBar(gBrowser, secondTab.linkedBrowser, kExpectedNotificationId);
+  }
 
   // Create a listener for the removal in the first tab, and a listener for bookmarks removal,
   // then click 'Don't keep' in the second tab, and verify that the notification is removed
@@ -55,7 +66,7 @@ add_task(async function checkNotificationsDismissed() {
   });
 
   let firstTabNotificationRemovedPromise = new Promise(resolve => {
-    let notification = firstNotification;
+    let notification = getNotification(firstTab.linkedBrowser);
     // Save this reference because notification.parentNode will be null once it's removed.
     let notificationBox = notification.parentNode;
     let mut = new MutationObserver(mutations => {
@@ -96,7 +107,7 @@ add_task(async function checkNotificationsDismissed() {
   });
 
   // Click "Don't keep" button:
-  let notificationToActivate = secondNotification;
+  let notificationToActivate = getNotification(secondTab.linkedBrowser);
   notificationToActivate.querySelector("button:not(.notification-button-default)").click();
   info("Waiting for notification to be removed in first (background) tab");
   await firstTabNotificationRemovedPromise;

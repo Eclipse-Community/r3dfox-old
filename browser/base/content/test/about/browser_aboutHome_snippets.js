@@ -12,6 +12,7 @@ add_task(async function setup() {
   // The following prefs would affect tests so make sure to disable them
   // before any tests start.
   await SpecialPowers.pushPrefEnv({set: [
+    ["browser.newtabpage.activity-stream.aboutHome.enabled", false],
     ["browser.onboarding.enabled", false],
     ["network.cookie.cookieBehavior", 0],
     ["network.cookie.lifetimePolicy", 0],

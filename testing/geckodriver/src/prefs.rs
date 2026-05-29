@@ -1,7 +1,7 @@
 use mozprofile::preferences::Pref;
 
 lazy_static! {
-    pub static ref DEFAULT: [(&'static str, Pref); 78] = [
+    pub static ref DEFAULT: [(&'static str, Pref); 79] = [
         // Disable automatic downloading of new releases
         ("app.update.auto", Pref::new(false)),
 
@@ -29,6 +29,11 @@ lazy_static! {
 
         // Implicitly accept license
         ("browser.EULA.override", Pref::new(true)),
+
+        // Assume the about:newtab pages intro panels have been shown
+        // to not depend on which test runs first and happens to open
+        // about:newtab
+        ("browser.newtabpage.introShown", Pref::new(true)),
 
         // Never start the browser in offline mode
         ("browser.offline", Pref::new(false)),

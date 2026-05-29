@@ -1169,6 +1169,7 @@ pref("services.sync.prefs.sync.browser.download.useDownloadDir", true);
 pref("services.sync.prefs.sync.browser.formfill.enable", true);
 pref("services.sync.prefs.sync.browser.link.open_newwindow", true);
 pref("services.sync.prefs.sync.browser.newtabpage.enabled", true);
+pref("services.sync.prefs.sync.browser.newtabpage.enhanced", true);
 pref("services.sync.prefs.sync.browser.newtabpage.pinned", true);
 pref("services.sync.prefs.sync.browser.offline-apps.notify", true);
 pref("services.sync.prefs.sync.browser.search.update", true);
@@ -1252,11 +1253,34 @@ pref("prompts.tab_modal.enabled", true);
 // Activates preloading of the new tab url.
 pref("browser.newtab.preload", true);
 
+// Remembers if the about:newtab intro has been shown
+// NOTE: This preference is unused but was not removed in case
+//       this information will be valuable in the future.
+pref("browser.newtabpage.introShown", false);
+
 // Indicates if about:newtab shows content (enabled) or just blank
 pref("browser.newtabpage.enabled", true);
 
+// Toggles the directory tiles content of 'about:newtab'.
+sticky_pref("browser.newtabpage.enhanced", true);
+
+// enables Activity Stream inspired layout
+pref("browser.newtabpage.compact", false);
+
+// enables showing basic placeholders for missing thumbnails
+pref("browser.newtabpage.thumbnailPlaceholder", false);
+
+// number of rows of newtab grid
+pref("browser.newtabpage.rows", 3);
+
+// number of columns of newtab grid
+pref("browser.newtabpage.columns", 5);
+
 // Activity Stream prefs that control to which page to redirect
+// activates Activity Stream
+pref("browser.newtabpage.activity-stream.enabled", true);
 pref("browser.newtabpage.activity-stream.prerender", true);
+pref("browser.newtabpage.activity-stream.aboutHome.enabled", true);
 #ifndef RELEASE_OR_BETA
 #ifdef MOZILLA_OFFICIAL
 pref("browser.newtabpage.activity-stream.debug", false);

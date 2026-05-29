@@ -227,6 +227,12 @@ add_task(async function test_preload_crash() {
     return;
   }
 
+  // Since new tab is only crashable for the activity-stream version,
+  // we need to flip the pref
+  await SpecialPowers.pushPrefEnv({
+    set: [[ "browser.newtabpage.activity-stream.enabled", true ]]
+  });
+
   // Release any existing preloaded browser
   gBrowser.removePreloadedBrowser();
 

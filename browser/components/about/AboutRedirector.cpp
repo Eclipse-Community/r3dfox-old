@@ -23,6 +23,9 @@ NS_IMPL_ISUPPORTS(AboutRedirector, nsIAboutModule)
 
 bool AboutRedirector::sNewTabPageEnabled = false;
 
+bool AboutRedirector::sActivityStreamEnabled = false;
+bool AboutRedirector::sActivityStreamAboutHomeEnabled = false;
+
 struct RedirEntry {
   const char* id;
   const char* url;
@@ -67,16 +70,12 @@ static const RedirEntry kRedirMap[] = {
      nsIAboutModule::ALLOW_SCRIPT | nsIAboutModule::HIDE_FROM_ABOUTABOUT},
     {"welcomeback", "chrome://browser/content/aboutWelcomeBack.xhtml",
      nsIAboutModule::ALLOW_SCRIPT | nsIAboutModule::HIDE_FROM_ABOUTABOUT},
-    // Actual activity stream URL for home and newtab are set in channel
     // creation Linkable because of indexeddb use (bug 1228118)
-    {"home", "about:blank",
+  { "home", "chrome://browser/content/abouthome/aboutHome.xhtml",
      nsIAboutModule::URI_SAFE_FOR_UNTRUSTED_CONTENT |
          nsIAboutModule::URI_MUST_LOAD_IN_CHILD | nsIAboutModule::ALLOW_SCRIPT |
          nsIAboutModule::MAKE_LINKABLE | nsIAboutModule::ENABLE_INDEXED_DB},
     {"newtab", "about:blank",
-     nsIAboutModule::ENABLE_INDEXED_DB |
-         nsIAboutModule::URI_MUST_LOAD_IN_CHILD |
-         nsIAboutModule::URI_SAFE_FOR_UNTRUSTED_CONTENT |
          nsIAboutModule::ALLOW_SCRIPT},
     {"preferences",
      "chrome://browser/content/preferences/in-content/preferences.xul",
@@ -104,6 +103,19 @@ static nsAutoCString GetAboutModuleName(nsIURI* aURI) {
   return path;
 }
 
+void
+AboutRedirector::LoadActivityStreamPrefs()
+{
+  static bool sASEnabledCacheInited = false;
+  if (!sASEnabledCacheInited) {
+    Preferences::AddBoolVarCache(&AboutRedirector::sActivityStreamEnabled,
+                                 "browser.newtabpage.activity-stream.enabled");
+    Preferences::AddBoolVarCache(&AboutRedirector::sActivityStreamAboutHomeEnabled,
+                                 "browser.newtabpage.activity-stream.aboutHome.enabled");
+    sASEnabledCacheInited = true;
+  }
+}
+
 NS_IMETHODIMP
 AboutRedirector::NewChannel(nsIURI* aURI, nsILoadInfo* aLoadInfo,
                             nsIChannel** result) {
@@ -118,6 +130,8 @@ AboutRedirector::NewChannel(nsIURI* aURI, nsILoadInfo* aLoadInfo,
   nsCOMPtr<nsIIOService> ioService = do_GetIOService(&rv);
   NS_ENSURE_SUCCESS(rv, rv);
 
+  LoadActivityStreamPrefs();
+
   static bool sNTPEnabledCacheInited = false;
   if (!sNTPEnabledCacheInited) {
     Preferences::AddBoolVarCache(&AboutRedirector::sNewTabPageEnabled,
@@ -131,7 +145,7 @@ AboutRedirector::NewChannel(nsIURI* aURI, nsILoadInfo* aLoadInfo,
 
       // Let the aboutNewTabService decide where to redirect for about:home and
       // enabled about:newtab. Disabled about:newtab page uses fallback.
-      if (path.EqualsLiteral("home") ||
+      if ((path.EqualsLiteral("home") && sActivityStreamEnabled && sActivityStreamAboutHomeEnabled) ||
           (sNewTabPageEnabled && path.EqualsLiteral("newtab"))) {
         nsCOMPtr<nsIAboutNewTabService> aboutNewTabService =
             do_GetService("@mozilla.org/browser/aboutnewtab-service;1", &rv);
@@ -181,8 +195,24 @@ AboutRedirector::GetURIFlags(nsIURI* aURI, uint32_t* result) {
 
   nsAutoCString name = GetAboutModuleName(aURI);
 
+  LoadActivityStreamPrefs();
+
   for (auto& redir : kRedirMap) {
     if (name.Equals(redir.id)) {
+
+      // Once ActivityStream is fully rolled out and we've removed Tiles,
+      // this special case can go away and the flag can just become part
+      // of the normal about:newtab entry in kRedirMap.
+      if (name.EqualsLiteral("newtab") || (name.EqualsLiteral("home") && sActivityStreamAboutHomeEnabled)) {
+        if (sActivityStreamEnabled) {
+          *result = redir.flags |
+            nsIAboutModule::URI_MUST_LOAD_IN_CHILD |
+            nsIAboutModule::ENABLE_INDEXED_DB |
+            nsIAboutModule::URI_SAFE_FOR_UNTRUSTED_CONTENT;
+          return NS_OK;
+        }
+      }
+
       *result = redir.flags;
       return NS_OK;
     }

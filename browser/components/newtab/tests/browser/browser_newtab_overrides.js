@@ -2,12 +2,16 @@
 
 ChromeUtils.import("resource://gre/modules/XPCOMUtils.jsm");
 ChromeUtils.import("resource://gre/modules/Services.jsm");
+const PREF_NEWTAB_ACTIVITY_STREAM = "browser.newtabpage.activity-stream.enabled";
+
+Services.prefs.setBoolPref(PREF_NEWTAB_ACTIVITY_STREAM, false);
 
 XPCOMUtils.defineLazyServiceGetter(this, "aboutNewTabService",
                                    "@mozilla.org/browser/aboutnewtab-service;1",
                                    "nsIAboutNewTabService");
 
 registerCleanupFunction(function() {
+  Services.prefs.clearUserPref(PREF_NEWTAB_ACTIVITY_STREAM);
   aboutNewTabService.resetNewTabURL();
 });
 
@@ -44,9 +48,9 @@ add_task(async function redirector_ignores_override() {
       await ContentTask.spawn(browser, {}, async function() {
         Assert.equal(content.location.href, "about:newtab", "Got right URL");
         Assert.equal(content.document.location.href, "about:newtab", "Got right URL");
-        Assert.notEqual(content.document.nodePrincipal,
+        Assert.equal(content.document.nodePrincipal,
           Services.scriptSecurityManager.getSystemPrincipal(),
-          "activity stream principal should not match systemPrincipal");
+          "nodePrincipal should match systemPrincipal");
       });
     }); // jshint ignore:line
   }

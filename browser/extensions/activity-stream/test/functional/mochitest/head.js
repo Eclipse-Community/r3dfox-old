@@ -10,6 +10,12 @@ function pushPrefs(...prefs) {
   return SpecialPowers.pushPrefEnv({set: prefs});
 }
 
+// Activity Stream tests expect it to be enabled, and make sure to clear out any
+// preloaded browsers that might have about:newtab that we don't want to test
+const ACTIVITY_STREAM_PREF = "browser.newtabpage.activity-stream.enabled";
+pushPrefs([ACTIVITY_STREAM_PREF, true]);
+gBrowser.removePreloadedBrowser();
+
 async function setDefaultTopSites() { // eslint-disable-line no-unused-vars
   // The pref for TopSites is empty by default.
   await pushPrefs(["browser.newtabpage.activity-stream.default.sites",

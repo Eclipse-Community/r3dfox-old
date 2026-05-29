@@ -7,8 +7,13 @@ function checkBaseProcessCount(description) {
   const {childCount} = ppmm;
   // With preloaded activity-stream, process count is a bit undeterministic, so
   // allow for some variation
-  const extraCount = BASE_NUMBER_OF_PROCESSES + 1;
-  ok(childCount === BASE_NUMBER_OF_PROCESSES || childCount === extraCount, `${description} (${BASE_NUMBER_OF_PROCESSES} or ${extraCount})`);
+  if (Services.prefs.getBoolPref("browser.newtabpage.activity-stream.enabled")) {
+    const extraCount = BASE_NUMBER_OF_PROCESSES + 1;
+    ok(childCount === BASE_NUMBER_OF_PROCESSES || childCount === extraCount, `${description} (${BASE_NUMBER_OF_PROCESSES} or ${extraCount})`);
+  }
+  else {
+    is(childCount, BASE_NUMBER_OF_PROCESSES, `${description} (${BASE_NUMBER_OF_PROCESSES})`);
+  }
 }
 
 function processScript() {

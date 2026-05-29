@@ -25,6 +25,11 @@ class AboutRedirector : public nsIAboutModule {
 
  private:
   static bool sNewTabPageEnabled;
+
+  static bool sActivityStreamEnabled;
+  static bool sActivityStreamAboutHomeEnabled;
+
+  static void LoadActivityStreamPrefs();
 };
 
 }  // namespace browser

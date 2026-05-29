@@ -95,6 +95,7 @@ XPCOMUtils.defineLazyModuleGetters(this, {
   ContextualIdentityService: "resource://gre/modules/ContextualIdentityService.jsm",
   CustomizableUI: "resource:///modules/CustomizableUI.jsm",
   DateTimePickerHelper: "resource://gre/modules/DateTimePickerHelper.jsm",
+  DirectoryLinksProvider: "resource:///modules/DirectoryLinksProvider.jsm",
   ExtensionsUI: "resource:///modules/ExtensionsUI.jsm",
   Feeds: "resource:///modules/Feeds.jsm",
   FileUtils: "resource://gre/modules/FileUtils.jsm",
@@ -994,7 +995,9 @@ BrowserGlue.prototype = {
 
     PageThumbs.init();
 
+    DirectoryLinksProvider.init();
     NewTabUtils.init();
+    NewTabUtils.links.addProvider(DirectoryLinksProvider);
 
     PageActions.init();
 
@@ -2317,8 +2320,7 @@ BrowserGlue.prototype = {
     }
 
     if (currentUIVersion < 64) {
-      OS.File.remove(OS.Path.join(OS.Constants.Path.profileDir,
-                                  "directoryLinks.json"), {ignoreAbsent: true});
+      // This version is removed.
     }
 
     if (currentUIVersion < 65 &&

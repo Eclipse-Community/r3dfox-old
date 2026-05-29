@@ -3,6 +3,7 @@
 
 const PREF_NEWTAB_ENABLED = "browser.newtabpage.enabled";
 const PREF_NEWTAB_ACTIVITY_STREAM = "browser.newtabpage.activity-stream.enabled";
+const PREF_NEWTAB_DIRECTORYSOURCE = "browser.newtabpage.directory.source";
 
 Services.prefs.setBoolPref(PREF_NEWTAB_ENABLED, true);
 Services.prefs.setBoolPref(PREF_NEWTAB_ACTIVITY_STREAM, false);
@@ -18,6 +19,7 @@ ChromeUtils.import("resource://gre/modules/XPCOMUtils.jsm");
 
 XPCOMUtils.defineLazyModuleGetters(this, {
   NewTabUtils: "resource://gre/modules/NewTabUtils.jsm",
+  DirectoryLinksProvider: "resource:///modules/DirectoryLinksProvider.jsm",
   PlacesTestUtils: "resource://testing-common/PlacesTestUtils.jsm",
   Sanitizer: "resource:///modules/Sanitizer.jsm",
 });
@@ -95,10 +97,29 @@ add_task(async function setupWindowSize() {
 registerCleanupFunction(function() {
   Services.prefs.clearUserPref(PREF_NEWTAB_ENABLED);
   Services.prefs.clearUserPref(PREF_NEWTAB_ACTIVITY_STREAM);
+  Services.prefs.setCharPref(PREF_NEWTAB_DIRECTORYSOURCE, gOrigDirectorySource);
+
+  return watchLinksChangeOnce();
 });
 
 function pushPrefs(...aPrefs) {
   return SpecialPowers.pushPrefEnv({"set": aPrefs});
+}
+
+/**
+ * Resolves promise when directory links are downloaded and written to disk
+ */
+function watchLinksChangeOnce() {
+  return new Promise(resolve => {
+    let observer = {
+      onManyLinksChanged: () => {
+        DirectoryLinksProvider.removeObserver(observer);
+        resolve();
+      }
+    };
+    observer.onDownloadFail = observer.onManyLinksChanged;
+    DirectoryLinksProvider.addObserver(observer);
+  });
 }
 
 add_task(async function setup() {
@@ -121,7 +142,15 @@ add_task(async function setup() {
     });
   });
 
-  await whenPagesUpdated();
+  let promiseReady = (async function() {
+    await watchLinksChangeOnce();
+    await whenPagesUpdated();
+  })();
+
+  // Save the original directory source (which is set globally for tests)
+  gOrigDirectorySource = Services.prefs.getCharPref(PREF_NEWTAB_DIRECTORYSOURCE);
+  Services.prefs.setCharPref(PREF_NEWTAB_DIRECTORYSOURCE, gDirectorySource);
+  await promiseReady;
 });
 
 /** Perform an action on a cell within the newtab page.

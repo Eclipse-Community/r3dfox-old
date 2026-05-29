@@ -135,7 +135,7 @@ Site.prototype = {
    */
   _render: function Site_render() {
     // setup display variables
-    let enhanced = gAllPages.enhanced;
+    let enhanced = gAllPages.enhanced && DirectoryLinksProvider.getEnhancedLink(this.link);
     let url = this.url;
     let title = enhanced && enhanced.title ? enhanced.title :
                 this.link.type == "history" ? this.link.baseDomain :
@@ -178,7 +178,8 @@ Site.prototype = {
    */
   refreshThumbnail: function Site_refreshThumbnail() {
     // Only enhance tiles if that feature is turned on
-    let link = gAllPages.enhanced || this.link;
+    let link = gAllPages.enhanced && DirectoryLinksProvider.getEnhancedLink(this.link) ||
+               this.link;
 
     let thumbnail = this._querySelector(".newtab-thumbnail.thumbnail");
     if (link.bgColor) {

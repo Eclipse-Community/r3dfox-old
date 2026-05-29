@@ -178,9 +178,11 @@
   skin/classic/browser/zoom-out.svg                   (../shared/icons/zoom-out.svg)
 
 
+  skin/classic/browser/search-arrow-go.svg                     (../shared/search/search-arrow-go.svg)
   skin/classic/browser/search-engine-placeholder.png           (../shared/search/search-engine-placeholder.png)
   skin/classic/browser/search-engine-placeholder@2x.png        (../shared/search/search-engine-placeholder@2x.png)
   skin/classic/browser/search-indicator-badge-add.svg          (../shared/search/search-indicator-badge-add.svg)
+  skin/classic/browser/search-indicator-magnifying-glass.svg   (../shared/search/search-indicator-magnifying-glass.svg)
 
   skin/classic/browser/tabbrowser/tab-connecting.png           (../shared/tabbrowser/tab-connecting.png)
   skin/classic/browser/tabbrowser/tab-connecting@2x.png        (../shared/tabbrowser/tab-connecting@2x.png)

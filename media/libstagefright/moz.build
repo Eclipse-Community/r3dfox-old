@@ -86,10 +86,6 @@ SOURCES += [
     'system/core/libutils/VectorImpl.cpp',
 ]
 
-EXPORTS += [
-    'binding/include/mp4parse.h',
-]
-
 UNIFIED_SOURCES += [
     'binding/Adts.cpp',
     'binding/AnnexB.cpp',

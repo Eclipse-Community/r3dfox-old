@@ -35,12 +35,12 @@
             src="chrome://browser/content/contentSearchUI.js"/>
   </head>
 
-  <body id="about-home" dir="&locale.dir;">
+  <body dir="&locale.dir;">
     <div class="spacer"/>
     <div id="topSection">
       <div id="brandLogo"></div>
 
-      <div id="searchWrapper">
+      <div id="searchIconAndTextContainer">
         <div id="searchIcon"/>
         <input type="text" name="q" value="" id="searchText" maxlength="256"
                placeholder="&searchInput.placeholder;"
@@ -74,5 +74,8 @@
       <div id="restorePreviousSessionSeparator"/>
       <button class="launchButton" id="restorePreviousSession">&historyRestoreLastSession.label;</button>
     </div>
+
+    <a id="aboutMozilla" href="https://www.mozilla.org/about/?utm_source=about-home&amp;utm_medium=Referral"
+       aria-label="&abouthome.aboutMozilla.label;"/>
   </body>
 </html>

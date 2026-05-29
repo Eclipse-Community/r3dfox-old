@@ -47,6 +47,7 @@ window.addEventListener("pageshow", function() {
   // Delay search engine setup, cause browser.js::BrowserOnAboutPageLoad runs
   // later and may use asynchronous getters.
   window.gObserver.observe(document.documentElement, { attributes: true });
+  window.gObserver.observe(document.getElementById("launcher"), { attributes: true });
   fitToWidth();
   setupSearch();
   window.addEventListener("resize", fitToWidth);

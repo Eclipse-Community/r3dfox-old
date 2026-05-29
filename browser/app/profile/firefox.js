@@ -1262,13 +1262,13 @@ pref("browser.newtabpage.introShown", false);
 pref("browser.newtabpage.enabled", true);
 
 // Toggles the directory tiles content of 'about:newtab'.
-sticky_pref("browser.newtabpage.enhanced", true);
+sticky_pref("browser.newtabpage.enhanced", false);
 
 // enables Activity Stream inspired layout
 pref("browser.newtabpage.compact", false);
 
 // enables showing basic placeholders for missing thumbnails
-pref("browser.newtabpage.thumbnailPlaceholder", false);
+pref("browser.newtabpage.thumbnailPlaceholder", true);
 
 // number of rows of newtab grid
 pref("browser.newtabpage.rows", 3);
@@ -1281,9 +1281,9 @@ pref("browser.newtabpage.directory.source", "https://tiles.services.mozilla.com/
 
 // Activity Stream prefs that control to which page to redirect
 // activates Activity Stream
-pref("browser.newtabpage.activity-stream.enabled", true);
-pref("browser.newtabpage.activity-stream.prerender", true);
-pref("browser.newtabpage.activity-stream.aboutHome.enabled", true);
+pref("browser.newtabpage.activity-stream.enabled", false);
+pref("browser.newtabpage.activity-stream.prerender", false);
+pref("browser.newtabpage.activity-stream.aboutHome.enabled", false);
 #ifndef RELEASE_OR_BETA
 #ifdef MOZILLA_OFFICIAL
 pref("browser.newtabpage.activity-stream.debug", false);
@@ -1292,7 +1292,7 @@ pref("browser.newtabpage.activity-stream.debug", true);
 #endif
 #endif
 
-pref("browser.library.activity-stream.enabled", true);
+pref("browser.library.activity-stream.enabled", false);
 
 // Enable the DOM fullscreen API.
 pref("full-screen-api.enabled", true);

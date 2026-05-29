@@ -56,7 +56,6 @@ external_dirs += [
     'media/libtheora',
     'media/libspeex_resampler',
     'media/libsoundtouch',
-    'media/mp4parse-rust',
     'media/psshparser'
 ]
 

@@ -3,6 +3,5 @@
 // file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 extern crate gkrust_shared;
-extern crate mp4parse_gtest;
 extern crate nsstring_gtest;
 extern crate xpcom_gtest;

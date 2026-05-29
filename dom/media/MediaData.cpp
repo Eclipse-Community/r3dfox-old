@@ -424,4 +424,8 @@ uint8_t* MediaRawDataWriter::Data() { return mTarget->mBuffer.Data(); }
 
 size_t MediaRawDataWriter::Size() { return mTarget->Size(); }
 
+void MediaRawDataWriter::PopFront(size_t aSize) {
+  mTarget->mBuffer.PopFront(aSize);
+}
+
 }  // namespace mozilla

@@ -17,6 +17,8 @@
 #include "mozilla/Monitor.h"
 #include "mozilla/TaskQueue.h"
 #include "mozilla/Telemetry.h"
+#include "nsQueryObject.h"
+#include "ThirdPartyUtil.h"
 #include "nsCategoryCache.h"
 #include "nsContentUtils.h"
 #include "nsHashKeys.h"

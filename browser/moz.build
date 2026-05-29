@@ -97,6 +97,9 @@ with Files("config/**"):
 with Files("docs/**"):
     BUG_COMPONENT = ("Toolkit", "Telemetry")
 
+with Files("docs/DirectoryLinksProvider.rst"):
+    BUG_COMPONENT = ("Firefox", "New Tab Page")
+
 with Files("fonts/**"):
     BUG_COMPONENT = ("Core", "Graphics: Text")
 

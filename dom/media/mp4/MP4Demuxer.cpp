@@ -133,11 +133,6 @@ RefPtr<MP4Demuxer::InitPromise> MP4Demuxer::Init() {
   RefPtr<BufferStream> bufferstream = new BufferStream(initData.Ref());
 
   MP4Metadata metadata{bufferstream};
-  nsresult rv = metadata.Parse();
-  if (NS_FAILED(rv)) {
-    return InitPromise::CreateAndReject(
-        MediaResult(rv, RESULT_DETAIL("Parse MP4 metadata failed")), __func__);
-  }
 
   auto audioTrackCount = metadata.GetNumberTracks(TrackInfo::kAudioTrack);
   if (audioTrackCount.Ref() == MP4Metadata::NumberTracksError()) {

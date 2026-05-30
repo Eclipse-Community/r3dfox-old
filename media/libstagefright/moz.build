@@ -53,26 +53,6 @@ if CONFIG['OS_TARGET'] != 'Android':
         'system/core/liblog/logprint.c',
     ]
 
-EXPORTS.mp4_demuxer += [
-    'binding/include/mp4_demuxer/Adts.h',
-    'binding/include/mp4_demuxer/AnnexB.h',
-    'binding/include/mp4_demuxer/Atom.h',
-    'binding/include/mp4_demuxer/AtomType.h',
-    'binding/include/mp4_demuxer/BitReader.h',
-    'binding/include/mp4_demuxer/BufferReader.h',
-    'binding/include/mp4_demuxer/BufferStream.h',
-    'binding/include/mp4_demuxer/ByteWriter.h',
-    'binding/include/mp4_demuxer/DecoderData.h',
-    'binding/include/mp4_demuxer/H264.h',
-    'binding/include/mp4_demuxer/Index.h',
-    'binding/include/mp4_demuxer/Interval.h',
-    'binding/include/mp4_demuxer/MoofParser.h',
-    'binding/include/mp4_demuxer/MP4Metadata.h',
-    'binding/include/mp4_demuxer/ResourceStream.h',
-    'binding/include/mp4_demuxer/SinfParser.h',
-    'binding/include/mp4_demuxer/Stream.h',
-]
-
 EXPORTS.demuxer += [
     'binding/include/demuxer/TrackDemuxer.h',
 ]
@@ -86,24 +66,7 @@ SOURCES += [
     'system/core/libutils/VectorImpl.cpp',
 ]
 
-if CONFIG['MOZ_RUST']:
-    EXPORTS += [
-        'binding/include/mp4parse.h',
-    ]
-
 UNIFIED_SOURCES += [
-    'binding/Adts.cpp',
-    'binding/AnnexB.cpp',
-    'binding/BitReader.cpp',
-    'binding/Box.cpp',
-    'binding/BufferStream.cpp',
-    'binding/DecoderData.cpp',
-    'binding/H264.cpp',
-    'binding/Index.cpp',
-    'binding/MoofParser.cpp',
-    'binding/MP4Metadata.cpp',
-    'binding/ResourceStream.cpp',
-    'binding/SinfParser.cpp',
     'frameworks/av/media/libstagefright/DataSource.cpp',
     'frameworks/av/media/libstagefright/ESDS.cpp',
     'frameworks/av/media/libstagefright/foundation/AAtomizer.cpp',

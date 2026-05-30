@@ -13,6 +13,7 @@
 #include <algorithm>
 #include <limits>
 
+using namespace stagefright;
 using namespace mozilla::media;
 
 namespace mozilla {

@@ -10,6 +10,7 @@
 #include "ByteWriter.h"
 #include "AnnexB.h"
 #include "H264.h"
+#include <media/stagefright/foundation/ABitReader.h>
 #include <limits>
 #include <cmath>
 

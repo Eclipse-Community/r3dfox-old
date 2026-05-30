@@ -13,7 +13,11 @@
 #include "nsString.h"
 #include "nsTArray.h"
 #include "nsString.h"
-#include "mp4parse.h"
+#include "MediaData.h"
+
+namespace stagefright {
+class MetaData;
+}
 
 namespace mozilla {
 
@@ -53,8 +57,8 @@ class MP4AudioInfo : public mozilla::AudioInfo {
  public:
   MP4AudioInfo() = default;
 
-  void Update(const Mp4parseTrackInfo* track,
-              const Mp4parseTrackAudioInfo* audio);
+  void Update(const stagefright::MetaData* aMetaData,
+              const char* aMimeType);
 
   virtual bool IsValid() const override;
 };
@@ -63,8 +67,8 @@ class MP4VideoInfo : public mozilla::VideoInfo {
  public:
   MP4VideoInfo() = default;
 
-  void Update(const Mp4parseTrackInfo* track,
-              const Mp4parseTrackVideoInfo* video);
+  void Update(const stagefright::MetaData* aMetaData,
+              const char* aMimeType);
 
   virtual bool IsValid() const override;
 };

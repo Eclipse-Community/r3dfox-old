@@ -6,7 +6,7 @@
 
 FINAL_TARGET = 'dist/bin/gtest'
 
-if CONFIG['ENABLE_TESTS']:
+if CONFIG['ENABLE_TESTS'] and CONFIG['MOZ_RUST']:
 	USE_LIBS += [
 	    'gkrust-gtest',
 	]

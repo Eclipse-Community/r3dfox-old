@@ -24,7 +24,6 @@ UNIFIED_SOURCES += [
     'TestMediaMIMETypes.cpp',
     'TestMP3Demuxer.cpp',
     'TestMP4Demuxer.cpp',
-    'TestRust.cpp',
     'TestVideoSegment.cpp',
     'TestVideoUtils.cpp',
     'TestVPXDecoding.cpp',
@@ -36,6 +35,9 @@ if CONFIG['MOZ_WEBM_ENCODER']:
         'TestVideoTrackEncoder.cpp',
         'TestWebMWriter.cpp',
     ]
+
+if CONFIG['MOZ_RUST']:
+    UNIFIED_SOURCES += ['TestRust.cpp',]
 
 TEST_HARNESS_FILES.gtest += [
     '../test/gizmo-frag.mp4',

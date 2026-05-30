@@ -8,7 +8,7 @@
 
 #include <inttypes.h>
 
-#include "Adts.h"
+#include "mp4_demuxer/Adts.h"
 #include "GMPDecoderModule.h"
 #include "GMPService.h"
 #include "MediaInfo.h"
@@ -24,6 +24,8 @@
 #include "nsServiceManagerUtils.h"
 #include "DecryptThroughputLimit.h"
 #include "ChromiumCDMVideoDecoder.h"
+
+using mp4_demuxer::Adts;
 
 namespace mozilla {
 

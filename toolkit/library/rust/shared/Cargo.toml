@@ -18,7 +18,6 @@ cubeb-core = { path = "../../../../media/cubeb-rs/cubeb-core", optional = true }
 cubeb = { path = "../../../../media/cubeb-rs/cubeb-api", optional = true }
 cubeb-backend = { path = "../../../../media/cubeb-rs/cubeb-backend", optional = true }
 encoding_c = "0.8.0"
-encoding_glue = { path = "../../../../intl/encoding_glue" }
 audioipc-client = { path = "../../../../media/audioipc/client", optional = true }
 audioipc-server = { path = "../../../../media/audioipc/server", optional = true }
 u2fhid = { path = "../../../../dom/webauthn/u2f-hid-rs" }
@@ -34,8 +33,8 @@ quantum_render = ["webrender_bindings"]
 cubeb-remoting = ["cubeb-core", "cubeb", "cubeb-backend", "audioipc-client", "audioipc-server"]
 cubeb_pulse_rust = ["cubeb-pulse"]
 gecko_debug = ["geckoservo/gecko_debug", "nsstring/gecko_debug"]
-simd-accel = ["encoding_c/simd-accel", "encoding_glue/simd-accel"]
-no-static-ideograph-encoder-tables = ["encoding_c/no-static-ideograph-encoder-tables", "encoding_glue/no-static-ideograph-encoder-tables"]
+simd-accel = ["encoding_c/simd-accel"]
+no-static-ideograph-encoder-tables = ["encoding_c/no-static-ideograph-encoder-tables"]
 
 [lib]
 path = "lib.rs"

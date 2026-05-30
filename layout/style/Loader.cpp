@@ -73,7 +73,8 @@
 #include "nsIContentSecurityPolicy.h"
 #include "mozilla/dom/SRICheck.h"
 
-#include "mozilla/Encoding.h"
+#include "mozilla/dom/EncodingUtils.h"
+using mozilla::dom::EncodingUtils;
 
 using namespace mozilla::dom;
 
@@ -675,12 +676,9 @@ SheetLoadData::OnDetermineCharset(nsIUnicharStreamLoader* aLoader,
 
   aCharset.Truncate();
 
-  const Encoding* encoding;
-  size_t bomLength;
-  Tie(encoding, bomLength) = Encoding::ForBOM(aSegment);
-  Unused << bomLength;
-  if (encoding) {
-    encoding->Name(aCharset);
+  if (nsContentUtils::CheckForBOM((const unsigned char*)aSegment.BeginReading(),
+                                  aSegment.Length(),
+                                  aCharset)) {
     // aCharset is now either "UTF-16BE", "UTF-16BE" or "UTF-8"
     // which will swallow the BOM.
     mCharset.Assign(aCharset);
@@ -693,9 +691,7 @@ SheetLoadData::OnDetermineCharset(nsIUnicharStreamLoader* aLoader,
   aLoader->GetChannel(getter_AddRefs(channel));
   if (channel) {
     channel->GetContentCharset(specified);
-    encoding = Encoding::ForLabel(specified);
-    if (encoding) {
-      encoding->Name(aCharset);
+    if (EncodingUtils::FindEncodingForLabel(specified, aCharset)) {
       mCharset.Assign(aCharset);
       LOG(("  Setting from HTTP to: %s", PromiseFlatCString(aCharset).get()));
       return NS_OK;
@@ -705,11 +701,13 @@ SheetLoadData::OnDetermineCharset(nsIUnicharStreamLoader* aLoader,
   if (GetCharsetFromData(aSegment.BeginReading(),
                          aSegment.Length(),
                          specified)) {
-    encoding = Encoding::ForLabel(specified);
-    if (encoding) {
-      encoding->Name(aCharset);
-      if (encoding == UTF_16BE_ENCODING ||
-          encoding == UTF_16LE_ENCODING) {
+    if (EncodingUtils::FindEncodingForLabel(specified, aCharset)) {
+      // FindEncodingForLabel currently never returns UTF-16LE but will
+      // probably change to never return UTF-16 instead, so check both here
+      // to avoid relying on the exact behavior.
+      if (aCharset.EqualsLiteral("UTF-16") ||
+          aCharset.EqualsLiteral("UTF-16BE") ||
+          aCharset.EqualsLiteral("UTF-16LE")) {
         // Be consistent with HTML <meta> handling in face of impossibility.
         // When the @charset rule itself evidently was not UTF-16-encoded,
         // it saying UTF-16 has to be a lie.
@@ -727,9 +725,7 @@ SheetLoadData::OnDetermineCharset(nsIUnicharStreamLoader* aLoader,
   if (mOwningElement) {
     nsAutoString specified16;
     mOwningElement->GetCharset(specified16);
-    encoding = Encoding::ForLabel(specified16);
-    if (encoding) {
-      encoding->Name(aCharset);
+    if (EncodingUtils::FindEncodingForLabel(specified16, aCharset)) {
       mCharset.Assign(aCharset);
       LOG(("  Setting from charset attribute to: %s",
           PromiseFlatCString(aCharset).get()));
@@ -739,9 +735,7 @@ SheetLoadData::OnDetermineCharset(nsIUnicharStreamLoader* aLoader,
 
   // In the preload case, the value of the charset attribute on <link> comes
   // in via mCharsetHint instead.
-  encoding = Encoding::ForLabel(mCharsetHint);
-  if (encoding) {
-    encoding->Name(aCharset);
+  if (EncodingUtils::FindEncodingForLabel(mCharsetHint, aCharset)) {
     mCharset.Assign(aCharset);
       LOG(("  Setting from charset attribute (preload case) to: %s",
           PromiseFlatCString(aCharset).get()));

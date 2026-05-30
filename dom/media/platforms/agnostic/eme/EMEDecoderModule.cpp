@@ -5,7 +5,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "EMEDecoderModule.h"
-#include "Adts.h"
+#include "mp4_demuxer/Adts.h"
 #include "GMPDecoderModule.h"
 #include "GMPService.h"
 #include "MediaInfo.h"
@@ -22,6 +22,8 @@
 #include "DecryptThroughputLimit.h"
 #include "ChromiumCDMVideoDecoder.h"
 #include <algorithm>
+
+using mp4_demuxer::Adts;
 
 namespace mozilla {
 

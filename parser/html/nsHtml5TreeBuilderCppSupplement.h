@@ -1150,8 +1150,10 @@ void nsHtml5TreeBuilder::SetDocumentCharset(NotNull<const Encoding*> aEncoding,
   if (mBuilder) {
     mBuilder->SetDocumentCharsetAndSource(aEncoding, aCharsetSource);
   } else if (mSpeculativeLoadStage) {
+    nsAutoCString charset;
+    aEncoding->Name(charset);
     mSpeculativeLoadQueue.AppendElement()->InitSetDocumentCharset(
-        aEncoding, aCharsetSource);
+        charset, aCharsetSource);
   } else {
     mOpQueue.AppendElement()->Init(eTreeOpSetDocumentCharset, aEncoding,
                                    aCharsetSource);

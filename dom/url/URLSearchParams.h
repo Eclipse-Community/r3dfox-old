@@ -51,7 +51,7 @@ public:
     URLParamsIterator(const nsAString& aName, const nsAString& aValue) = 0;
   };
 
-  static bool
+  bool
   Parse(const nsACString& aInput, ForEachIterator& aIterator);
 
   void
@@ -102,8 +102,8 @@ public:
   WriteStructuredClone(JSStructuredCloneWriter* aWriter) const;
 
 private:
-  static void DecodeString(const nsACString& aInput, nsAString& aOutput);
-  static void ConvertString(const nsACString& aInput, nsAString& aOutput);
+  void DecodeString(const nsACString& aInput, nsAString& aOutput);
+  void ConvertString(const nsACString& aInput, nsAString& aOutput);
 
   struct Param
   {

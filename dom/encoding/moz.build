@@ -24,11 +24,12 @@ LOCAL_INCLUDES += [
     '/intl/locale',
 ]
 
-props2arrays = 'encodings2arrays.py'
+props2arrays = '/intl/locale/props2arrays.py'
 prefixes = (
     'domainsfallbacks',
     'labelsencodings',
     'localesfallbacks',
+    'nonparticipatingdomains',
 )
 
 for prefix in prefixes:
@@ -38,13 +39,6 @@ for prefix in prefixes:
     props = GENERATED_FILES[header]
     props.script = props2arrays
     props.inputs = [input_file]
-
-input_file = 'nonparticipatingdomains.properties'
-header = input_file + '.h'
-GENERATED_FILES += [header]
-props = GENERATED_FILES[header]
-props.script = '../../intl/locale/props2arrays.py'
-props.inputs = [input_file]
 
 MOCHITEST_MANIFESTS += [
     'test/mochitest.ini',

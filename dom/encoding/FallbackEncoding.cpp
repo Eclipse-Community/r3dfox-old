@@ -18,31 +18,11 @@ using mozilla::intl::LocaleService;
 namespace mozilla {
 namespace dom {
 
-struct EncodingProp {
-  const char* const mKey;
-  NotNull<const Encoding*> mValue;
-};
-
-template <int32_t N>
-static NotNull<const Encoding*> SearchEncodingProp(
-    const EncodingProp (&aProperties)[N], const nsACString& aKey) {
-  const nsCString& flat = PromiseFlatCString(aKey);
-  size_t index;
-  if (!BinarySearchIf(aProperties, 0, ArrayLength(aProperties),
-                      [&flat](const EncodingProp& aProperty) {
-                        return flat.Compare(aProperty.mKey);
-                      },
-                      &index)) {
-    return WINDOWS_1252_ENCODING;
-  }
-  return aProperties[index].mValue;
-}
-
-static const EncodingProp localesFallbacks[] = {
+static constexpr nsUConvProp localesFallbacks[] = {
 #include "localesfallbacks.properties.h"
 };
 
-static const EncodingProp domainsFallbacks[] = {
+static constexpr nsUConvProp domainsFallbacks[] = {
 #include "domainsfallbacks.properties.h"
 };
 
@@ -104,10 +84,15 @@ NotNull<const Encoding*> FallbackEncoding::Get() {
     locale.Truncate(index);
   }
 
-  auto fallback = SearchEncodingProp(localesFallbacks, locale);
-  mFallback = fallback;
+  nsAutoCString fallback;
+  if (NS_FAILED(nsUConvPropertySearch::SearchPropertyValue(
+      localesFallbacks, ArrayLength(localesFallbacks), locale, fallback))) {
+    mFallback = WINDOWS_1252_ENCODING;
+  } else {
+    mFallback = Encoding::ForName(fallback);
+  }
 
-  return fallback;
+  return WrapNotNull(mFallback);
 }
 
 NotNull<const Encoding*> FallbackEncoding::FromLocale() {
@@ -169,7 +154,12 @@ bool FallbackEncoding::IsParticipatingTopLevelDomain(const nsACString& aTLD) {
 
 NotNull<const Encoding*> FallbackEncoding::FromTopLevelDomain(
     const nsACString& aTLD) {
-  return SearchEncodingProp(domainsFallbacks, aTLD);
+  nsAutoCString fallback;
+  if (NS_FAILED(nsUConvPropertySearch::SearchPropertyValue(
+      domainsFallbacks, ArrayLength(domainsFallbacks), aTLD, fallback))) {
+    return WINDOWS_1252_ENCODING;
+  }
+  return Encoding::ForName(fallback);
 }
 
 }  // namespace dom

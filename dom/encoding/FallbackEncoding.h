@@ -27,11 +27,6 @@ public:
   static bool sGuessFallbackFromTopLevelDomain;
 
   /**
-   * Whether UTF-8 should be used for file URLs.
-   */
-  static bool sFallbackToUTF8ForFile;
-
-  /**
    * Gets the locale-dependent fallback encoding for legacy HTML and plain
    * text content.
    *

@@ -98,7 +98,7 @@ URLParams::Delete(const nsAString& aName)
   }
 }
 
-/* static */ void
+void
 URLParams::ConvertString(const nsACString& aInput, nsAString& aOutput)
 {
   aOutput.Truncate();
@@ -136,7 +136,7 @@ URLParams::ConvertString(const nsACString& aInput, nsAString& aOutput)
   }
 }
 
-/* static */ void
+void
 URLParams::DecodeString(const nsACString& aInput, nsAString& aOutput)
 {
   nsACString::const_iterator start, end;
@@ -193,7 +193,7 @@ URLParams::DecodeString(const nsACString& aInput, nsAString& aOutput)
   ConvertString(unescaped, aOutput);
 }
 
-/* static */ bool
+bool
 URLParams::Parse(const nsACString& aInput, ForEachIterator& aIterator)
 {
   nsACString::const_iterator start, end;

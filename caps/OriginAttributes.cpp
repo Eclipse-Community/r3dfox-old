@@ -252,7 +252,8 @@ OriginAttributes::PopulateFromSuffix(const nsACString& aStr)
   }
 
   PopulateFromSuffixIterator iterator(this);
-  return URLParams::Parse(Substring(aStr, 1, aStr.Length() - 1), iterator);
+  mozilla::dom::URLParams params;
+  return params.Parse(Substring(aStr, 1, aStr.Length() - 1), iterator);
 }
 
 bool

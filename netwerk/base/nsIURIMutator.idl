@@ -13,11 +13,6 @@ interface nsIObjectInputStream;
 #undef SetPort  // XXX Windows!
 
 namespace mozilla {
-class Encoding;
-}
-
-
-namespace mozilla {
 namespace ipc {
 class URIParams;
 } // namespace ipc
@@ -92,7 +87,6 @@ protected:
 
 %}
 
-[ptr] native Encoding(const mozilla::Encoding);
 [ref] native const_URIParams_ref(const mozilla::ipc::URIParams);
 
 [scriptable, builtinclass, uuid(1fc53257-898b-4c5e-b69c-05bc84b4cd8f)]
@@ -122,7 +116,6 @@ interface nsIURISetters : nsIURISetSpec
   void setRef(in AUTF8String aRef);
   void setFilePath(in AUTF8String aFilePath);
   void setQuery(in AUTF8String aQuery);
-  [noscript] void setQueryWithEncoding(in AUTF8String query, in Encoding encoding);
 };
 
 [scriptable, builtinclass, uuid(4d1f3103-1c44-4dcd-b717-5d22a697a7d9)]

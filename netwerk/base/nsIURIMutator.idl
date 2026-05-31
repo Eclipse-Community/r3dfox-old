@@ -15,10 +15,6 @@ interface nsIURIMutator;
 #undef SetPort  // XXX Windows!
 
 namespace mozilla {
-class Encoding;
-}
-
-namespace mozilla {
 namespace ipc {
 class URIParams;
 } // namespace ipc
@@ -116,7 +112,6 @@ protected:
   }                                                                           \
 %}
 
-[ptr] native Encoding(const mozilla::Encoding);
 [ref] native const_URIParams_ref(const mozilla::ipc::URIParams);
 
 [scriptable, builtinclass, uuid(1fc53257-898b-4c5e-b69c-05bc84b4cd8f)]
@@ -155,7 +150,6 @@ interface nsIURISetters : nsIURISetSpec
   [must_use] nsIURIMutator setRef(in AUTF8String aRef);
   [must_use] nsIURIMutator setFilePath(in AUTF8String aFilePath);
   [must_use] nsIURIMutator setQuery(in AUTF8String aQuery);
-  [must_use, noscript] nsIURIMutator setQueryWithEncoding(in AUTF8String query, in Encoding encoding);
 };
 
 %{C++
@@ -234,12 +228,6 @@ interface nsIURISetters : nsIURISetSpec
   {                                                                           \
     if (aMutator) NS_ADDREF(*aMutator = this);                                \
     return !_to ? NS_ERROR_NULL_POINTER : _to->SetQuery(aQuery);              \
-  }                                                                           \
-  MOZ_MUST_USE NS_IMETHOD                                                     \
-  SetQueryWithEncoding(const nsACString& query, const mozilla::Encoding *encoding, nsIURIMutator** aMutator) override \
-  {                                                                           \
-    if (aMutator) NS_ADDREF(*aMutator = this);                                \
-    return !_to ? NS_ERROR_NULL_POINTER : _to->SetQueryWithEncoding(query, encoding); \
   }                                                                           \
 
 %}
@@ -360,12 +348,6 @@ public:
   {
     NS_ENSURE_SUCCESS(mStatus, *this);
     mStatus = mMutator->SetQuery(aQuery, nullptr);
-    return *this;
-  }
-  NS_MutateURI& SetQueryWithEncoding(const nsACString& query, const mozilla::Encoding *encoding)
-  {
-    NS_ENSURE_SUCCESS(mStatus, *this);
-    mStatus = mMutator->SetQueryWithEncoding(query, encoding, nullptr);
     return *this;
   }
 

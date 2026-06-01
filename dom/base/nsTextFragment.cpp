@@ -508,7 +508,7 @@ void
 nsTextFragment::UpdateBidiFlag(const char16_t* aBuffer, uint32_t aLength)
 {
   if (mState.mIs2b && !mState.mIsBidi) {
-    if (HasRTLChars(MakeSpan(aBuffer, aLength))) {
+    if (HasRTLChars(aBuffer, aLength)) {
       mState.mIsBidi = true;
     }
   }

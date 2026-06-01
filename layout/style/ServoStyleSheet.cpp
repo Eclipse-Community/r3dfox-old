@@ -197,7 +197,7 @@ ServoStyleSheet::HasRules() const
 
 RefPtr<StyleSheetParsePromise>
 ServoStyleSheet::ParseSheet(css::Loader* aLoader,
-                            Span<const uint8_t> aInput,
+                            const nsAString& aInput,
                             nsIURI* aSheetURI,
                             nsIURI* aBaseURI,
                             nsIPrincipal* aSheetPrincipal,
@@ -210,11 +210,11 @@ ServoStyleSheet::ParseSheet(css::Loader* aLoader,
   RefPtr<StyleSheetParsePromise> p = mParsePromise.Ensure(__func__);
   MOZ_ASSERT(!mMedia || mMedia->IsServo());
   Inner()->mURLData = new URLExtraData(aBaseURI, aSheetURI, aSheetPrincipal); // RefPtr
+  NS_ConvertUTF16toUTF8 input(aInput);
   Inner()->mContents = Servo_StyleSheet_FromUTF8Bytes(aLoader,
                                                       this,
                                                       aLoadData,
-                                                      aInput.Elements(),
-                                                      aInput.Length(),
+                                                      &input,
                                                       mParsingMode,
                                                       Inner()->mURLData,
                                                       aLineNumber,
@@ -228,7 +228,7 @@ ServoStyleSheet::ParseSheet(css::Loader* aLoader,
 
 void
 ServoStyleSheet::ParseSheetSync(css::Loader* aLoader,
-                                Span<const uint8_t> aInput,
+                                const nsAString& aInput,
                                 nsIURI* aSheetURI,
                                 nsIURI* aBaseURI,
                                 nsIPrincipal* aSheetPrincipal,
@@ -240,11 +240,11 @@ ServoStyleSheet::ParseSheetSync(css::Loader* aLoader,
   MOZ_ASSERT(!mMedia || mMedia->IsServo());
   Inner()->mURLData = new URLExtraData(aBaseURI, aSheetURI, aSheetPrincipal); // RefPtr
 
+  NS_ConvertUTF16toUTF8 input(aInput);
   Inner()->mContents = Servo_StyleSheet_FromUTF8Bytes(aLoader,
                                                       this,
                                                       aLoadData,
-                                                      aInput.Elements(),
-                                                      aInput.Length(),
+                                                      &input,
                                                       mParsingMode,
                                                       Inner()->mURLData,
                                                       aLineNumber,
@@ -334,7 +334,7 @@ ServoStyleSheet::ReparseSheet(const nsAString& aInput)
   DropRuleList();
 
   ParseSheetSync(loader,
-                 NS_ConvertUTF16toUTF8(aInput),
+                 aInput,
                  mInner->mSheetURI,
                  mInner->mBaseURI,
                  mInner->mPrincipal,

@@ -1101,7 +1101,7 @@ nsTreeSanitizer::SanitizeStyleSheet(const nsAString& aOriginal,
   sheet->SetPrincipal(aDocument->NodePrincipal());
   if (aDocument->IsStyledByServo()) {
     rv = sheet->AsServo()->ParseSheet(
-        aDocument->CSSLoader(), NS_ConvertUTF16toUTF8(aOriginal),
+        aDocument->CSSLoader(), aOriginal,
         aDocument->GetDocumentURI(), aBaseURI, aDocument->NodePrincipal(),
         0, aDocument->GetCompatibilityMode());
   } else {

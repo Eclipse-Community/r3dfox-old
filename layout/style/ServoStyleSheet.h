@@ -86,7 +86,7 @@ public:
 
   MOZ_MUST_USE nsresult
   ParseSheet(css::Loader* aLoader,
-             Span<const uint8_t> aInput,
+             const nsAString& aInput,
              nsIURI* aSheetURI,
              nsIURI* aBaseURI,
              nsIPrincipal* aSheetPrincipal,

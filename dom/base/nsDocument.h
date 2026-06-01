@@ -809,7 +809,7 @@ public:
                                mozilla::CORSMode aCORSMode) override;
 
   virtual void PreloadStyle(nsIURI* uri,
-                            const mozilla::Encoding* aEncoding,
+                            const nsAString& charset,
                             const nsAString& aCrossOriginAttr,
                             ReferrerPolicy aReferrerPolicy,
                             const nsAString& aIntegrity) override;

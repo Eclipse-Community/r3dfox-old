@@ -904,7 +904,7 @@ nsLayoutStylesheetCache::BuildPreferenceSheet(RefPtr<StyleSheet>* aSheet,
 
   static const uint32_t kPreallocSize = 1024;
 
-  nsCString sheetText;
+  nsString sheetText;
   sheetText.SetCapacity(kPreallocSize);
 
 #define NS_GET_R_G_B(color_) \
@@ -987,7 +987,7 @@ nsLayoutStylesheetCache::BuildPreferenceSheet(RefPtr<StyleSheet>* aSheet,
                "sheet without reallocation");
 
   if (sheet->IsGecko()) {
-    sheet->AsGecko()->ReparseSheet(NS_ConvertUTF8toUTF16(sheetText));
+    sheet->AsGecko()->ReparseSheet(sheetText);
   } else {
     ServoStyleSheet* servoSheet = sheet->AsServo();
     // NB: The pref sheet never has @import rules.

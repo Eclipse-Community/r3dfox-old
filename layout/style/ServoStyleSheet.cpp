@@ -197,7 +197,7 @@ ServoStyleSheet::HasRules() const
 
 nsresult
 ServoStyleSheet::ParseSheet(css::Loader* aLoader,
-                            Span<const uint8_t> aInput,
+                            const nsAString& aInput,
                             nsIURI* aSheetURI,
                             nsIURI* aBaseURI,
                             nsIPrincipal* aSheetPrincipal,
@@ -209,10 +209,10 @@ ServoStyleSheet::ParseSheet(css::Loader* aLoader,
   RefPtr<URLExtraData> extraData =
     new URLExtraData(aBaseURI, aSheetURI, aSheetPrincipal);
 
+  NS_ConvertUTF16toUTF8 input(aInput);
   Inner()->mContents = Servo_StyleSheet_FromUTF8Bytes(aLoader,
                                                       this,
-                                                      aInput.Elements(),
-                                                      aInput.Length(),
+                                                      &input,
                                                       mParsingMode,
                                                       extraData,
                                                       aLineNumber,
@@ -299,7 +299,7 @@ ServoStyleSheet::ReparseSheet(const nsAString& aInput)
   DropRuleList();
 
   nsresult rv = ParseSheet(loader,
-                           NS_ConvertUTF16toUTF8(aInput),
+                           aInput,
                            mInner->mSheetURI,
                            mInner->mBaseURI,
                            mInner->mPrincipal,

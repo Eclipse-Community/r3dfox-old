@@ -470,8 +470,6 @@ with modules["PLUGINS"]:
 with modules["LAYOUT"]:
     # Return code for nsITableLayout
     errors["NS_TABLELAYOUT_CELL_NOT_FOUND"] = SUCCESS(0)
-    # Return code for SheetLoadData::VerifySheetReadyToParse
-    errors["NS_OK_PARSE_SHEET"] = SUCCESS(1)
     # Return code for nsFrame::GetNextPrevLineFromeBlockFrame
     errors["NS_POSITION_BEFORE_TABLE"] = SUCCESS(3)
     # Return codes for nsPresState::GetProperty()

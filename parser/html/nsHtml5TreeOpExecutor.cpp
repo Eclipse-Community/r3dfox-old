@@ -1029,7 +1029,7 @@ nsHtml5TreeOpExecutor::PreloadStyle(const nsAString& aURL,
   }
 
   mDocument->PreloadStyle(uri,
-                          Encoding::ForLabel(aCharset),
+                          aCharset,
                           aCrossOrigin,
                           referrerPolicy,
                           aIntegrity);

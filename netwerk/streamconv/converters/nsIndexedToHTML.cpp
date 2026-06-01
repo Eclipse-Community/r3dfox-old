@@ -519,9 +519,8 @@ nsresult nsIndexedToHTML::DoOnStartRequest(nsIRequest* request,
   // 2. query part may not be encoded in UTF-8 (see bug 261929)
   // so try the platform's default if this is file url
   if (NS_FAILED(rv) && isSchemeFile && !NS_IsNativeUTF8()) {
-    auto encoding = mozilla::dom::FallbackEncoding::FromLocale();
     nsAutoCString charset;
-    encoding->Name(charset);
+    mozilla::dom::FallbackEncoding::FromLocale(charset);
     rv = mTextToSubURI->UnEscapeAndConvert(charset.get(), titleUri.get(),
                                            getter_Copies(unEscapeSpec));
   }

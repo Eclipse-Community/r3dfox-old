@@ -169,7 +169,9 @@ EXPORTS.mozilla.css += [
     'Loader.h',
     'NameSpaceRule.h',
     'Rule.h',
+    'SheetLoadData.h',
     'SheetParsingMode.h',
+    'StreamLoader.h',
     'StyleRule.h',
     'URLMatchingFunction.h',
 ]
@@ -269,6 +271,7 @@ UNIFIED_SOURCES += [
     'ServoStyleSet.cpp',
     'ServoStyleSheet.cpp',
     'ServoSupportsRule.cpp',
+    'StreamLoader.cpp',
     'StyleAnimationValue.cpp',
     'StylePrefs.cpp',
     'StyleRule.cpp',

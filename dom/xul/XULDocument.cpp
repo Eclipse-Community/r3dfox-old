@@ -3446,10 +3446,8 @@ XULDocument::AddPrototypeSheets()
         nsCOMPtr<nsIURI> uri = sheets[i];
 
         RefPtr<StyleSheet> incompleteSheet;
-        rv = CSSLoader()->LoadSheet(uri,
-                                    mCurrentPrototype->DocumentPrincipal(),
-                                    EmptyCString(), this,
-                                    &incompleteSheet);
+        rv = CSSLoader()->LoadSheet(
+          uri, mCurrentPrototype->DocumentPrincipal(), this, &incompleteSheet);
 
         // XXXldb We need to prevent bogus sheets from being held in the
         // prototype's list, but until then, don't propagate the failure

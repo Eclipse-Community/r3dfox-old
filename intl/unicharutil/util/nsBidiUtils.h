@@ -8,11 +8,6 @@
 
 #include "nsString.h"
 
-extern "C" {
-
-bool encoding_mem_is_utf16_bidi(char16_t const* buffer, size_t len);
-}
-
 /**
  *  Read ftp://ftp.unicode.org/Public/UNIDATA/ReadMe-Latest.txt
  *  section BIDIRECTIONAL PROPERTIES
@@ -161,13 +156,16 @@ inline bool IsBidiControlRTL(uint32_t aChar) {
 }
 
 /**
- * Give a 16-bit (UTF-16) text buffer
+ * Give a 16-bit (UTF-16) text buffer and length
  * @return true if the string contains right-to-left characters
  */
-inline bool HasRTLChars(mozilla::Span<const char16_t> aBuffer) {
-  // Span ensures we never pass a nullptr to Rust--even if the
-  // length of the buffer is zero.
-  return encoding_mem_is_utf16_bidi(aBuffer.Elements(), aBuffer.Length());
+bool HasRTLChars(const char16_t* aText, uint32_t aLength);
+
+/**
+ * Convenience function to call the above on an nsAString.
+ */
+inline bool HasRTLChars(const nsAString& aString) {
+  return HasRTLChars(aString.BeginReading(), aString.Length());
 }
 
 // These values are shared with Preferences dialog

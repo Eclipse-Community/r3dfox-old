@@ -8470,7 +8470,7 @@ NS_IMPL_ISUPPORTS(StubCSSLoaderObserver, nsICSSLoaderObserver)
 
 }  // namespace
 
-void nsIDocument::PreloadStyle(nsIURI* uri, const Encoding* aEncoding,
+void nsIDocument::PreloadStyle(nsIURI* uri, const nsAString& charset,
                                const nsAString& aCrossOriginAttr,
                                const enum ReferrerPolicy aReferrerPolicy,
                                const nsAString& aIntegrity) {
@@ -8478,7 +8478,7 @@ void nsIDocument::PreloadStyle(nsIURI* uri, const Encoding* aEncoding,
   nsCOMPtr<nsICSSLoaderObserver> obs = new StubCSSLoaderObserver();
 
   // Charset names are always ASCII.
-  CSSLoader()->LoadSheet(uri, true, NodePrincipal(), aEncoding, obs,
+  CSSLoader()->LoadSheet(uri, true, NodePrincipal(), NS_LossyConvertUTF16toASCII(charset), obs,
                          Element::StringToCORSMode(aCrossOriginAttr),
                          aReferrerPolicy, aIntegrity);
 }

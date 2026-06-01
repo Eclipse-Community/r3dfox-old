@@ -176,16 +176,20 @@ static nsresult IsEligible(nsIChannel* aChannel,
 }
 
 /* static */ nsresult SRICheck::VerifyIntegrity(
-    const SRIMetadata& aMetadata, nsIChannel* aChannel,
-    const nsACString& aBytes, const nsACString& aSourceFileURI,
+    const SRIMetadata& aMetadata, nsIUnicharStreamLoader* aLoader,
+    const nsAString& aString, const nsACString& aSourceFileURI,
     nsIConsoleReportCollector* aReporter) {
+  NS_ENSURE_ARG_POINTER(aLoader);
   NS_ENSURE_ARG_POINTER(aReporter);
+
+  nsCOMPtr<nsIChannel> channel;
+  aLoader->GetChannel(getter_AddRefs(channel));
 
   if (MOZ_LOG_TEST(SRILogHelper::GetSriLog(), mozilla::LogLevel::Debug)) {
     nsAutoCString requestURL;
     nsCOMPtr<nsIURI> originalURI;
-    if (aChannel &&
-        NS_SUCCEEDED(aChannel->GetOriginalURI(getter_AddRefs(originalURI))) &&
+    if (channel &&
+        NS_SUCCEEDED(channel->GetOriginalURI(getter_AddRefs(originalURI))) &&
         originalURI) {
       originalURI->GetAsciiSpec(requestURL);
     }
@@ -193,11 +197,14 @@ static nsresult IsEligible(nsIChannel* aChannel,
   }
 
   SRICheckDataVerifier verifier(aMetadata, aSourceFileURI, aReporter);
-  nsresult rv =
-      verifier.Update(aBytes.Length(), (const uint8_t*)aBytes.BeginReading());
+  nsresult rv;
+  nsDependentCString rawBuffer;
+  rv = aLoader->GetRawBuffer(rawBuffer);
+  NS_ENSURE_SUCCESS(rv, rv);
+  rv = verifier.Update(rawBuffer.Length(), (const uint8_t*)rawBuffer.get());
   NS_ENSURE_SUCCESS(rv, rv);
 
-  return verifier.Verify(aMetadata, aChannel, aSourceFileURI, aReporter);
+  return verifier.Verify(aMetadata, channel, aSourceFileURI, aReporter);
 }
 
 //////////////////////////////////////////////////////////////

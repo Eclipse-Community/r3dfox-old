@@ -164,7 +164,7 @@ bool ServoStyleSheet::HasRules() const {
 }
 
 RefPtr<StyleSheetParsePromise> ServoStyleSheet::ParseSheet(
-    css::Loader* aLoader, Span<const uint8_t> aInput, nsIURI* aSheetURI,
+    css::Loader* aLoader, const nsAString& aInput, nsIURI* aSheetURI,
     nsIURI* aBaseURI, nsIPrincipal* aSheetPrincipal,
     css::SheetLoadData* aLoadData, uint32_t aLineNumber,
     nsCompatibility aCompatMode,
@@ -174,9 +174,10 @@ RefPtr<StyleSheetParsePromise> ServoStyleSheet::ParseSheet(
   MOZ_ASSERT(!mMedia || mMedia->IsServo());
   Inner()->mURLData =
       new URLExtraData(aBaseURI, aSheetURI, aSheetPrincipal);  // RefPtr
+  NS_ConvertUTF16toUTF8 input(aInput);
   Inner()->mContents = Servo_StyleSheet_FromUTF8Bytes(
-                           aLoader, this, aLoadData, aInput.Elements(),
-                           aInput.Length(), mParsingMode, Inner()->mURLData,
+                           aLoader, this, aLoadData, &input,
+                           mParsingMode, Inner()->mURLData,
                            aLineNumber, aCompatMode, aReusableSheets)
                            .Consume();
   FinishParse();
@@ -185,7 +186,7 @@ RefPtr<StyleSheetParsePromise> ServoStyleSheet::ParseSheet(
 }
 
 void ServoStyleSheet::ParseSheetSync(
-    css::Loader* aLoader, Span<const uint8_t> aInput, nsIURI* aSheetURI,
+    css::Loader* aLoader, const nsAString& aInput, nsIURI* aSheetURI,
     nsIURI* aBaseURI, nsIPrincipal* aSheetPrincipal,
     css::SheetLoadData* aLoadData, uint32_t aLineNumber,
     nsCompatibility aCompatMode,
@@ -194,9 +195,10 @@ void ServoStyleSheet::ParseSheetSync(
   Inner()->mURLData =
       new URLExtraData(aBaseURI, aSheetURI, aSheetPrincipal);  // RefPtr
 
+  NS_ConvertUTF16toUTF8 input(aInput);
   Inner()->mContents = Servo_StyleSheet_FromUTF8Bytes(
-                           aLoader, this, aLoadData, aInput.Elements(),
-                           aInput.Length(), mParsingMode, Inner()->mURLData,
+                           aLoader, this, aLoadData, &input,
+                           mParsingMode, Inner()->mURLData,
                            aLineNumber, aCompatMode, aReusableSheets)
                            .Consume();
 
@@ -277,7 +279,7 @@ nsresult ServoStyleSheet::ReparseSheet(const nsAString& aInput) {
 
   DropRuleList();
 
-  ParseSheetSync(loader, NS_ConvertUTF16toUTF8(aInput), mInner->mSheetURI,
+  ParseSheetSync(loader, aInput, mInner->mSheetURI,
                  mInner->mBaseURI, mInner->mPrincipal,
                  /* aLoadData = */ nullptr, lineNumber,
                  eCompatibility_FullStandards, &reusableSheets);

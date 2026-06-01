@@ -2320,7 +2320,7 @@ class nsIDocument : public nsINode,
    * parser if and when the parser is merged with libgklayout.  aCrossOriginAttr
    * should be a void string if the attr is not present.
    */
-  void PreloadStyle(nsIURI* aURI, const mozilla::Encoding* aEncoding,
+  void PreloadStyle(nsIURI* aURI, const nsAString& aCharset,
                     const nsAString& aCrossOriginAttr,
                     ReferrerPolicyEnum aReferrerPolicy,
                     const nsAString& aIntegrity);

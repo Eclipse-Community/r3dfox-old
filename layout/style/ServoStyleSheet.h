@@ -90,7 +90,7 @@ class ServoStyleSheet : public StyleSheet {
   // Parses a stylesheet. The aLoadData argument corresponds to the
   // SheetLoadData for this stylesheet. It may be null in some cases.
   RefPtr<StyleSheetParsePromise> ParseSheet(
-      css::Loader* aLoader, Span<const uint8_t> aInput, nsIURI* aSheetURI,
+      css::Loader* aLoader, const nsAString& aInput, nsIURI* aSheetURI,
       nsIURI* aBaseURI, nsIPrincipal* aSheetPrincipal,
       css::SheetLoadData* aLoadData, uint32_t aLineNumber,
       nsCompatibility aCompatMode,
@@ -99,7 +99,7 @@ class ServoStyleSheet : public StyleSheet {
   // Similar to the above, but guarantees that parsing will be performed
   // synchronously.
   void ParseSheetSync(
-      css::Loader* aLoader, Span<const uint8_t> aInput, nsIURI* aSheetURI,
+      css::Loader* aLoader, const nsAString& aInput, nsIURI* aSheetURI,
       nsIURI* aBaseURI, nsIPrincipal* aSheetPrincipal,
       css::SheetLoadData* aLoadData, uint32_t aLineNumber,
       nsCompatibility aCompatMode,

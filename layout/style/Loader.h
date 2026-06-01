@@ -374,12 +374,18 @@ class Loader final {
    * @param aOriginPrincipal the principal to use for security checks.  This
    *                         can be null to indicate that these checks should
    *                         be skipped.
+   * @param aCharset the encoding to use for converting the sheet data
+   *        from bytes to Unicode.  May be empty to indicate that the
+   *        charset of the CSSLoader's document should be used.  This
+   *        is only used if neither the network transport nor the
+   *        sheet itself indicate an encoding.
    * @param aObserver the observer to notify when the load completes.
    *                  Must not be null.
    * @param [out] aSheet the sheet to load. Note that the sheet may well
    *              not be loaded by the time this method returns.
    */
   nsresult LoadSheet(nsIURI* aURL, nsIPrincipal* aOriginPrincipal,
+                     const nsCString& aCharset,
                      nsICSSLoaderObserver* aObserver,
                      RefPtr<StyleSheet>* aSheet);
 
@@ -389,7 +395,7 @@ class Loader final {
    */
   nsresult LoadSheet(nsIURI* aURL, bool aIsPreload,
                      nsIPrincipal* aOriginPrincipal,
-                     const Encoding* aPreloadEncoding,
+                     const nsCString& aCharset,
                      nsICSSLoaderObserver* aObserver,
                      CORSMode aCORSMode = CORS_NONE,
                      ReferrerPolicy aReferrerPolicy = mozilla::net::RP_Unset,
@@ -468,7 +474,6 @@ class Loader final {
 
  private:
   friend class SheetLoadData;
-  friend class StreamLoader;
 
   // Helpers to conditionally block onload if mDocument is non-null.
   void BlockOnload();
@@ -513,7 +518,7 @@ class Loader final {
   nsresult InternalLoadNonDocumentSheet(
       nsIURI* aURL, bool aIsPreload, SheetParsingMode aParsingMode,
       bool aUseSystemPrincipal, nsIPrincipal* aOriginPrincipal,
-      const Encoding* aPreloadEncoding, RefPtr<StyleSheet>* aSheet,
+      const nsCString& aCharset, RefPtr<StyleSheet>* aSheet,
       nsICSSLoaderObserver* aObserver, CORSMode aCORSMode = CORS_NONE,
       ReferrerPolicy aReferrerPolicy = mozilla::net::RP_Unset,
       const nsAString& aIntegrity = EmptyString());
@@ -540,12 +545,11 @@ class Loader final {
   nsresult LoadSheet(SheetLoadData* aLoadData, StyleSheetState aSheetState,
                      bool aIsPreLoad);
 
-  // Parse the stylesheet in aLoadData. The sheet data comes from aUTF16 if
-  // UTF-16 and from aUTF8 if UTF-8.
-  // Sets aCompleted to true if the parse finished, false otherwise (e.g. if the
+  // Parse the stylesheet in aLoadData.  The sheet data comes from aInput.
+  // Set aCompleted to true if the parse finished, false otherwise (e.g. if the
   // sheet had an @import).  If aCompleted is true when this returns, then
   // ParseSheet also called SheetComplete on aLoadData.
-  nsresult ParseSheet(const nsAString& aUTF16, Span<const uint8_t> aUTF8,
+  nsresult ParseSheet(const nsAString& aInput,
                       SheetLoadData* aLoadData, bool aAllowAsync,
                       bool& aCompleted);
 
@@ -556,13 +560,11 @@ class Loader final {
   //
 
 #ifdef MOZ_OLD_STYLE
-  nsresult DoParseSheetGecko(CSSStyleSheet* aSheet, const nsAString& aUTF16,
-                             Span<const uint8_t> aUTF8,
+  nsresult DoParseSheetGecko(CSSStyleSheet* aSheet, const nsAString& aInput,
                              SheetLoadData* aLoadData, bool& aCompleted);
 #endif
 
-  nsresult DoParseSheetServo(ServoStyleSheet* aSheet, const nsAString& aUTF16,
-                             Span<const uint8_t> aUTF8,
+  nsresult DoParseSheetServo(ServoStyleSheet* aSheet, const nsAString& aInput,
                              SheetLoadData* aLoadData, bool aAllowAsync,
                              bool& aCompleted);
 

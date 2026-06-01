@@ -9291,7 +9291,7 @@ NS_IMPL_ISUPPORTS(StubCSSLoaderObserver, nsICSSLoaderObserver)
 
 void
 nsIDocument::PreloadStyle(nsIURI* uri,
-                          const Encoding* aEncoding,
+                         const nsAString& charset,
                           const nsAString& aCrossOriginAttr,
                           const enum ReferrerPolicy aReferrerPolicy,
                           const nsAString& aIntegrity)
@@ -9303,7 +9303,7 @@ nsIDocument::PreloadStyle(nsIURI* uri,
   CSSLoader()->LoadSheet(uri,
                          true,
                          NodePrincipal(),
-                         aEncoding,
+                         NS_LossyConvertUTF16toASCII(charset),
                          obs,
                          Element::StringToCORSMode(aCrossOriginAttr),
                          aReferrerPolicy,

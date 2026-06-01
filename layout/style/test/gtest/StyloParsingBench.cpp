@@ -11,7 +11,6 @@
 #include "ServoBindings.h"
 #include "NullPrincipalURI.h"
 #include "nsCSSParser.h"
-#include "mozilla/Encoding.h"
 
 using namespace mozilla;
 using namespace mozilla::css;
@@ -25,8 +24,9 @@ using namespace mozilla::net;
 #ifdef MOZ_STYLO
 
 static void ServoParsingBench() {
-  auto css = AsBytes(MakeStringSpan(EXAMPLE_STYLESHEET));
-  ASSERT_EQ(Encoding::UTF8ValidUpTo(css), css.Length());
+  NS_NAMED_LITERAL_CSTRING(css_, EXAMPLE_STYLESHEET);
+  const nsACString& css = css_;
+  ASSERT_TRUE(IsUTF8(css));
 
   RefPtr<URLExtraData> data = new URLExtraData(
     NullPrincipalURI::Create(), nullptr, NullPrincipal::Create());
@@ -35,8 +35,7 @@ static void ServoParsingBench() {
       Servo_StyleSheet_FromUTF8Bytes(nullptr,
                                      nullptr,
                                      nullptr,
-                                     css.Elements(),
-                                     css.Length(),
+                                     &css,
                                      eAuthorSheetFeatures,
                                      data,
                                      0,

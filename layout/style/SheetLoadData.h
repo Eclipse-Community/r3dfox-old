@@ -9,7 +9,6 @@
 
 #include "mozilla/css/Loader.h"
 #include "mozilla/css/SheetParsingMode.h"
-#include "mozilla/Encoding.h"
 #include "mozilla/NotNull.h"
 #include "nsIUnicharStreamLoader.h"
 #include "nsIThreadInternal.h"
@@ -70,7 +69,7 @@ public:
                 StyleSheet* aSheet,
                 bool aSyncLoad,
                 bool aUseSystemPrincipal,
-                const Encoding* aPreloadEncoding,
+                const nsCString& aCharset,
                 nsICSSLoaderObserver* aObserver,
                 nsIPrincipal* aLoaderPrincipal,
                 nsINode* aRequestingNode);
@@ -78,13 +77,6 @@ public:
   already_AddRefed<nsIURI> GetReferrerURI();
 
   void ScheduleLoadEventIfNeeded();
-
-  NotNull<const Encoding*> DetermineNonBOMEncoding(nsACString const& aSegment,
-                                                   nsIChannel* aChannel);
-
-  nsresult VerifySheetReadyToParse(nsresult aStatus,
-                                   const nsACString& aBytes,
-                                   nsIChannel* aChannel);
 
   NS_DECL_ISUPPORTS
   NS_DECL_NSIRUNNABLE
@@ -99,8 +91,8 @@ public:
   // the preferred title is changed
   nsString mTitle;
 
-  // The encoding we decided to use for the sheet
-  const Encoding* mEncoding;
+  // Charset we decided to use for the sheet
+  nsCString mCharset;
 
   // URI we're loading.  Null for inline sheets
   nsCOMPtr<nsIURI> mURI;
@@ -194,9 +186,9 @@ public:
   // The node that identifies who started loading us.
   nsCOMPtr<nsINode> mRequestingNode;
 
-  // The encoding to use for preloading Must be empty if mOwningElement
-  // is non-null.
-  const Encoding* mPreloadEncoding;
+  // The charset to use if the transport and sheet don't indicate one.
+  // May be empty.  Must be empty if mOwningElement is non-null.
+  nsCString mCharsetHint;
 
 private:
   void FireLoadEvent(nsIThreadInternal* aThread);

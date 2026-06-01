@@ -12,7 +12,6 @@
 #include "nsPluginHost.h"
 #include "nsIBlocklistService.h"
 #include "nsIUnicodeDecoder.h"
-#include "nsIPlatformCharset.h"
 #include "nsPluginLogging.h"
 #include "nsNPAPIPlugin.h"
 #include "nsCharSeparatedTokenizer.h"

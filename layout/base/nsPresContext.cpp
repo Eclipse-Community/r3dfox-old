@@ -1088,17 +1088,18 @@ void nsPresContext::UpdateCharSet(const nsCString& aCharSet) {
   }
 }
 
-void nsPresContext::DispatchCharSetChange(const nsCString& aCharSetID) {
+void nsPresContext::DispatchCharSetChange(const nsACString& aCharSetID) {
+  nsCString charSet(aCharSetID);
 #ifdef MOZ_OLD_STYLE
   if (!Document()->IsStyledByServo()) {
     RefPtr<CharSetChangingRunnable> runnable =
-        new CharSetChangingRunnable(this, aCharSetID);
+        new CharSetChangingRunnable(this, charSet);
     Document()->Dispatch(TaskCategory::Other, runnable.forget());
     return;
   }
 #endif
   // In Servo RebuildAllStyleData is async, so no need to do the runnable dance.
-  DoChangeCharSet(aCharSetID);
+  DoChangeCharSet(charSet);
 }
 
 nsPresContext* nsPresContext::GetParentPresContext() {

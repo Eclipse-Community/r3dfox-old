@@ -173,7 +173,7 @@ public:
 
   nsIPresShell* GetPresShell() const { return mShell; }
 
-  void DispatchCharSetChange(NotNull<const Encoding*> aCharSet);
+  void DispatchCharSetChange(const nsACString& aCharSet);
 
   /**
    * Returns the parent prescontext for this one. Returns null if this is a

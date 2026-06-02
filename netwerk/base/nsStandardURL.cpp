@@ -728,8 +728,8 @@ nsStandardURL::BuildNormalizedSpec(const char *spec,
     // results written to encXXX variables only if |spec| is not already in the
     // appropriate encoding.
     {
-        nsSegmentEncoder encoder;
-        nsSegmentEncoder queryEncoder(encoding);
+        GET_SEGMENT_ENCODER(encoder);
+        GET_QUERY_ENCODER(queryEncoder);
         // Items using an extraLen of 1 don't add anything unless mLen > 0
         // Username@
         approxLen += encoder.EncodeSegmentCount(spec, mUsername,  esc_Username,      encUsername,  useEncUsername, 1);

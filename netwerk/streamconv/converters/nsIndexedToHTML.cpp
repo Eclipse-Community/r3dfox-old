@@ -498,7 +498,7 @@ nsIndexedToHTML::DoOnStartRequest(nsIRequest* request, nsISupports *aContext,
     }
 
     nsAutoString unEscapeSpec;
-    rv = mTextToSubURI->UnEscapeAndConvert(NS_LITERAL_CSTRING("UTF-8"), titleUri.get(),
+    rv = mTextToSubURI->UnEscapeAndConvert("UTF-8", titleUri.get(),
                                            getter_Copies(unEscapeSpec));
     // unescape may fail because
     // 1. file URL may be encoded in platform charset for backward compatibility

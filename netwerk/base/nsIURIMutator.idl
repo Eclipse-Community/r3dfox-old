@@ -161,6 +161,7 @@ interface nsIURISetters : nsIURISetSpec
   [must_use] nsIURIMutator setRef(in AUTF8String aRef);
   [must_use] nsIURIMutator setFilePath(in AUTF8String aFilePath);
   [must_use] nsIURIMutator setQuery(in AUTF8String aQuery);
+  [must_use, noscript] nsIURIMutator setQueryWithEncoding(in AUTF8String query, in ACString charset);
 };
 
 %{C++
@@ -234,6 +235,12 @@ interface nsIURISetters : nsIURISetSpec
     if (aMutator) NS_ADDREF(*aMutator = this);                                \
     return !_to ? NS_ERROR_NULL_POINTER : _to->SetQuery(aQuery);              \
   }                                                                           \
+  MOZ_MUST_USE NS_IMETHOD                                                     \
+  SetQueryWithEncoding(const nsACString& query, const nsAString& charset, nsIURIMutator** aMutator) override \
+  {                                                                           \
+    if (aMutator) NS_ADDREF(*aMutator = this);                                \
+    return !_to ? NS_ERROR_NULL_POINTER : _to->SetQueryWithEncoding(query, charset); \
+  }  
 
 %}
 
@@ -422,6 +429,15 @@ public:
       return *this;
     }
     mStatus = mMutator->SetQuery(aQuery, nullptr);
+    NS_ENSURE_SUCCESS(mStatus, *this);
+    return *this;
+  }
+  NS_MutateURI& SetQueryWithEncoding(const nsACString& query, const nsAString& charset)
+  {
+    if (NS_FAILED(mStatus)) {
+      return *this;
+    }
+    mStatus = mMutator->SetQueryWithEncoding(query, charset, nullptr);
     NS_ENSURE_SUCCESS(mStatus, *this);
     return *this;
   }

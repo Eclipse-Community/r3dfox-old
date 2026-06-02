@@ -41,13 +41,8 @@
 
 #undef GetPort  // XXX Windows!
 #undef SetPort  // XXX Windows!
-
-namespace mozilla {
-class Encoding;
-}
 %}
 
-[ptr] native Encoding(const mozilla::Encoding);
 interface nsIURIMutator;
 
 /**

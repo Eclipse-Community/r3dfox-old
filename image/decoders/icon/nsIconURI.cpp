@@ -448,7 +448,7 @@ nsMozIconURI::SetQuery(const nsACString& aQuery)
 
 nsresult
 nsMozIconURI::SetQueryWithEncoding(const nsACString& aQuery,
-                                   const Encoding* aEncoding)
+                                   const char* aCharSet)
 {
   return NS_ERROR_FAILURE;
 }

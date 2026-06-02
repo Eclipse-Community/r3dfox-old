@@ -116,7 +116,7 @@ nsPrefObserver::Observe(nsISupports *subject,
 // nsStandardURL::nsSegmentEncoder
 //----------------------------------------------------------------------------
 
-nsStandardURL::nsSegmentEncoder::nsSegmentEncoder(const Encoding* encoding)
+nsStandardURL::nsSegmentEncoder::nsSegmentEncoder(const char *charset)
   : mEncoding(encoding)
 {
   if (mEncoding == UTF_8_ENCODING) {
@@ -684,7 +684,7 @@ nsStandardURL::AppendToBuf(char *buf, uint32_t i, const char *str, uint32_t len)
 //  4- update url segment positions and lengths
 nsresult
 nsStandardURL::BuildNormalizedSpec(const char *spec,
-                                   const Encoding* encoding)
+                                   const char *charset)
 {
     // Assumptions: all member URLSegments must be relative the |spec| argument
     // passed to this function.
@@ -1562,7 +1562,7 @@ nsStandardURL::SetSpecInternal(const nsACString &input)
 
 nsresult
 nsStandardURL::SetSpecWithEncoding(const nsACString &input,
-                                   const Encoding* encoding)
+                                   const char *charset)
 {
     ENSURE_MUTABLE();
 
@@ -2909,11 +2909,11 @@ nsStandardURL::SetFilePath(const nsACString &input)
 }
 
 inline bool
-IsUTFEncoding(const Encoding* aEncoding)
+IsUTFEncoding(const char* aCharSet)
 {
-    return aEncoding == UTF_8_ENCODING ||
-           aEncoding == UTF_16BE_ENCODING ||
-           aEncoding == UTF_16LE_ENCODING;
+    return charset.EqualsLiteral("UTF-8") ||
+           charset.EqualsLiteral("UTF-16BE") ||
+           charset.EqualsLiteral("UTF-16LE");
 }
 
 nsresult
@@ -2924,7 +2924,7 @@ nsStandardURL::SetQuery(const nsACString &input)
 
 nsresult
 nsStandardURL::SetQueryWithEncoding(const nsACString &input,
-                                    const Encoding* encoding)
+                                    const char *charset)
 {
     ENSURE_MUTABLE();
 
@@ -2933,8 +2933,8 @@ nsStandardURL::SetQueryWithEncoding(const nsACString &input,
 
     LOG(("nsStandardURL::SetQuery [query=%s]\n", query));
 
-    if (IsUTFEncoding(encoding)) {
-        encoding = nullptr;
+    if (IsUTFEncoding(charset)) {
+        charset = nullptr;
     }
 
     if (mPath.mLen < 0)

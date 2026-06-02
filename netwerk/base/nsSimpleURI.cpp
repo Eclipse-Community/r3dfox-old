@@ -872,7 +872,7 @@ nsSimpleURI::SetQuery(const nsACString& aQuery)
 
 nsresult
 nsSimpleURI::SetQueryWithEncoding(const nsACString& aQuery,
-                                  const Encoding* aEncoding)
+                                  const char* aCharSet)
 {
     return SetQuery(aQuery);
 }

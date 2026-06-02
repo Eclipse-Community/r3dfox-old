@@ -87,7 +87,7 @@ protected:
     virtual nsresult SetRef(const nsACString &input);
     virtual nsresult SetFilePath(const nsACString &input);
     virtual nsresult SetQuery(const nsACString &input);
-    virtual nsresult SetQueryWithEncoding(const nsACString &input, const Encoding* encoding);
+    virtual nsresult SetQueryWithEncoding(const nsACString &input, const char *charset);
 
     // Helper to share code between Equals methods.
     virtual nsresult EqualsInternal(nsIURI* other,

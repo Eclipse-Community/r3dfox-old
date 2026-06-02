@@ -679,7 +679,7 @@ nsJARURI::SetQuery(const nsACString& query)
 
 nsresult
 nsJARURI::SetQueryWithEncoding(const nsACString& query,
-                               const Encoding* encoding)
+                               const char *charset)
 {
     return NS_MutateURI(mJAREntry)
              .SetQueryWithEncoding(query, encoding)

@@ -35,7 +35,6 @@ class nsIFile;
 class nsIURLParser;
 
 namespace mozilla {
-class Encoding;
 namespace net {
 
 //-----------------------------------------------------------------------------
@@ -123,7 +122,7 @@ public: /* internal -- HPUX compiler can't handle this being private */
     class nsSegmentEncoder
     {
     public:
-        explicit nsSegmentEncoder(const Encoding* encoding = nullptr);
+        explicit nsSegmentEncoder(const char *charset);
 
         // Encode the given segment if necessary, and return the length of
         // the encoded segment.  The encoded segment is appended to |buf|
@@ -192,7 +191,7 @@ protected:
     virtual nsresult SetRef(const nsACString &input);
     virtual nsresult SetFilePath(const nsACString &input);
     virtual nsresult SetQuery(const nsACString &input);
-    virtual nsresult SetQueryWithEncoding(const nsACString &input, const Encoding* encoding);
+    virtual nsresult SetQueryWithEncoding(const nsACString &input, const char *charset);
     bool Deserialize(const mozilla::ipc::URIParams&);
 
 private:
@@ -223,8 +222,8 @@ private:
                                 bool useEsc = false, int32_t* diff = nullptr);
     uint32_t AppendToBuf(char *, uint32_t, const char *, uint32_t);
 
-    nsresult BuildNormalizedSpec(const char* spec, const Encoding* encoding);
-    nsresult SetSpecWithEncoding(const nsACString &input, const Encoding* encoding);
+    nsresult BuildNormalizedSpec(const char* spec, const char *charset);
+    nsresult SetSpecWithEncoding(const nsACString &input, const char *charset);
 
     bool     SegmentIs(const URLSegment &s1, const char *val, bool ignoreCase = false);
     bool     SegmentIs(const char* spec, const URLSegment &s1, const char *val, bool ignoreCase = false);

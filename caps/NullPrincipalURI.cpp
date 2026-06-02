@@ -180,7 +180,7 @@ NullPrincipalURI::SetQuery(const nsACString& aQuery)
 
 nsresult
 NullPrincipalURI::SetQueryWithEncoding(const nsACString& aQuery,
-                                       const Encoding* aEncoding)
+                                       const char* aCharSet)
 {
   return NS_ERROR_NOT_IMPLEMENTED;
 }

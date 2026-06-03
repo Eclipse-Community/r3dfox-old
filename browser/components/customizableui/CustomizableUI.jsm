@@ -200,7 +200,6 @@ var CustomizableUIInternal = {
       "urlbar-container",
       "bookmarks-menu-button",
       "downloads-button",
-      "sidebar-button",
     ];
 
     if (AppConstants.MOZ_DEV_EDITION) {
@@ -327,10 +326,6 @@ var CustomizableUIInternal = {
         if (!newPlacements.includes(button)) {
           newPlacements.push(button);
         }
-      }
-
-      if (!newPlacements.includes("sidebar-button")) {
-        newPlacements.push("sidebar-button");
       }
 
       gSavedState.placements[CustomizableUI.AREA_NAVBAR] = newPlacements;

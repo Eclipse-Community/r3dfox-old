@@ -924,6 +924,95 @@
 
         <toolbarspring cui-areatype="toolbar" class="chromeclass-toolbar-additional"/>
 
+        <toolbarbutton id="bookmarks-menu-button"
+                       class="toolbarbutton-1 chromeclass-toolbar-additional subviewbutton-nav"
+                       type="menu"
+                       label="&bookmarksMenuButton2.label;"
+                       tooltip="dynamic-shortcut-tooltip"
+                       anchor="dropmarker"
+                       ondragenter="PlacesMenuDNDHandler.onDragEnter(event);"
+                       ondragover="PlacesMenuDNDHandler.onDragOver(event);"
+                       ondragleave="PlacesMenuDNDHandler.onDragLeave(event);"
+                       ondrop="PlacesMenuDNDHandler.onDrop(event);"
+                       oncommand="BookmarkingUI.onCommand(event);">
+          <observes element="bookmarkThisPageBroadcaster" attribute="starred"/>
+          <observes element="bookmarkThisPageBroadcaster" attribute="buttontooltiptext"/>
+          <menupopup id="BMB_bookmarksPopup"
+                     class="cui-widget-panel cui-widget-panelview cui-widget-panelWithFooter PanelUI-subView"
+                     placespopup="true"
+                     context="placesContext"
+                     openInTabs="children"
+                     onmouseup="BookmarksEventHandler.onMouseUp(event);"
+                     oncommand="BookmarksEventHandler.onCommand(event);"
+                     onclick="BookmarksEventHandler.onClick(event, this.parentNode._placesView);"
+                     onpopupshowing="BookmarkingUI.onPopupShowing(event);
+                                     BookmarkingUI.attachPlacesView(event, this);"
+                     tooltip="bhTooltip" popupsinherittooltip="true">
+            <menuitem id="BMB_viewBookmarksSidebar"
+                      class="menuitem-iconic subviewbutton"
+                      label-show="&viewBookmarksSidebar2.label;"
+                      label-hide="&hideBookmarksSidebar.label;"
+                      oncommand="SidebarUI.toggle('viewBookmarksSidebar');"/>
+            <!-- NB: temporary solution for bug 985024, this should go away soon. -->
+            <menuitem id="BMB_bookmarksShowAllTop"
+                      class="menuitem-iconic subviewbutton"
+                      label="&showAllBookmarks2.label;"
+                      command="Browser:ShowAllBookmarks"
+                      key="manBookmarkKb"/>
+            <menuseparator/>
+            <menu id="BMB_bookmarksToolbar"
+                  class="menu-iconic bookmark-item subviewbutton"
+                  label="&personalbarCmd.label;"
+                  container="true">
+              <menupopup id="BMB_bookmarksToolbarPopup"
+                         placespopup="true"
+                         context="placesContext"
+                         onpopupshowing="if (!this.parentNode._placesView)
+                                           new PlacesMenu(event, 'place:folder=TOOLBAR',
+                                                          PlacesUIUtils.getViewForNode(this.parentNode.parentNode).options);">
+                <menuitem id="BMB_viewBookmarksToolbar"
+                          class="menuitem-iconic subviewbutton"
+                          label-show="&viewBookmarksToolbar.label;"
+                          label-hide="&hideBookmarksToolbar.label;"
+                          oncommand="BookmarkingUI.toggleBookmarksToolbar();"/>
+                <menuseparator/>
+                <!-- Bookmarks toolbar items -->
+              </menupopup>
+            </menu>
+            <menu id="BMB_unsortedBookmarks"
+                  class="menu-iconic bookmark-item subviewbutton"
+                  label="&bookmarksMenuButton.other.label;"
+                  container="true">
+              <menupopup id="BMB_unsortedBookmarksPopup"
+                         placespopup="true"
+                         context="placesContext"
+                         onpopupshowing="if (!this.parentNode._placesView)
+                                           new PlacesMenu(event, 'place:folder=UNFILED_BOOKMARKS',
+                                                          PlacesUIUtils.getViewForNode(this.parentNode.parentNode).options);"/>
+            </menu>
+            <menu id="BMB_mobileBookmarks"
+                  class="menu-iconic bookmark-item subviewbutton"
+                  label="&bookmarksMenuButton.mobile.label;"
+                  hidden="true"
+                  container="true">
+              <menupopup id="BMB_mobileBookmarksPopup"
+                         placespopup="true"
+                         context="placesContext"
+                         onpopupshowing="if (!this.parentNode._placesView)
+                                           new PlacesMenu(event, 'place:folder=MOBILE_BOOKMARKS',
+                                                          PlacesUIUtils.getViewForNode(this.parentNode.parentNode).options);"/>
+            </menu>
+  
+            <menuseparator/>
+            <!-- Bookmarks menu items will go here -->
+            <menuitem id="BMB_bookmarksShowAll"
+                      class="subviewbutton panel-subview-footer"
+                      label="&showAllBookmarks2.label;"
+                      command="Browser:ShowAllBookmarks"
+                      key="manBookmarkKb"/>
+          </menupopup>
+        </toolbarbutton>
+
         <!-- This is a placeholder for the Downloads Indicator.  It is visible
              during the customization of the toolbar, in the palette, and before
              the Downloads Indicator overlay is loaded. -->
@@ -953,15 +1042,6 @@
               </stack>
             </stack>
           </toolbarbutton>
-
-        <toolbarbutton id="library-button" class="toolbarbutton-1 chromeclass-toolbar-additional subviewbutton-nav"
-                       removable="true"
-                       onmousedown="PanelUI.showSubView('appMenu-libraryView', this, event);"
-                       closemenu="none"
-                       cui-areatype="toolbar"
-                       tooltiptext="&libraryButton.tooltip;"
-                       label="&places.library.title;"/>
-
       </hbox>
 
       <toolbarbutton id="nav-bar-overflow-button"
@@ -1085,94 +1165,13 @@
                      label="&fullScreenCmd.label;"
                      tooltip="dynamic-shortcut-tooltip"/>
 
-      <toolbarbutton id="bookmarks-menu-button"
-                     class="toolbarbutton-1 chromeclass-toolbar-additional subviewbutton-nav"
-                     type="menu"
-                     label="&bookmarksMenuButton2.label;"
-                     tooltip="dynamic-shortcut-tooltip"
-                     anchor="dropmarker"
-                     ondragenter="PlacesMenuDNDHandler.onDragEnter(event);"
-                     ondragover="PlacesMenuDNDHandler.onDragOver(event);"
-                     ondragleave="PlacesMenuDNDHandler.onDragLeave(event);"
-                     ondrop="PlacesMenuDNDHandler.onDrop(event);"
-                     oncommand="BookmarkingUI.onCommand(event);">
-        <observes element="bookmarkThisPageBroadcaster" attribute="starred"/>
-        <observes element="bookmarkThisPageBroadcaster" attribute="buttontooltiptext"/>
-        <menupopup id="BMB_bookmarksPopup"
-                   class="cui-widget-panel cui-widget-panelview cui-widget-panelWithFooter PanelUI-subView"
-                   placespopup="true"
-                   context="placesContext"
-                   openInTabs="children"
-                   onmouseup="BookmarksEventHandler.onMouseUp(event);"
-                   oncommand="BookmarksEventHandler.onCommand(event);"
-                   onclick="BookmarksEventHandler.onClick(event, this.parentNode._placesView);"
-                   onpopupshowing="BookmarkingUI.onPopupShowing(event);
-                                   BookmarkingUI.attachPlacesView(event, this);"
-                   tooltip="bhTooltip" popupsinherittooltip="true">
-          <menuitem id="BMB_viewBookmarksSidebar"
-                    class="menuitem-iconic subviewbutton"
-                    label-show="&viewBookmarksSidebar2.label;"
-                    label-hide="&hideBookmarksSidebar.label;"
-                    oncommand="SidebarUI.toggle('viewBookmarksSidebar');"/>
-          <!-- NB: temporary solution for bug 985024, this should go away soon. -->
-          <menuitem id="BMB_bookmarksShowAllTop"
-                    class="menuitem-iconic subviewbutton"
-                    label="&showAllBookmarks2.label;"
-                    command="Browser:ShowAllBookmarks"
-                    key="manBookmarkKb"/>
-          <menuseparator/>
-          <menu id="BMB_bookmarksToolbar"
-                class="menu-iconic bookmark-item subviewbutton"
-                label="&personalbarCmd.label;"
-                container="true">
-            <menupopup id="BMB_bookmarksToolbarPopup"
-                       placespopup="true"
-                       context="placesContext"
-                       onpopupshowing="if (!this.parentNode._placesView)
-                                         new PlacesMenu(event, 'place:folder=TOOLBAR',
-                                                        PlacesUIUtils.getViewForNode(this.parentNode.parentNode).options);">
-              <menuitem id="BMB_viewBookmarksToolbar"
-                        class="menuitem-iconic subviewbutton"
-                        label-show="&viewBookmarksToolbar.label;"
-                        label-hide="&hideBookmarksToolbar.label;"
-                        oncommand="BookmarkingUI.toggleBookmarksToolbar();"/>
-              <menuseparator/>
-              <!-- Bookmarks toolbar items -->
-            </menupopup>
-          </menu>
-          <menu id="BMB_unsortedBookmarks"
-                class="menu-iconic bookmark-item subviewbutton"
-                label="&bookmarksMenuButton.other.label;"
-                container="true">
-            <menupopup id="BMB_unsortedBookmarksPopup"
-                       placespopup="true"
-                       context="placesContext"
-                       onpopupshowing="if (!this.parentNode._placesView)
-                                         new PlacesMenu(event, 'place:folder=UNFILED_BOOKMARKS',
-                                                        PlacesUIUtils.getViewForNode(this.parentNode.parentNode).options);"/>
-          </menu>
-          <menu id="BMB_mobileBookmarks"
-                class="menu-iconic bookmark-item subviewbutton"
-                label="&bookmarksMenuButton.mobile.label;"
-                hidden="true"
-                container="true">
-            <menupopup id="BMB_mobileBookmarksPopup"
-                       placespopup="true"
-                       context="placesContext"
-                       onpopupshowing="if (!this.parentNode._placesView)
-                                         new PlacesMenu(event, 'place:folder=MOBILE_BOOKMARKS',
-                                                        PlacesUIUtils.getViewForNode(this.parentNode.parentNode).options);"/>
-          </menu>
-
-          <menuseparator/>
-          <!-- Bookmarks menu items will go here -->
-          <menuitem id="BMB_bookmarksShowAll"
-                    class="subviewbutton panel-subview-footer"
-                    label="&showAllBookmarks2.label;"
-                    command="Browser:ShowAllBookmarks"
-                    key="manBookmarkKb"/>
-        </menupopup>
-      </toolbarbutton>
+      <toolbarbutton id="library-button" class="toolbarbutton-1 chromeclass-toolbar-additional subviewbutton-nav"
+                     removable="true"
+                     onmousedown="PanelUI.showSubView('appMenu-libraryView', this, event);"
+                     closemenu="none"
+                     cui-areatype="toolbar"
+                     tooltiptext="&libraryButton.tooltip;"
+                     label="&places.library.title;"/>
 
       <toolbaritem id="search-container"
                    class="chromeclass-toolbar-additional"

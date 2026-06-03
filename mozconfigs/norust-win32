@@ -6,9 +6,7 @@ ac_add_options --enable-optimize
 
 ac_add_options --enable-strip
 
-#ac_add_options --disable-rust
-ac_add_options --disable-stylo
-ac_add_options --disable-webrender
+ac_add_options --disable-rust
 
 
 ac_add_options --disable-accessibility
@@ -38,6 +36,3 @@ ac_add_options --disable-sandbox # Bug 1230910
 
 #WIN32_REDIST_DIR="${VCINSTALLDIR}/redist/x86/Microsoft.VC141.CRT"
 #WIN_UCRT_REDIST_DIR="${WINDOWSSDKDIR}/Redist/ucrt/DLLs/r86"
-
-export WIN64_LINK="${VCINSTALLDIR}/bin/Hostx64/x64/link.exe"
-export WIN64_LIB="${VCINSTALLDIR}/lib/x64;${VCINSTALLDIR}/atlmfc/lib/x64;${WINDOWSSDKDIR}/Lib/${UCRTVER}/ucrt/x64;${WINDOWSSDKDIR}/Lib/${UCRTVER}/um/x64"

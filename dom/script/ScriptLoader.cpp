@@ -2617,24 +2617,14 @@ bool ScriptLoader::ReadyToExecuteParserBlockingScripts() {
     unicodeDecoder = WINDOWS_1252_ENCODING->NewDecoderWithoutBOMHandling();
   }
 
-  CheckedInt<size_t> maxLength = unicodeDecoder->MaxUTF16BufferLength(aLength);
-  if (!maxLength.isValid()) {
-    aBufOut = nullptr;
-    aLengthOut = 0;
+  CheckedInt<size_t> unicodeLength =
+    unicodeDecoder->MaxUTF16BufferLength(aLength);
+  if (!unicodeLength.isValid()) {
     return NS_ERROR_OUT_OF_MEMORY;
   }
 
-  size_t unicodeLength = maxLength.value();
-
-  maxLength *= sizeof(char16_t);
-
-  if (!maxLength.isValid()) {
-    aBufOut = nullptr;
-    aLengthOut = 0;
-    return NS_ERROR_OUT_OF_MEMORY;
-  }
-
-  aBufOut = static_cast<char16_t*>(js_malloc(maxLength.value()));
+  aBufOut =
+    static_cast<char16_t*>(js_malloc(unicodeLength.value() * sizeof(char16_t)));
   if (!aBufOut) {
     aLengthOut = 0;
     return NS_ERROR_OUT_OF_MEMORY;
@@ -2645,10 +2635,10 @@ bool ScriptLoader::ReadyToExecuteParserBlockingScripts() {
   size_t written;
   bool hadErrors;
   Tie(result, read, written, hadErrors) = unicodeDecoder->DecodeToUTF16(
-      data, MakeSpan(aBufOut, unicodeLength), true);
+      data, MakeSpan(aBufOut, unicodeLength.value()), true);
   MOZ_ASSERT(result == kInputEmpty);
   MOZ_ASSERT(read == aLength);
-  MOZ_ASSERT(written <= unicodeLength);
+  MOZ_ASSERT(written <= unicodeLength.value());
   Unused << hadErrors;
   aLengthOut = written;
 

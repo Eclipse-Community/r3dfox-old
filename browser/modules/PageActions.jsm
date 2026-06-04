@@ -999,6 +999,7 @@ Action.prototype = {
 
   get _isBuiltIn() {
     let builtInIDs = [
+      "pocket",
       "screenshots",
       "webcompat-reporter-button",
     ].concat(gBuiltInActions.filter(a => !a.__isSeparator).map(a => a.id));

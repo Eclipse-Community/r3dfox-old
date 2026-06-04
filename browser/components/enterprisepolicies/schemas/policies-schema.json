@@ -241,6 +241,13 @@
       "type": "boolean"
     },
 
+    "DisablePocket": {
+      "description": "Prevents ability to save webpages to Pocket.",
+      "first_available": "60.0",
+
+      "type": "boolean"
+    },
+
     "DisablePrivateBrowsing": {
       "description": "Disables private browsing.",
       "first_available": "60.0",

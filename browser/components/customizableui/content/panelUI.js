@@ -503,6 +503,7 @@ const PanelUI = {
       // richer list.
       numItems: 6,
       withFavicons: true,
+      excludePocket: true
     }).catch(ex => {
       // Just hide the section if we can't retrieve the items from the database.
       Cu.reportError(ex);

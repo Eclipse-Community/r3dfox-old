@@ -1,6 +1,7 @@
 "use strict";
 
 let contextMenu;
+let hasPocket = Services.prefs.getBoolPref("extensions.pocket.enabled");
 
 add_task(async function test_setup() {
   const example_base = "http://example.com/browser/browser/base/content/test/general/";
@@ -195,6 +196,7 @@ add_task(async function test_date_time_color_range_month_week_datetimelocal_inpu
             "context-bookmarkpage", true], null,
        "---",                  null,
        "context-savepage",     true,
+       ...(hasPocket ? ["context-pocket", true] : []),
        "---",                  null,
        "context-sendpagetodevice", null, [], null,
        "---",                  null,

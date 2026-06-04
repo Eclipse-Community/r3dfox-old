@@ -1468,8 +1468,7 @@ var gBrowserInit = {
     CanvasPermissionPromptHelper.init();
     WebAuthnPromptHelper.init();
 
-    if (AppConstants.E10S_TESTING_ONLY)
-      gRemoteTabsUI.init();
+    gRemoteTabsUI.init();
 
     // Initialize the full zoom setting.
     // We do this before the session restore service gets initialized so we can
@@ -2031,9 +2030,7 @@ if (AppConstants.platform == "macosx") {
     // initialize the private browsing UI
     gPrivateBrowsingUI.init();
 
-    if (AppConstants.E10S_TESTING_ONLY) {
-      gRemoteTabsUI.init();
-    }
+    gRemoteTabsUI.init();
   };
 
   gBrowserInit.nonBrowserWindowShutdown = function() {
@@ -8982,13 +8979,11 @@ var TabContextMenu = {
     if (this.contextTab.hasAttribute("customizemode"))
       document.getElementById("context_openTabInWindow").disabled = true;
 
-    if (AppConstants.E10S_TESTING_ONLY) {
-      menuItems = aPopupMenu.getElementsByAttribute("tbattr", "tabbrowser-remote");
-      for (let menuItem of menuItems) {
-        menuItem.hidden = !gMultiProcessBrowser;
-        if (menuItem.id == "context_openNonRemoteWindow") {
-          menuItem.disabled = !!parseInt(this.contextTab.getAttribute("usercontextid"));
-        }
+    menuItems = aPopupMenu.getElementsByAttribute("tbattr", "tabbrowser-remote");
+    for (let menuItem of menuItems) {
+      menuItem.hidden = !gMultiProcessBrowser;
+      if (menuItem.id == "context_openNonRemoteWindow") {
+        menuItem.disabled = !!parseInt(this.contextTab.getAttribute("usercontextid"));
       }
     }
 

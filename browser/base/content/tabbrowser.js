@@ -3396,9 +3396,6 @@ window._gBrowser = {
   },
 
   openNonRemoteWindow(aTab) {
-    if (!AppConstants.E10S_TESTING_ONLY) {
-      throw "This method is intended only for e10s testing!";
-    }
     let url = aTab.linkedBrowser.currentURI.spec;
     return window.openDialog("chrome://browser/content/", "_blank", "chrome,all,dialog=no,non-remote", url);
   },
@@ -3720,8 +3717,7 @@ window._gBrowser = {
       }
     } else {
       label = tab._fullLabel || tab.getAttribute("label");
-      if (AppConstants.E10S_TESTING_ONLY &&
-          tab.linkedBrowser &&
+      if (tab.linkedBrowser &&
           tab.linkedBrowser.isRemoteBrowser) {
         label += " - e10s";
         if (tab.linkedBrowser.frameLoader &&

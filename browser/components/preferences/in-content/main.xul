@@ -43,10 +43,8 @@
   </vbox>
 #endif
 
-#ifdef E10S_TESTING_ONLY
   <checkbox id="e10sAutoStart"
             data-l10n-id="e10s-enabled"/>
-#endif
 
 #ifdef HAVE_SHELL_SERVICE
   <vbox id="defaultBrowserBox">

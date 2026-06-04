@@ -376,14 +376,6 @@ add_task(async function addFavicons() {
   Assert.equal(nonHttps[0].faviconLength, links[0].faviconLength, "Got the same favicon length");
   Assert.equal(nonHttps[0].faviconSize, links[0].faviconSize, "Got the same favicon size");
   Assert.equal(nonHttps[0].mimeType, links[0].mimeType, "Got the same mime type");
-
-  // Check that we do not collect favicons for pocket items
-  const pocketItems = [{url: links[0].url}, {url: "https://mozilla1.com", type: "pocket"}];
-  await provider._addFavicons(pocketItems);
-  Assert.equal(provider._faviconBytesToDataURI(pocketItems)[0].favicon, base64URL, "Added favicon data only to the non-pocket item");
-  Assert.equal(pocketItems[1].favicon, null, "Did not add a favicon to the pocket item");
-  Assert.equal(pocketItems[1].mimeType, null, "Did not add mimeType to the pocket item");
-  Assert.equal(pocketItems[1].faviconSize, null, "Did not add a faviconSize to the pocket item");
 });
 
 add_task(async function getHighlightsWithoutPocket() {

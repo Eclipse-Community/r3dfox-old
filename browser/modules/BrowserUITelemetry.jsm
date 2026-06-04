@@ -698,7 +698,7 @@ var BrowserUITelemetry = {
     "copyvideourl", "copyaudiourl", "saveimage", "sendimage",
     "setDesktopBackground", "viewimageinfo", "viewimagedesc", "savevideo",
     "saveaudio", "video-saveimage", "sendvideo", "sendaudio",
-    "ctp-play", "ctp-hide", "savepage", "pocket", "markpageMenu",
+    "ctp-play", "ctp-hide", "savepage", "markpageMenu",
     "viewbgimage", "undo", "cut", "copy", "paste", "delete", "selectall",
     "keywordfield", "searchselect", "frame", "showonlythisframe",
     "openframeintab", "openframe", "reloadframe", "bookmarkframe", "saveframe",

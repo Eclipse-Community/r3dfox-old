@@ -67,7 +67,6 @@ function getVisibleMenuItems(aMenu, aData) {
             } else if (item.id.indexOf("spell-check-dictionary-") != 0 &&
                        item.id != "spell-no-suggestions" &&
                        item.id != "spell-add-dictionaries-main" &&
-                       item.id != "context-savelinktopocket" &&
                        item.id != "fill-login-saved-passwords" &&
                        item.id != "fill-login-no-logins" &&
                        // XXX Screenshots doesn't have an access key. This needs

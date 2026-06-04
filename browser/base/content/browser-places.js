@@ -183,8 +183,6 @@ var StarUI = {
         }
         // auto-close if new and not interacted with
         if (this._isNewBookmark && !this._isComposing) {
-          // 3500ms matches the timeout that Pocket uses in
-          // browser/extensions/pocket/content/panels/js/saved.js
           let delay = 3500;
           if (this._closePanelQuickForTesting) {
             delay /= 10;

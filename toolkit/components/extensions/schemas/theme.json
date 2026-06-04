@@ -296,10 +296,6 @@
                 "$ref": "ExtensionURL",
                 "optional": true
               },
-              "pocket": {
-                "$ref": "ExtensionURL",
-                "optional": true
-              },
               "getmsg": {
                 "$ref": "ExtensionURL",
                 "optional": true

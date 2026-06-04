@@ -934,7 +934,6 @@ add_task(async function migrate1() {
   // accidentally testing default behavior.
   let ids = [
     PageActions.ACTION_ID_BOOKMARK,
-    "pocket",
     "copyURL",
   ];
   let persisted = ids.reduce((memo, id) => {
@@ -959,7 +958,6 @@ add_task(async function migrate1() {
 
   // expected order
   let orderedIDs = [
-    "pocket",
     "copyURL",
     PageActions.ACTION_ID_BOOKMARK,
   ];

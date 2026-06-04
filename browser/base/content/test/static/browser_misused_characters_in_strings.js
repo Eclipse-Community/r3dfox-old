@@ -137,10 +137,6 @@ let gWhitelist = [{
     key: "securityOverride.warningContent",
     type: "single-quote"
   }, {
-    file: "pocket.properties",
-    key: "tos",
-    type: "double-quote"
-  }, {
     file: "aboutNetworking.dtd",
     key: "aboutNetworking.logTutorial",
     type: "single-quote"

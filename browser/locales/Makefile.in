@@ -79,7 +79,6 @@ ifneq (,$(wildcard ../extensions/formautofill/locales))
 endif
 	@$(MAKE) -C ../extensions/jaws-esr/locales AB_CD=$* XPI_NAME=locale-$*
 	@$(MAKE) -C ../extensions/onboarding/locales AB_CD=$* XPI_NAME=locale-$*
-	@$(MAKE) -C ../extensions/pocket/locale AB_CD=$* XPI_NAME=locale-$*
 ifndef RELEASE_OR_BETA
 	@$(MAKE) -C ../extensions/presentation/locale AB_CD=$* XPI_NAME=locale-$*
 endif
@@ -104,7 +103,6 @@ ifneq (,$(wildcard ../extensions/formautofill/locales))
 	@$(MAKE) -C ../extensions/formautofill/locales chrome AB_CD=$*
 endif
 	@$(MAKE) -C ../extensions/jaws-esr/locales chrome AB_CD=$*
-	@$(MAKE) -C ../extensions/pocket/locale chrome AB_CD=$*
 ifndef RELEASE_OR_BETA
 	@$(MAKE) -C ../extensions/presentation/locale chrome AB_CD=$*
 endif

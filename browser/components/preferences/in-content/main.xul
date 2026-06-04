@@ -43,9 +43,6 @@
   </vbox>
 #endif
 
-  <checkbox id="e10sAutoStart"
-            data-l10n-id="e10s-enabled"/>
-
 #ifdef HAVE_SHELL_SERVICE
   <vbox id="defaultBrowserBox">
     <checkbox id="alwaysCheckDefault" preference="browser.shell.checkDefaultBrowser"
@@ -647,6 +644,8 @@
     <checkbox id="allowHWAccel"
               data-l10n-id="performance-allow-hw-accel"
               preference="layers.acceleration.disabled"/>
+    <checkbox id="e10sAutoStart"
+              data-l10n-id="e10s-enabled"/>
     <hbox align="center">
       <label id="limitContentProcess" data-l10n-id="performance-limit-content-process-option" control="contentProcessCount"/>
       <menulist id="contentProcessCount" preference="dom.ipc.processCount">

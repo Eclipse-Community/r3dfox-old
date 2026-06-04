@@ -3718,12 +3718,9 @@ window._gBrowser = {
     } else {
       label = tab._fullLabel || tab.getAttribute("label");
       if (tab.linkedBrowser &&
-          tab.linkedBrowser.isRemoteBrowser) {
-        label += " - e10s";
-        if (tab.linkedBrowser.frameLoader &&
-            Services.appinfo.maxWebProcessCount > 1) {
-          label += " (" + tab.linkedBrowser.frameLoader.tabParent.osPid + ")";
-        }
+          tab.linkedBrowser.isRemoteBrowser &&
+          tab.linkedBrowser.frameLoader) {
+        label += " - e10s (pid " + tab.linkedBrowser.frameLoader.tabParent.osPid + ")";
       }
       if (tab.userContextId) {
         label = gTabBrowserBundle.formatStringFromName("tabs.containers.tooltip", [label, ContextualIdentityService.getUserContextLabel(tab.userContextId)], 2);

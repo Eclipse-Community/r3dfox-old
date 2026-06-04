@@ -714,7 +714,7 @@ var gMainPane = {
     return e10sEnabled;
   },
 
-  enableE10SChange() {
+  async enableE10SChange() {
     let e10sCheckbox = document.getElementById("e10sAutoStart");
     let e10sPref = Preferences.get("browser.tabs.remote.autostart");
     let e10sTempPref = Preferences.get("browser.tabs.remote.autostart.2");
@@ -731,7 +731,7 @@ var gMainPane = {
       }
     }
 
-    let buttonIndex = confirmRestartPrompt(e10sCheckbox.checked, 0,
+    let buttonIndex = await confirmRestartPrompt(e10sCheckbox.checked, 0,
       true, false);
     if (buttonIndex == CONFIRM_RESTART_PROMPT_RESTART_NOW) {
       for (let prefToChange of prefsToChange) {

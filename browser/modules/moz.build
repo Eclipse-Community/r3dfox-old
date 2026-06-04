@@ -133,7 +133,6 @@ EXTRA_JS_MODULES += [
     'AboutNewTab.jsm',
     'AsyncTabSwitcher.jsm',
     'AttributionCode.jsm',
-    'BrowserErrorReporter.jsm',
     'BrowserUITelemetry.jsm',
     'BrowserUsageTelemetry.jsm',
     'ContentClick.jsm',

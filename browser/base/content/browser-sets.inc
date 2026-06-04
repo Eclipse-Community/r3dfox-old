@@ -100,6 +100,10 @@
     <command id="Tools:Sanitize" oncommand="Sanitizer.showUI(window);"/>
     <command id="Tools:PrivateBrowsing"
       oncommand="OpenBrowserWindow({private: true});"/>
+#ifdef E10S_TESTING_ONLY
+    <command id="Tools:NonRemoteWindow"
+      oncommand="OpenBrowserWindow({remote: false});"/>
+#endif
     <command id="History:UndoCloseTab" oncommand="undoCloseTab();"/>
     <command id="History:UndoCloseWindow" oncommand="undoCloseWindow();"/>
 

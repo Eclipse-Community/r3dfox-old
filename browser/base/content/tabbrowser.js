@@ -3395,6 +3395,14 @@ window._gBrowser = {
     return window.openDialog(getBrowserURL(), "_blank", options, aTab);
   },
 
+  openNonRemoteWindow(aTab) {
+    if (!AppConstants.E10S_TESTING_ONLY) {
+      throw "This method is intended only for e10s testing!";
+    }
+    let url = aTab.linkedBrowser.currentURI.spec;
+    return window.openDialog("chrome://browser/content/", "_blank", "chrome,all,dialog=no,non-remote", url);
+  },
+
   moveTabTo(aTab, aIndex, aKeepRelatedTabs) {
     var oldPosition = aTab._tPos;
     if (oldPosition == aIndex)
@@ -3712,11 +3720,14 @@ window._gBrowser = {
       }
     } else {
       label = tab._fullLabel || tab.getAttribute("label");
-      if (AppConstants.NIGHTLY_BUILD &&
+      if (AppConstants.E10S_TESTING_ONLY &&
           tab.linkedBrowser &&
-          tab.linkedBrowser.isRemoteBrowser &&
-          tab.linkedBrowser.frameLoader) {
-        label += " (pid " + tab.linkedBrowser.frameLoader.tabParent.osPid + ")";
+          tab.linkedBrowser.isRemoteBrowser) {
+        label += " - e10s";
+        if (tab.linkedBrowser.frameLoader &&
+            Services.appinfo.maxWebProcessCount > 1) {
+          label += " (" + tab.linkedBrowser.frameLoader.tabParent.osPid + ")";
+        }
       }
       if (tab.userContextId) {
         label = gTabBrowserBundle.formatStringFromName("tabs.containers.tooltip", [label, ContextualIdentityService.getUserContextLabel(tab.userContextId)], 2);

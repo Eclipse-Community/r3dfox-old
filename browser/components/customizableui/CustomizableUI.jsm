@@ -348,6 +348,7 @@ var CustomizableUIInternal = {
         "preferences-button",
         "add-ons-button",
         "sync-button",
+        "e10s-button",
       ];
 
       if (!AppConstants.MOZ_DEV_EDITION) {
@@ -417,17 +418,6 @@ var CustomizableUIInternal = {
           if (buttonIndex != -1) {
             placements.splice(buttonIndex, 1);
           }
-        }
-      }
-    }
-
-    // Remove the old placements from the now-gone Nightly-only
-    // "New non-e10s window" button.
-    if (currentVersion < 13 && gSavedState.placements) {
-      for (let placements of Object.values(gSavedState.placements)) {
-        let buttonIndex = placements.indexOf("e10s-button");
-        if (buttonIndex != -1) {
-          placements.splice(buttonIndex, 1);
         }
       }
     }

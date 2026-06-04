@@ -77,6 +77,9 @@ use-firefox-sync = Tip: This uses separate profiles. Use { -sync-brand-short-nam
 get-started-not-logged-in = Sign in to { -sync-brand-short-name }…
 get-started-configured = Open { -sync-brand-short-name } preferences
 
+e10s-enabled =
+    .label = Enable multi-process { -brand-short-name }
+
 always-check-default =
     .label = Always check if { -brand-short-name } is your default browser
     .accesskey = y

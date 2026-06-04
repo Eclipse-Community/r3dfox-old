@@ -346,28 +346,6 @@ body[narrow] #restorePreviousSession::before {
   width: 32px;
 }
 
-#aboutMozilla {
-  display: block;
-  position: relative; /* pin wordmark to edge of document, not of viewport */
-  -moz-box-ordinal-group: 0;
-  opacity: .2;
-  transition: opacity 150ms;
-}
-
-#aboutMozilla:hover {
-  opacity: .6;
-}
-
-#aboutMozilla::before {
-  content: url("chrome://browser/content/abouthome/mozilla.svg");
-  display: block;
-  position: absolute;
-  top: 12px;
-  offset-inline-end: 12px;
-  width: 67px;
-  height: 19px;
-}
-
 /* [HiDPI]
  * At resolutions above 1dppx, prefer downscaling the 2x Retina graphics
  * rather than upscaling the original-size ones (bug 818940).

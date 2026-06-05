@@ -1,6 +1,6 @@
 #define GUAO_PREF general.useragent.override
 
-#define UXP_VERSION @MOZILLA_UAVERSION_U@
+#define UXP_VERSION 128.0
 #define UXP_VERSION_SLICE Goanna/@UXP_VERSION@
 #define UXP_DATE_SLICE Goanna/20170101
 #define APP_SLICE Basilisk/@MOZ_APP_VERSION@

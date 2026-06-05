@@ -6,6 +6,7 @@
 
 @template
 def FirefoxBranding():
+    DEFINES['MOZ_APP_VERSION'] = CONFIG['MOZ_APP_VERSION']
     JS_PREFERENCE_FILES += [
         'pref/firefox-branding.js',
     ]
@@ -21,6 +22,3 @@ def FirefoxBranding():
             'default48.png',
             'default64.png',
         ]
-
-    DEFINES['MOZ_APP_VERSION'] = CONFIG['MOZ_APP_VERSION']
-    DEFINES['MOZILLA_UAVERSION_U'] = CONFIG['MOZILLA_UAVERSION_U']

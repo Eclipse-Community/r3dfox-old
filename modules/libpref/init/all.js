@@ -22,7 +22,7 @@
 pref("preferences.allow.omt-write", true);
 
 pref("keyword.enabled", false);
-pref("general.useragent.compatMode.firefox", false);
+pref("general.useragent.compatMode.firefox", true);
 
 // This pref exists only for testing purposes. In order to disable all
 // overrides by default, don't initialize UserAgentOverrides.jsm.

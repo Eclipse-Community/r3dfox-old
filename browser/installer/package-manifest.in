@@ -751,13 +751,6 @@ bin/libfreebl_32int64_3.so
 #endif
 #endif
 
-; [MaintenanceService]
-;
-#ifdef MOZ_MAINTENANCE_SERVICE
-@BINPATH@/maintenanceservice.exe
-@BINPATH@/maintenanceservice_installer.exe
-#endif
-
 ; [Crash Reporter]
 ;
 #ifdef MOZ_CRASHREPORTER

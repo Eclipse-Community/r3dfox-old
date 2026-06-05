@@ -33,7 +33,6 @@ Var AddStartMenuSC
 Var AddTaskbarSC
 Var AddQuickLaunchSC
 Var AddDesktopSC
-Var InstallMaintenanceService
 Var InstallOptionalExtensions
 Var ExtensionRecommender
 Var PageName
@@ -162,11 +161,6 @@ Page custom preOptions leaveOptions
 !define MUI_PAGE_CUSTOMFUNCTION_LEAVE leaveDirectory
 !define MUI_DIRECTORYPAGE_VERIFYONLEAVE
 !insertmacro MUI_PAGE_DIRECTORY
-
-; Custom Components Page
-!ifdef MOZ_MAINTENANCE_SERVICE
-Page custom preComponents leaveComponents
-!endif
 
 ; Custom Shortcuts Page
 Page custom preShortcuts leaveShortcuts
@@ -413,35 +407,6 @@ Section "-Application" APP_IDX
     ${FixShellIconHandler} "HKCU"
   ${EndIf}
 
-!ifdef MOZ_MAINTENANCE_SERVICE
-  ; If the maintenance service page was displayed then a value was already
-  ; explicitly selected for installing the maintenance service and
-  ; and so InstallMaintenanceService will already be 0 or 1.
-  ; If the maintenance service page was not displayed then
-  ; InstallMaintenanceService will be equal to "".
-  ${If} $InstallMaintenanceService == ""
-    Call IsUserAdmin
-    Pop $R0
-    ${If} $R0 == "true"
-    ; Only proceed if we have HKLM write access
-    ${AndIf} $TmpVal == "HKLM"
-      ; The user is an admin, so we should default to installing the service.
-      StrCpy $InstallMaintenanceService "1"
-    ${Else}
-      ; The user is not admin, so we can't install the service.
-      StrCpy $InstallMaintenanceService "0"
-    ${EndIf}
-  ${EndIf}
-
-  ${If} $InstallMaintenanceService == "1"
-    ; The user wants to install the maintenance service, so execute
-    ; the pre-packaged maintenance service installer.
-    ; This option can only be turned on if the user is an admin so there
-    ; is no need to use ExecShell w/ verb runas to enforce elevated.
-    nsExec::Exec "$\"$INSTDIR\maintenanceservice_installer.exe$\""
-  ${EndIf}
-!endif
-
   ; These need special handling on uninstall since they may be overwritten by
   ; an install into a different location.
   StrCpy $0 "Software\Microsoft\Windows\CurrentVersion\App Paths\${FileMainEXE}"
@@ -629,13 +594,6 @@ Section "-Application" APP_IDX
 
     ${LogMsg} "Removing the optional-extensions directory"
     RMDir /r /REBOOTOK "$INSTDIR\distribution\optional-extensions"
-  ${EndIf}
-!endif
-
-!ifdef MOZ_MAINTENANCE_SERVICE
-  ${If} $TmpVal == "HKLM"
-    ; Add the registry keys for allowed certificates.
-    ${AddMaintCertKeys}
   ${EndIf}
 !endif
 SectionEnd
@@ -995,53 +953,6 @@ Function leaveShortcuts
     Call CheckExistingInstall
   ${EndIf}
 FunctionEnd
-
-!ifdef MOZ_MAINTENANCE_SERVICE
-Function preComponents
-  ; If the service already exists, don't show this page
-  ServicesHelper::IsInstalled "MozillaMaintenance"
-  Pop $R9
-  ${If} $R9 == 1
-    ; The service already exists so don't show this page.
-    Abort
-  ${EndIf}
-
-  ; Don't show the custom components page if the
-  ; user is not an admin
-  Call IsUserAdmin
-  Pop $R9
-  ${If} $R9 != "true"
-    Abort
-  ${EndIf}
-
-  ; Only show the maintenance service page if we have write access to HKLM
-  ClearErrors
-  WriteRegStr HKLM "Software\Mozilla" \
-              "${BrandShortName}InstallerTest" "Write Test"
-  ${If} ${Errors}
-    ClearErrors
-    Abort
-  ${Else}
-    DeleteRegValue HKLM "Software\Mozilla" "${BrandShortName}InstallerTest"
-  ${EndIf}
-
-  StrCpy $PageName "Components"
-  ${CheckCustomCommon}
-  !insertmacro MUI_HEADER_TEXT "$(COMPONENTS_PAGE_TITLE)" "$(COMPONENTS_PAGE_SUBTITLE)"
-  !insertmacro MUI_INSTALLOPTIONS_DISPLAY "components.ini"
-FunctionEnd
-
-Function leaveComponents
-  ${MUI_INSTALLOPTIONS_READ} $0 "components.ini" "Settings" "State"
-  ${If} $0 != 0
-    Abort
-  ${EndIf}
-  ${MUI_INSTALLOPTIONS_READ} $InstallMaintenanceService "components.ini" "Field 2" "State"
-  ${If} $InstallType == ${INSTALLTYPE_CUSTOM}
-    Call CheckExistingInstall
-  ${EndIf}
-FunctionEnd
-!endif
 
 !ifdef MOZ_OPTIONAL_EXTENSIONS
 Function preExtensions
@@ -1425,15 +1336,6 @@ Function .onInit
   WriteINIStr "$PLUGINSDIR\components.ini" "Field 1" Right  "-1"
   WriteINIStr "$PLUGINSDIR\components.ini" "Field 1" Top    "5"
   WriteINIStr "$PLUGINSDIR\components.ini" "Field 1" Bottom "25"
-
-  WriteINIStr "$PLUGINSDIR\components.ini" "Field 2" Type   "checkbox"
-  WriteINIStr "$PLUGINSDIR\components.ini" "Field 2" Text   "$(MAINTENANCE_SERVICE_CHECKBOX_DESC)"
-  WriteINIStr "$PLUGINSDIR\components.ini" "Field 2" Left   "0"
-  WriteINIStr "$PLUGINSDIR\components.ini" "Field 2" Right  "-1"
-  WriteINIStr "$PLUGINSDIR\components.ini" "Field 2" Top    "27"
-  WriteINIStr "$PLUGINSDIR\components.ini" "Field 2" Bottom "37"
-  WriteINIStr "$PLUGINSDIR\components.ini" "Field 2" State  "1"
-  WriteINIStr "$PLUGINSDIR\components.ini" "Field 2" Flags  "GROUP"
 
   ; Setup the extensions.ini file for the Custom Extensions Page
   StrCpy $R9 0

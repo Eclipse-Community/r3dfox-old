@@ -46,9 +46,6 @@ $(CONFIG_DIR)/setup.exe::
 	$(INSTALL) $(addprefix $(MOZILLA_DIR)/other-licenses/nsis/Plugins/,$(CUSTOM_NSIS_PLUGINS)) $(CONFIG_DIR)
 	$(INSTALL) $(addprefix $(MOZILLA_DIR)/other-licenses/nsis/,$(CUSTOM_UI)) $(CONFIG_DIR)
 	cd $(CONFIG_DIR) && $(MAKENSISU) $(MAKENSISU_FLAGS) installer.nsi
-ifdef MOZ_STUB_INSTALLER
-	cd $(CONFIG_DIR) && $(MAKENSISU) $(MAKENSISU_FLAGS) stub.nsi
-endif
 ifdef MOZ_EXTERNAL_SIGNING_FORMAT
 	$(MOZ_SIGN_CMD) $(foreach f,$(MOZ_EXTERNAL_SIGNING_FORMAT),-f $(f)) "$@"
 endif
@@ -66,13 +63,6 @@ installer:: $(CONFIG_DIR)/setup.exe $(ZIP_IN)
 	  --sfx-stub $(SFX_MODULE)
 ifdef MOZ_EXTERNAL_SIGNING_FORMAT
 	$(MOZ_SIGN_CMD) $(foreach f,$(MOZ_EXTERNAL_SIGNING_FORMAT),-f $(f)) "$(DIST)/$(PKG_INST_PATH)$(PKG_INST_BASENAME).exe"
-endif
-ifdef MOZ_STUB_INSTALLER
-	$(MOZILLA_DIR)/mach repackage installer \
-	  -o '$(ABS_DIST)/$(PKG_INST_PATH)$(PKG_STUB_BASENAME).exe' \
-	  --tag $(topsrcdir)/browser/installer/windows/stub.tag \
-	  --setupexe $(CONFIG_DIR)/setup-stub.exe \
-	  --sfx-stub $(SFX_MODULE)
 endif
 else
 installer::
@@ -98,10 +88,3 @@ $(CONFIG_DIR)/helper.exe:
 uninstaller:: $(CONFIG_DIR)/helper.exe
 	$(NSINSTALL) -D $(DIST)/bin/uninstall
 	cp $(CONFIG_DIR)/helper.exe $(DIST)/bin/uninstall
-
-ifdef MOZ_MAINTENANCE_SERVICE
-maintenanceservice_installer::
-	cd $(CONFIG_DIR) && $(MAKENSISU) $(MAKENSISU_FLAGS) maintenanceservice_installer.nsi
-	$(NSINSTALL) -D $(DIST)/bin/
-	cp $(CONFIG_DIR)/maintenanceservice_installer.exe $(DIST)/bin
-endif

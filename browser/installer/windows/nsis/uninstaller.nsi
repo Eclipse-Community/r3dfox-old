@@ -32,11 +32,7 @@ ManifestDPIAware true
 ; prevents compiling of the reg write logging.
 !define NO_LOG
 
-!define MaintUninstallKey \
- "Software\Microsoft\Windows\CurrentVersion\Uninstall\MozillaMaintenanceService"
-
 Var TmpVal
-Var MaintCertKey
 
 ; Other included files may depend upon these includes!
 ; The following includes are provided by NSIS.
@@ -162,66 +158,6 @@ UninstPage custom un.preConfirm
 
 ; Use the default dialog for IDD_VERIFY for a simple Banner
 ChangeUI IDD_VERIFY "${NSISDIR}\Contrib\UIs\default.exe"
-
-################################################################################
-# Helper Functions
-
-; This function is used to uninstall the maintenance service if the
-; application currently being uninstalled is the last application to use the
-; maintenance service.
-Function un.UninstallServiceIfNotUsed
-  ; $0 will store if a subkey exists
-  ; $1 will store the first subkey if it exists or an empty string if it doesn't
-  ; Backup the old values
-  Push $0
-  Push $1
-
-  ; The maintenance service always uses the 64-bit registry on x64 systems
-  ${If} ${RunningX64}
-    SetRegView 64
-  ${EndIf}
-
-  ; Figure out the number of subkeys
-  StrCpy $0 0
-  ${Do}
-    EnumRegKey $1 HKLM "Software\Mozilla\MaintenanceService" $0
-    ${If} "$1" == ""
-      ${ExitDo}
-    ${EndIf}
-    IntOp $0 $0 + 1
-  ${Loop}
-
-  ; Restore back the registry view
-  ${If} ${RunningX64}
-    SetRegView lastUsed
-  ${EndIf}
-
-  ${If} $0 == 0
-    ; Get the path of the maintenance service uninstaller.
-    ; Look in both the 32-bit and 64-bit registry views.
-    SetRegView 32
-    ReadRegStr $1 HKLM ${MaintUninstallKey} "UninstallString"
-    SetRegView lastused
-
-    ${If} $1 == ""
-    ${AndIf} ${RunningX64}
-      SetRegView 64
-      ReadRegStr $1 HKLM ${MaintUninstallKey} "UninstallString"
-      SetRegView lastused
-    ${EndIf}
-
-    ; If the uninstall string does not exist, skip executing it
-    ${If} $1 != ""
-      ; $1 is already a quoted string pointing to the install path
-      ; so we're already protected against paths with spaces
-      nsExec::Exec "$1 /S"
-    ${EndIf}
-  ${EndIf}
-
-  ; Restore the old value of $1 and $0
-  Pop $1
-  Pop $0
-FunctionEnd
 
 ################################################################################
 # Install Sections
@@ -450,24 +386,6 @@ Section "Uninstall"
   ; the browser will offer to Reset Firefox. We use the UpdateChannel to match
   ; uninstalls of Firefox-release with reinstalls of Firefox-release, for example.
   WriteRegStr HKCU "Software\Mozilla\Firefox" "Uninstalled-${UpdateChannel}" "True"
-
-!ifdef MOZ_MAINTENANCE_SERVICE
-  ; Get the path the allowed cert is at and remove it
-  ; Keep this block of code last since it modfies the reg view
-  ServicesHelper::PathToUniqueRegistryPath "$INSTDIR"
-  Pop $MaintCertKey
-  ${If} $MaintCertKey != ""
-    ; Always use the 64bit registry for certs on 64bit systems.
-    ${If} ${RunningX64}
-      SetRegView 64
-    ${EndIf}
-    DeleteRegKey HKLM "$MaintCertKey"
-    ${If} ${RunningX64}
-      SetRegView lastused
-    ${EndIf}
-  ${EndIf}
-  Call un.UninstallServiceIfNotUsed
-!endif
 
   ${un.IsFirewallSvcRunning}
   Pop $0

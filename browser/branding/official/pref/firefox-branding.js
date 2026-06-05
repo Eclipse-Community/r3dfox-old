@@ -3,25 +3,35 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 pref("startup.homepage_override_url", "");
-pref("startup.homepage_welcome_url", "https://www.mozilla.org/%LOCALE%/firefox/%VERSION%/firstrun/");
+pref("startup.homepage_welcome_url", "");
 pref("startup.homepage_welcome_url.additional", "");
-// Interval: Time between checks for a new version (in seconds)
-pref("app.update.interval", 43200); // 12 hours
+// The time interval between checks for a new version (in seconds)
+pref("app.update.interval", 86400); // 24 hours
 // The time interval between the downloading of mar file chunks in the
 // background (in seconds)
 // 0 means "download everything at once"
 pref("app.update.download.backgroundInterval", 0);
 // Give the user x seconds to react before showing the big UI. default=192 hours
 pref("app.update.promptWaitTime", 691200);
-// app.update.url.manual: URL user can browse to manually if for some reason
-// all update installation attempts fail.
-// app.update.url.details: a default value for the "More information about this
-// update" link supplied in the "An update is available" page of the update
-// wizard.
-pref("app.update.url.manual", "https://www.mozilla.org/firefox/");
-pref("app.update.url.details", "https://www.mozilla.org/%LOCALE%/firefox/notes");
+// URL user can browse to manually if for some reason all update installation
+// attempts fail.
+pref("app.update.url.manual", "https://github.com/Eclipse-Community/eXPlorer/releases");
+// A default value for the "More information about this update" link
+// supplied in the "An update is available" page of the update wizard.
+pref("app.update.url.details", "https://github.com/Eclipse-Community/eXPlorer/releases");
 
-pref("app.releaseNotesURL", "https://www.mozilla.org/%LOCALE%/firefox/%VERSION%/releasenotes/?utm_source=firefox-browser&utm_medium=firefox-browser&utm_campaign=whatsnew");
+pref("app.update.url", "");
+
+// Switch Application Updates off for now
+pref("app.update.enabled", false);
+
+pref("app.releaseNotesURL", "https://github.com/Eclipse-Community/eXPlorer/releases");
+
+// base url for web-based feedback pages
+pref("app.feedback.baseURL", "https://board.eclipse.cx/viewtopic.php?t=xxx");
+
+// Vendor home page
+pref("app.vendorURL", "https://eclipse.cx");
 
 // The number of days a binary is permitted to be old
 // without checking for an update.  This assumes that

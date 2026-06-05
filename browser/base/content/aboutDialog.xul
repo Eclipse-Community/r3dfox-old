@@ -128,14 +128,14 @@
               &warningDesc.version;
             </description>
             <description class="text-blurb" id="communityExperimentalDesc">
-              &community.exp.start;<label class="text-link" href="http://www.mozilla.org/">&community.exp.mozillaLink;</label>&community.exp.middle;<label class="text-link" useoriginprincipal="true" href="about:credits">&community.exp.creditsLink;</label>&community.exp.end;
+              &community.exp.start;<label class="text-link" href="http://eclipse.cx/">&community.exp.mozillaLink;</label>&community.exp.middle;<label class="text-link" useoriginprincipal="true" href="about:credits">&community.exp.creditsLink;</label>&community.exp.end;
             </description>
           </vbox>
           <description class="text-blurb" id="communityDesc">
-            &community.start2;<label class="text-link" href="http://www.mozilla.org/">&community.mozillaLink;</label>&community.middle2;<label class="text-link" useoriginprincipal="true" href="about:credits">&community.creditsLink;</label>&community.end3;
+            &community.start2;<label class="text-link" href="http://eclipse.cx/">&community.mozillaLink;</label>&community.middle2;<label class="text-link" useoriginprincipal="true" href="about:credits">&community.creditsLink;</label>&community.end3;
           </description>
           <description class="text-blurb" id="contributeDesc">
-              &helpus.start;<label class="text-link" href="https://donate.mozilla.org/?utm_source=firefox&#38;utm_medium=referral&#38;utm_campaign=firefox_about&#38;utm_content=firefox_about">&helpus.donateLink;</label>&helpus.middle;<label class="text-link" href="http://www.mozilla.org/contribute/">&helpus.getInvolvedLink;</label>&helpus.end;
+              &helpus.start;<label class="text-link" href="https://board.eclipse.cx/">&helpus.donateLink;</label>&helpus.middle;<label class="text-link" href="https://github.com/Eclipse-Community/UXP/issues/">&helpus.getInvolvedLink;</label>&helpus.end;
           </description>
         </vbox>
       </vbox>
@@ -146,7 +146,7 @@
         <label class="text-link bottom-link" useoriginprincipal="true" href="about:rights">&bottomLinks.rights;</label>
         <label class="text-link bottom-link" href="https://www.mozilla.org/privacy/">&bottomLinks.privacy;</label>
       </hbox>
-      <description id="trademark">&trademarkInfo.part1;</description>
+      <description id="trademark" hidden="true">&trademarkInfo.part1;</description>
     </vbox>
   </vbox>
 

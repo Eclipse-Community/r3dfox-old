@@ -30,13 +30,13 @@
 <!ENTITY community.exp.creditsLink  "global community">
 <!ENTITY community.exp.end          " working together to keep the Web open, public and accessible to all.">
 
-<!ENTITY community.start2           "&brandShortName; is designed by ">
+<!ENTITY community.start2           "&brandShortName; is community software released by ">
 <!-- LOCALIZATION NOTE (community.mozillaLink): This is a link title that links to http://www.mozilla.org/. -->
 <!ENTITY community.mozillaLink      "&vendorShortName;">
-<!ENTITY community.middle2          ", a ">
+<!ENTITY community.middle2          " and Mozilla developers. Learn ">
 <!-- LOCALIZATION NOTE (community.creditsLink): This is a link title that links to about:credits. -->
-<!ENTITY community.creditsLink      "global community">
-<!ENTITY community.end3             " working together to keep the Web open, public and accessible to all.">
+<!ENTITY community.creditsLink      "who contributed">
+<!ENTITY community.end3             " to this software.">
 
 <!ENTITY helpus.start               "Want to help? ">
 <!-- LOCALIZATION NOTE (helpus.donateLink): This is a link title that links to https://donate.mozilla.org/?utm_source=firefox&utm_medium=referral&utm_campaign=firefox_about&utm_content=firefox_about. -->

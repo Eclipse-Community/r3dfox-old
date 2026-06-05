@@ -30,22 +30,22 @@
   ; install location in the Software\Mozilla key and uninstall registry entries
   ; that point to our install location for both HKCU and HKLM.
   SetShellVarContext current  ; Set SHCTX to the current user (e.g. HKCU)
-  ${RegCleanMain} "Software\Mozilla"
+  ${RegCleanMain} "Software\${CompanyName}"
   ${RegCleanUninstall}
   ${UpdateProtocolHandlers}
 
   ; setup the application model id registration value
-  ${InitHashAppModelId} "$INSTDIR" "Software\Mozilla\${AppName}\TaskBarIDs"
+  ${InitHashAppModelId} "$INSTDIR" "Software\${CompanyName}\${BrandShortName}\TaskBarIDs"
 
   ClearErrors
-  WriteRegStr HKLM "Software\Mozilla" "${BrandShortName}InstallerTest" "Write Test"
+  WriteRegStr HKLM "Software\${CompanyName}" "${BrandShortName}InstallerTest" "Write Test"
   ${If} ${Errors}
     StrCpy $TmpVal "HKCU"
   ${Else}
     SetShellVarContext all    ; Set SHCTX to all users (e.g. HKLM)
-    DeleteRegValue HKLM "Software\Mozilla" "${BrandShortName}InstallerTest"
+    DeleteRegValue HKLM "Software\${CompanyName}" "${BrandShortName}InstallerTest"
     StrCpy $TmpVal "HKLM"
-    ${RegCleanMain} "Software\Mozilla"
+    ${RegCleanMain} "Software\${CompanyName}"
     ${RegCleanUninstall}
     ${UpdateProtocolHandlers}
     ${FixShellIconHandler} "HKLM"
@@ -516,31 +516,31 @@
 
   ; Running Firefox 64 bit on Windows 64 bit
   ClearErrors
-  ReadRegDWORD $2 HKLM "Software\Mozilla\${AppName}\32to64DidMigrate" "$1"
+  ReadRegDWORD $2 HKLM "Software\${CompanyName}\${BrandShortName}\32to64DidMigrate" "$1"
   ; If there were no errors then the system was updated from Firefox 32 bit to
   ; Firefox 64 bit and if the value is already 1 then the registry value has
   ; already been updated in the HKLM registry.
   ${IfNot} ${Errors}
   ${AndIf} $2 != 1
     ClearErrors
-    WriteRegDWORD HKLM "Software\Mozilla\${AppName}\32to64DidMigrate" "$1" 1
+    WriteRegDWORD HKLM "Software\${CompanyName}\${BrandShortName}\32to64DidMigrate" "$1" 1
     ${If} ${Errors}
       ; There was an error writing to HKLM so just write it to HKCU
-      WriteRegDWORD HKCU "Software\Mozilla\${AppName}\32to64DidMigrate" "$1" 1
+      WriteRegDWORD HKCU "Software\${CompanyName}\${BrandShortName}\32to64DidMigrate" "$1" 1
     ${Else}
       ; This will delete the value from HKCU if it exists
-      DeleteRegValue HKCU "Software\Mozilla\${AppName}\32to64DidMigrate" "$1"
+      DeleteRegValue HKCU "Software\${CompanyName}\${BrandShortName}\32to64DidMigrate" "$1"
     ${EndIf}
   ${EndIf}
 
   ClearErrors
-  ReadRegDWORD $2 HKCU "Software\Mozilla\${AppName}\32to64DidMigrate" "$1"
+  ReadRegDWORD $2 HKCU "Software\${CompanyName}\${BrandShortName}\32to64DidMigrate" "$1"
   ; If there were no errors then the system was updated from Firefox 32 bit to
   ; Firefox 64 bit and if the value is already 1 then the registry value has
   ; already been updated in the HKCU registry.
   ${IfNot} ${Errors}
   ${AndIf} $2 != 1
-    WriteRegDWORD HKCU "Software\Mozilla\${AppName}\32to64DidMigrate" "$1" 1
+    WriteRegDWORD HKCU "Software\${CompanyName}\${BrandShortName}\32to64DidMigrate" "$1" 1
   ${EndIf}
 
 !else
@@ -549,14 +549,14 @@
   ${If} ${RunningX64}
     ; Running Firefox 32 bit on a Windows 64 bit system
     ClearErrors
-    ReadRegDWORD $2 HKLM "Software\Mozilla\${AppName}\32to64DidMigrate" "$1"
+    ReadRegDWORD $2 HKLM "Software\${CompanyName}\${BrandShortName}\32to64DidMigrate" "$1"
     ; If there were errors the value doesn't exist yet.
     ${If} ${Errors}
       ClearErrors
-      WriteRegDWORD HKLM "Software\Mozilla\${AppName}\32to64DidMigrate" "$1" 0
+      WriteRegDWORD HKLM "Software\${CompanyName}\${BrandShortName}\32to64DidMigrate" "$1" 0
       ; If there were errors write the value in HKCU.
       ${If} ${Errors}
-        WriteRegDWORD HKCU "Software\Mozilla\${AppName}\32to64DidMigrate" "$1" 0
+        WriteRegDWORD HKCU "Software\${CompanyName}\${BrandShortName}\32to64DidMigrate" "$1" 0
       ${EndIf}
     ${EndIf}
   ${EndIf}
@@ -606,14 +606,14 @@
   ${EndIf}
 
   ${GetLongPath} "$INSTDIR" $8
-  StrCpy $0 "Software\Mozilla\${BrandFullNameInternal}\${AppVersion}$3 (${ARCH} ${AB_CD})\Main"
+  StrCpy $0 "Software\${CompanyName}\${BrandFullNameInternal}\${AppVersion}$3 (${ARCH} ${AB_CD})\Main"
   ${WriteRegStr2} $TmpVal "$0" "Install Directory" "$8" 0
   ${WriteRegStr2} $TmpVal "$0" "PathToExe" "$8\${FileMainEXE}" 0
 
-  StrCpy $0 "Software\Mozilla\${BrandFullNameInternal}\${AppVersion}$3 (${ARCH} ${AB_CD})\Uninstall"
+  StrCpy $0 "Software\${CompanyName}\${BrandFullNameInternal}\${AppVersion}$3 (${ARCH} ${AB_CD})\Uninstall"
   ${WriteRegStr2} $TmpVal "$0" "Description" "${BrandFullNameInternal} ${AppVersion}$3 (${ARCH} ${AB_CD})" 0
 
-  StrCpy $0 "Software\Mozilla\${BrandFullNameInternal}\${AppVersion}$3 (${ARCH} ${AB_CD})"
+  StrCpy $0 "Software\${CompanyName}\${BrandFullNameInternal}\${AppVersion}$3 (${ARCH} ${AB_CD})"
   ${WriteRegStr2} $TmpVal  "$0" "" "${AppVersion}$3 (${ARCH} ${AB_CD})" 0
   ${If} "$3" == ""
     DeleteRegValue SHCTX "$0" "ESR"
@@ -621,14 +621,14 @@
     ${WriteRegDWORD2} $TmpVal "$0" "ESR" 1 0
   ${EndIf}
 
-  StrCpy $0 "Software\Mozilla\${BrandFullNameInternal} ${AppVersion}$3\bin"
+  StrCpy $0 "Software\${CompanyName}\${BrandFullNameInternal} ${AppVersion}$3\bin"
   ${WriteRegStr2} $TmpVal "$0" "PathToExe" "$8\${FileMainEXE}" 0
 
-  StrCpy $0 "Software\Mozilla\${BrandFullNameInternal} ${AppVersion}$3\extensions"
+  StrCpy $0 "Software\${CompanyName}\${BrandFullNameInternal} ${AppVersion}$3\extensions"
   ${WriteRegStr2} $TmpVal "$0" "Components" "$8\components" 0
   ${WriteRegStr2} $TmpVal "$0" "Plugins" "$8\plugins" 0
 
-  StrCpy $0 "Software\Mozilla\${BrandFullNameInternal} ${AppVersion}$3"
+  StrCpy $0 "Software\${CompanyName}\${BrandFullNameInternal} ${AppVersion}$3"
   ${WriteRegStr2} $TmpVal "$0" "GeckoVer" "${GREVersion}" 0
   ${If} "$3" == ""
     DeleteRegValue SHCTX "$0" "ESR"
@@ -636,7 +636,7 @@
     ${WriteRegDWORD2} $TmpVal "$0" "ESR" 1 0
   ${EndIf}
 
-  StrCpy $0 "Software\Mozilla\${BrandFullNameInternal}$3"
+  StrCpy $0 "Software\${CompanyName}\${BrandFullNameInternal}$3"
   ${WriteRegStr2} $TmpVal "$0" "" "${GREVersion}" 0
   ${WriteRegStr2} $TmpVal "$0" "CurrentVersion" "${AppVersion}$3 (${ARCH} ${AB_CD})" 0
 !macroend
@@ -688,7 +688,7 @@
     ${WriteRegStr2} $1 "$0" "DisplayVersion" "${AppVersion}" 0
     ${WriteRegStr2} $1 "$0" "HelpLink" "${HelpLink}" 0
     ${WriteRegStr2} $1 "$0" "InstallLocation" "$8" 0
-    ${WriteRegStr2} $1 "$0" "Publisher" "Mozilla" 0
+    ${WriteRegStr2} $1 "$0" "Publisher" "${CompanyName}" 0
     ${WriteRegStr2} $1 "$0" "UninstallString" "$\"$8\uninstall\helper.exe$\"" 0
     DeleteRegValue SHCTX "$0" "URLInfoAbout"
 ; Don't add URLUpdateInfo which is the release notes url except for the release
@@ -1337,7 +1337,7 @@ Function SetAsDefaultAppUserHKCU
   StrCpy $0 $0 -2
   ${If} $0 != $8
     ${If} $AppUserModelID == ""
-      ${InitHashAppModelId} "$INSTDIR" "Software\Mozilla\${AppName}\TaskBarIDs"
+      ${InitHashAppModelId} "$INSTDIR" "Software\${CompanyName}\${BrandShortName}\TaskBarIDs"
     ${EndIf}
     StrCpy $R9 "${AppRegName}-$AppUserModelID"
   ${EndIf}

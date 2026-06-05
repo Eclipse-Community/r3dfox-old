@@ -622,9 +622,7 @@ var gPopupBlockerObserver = {
         var brandShortName = brandBundle.getString("brandShortName");
         var popupCount = gBrowser.selectedBrowser.blockedPopups.length;
 
-        var stringKey = AppConstants.platform == "win"
-                        ? "popupWarningButton"
-                        : "popupWarningButtonUnix";
+        var stringKey = "popupWarningButton";
 
         var popupButtonText = gNavigatorBundle.getString(stringKey);
         var popupButtonAccesskey = gNavigatorBundle.getString(stringKey + ".accesskey");

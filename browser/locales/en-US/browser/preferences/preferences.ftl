@@ -10,11 +10,7 @@ do-not-track-option-always =
     .label = Always
 
 pref-page =
-    .title =
-        { PLATFORM() ->
-            [windows] Options
-           *[other] Preferences
-        }
+    .title = Preferences
 
 # This is used to determine the width of the search field in about:preferences,
 # in order to make the entire placeholder string visible

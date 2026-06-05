@@ -30,7 +30,7 @@ pref("general.useragent.site_specific_overrides", true);
 
 pref("general.config.obscure_value", 13); // for MCD .cfg files
 
-pref("general.warnOnAboutConfig", true);
+pref("general.warnOnAboutConfig", false);
 
 // maximum number of dated backups to keep at any time
 pref("browser.bookmarks.max_backups",       5);

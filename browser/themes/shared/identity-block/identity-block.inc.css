@@ -30,9 +30,11 @@
 #urlbar[pageproxystate="valid"] > #identity-box.verifiedIdentity > #identity-icon-labels {
   color: #058B00;
 }
-#urlbar[pageproxystate="valid"] > #identity-box.chromeUI > #identity-icon-labels {
+#urlbar[pageproxystate="valid"] > #identity-box.chromeUI {
 %ifdef MOZ_OFFICIAL_BRANDING
-  color: rgb(229,115,0);
+  color: #b967e5;
+  fill: #b967e5;
+  fill-opacity: 1;
 %else
   color: inherit;
 %endif

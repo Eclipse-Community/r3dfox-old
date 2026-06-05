@@ -618,7 +618,7 @@
 #ifdef MENUBAR_CAN_AUTOHIDE
              toolbarname="&menubarCmd.label;"
              accesskey="&menubarCmd.accesskey;"
-             autohide="true"
+             autohide="false"
 #endif
              context="toolbar-context-menu">
       <toolbaritem id="menubar-items" align="center">

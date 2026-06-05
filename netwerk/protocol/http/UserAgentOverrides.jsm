@@ -14,6 +14,9 @@ const PREF_OVERRIDES_ENABLED = "general.useragent.site_specific_overrides";
 const DEFAULT_UA = Cc["@mozilla.org/network/protocol;1?name=http"]
                      .getService(Ci.nsIHttpProtocolHandler)
                      .userAgent;
+const OS_SLICE = Cc["@mozilla.org/network/protocol;1?name=http"]
+                   .getService(Ci.nsIHttpProtocolHandler)
+                   .oscpu + ";";
 const MAX_OVERRIDE_FOR_HOST_CACHE_SIZE = 250;
 
 var gPrefBranch;
@@ -130,7 +133,7 @@ function getUserAgentFromOverride(override)
   if (search && replace) {
     userAgent = DEFAULT_UA.replace(new RegExp(search, "g"), replace);
   } else {
-    userAgent = override;
+    userAgent = override.replace(/%OS_SLICE%/g, OS_SLICE);
   }
   gBuiltUAs.set(override, userAgent);
   return userAgent;

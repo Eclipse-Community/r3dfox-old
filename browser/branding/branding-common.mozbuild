@@ -6,15 +6,12 @@
 
 @template
 def FirefoxBranding():
-    if CONFIG['MOZ_BRANDING_DIRECTORY'] == 'browser/branding/official':
-        JS_PREFERENCE_PP_FILES += [
-            'pref/firefox-branding.js',
-            'pref/uaoverrides.inc',
-        ]
-    else:
-        JS_PREFERENCE_FILES += [
-            'pref/firefox-branding.js',
-        ]
+    JS_PREFERENCE_FILES += [
+        'pref/firefox-branding.js',
+    ]
+    JS_PREFERENCE_PP_FILES += [
+        'pref/uaoverrides.inc',
+    ]
 
     if 'gtk' in CONFIG['MOZ_WIDGET_TOOLKIT']:
         FINAL_TARGET_FILES.chrome.icons.default += [

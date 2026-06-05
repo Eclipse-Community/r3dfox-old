@@ -23,11 +23,7 @@
   <wizardpage id="importSource" pageid="importSource" next="selectProfile"
               label="&importSource.title;"
               onpageadvanced="return MigrationWizard.onImportSourcePageAdvanced();">
-#ifdef XP_WIN
     <description id="importAll" control="importSourceGroup">&importFrom.label;</description>
-#else
-    <description id="importAll" control="importSourceGroup">&importFromUnix.label;</description>
-#endif
     <description id="importBookmarks" control="importSourceGroup" hidden="true">&importFromBookmarks.label;</description>
 
     <radiogroup id="importSourceGroup" align="start">

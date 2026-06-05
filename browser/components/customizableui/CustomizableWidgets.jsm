@@ -807,10 +807,7 @@ let preferencesButton = {
     win.openPreferences(undefined, {origin: "preferencesButton"});
   }
 };
-if (AppConstants.platform == "win") {
-  preferencesButton.label = "preferences-button.labelWin";
-  preferencesButton.tooltiptext = "preferences-button.tooltipWin2";
-} else if (AppConstants.platform == "macosx") {
+if (AppConstants.platform == "macosx") {
   preferencesButton.tooltiptext = "preferences-button.tooltiptext.withshortcut";
   preferencesButton.shortcutId = "key_preferencesCmdMac";
 } else {

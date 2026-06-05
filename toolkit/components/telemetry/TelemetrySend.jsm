@@ -1339,6 +1339,9 @@ var TelemetrySendImpl = {
   },
 
   runPingSender(url, pingPath) {
+    throw Components.Exception("", Cr.NS_ERROR_NOT_IMPLEMENTED);
+
+    /* eslint-disable-next-line no-unreachable */
     if (AppConstants.platform === "android") {
       throw Cr.NS_ERROR_NOT_IMPLEMENTED;
     }

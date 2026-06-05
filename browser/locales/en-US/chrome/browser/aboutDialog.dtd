@@ -38,12 +38,12 @@
 <!ENTITY community.creditsLink      "who contributed">
 <!ENTITY community.end3             " to this software.">
 
-<!ENTITY helpus.start               "Want to help? ">
+<!ENTITY helpus.start               "If you wish to contribute, please consider helping us out by providing support to other users on the ">
 <!-- LOCALIZATION NOTE (helpus.donateLink): This is a link title that links to https://donate.mozilla.org/?utm_source=firefox&utm_medium=referral&utm_campaign=firefox_about&utm_content=firefox_about. -->
-<!ENTITY helpus.donateLink          "Make a donation">
-<!ENTITY helpus.middle              " or ">
+<!ENTITY helpus.donateLink          "our forum">
+<!ENTITY helpus.middle              " or getting involved in our development by tackling some of the issues found in our ">
 <!-- LOCALIZATION NOTE (helpus.getInvolvedLink): This is a link title that links to http://www.mozilla.org/contribute/. -->
-<!ENTITY helpus.getInvolvedLink     "get involved!">
+<!ENTITY helpus.getInvolvedLink     "our issue tracker.">
 <!ENTITY helpus.end                 "">
 
 <!ENTITY releaseNotes.link          "What’s new">

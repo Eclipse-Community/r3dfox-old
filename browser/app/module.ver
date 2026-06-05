@@ -1,5 +1,5 @@
-WIN32_MODULE_COMPANYNAME=Mozilla Corporation
-WIN32_MODULE_COPYRIGHT=©Firefox and Mozilla Developers; available under the MPL 2 license.
+WIN32_MODULE_COMPANYNAME=Eclipse Community
+WIN32_MODULE_COPYRIGHT=©Eclipse Community and Mozilla Developers; available under the MPL 2 license.
 WIN32_MODULE_PRODUCTVERSION=@MOZ_APP_WINVERSION@
 WIN32_MODULE_PRODUCTVERSION_STRING=@MOZ_APP_VERSION@
 WIN32_MODULE_TRADEMARKS=The @MOZ_APP_DISPLAYNAME@ is developed by Eclipse Community.

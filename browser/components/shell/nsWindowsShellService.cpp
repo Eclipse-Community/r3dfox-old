@@ -61,7 +61,7 @@
 
 #define REG_FAILED(val) (val != ERROR_SUCCESS)
 
-#define APP_REG_NAME_BASE L"Firefox-"
+#define APP_REG_NAME_BASE L"eXPlorer-"
 
 using mozilla::IsWin8OrLater;
 using namespace mozilla;
@@ -137,7 +137,7 @@ static bool IsPathDefaultForClass(
     return false;
   }
 
-  LPCWSTR progID = isProtocol ? L"FirefoxURL" : L"FirefoxHTML";
+  LPCWSTR progID = isProtocol ? L"eXPlorerURL" : L"eXPlorerHTML";
   bool isDefault = !wcsnicmp(registeredApp, progID, wcslen(progID));
 
   nsAutoString regAppName(registeredApp);

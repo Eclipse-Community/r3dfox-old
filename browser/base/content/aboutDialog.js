@@ -35,21 +35,6 @@ function init(aEvent) {
     }
   }
 
-  // Include the build ID and display warning if this is an "a#" (nightly or aurora) build
-  let versionField = document.getElementById("version");
-  versionField.textContent = AppConstants.MOZ_APP_VERSION_DISPLAY;
-  let version = Services.appinfo.version;
-  if (/a\d+$/.test(version)) {
-    let buildID = Services.appinfo.appBuildID;
-    let year = buildID.slice(0, 4);
-    let month = buildID.slice(4, 6);
-    let day = buildID.slice(6, 8);
-    versionField.textContent += ` (${year}-${month}-${day})`;
-
-    document.getElementById("experimental").hidden = false;
-    document.getElementById("communityDesc").hidden = true;
-  }
-
   // Append "(32-bit)" or "(64-bit)" build architecture to the version number:
   let bundle = Services.strings.createBundle("chrome://browser/locale/browser.properties");
   let archResource = Services.appinfo.is64Bit
@@ -77,10 +62,6 @@ function init(aEvent) {
     channelLabel.value = UpdateUtils.UpdateChannel;
     if (/^release($|\-)/.test(channelLabel.value))
         currentChannelText.hidden = true;
-  }
-
-  if (AppConstants.MOZ_APP_VERSION_DISPLAY.endsWith("esr")) {
-    document.getElementById("release").hidden = false;
   }
   if (AppConstants.platform == "macosx") {
     // it may not be sized at this point, and we need its width to calculate its position

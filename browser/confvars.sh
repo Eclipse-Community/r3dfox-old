@@ -20,8 +20,20 @@ fi
 # Enable building ./signmar and running libmar signature tests
 MOZ_ENABLE_SIGNMAR=1
 
-MOZ_APP_VERSION=$FIREFOX_VERSION
-MOZ_APP_VERSION_DISPLAY=$FIREFOX_VERSION_DISPLAY
+# For eXPlorer we want to use 60.0.YYYY.MM.DD as MOZ_APP_VERSION in release
+# builds so add-on developers have something to target while maintaining
+# Firefox compatiblity.
+# To enable add "export EXPLORER_VERSION=1" to the .mozconfig file.
+# However, this will cause a full rebuild at 00:00 UTC every day so
+# don't export the variable if you are in development or don't care.
+# When not exported we fall back the value in the version*.txt file.
+if test -n "$EXPLORER_VERSION" ; then
+    MOZ_APP_VERSION=`date --utc '+%y.%m.%d'`
+    MOZ_APP_VERSION_DISPLAY=`date --utc '+%y.%m.%d'`
+else
+    MOZ_APP_VERSION=`cat ${_topsrcdir}/$MOZ_BUILD_APP/config/version.txt`
+    MOZ_APP_VERSION_DISPLAY=`cat ${_topsrcdir}/$MOZ_BUILD_APP/config/version_display.txt`
+fi
 # MOZ_APP_DISPLAYNAME will be set by branding/configure.sh
 # MOZ_BRANDING_DIRECTORY is the default branding directory used when none is
 # specified. It should never point to the "official" branding directory.

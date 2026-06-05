@@ -1,6 +1,7 @@
 # Please do not redistribute this build with official branding if you are not part of Eclipse Community.
 ac_add_options --enable-official-branding
 export MOZ_OFFICIAL_BRANDING=1
+export EXPLORER_VERSION=1
 export MOZ_SOURCE_CHANGESET=iloveneedingtobodgechangesetfornoreason
 
 # 16 jobs for 16 cores

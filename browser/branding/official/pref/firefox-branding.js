@@ -18,13 +18,8 @@ pref("app.update.promptWaitTime", 691200);
 // app.update.url.details: a default value for the "More information about this
 // update" link supplied in the "An update is available" page of the update
 // wizard.
-#if MOZ_UPDATE_CHANNEL == beta
-pref("app.update.url.manual", "https://www.mozilla.org/firefox/beta");
-pref("app.update.url.details", "https://www.mozilla.org/%LOCALE%/firefox/beta/notes");
-#else
 pref("app.update.url.manual", "https://www.mozilla.org/firefox/");
 pref("app.update.url.details", "https://www.mozilla.org/%LOCALE%/firefox/notes");
-#endif
 
 pref("app.releaseNotesURL", "https://www.mozilla.org/%LOCALE%/firefox/%VERSION%/releasenotes/?utm_source=firefox-browser&utm_medium=firefox-browser&utm_campaign=whatsnew");
 
@@ -40,5 +35,3 @@ pref("app.update.badgeWaitTime", 345600);
 // Number of usages of the web console or scratchpad.
 // If this is less than 5, then pasting code into the web console or scratchpad is disabled
 pref("devtools.selfxss.count", 0);
-
-#include uaoverrides.inc

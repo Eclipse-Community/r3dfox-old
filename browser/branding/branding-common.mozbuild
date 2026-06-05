@@ -10,7 +10,7 @@ def FirefoxBranding():
         'pref/firefox-branding.js',
     ]
     JS_PREFERENCE_PP_FILES += [
-        'pref/uaoverrides.inc',
+        '../shared/uaoverrides.js',
     ]
 
     if 'gtk' in CONFIG['MOZ_WIDGET_TOOLKIT']:
@@ -21,3 +21,7 @@ def FirefoxBranding():
             'default48.png',
             'default64.png',
         ]
+
+    DEFINES['MOZ_APP_VERSION'] = CONFIG['MOZ_APP_VERSION']
+    DEFINES['MOZ_BRANDING_DIRECTORY'] = CONFIG['MOZ_BRANDING_DIRECTORY']
+    DEFINES['MOZILLA_UAVERSION_U'] = CONFIG['MOZILLA_UAVERSION_U']

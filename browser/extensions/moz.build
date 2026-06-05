@@ -11,7 +11,6 @@ DIRS += [
     'formautofill',
     'jaws-esr',
     'pdfjs',
-    'pocket',
     'screenshots',
     'webcompat',
 ]

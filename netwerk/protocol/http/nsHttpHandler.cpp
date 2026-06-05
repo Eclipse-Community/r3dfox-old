@@ -608,8 +608,7 @@ nsresult nsHttpHandler::InitConnectionMgr() {
   return rv;
 }
 
-nsresult nsHttpHandler::AddStandardRequestHeaders(nsHttpRequestHead *request,
-                                                  bool isSecure) {
+nsresult nsHttpHandler::AddStandardRequestHeaders(nsHttpRequestHead *request) {
   nsresult rv;
 
   // Add the "User-Agent" header
@@ -640,13 +639,9 @@ nsresult nsHttpHandler::AddStandardRequestHeaders(nsHttpRequestHead *request,
   }
 
   // Add the "Accept-Encoding" header
-  if (isSecure) {
-    rv = request->SetHeader(nsHttp::Accept_Encoding, mHttpsAcceptEncodings,
-                            false, nsHttpHeaderArray::eVarietyRequestDefault);
-  } else {
-    rv = request->SetHeader(nsHttp::Accept_Encoding, mHttpAcceptEncodings,
-                            false, nsHttpHeaderArray::eVarietyRequestDefault);
-  }
+  rv = request->SetHeader(nsHttp::Accept_Encoding, mAcceptEncodings,
+                          false,
+                          nsHttpHeaderArray::eVarietyRequestDefault);
   if (NS_FAILED(rv)) return rv;
 
   // add the "Send Hint" header
@@ -676,19 +671,13 @@ nsresult nsHttpHandler::AddConnectionHeader(nsHttpRequestHead *request,
   return request->SetHeader(nsHttp::Connection, *connectionType);
 }
 
-bool nsHttpHandler::IsAcceptableEncoding(const char *enc, bool isSecure) {
+bool nsHttpHandler::IsAcceptableEncoding(const char *enc) {
   if (!enc) return false;
 
   // we used to accept x-foo anytime foo was acceptable, but that's just
   // continuing bad behavior.. so limit it to known x-* patterns
-  bool rv;
-  if (isSecure) {
-    rv = nsHttp::FindToken(mHttpsAcceptEncodings.get(), enc, HTTP_LWS ",") !=
-         nullptr;
-  } else {
-    rv = nsHttp::FindToken(mHttpAcceptEncodings.get(), enc, HTTP_LWS ",") !=
-         nullptr;
-  }
+  bool rv = nsHttp::FindToken(mAcceptEncodings.get(), enc, HTTP_LWS ",") != nullptr;
+
   // gzip and deflate are inherently acceptable in modern HTTP - always
   // process them if a stream converter can also be found.
   if (!rv &&
@@ -696,7 +685,7 @@ bool nsHttpHandler::IsAcceptableEncoding(const char *enc, bool isSecure) {
        !PL_strcasecmp(enc, "x-gzip") || !PL_strcasecmp(enc, "x-deflate"))) {
     rv = true;
   }
-  LOG(("nsHttpHandler::IsAceptableEncoding %s https=%d %d\n", enc, isSecure,
+  LOG(("nsHttpHandler::IsAceptableEncoding %s %d\n", enc,
        rv));
   return rv;
 }
@@ -1371,17 +1360,7 @@ void nsHttpHandler::PrefsChanged(nsIPrefBranch *prefs, const char *pref) {
     nsAutoCString acceptEncodings;
     rv = prefs->GetCharPref(HTTP_PREF("accept-encoding"), acceptEncodings);
     if (NS_SUCCEEDED(rv)) {
-      rv = SetAcceptEncodings(acceptEncodings.get(), false);
-      MOZ_ASSERT(NS_SUCCEEDED(rv));
-    }
-  }
-
-  if (PREF_CHANGED(HTTP_PREF("accept-encoding.secure"))) {
-    nsAutoCString acceptEncodings;
-    rv = prefs->GetCharPref(HTTP_PREF("accept-encoding.secure"),
-                            acceptEncodings);
-    if (NS_SUCCEEDED(rv)) {
-      rv = SetAcceptEncodings(acceptEncodings.get(), true);
+      rv = SetAcceptEncodings(acceptEncodings.get());
       MOZ_ASSERT(NS_SUCCEEDED(rv));
     }
   }
@@ -2086,18 +2065,8 @@ nsresult nsHttpHandler::SetAccept(const char *aAccept) {
   return NS_OK;
 }
 
-nsresult nsHttpHandler::SetAcceptEncodings(const char *aAcceptEncodings,
-                                           bool isSecure) {
-  if (isSecure) {
-    mHttpsAcceptEncodings = aAcceptEncodings;
-  } else {
-    // use legacy list if a secure override is not specified
-    mHttpAcceptEncodings = aAcceptEncodings;
-    if (mHttpsAcceptEncodings.IsEmpty()) {
-      mHttpsAcceptEncodings = aAcceptEncodings;
-    }
-  }
-
+nsresult nsHttpHandler::SetAcceptEncodings(const char *aAcceptEncodings) {
+  mAcceptEncodings = aAcceptEncodings;
   return NS_OK;
 }
 

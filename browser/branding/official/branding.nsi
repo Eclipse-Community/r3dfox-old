@@ -8,9 +8,10 @@
 
 # BrandFullNameInternal is used for some registry and file system values
 # instead of BrandFullName and typically should not be modified.
-!define BrandFullNameInternal "Mozilla Firefox"
-!define BrandFullName         "Mozilla Firefox"
-!define CompanyName           "Mozilla Corporation"
-!define URLInfoAbout          "https://www.mozilla.org"
-!define URLUpdateInfo         "https://www.mozilla.org/firefox/${AppVersion}/releasenotes"
-!define HelpLink              "https://support.mozilla.org"
+!define BrandFullNameInternal "Eclipxe eXPlorer"
+!define BrandFullName         "Eclipxe eXPlorer"
+!define CompanyName           "Eclipse Community"
+!define URLInfoAbout          "https://eclipse.cx"
+!define URLUpdateInfo         "https://github.com/Eclipse-Community/eXPlorer/releases"
+!define HelpLink              "https://board.eclipse.cx/viewtopic.php?t=xxx"
+!define URLSystemRequirements "https://github.com/Eclipse-Community/eXPlorer"

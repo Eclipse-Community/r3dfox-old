@@ -64,11 +64,10 @@ class nsHttpHandler final : public nsIHttpProtocolHandler,
 
   static already_AddRefed<nsHttpHandler> GetInstance();
 
-  MOZ_MUST_USE nsresult AddStandardRequestHeaders(nsHttpRequestHead *,
-                                                  bool isSecure);
+  MOZ_MUST_USE nsresult AddStandardRequestHeaders(nsHttpRequestHead *);
   MOZ_MUST_USE nsresult AddConnectionHeader(nsHttpRequestHead *,
                                             uint32_t capabilities);
-  bool IsAcceptableEncoding(const char *encoding, bool isSecure);
+  bool IsAcceptableEncoding(const char *encoding);
 
   const nsCString &UserAgent();
 
@@ -406,7 +405,7 @@ class nsHttpHandler final : public nsIHttpProtocolHandler,
 
   MOZ_MUST_USE nsresult SetAccept(const char *);
   MOZ_MUST_USE nsresult SetAcceptLanguages();
-  MOZ_MUST_USE nsresult SetAcceptEncodings(const char *, bool mIsSecure);
+  MOZ_MUST_USE nsresult SetAcceptEncodings(const char *);
 
   MOZ_MUST_USE nsresult InitConnectionMgr();
 
@@ -490,8 +489,7 @@ class nsHttpHandler final : public nsIHttpProtocolHandler,
 
   nsCString mAccept;
   nsCString mAcceptLanguages;
-  nsCString mHttpAcceptEncodings;
-  nsCString mHttpsAcceptEncodings;
+  nsCString mAcceptEncodings;
 
   nsCString mDefaultSocketType;
 

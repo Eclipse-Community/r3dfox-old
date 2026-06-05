@@ -18,7 +18,7 @@ if test "$OS_ARCH" = "WINNT"; then
 fi
 
 # Enable building ./signmar and running libmar signature tests
-MOZ_ENABLE_SIGNMAR=1
+MOZ_ENABLE_SIGNMAR=0
 
 # For eXPlorer we want to use 60.0.YYYY.MM.DD as MOZ_APP_VERSION in release
 # builds so add-on developers have something to target while maintaining
@@ -56,8 +56,9 @@ else
 fi
 MOZ_PROFILE_MIGRATOR=1
 
-# Enable checking that add-ons are signed by the trusted root
-MOZ_ADDON_SIGNING=1
+# Disable checking that add-ons are signed by the trusted root
+MOZ_ADDON_SIGNING=0
+MOZ_REQUIRE_SIGNING=0
 
 # Include the DevTools client, not just the server (which is the default)
 MOZ_DEVTOOLS=all

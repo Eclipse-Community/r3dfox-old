@@ -16,15 +16,7 @@ def FirefoxBranding():
             'pref/firefox-branding.js',
         ]
 
-    if CONFIG['MOZ_WIDGET_TOOLKIT'] == 'windows':
-        FINAL_TARGET_FILES['..'] += [
-            'firefox.VisualElementsManifest.xml',
-        ]
-        FINAL_TARGET_FILES.VisualElements += [
-            'VisualElements_150.png',
-            'VisualElements_70.png',
-        ]
-    elif 'gtk' in CONFIG['MOZ_WIDGET_TOOLKIT']:
+    if 'gtk' in CONFIG['MOZ_WIDGET_TOOLKIT']:
         FINAL_TARGET_FILES.chrome.icons.default += [
             'default128.png',
             'default16.png',

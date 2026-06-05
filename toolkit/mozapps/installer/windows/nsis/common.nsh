@@ -5091,14 +5091,6 @@
               StrCpy $AddTaskbarSC "1"
             ${EndIf}
 
-            ReadINIStr $R8 $R7 "Install" "MaintenanceService"
-            ${If} $R8 == "false"
-              StrCpy $InstallMaintenanceService "0"
-            ${Else}
-              ; Installing the service always requires elevation.
-              ${ElevateUAC}
-            ${EndIf}
-
             !ifdef MOZ_OPTIONAL_EXTENSIONS
               ReadINIStr $R8 $R7 "Install" "OptionalExtensions"
               ${If} $R8 == "false"

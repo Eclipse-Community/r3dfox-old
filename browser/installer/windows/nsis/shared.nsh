@@ -117,49 +117,6 @@
 
   ; Register AccessibleMarshal.dll with COM (this requires write access to HKLM)
   ${RegisterAccessibleMarshal}
-
-!ifdef MOZ_MAINTENANCE_SERVICE
-  Call IsUserAdmin
-  Pop $R0
-  ${If} $R0 == "true"
-  ; Only proceed if we have HKLM write access
-  ${AndIf} $TmpVal == "HKLM"
-    ; We check to see if the maintenance service install was already attempted.
-    ; Since the Maintenance service can be installed either x86 or x64,
-    ; always use the 64-bit registry for checking if an attempt was made.
-    ${If} ${RunningX64}
-      SetRegView 64
-    ${EndIf}
-    ReadRegDWORD $5 HKLM "Software\Mozilla\MaintenanceService" "Attempted"
-    ClearErrors
-    ${If} ${RunningX64}
-      SetRegView lastused
-    ${EndIf}
-
-    ; Add the registry keys for allowed certificates.
-    ${AddMaintCertKeys}
-
-    ; If the maintenance service is already installed, do nothing.
-    ; The maintenance service will launch:
-    ; maintenanceservice_installer.exe /Upgrade to upgrade the maintenance
-    ; service if necessary.   If the update was done from updater.exe without
-    ; the service (i.e. service is failing), updater.exe will do the update of
-    ; the service.  The reasons we do not do it here is because we don't want
-    ; to have to prompt for limited user accounts when the service isn't used
-    ; and we currently call the PostUpdate twice, once for the user and once
-    ; for the SYSTEM account.  Also, this would stop the maintenance service
-    ; and we need a return result back to the service when run that way.
-    ${If} $5 == ""
-      ; An install of maintenance service was never attempted.
-      ; We know we are an Admin and that we have write access into HKLM
-      ; based on the above checks, so attempt to just run the EXE.
-      ; In the worst case, in case there is some edge case with the
-      ; IsAdmin check and the permissions check, the maintenance service
-      ; will just fail to be attempted to be installed.
-      nsExec::Exec "$\"$INSTDIR\maintenanceservice_installer.exe$\""
-    ${EndIf}
-  ${EndIf}
-!endif
 !macroend
 !define PostUpdate "!insertmacro PostUpdate"
 
@@ -886,54 +843,6 @@
   ${EndIf}
 !macroend
 !define UpdateProtocolHandlers "!insertmacro UpdateProtocolHandlers"
-
-!ifdef MOZ_MAINTENANCE_SERVICE
-; Adds maintenance service certificate keys for the install dir.
-; For the cert to work, it must also be signed by a trusted cert for the user.
-!macro AddMaintCertKeys
-  Push $R0
-  ; Allow main Mozilla cert information for updates
-  ; This call will push the needed key on the stack
-  ServicesHelper::PathToUniqueRegistryPath "$INSTDIR"
-  Pop $R0
-  ${If} $R0 != ""
-    ; More than one certificate can be specified in a different subfolder
-    ; for example: $R0\1, but each individual binary can be signed
-    ; with at most one certificate.  A fallback certificate can only be used
-    ; if the binary is replaced with a different certificate.
-    ; We always use the 64bit registry for certs.
-    ${If} ${RunningX64}
-      SetRegView 64
-    ${EndIf}
-
-    ; PrefetchProcessName was originally used to experiment with deleting
-    ; Windows prefetch as a speed optimization.  It is no longer used though.
-    DeleteRegValue HKLM "$R0" "prefetchProcessName"
-
-    ; Setting the Attempted value will ensure that a new Maintenance Service
-    ; install will never be attempted again after this from updates.  The value
-    ; is used only to see if updates should attempt new service installs.
-    WriteRegDWORD HKLM "Software\Mozilla\MaintenanceService" "Attempted" 1
-
-    ; These values associate the allowed certificates for the current
-    ; installation.
-    WriteRegStr HKLM "$R0\0" "name" "${CERTIFICATE_NAME}"
-    WriteRegStr HKLM "$R0\0" "issuer" "${CERTIFICATE_ISSUER}"
-    ; These values associate the allowed certificates for the previous
-    ;  installation, so that we can update from it cleanly using the
-    ;  old updater.exe (which will still have this signature).
-    WriteRegStr HKLM "$R0\1" "name" "${CERTIFICATE_NAME_PREVIOUS}"
-    WriteRegStr HKLM "$R0\1" "issuer" "${CERTIFICATE_ISSUER_PREVIOUS}"
-    ${If} ${RunningX64}
-      SetRegView lastused
-    ${EndIf}
-    ClearErrors
-  ${EndIf}
-  ; Restore the previously used value back
-  Pop $R0
-!macroend
-!define AddMaintCertKeys "!insertmacro AddMaintCertKeys"
-!endif
 
 !macro RegisterAccessibleHandler
   ${RegisterDLL} "$INSTDIR\AccessibleHandler.dll"

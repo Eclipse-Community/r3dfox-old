@@ -263,7 +263,11 @@ toolbar[brighttext] {
 }
 
 #PanelUI-menu-button {
+%ifdef MOZ_OFFICIAL_BRANDING
+  list-style-image: url("chrome://branding/content/icon16.png");
+%else
   list-style-image: url("chrome://browser/skin/menu.svg");
+%endif
 }
 
 #PanelUI-menu-button[badge-status="update-available"],

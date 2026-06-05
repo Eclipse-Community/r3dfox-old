@@ -19,7 +19,7 @@ ac_add_options --disable-sandbox # Bug 1230910
 #ac_add_options --disable-eme
 
 
-# x64 build
+# x86 build
 ac_add_options --host=i686-pc-mingw32
 ac_add_options --target=i686-pc-mingw32
 #WIN32_REDIST_DIR=$VCINSTALLDIR/Redist/MSVC/14.16.27012/x86

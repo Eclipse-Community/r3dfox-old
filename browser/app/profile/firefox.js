@@ -1237,11 +1237,7 @@ pref("services.sync.prefs.dangerously_allow_arbitrary", false);
 pref("services.sync.syncedTabs.showRemoteIcons", true);
 
 // Developer edition preferences
-#ifdef MOZ_DEV_EDITION
 sticky_pref("lightweightThemes.selectedThemeID", "firefox-compact-dark@mozilla.org");
-#else
-sticky_pref("lightweightThemes.selectedThemeID", "");
-#endif
 
 // Whether the character encoding menu is under the main Firefox button. This
 // preference is a string so that localizers can alter it.

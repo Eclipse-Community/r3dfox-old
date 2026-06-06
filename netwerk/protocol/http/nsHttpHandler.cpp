@@ -2296,12 +2296,6 @@ nsHttpHandler::Observe(nsISupports *subject, const char *topic,
     // depend on this value.
     mSessionStartTime = NowInSeconds();
 
-    if (!mDoNotTrackEnabled) {
-      Telemetry::Accumulate(Telemetry::DNT_USAGE, 2);
-    } else {
-      Telemetry::Accumulate(Telemetry::DNT_USAGE, 1);
-    }
-
     if (UseFastOpen()) {
       Telemetry::Accumulate(Telemetry::TCP_FAST_OPEN_STATUS, 0);
     } else if (!mFastOpenSupported) {

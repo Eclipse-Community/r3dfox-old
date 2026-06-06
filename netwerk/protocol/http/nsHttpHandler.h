@@ -508,6 +508,7 @@ class nsHttpHandler final : public nsIHttpProtocolHandler,
   nsCString mAppName;
   nsCString mAppVersion;
   nsCString mCompatFirefox;
+  nsCString mCompatFirefoxVersion;
   bool mCompatFirefoxEnabled;
   nsCString mCompatDevice;
   nsCString mDeviceModelId;

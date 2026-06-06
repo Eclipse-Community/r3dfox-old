@@ -231,6 +231,7 @@ nsHttpHandler::nsHttpHandler()
       mLegacyAppVersion("5.0"),
       mProduct("Gecko"),
       mCompatFirefoxEnabled(false),
+      mCompatFirefoxVersion("128.0"),
       mUserAgentIsDirty(true),
       mAcceptLanguagesIsDirty(true),
       mPromptTempRedirect(true),
@@ -462,9 +463,11 @@ nsresult nsHttpHandler::Init() {
 
   nsHttpChannelAuthProvider::InitializePrefs();
 
-  mMisc.AssignLiteral("rv:" MOZILLA_UAVERSION);
+  mMisc.AssignLiteral("rv:");
+  mMisc += mCompatFirefoxVersion;
 
-  mCompatFirefox.AssignLiteral("Firefox/" MOZILLA_UAVERSION);
+  mCompatFirefox.AssignLiteral("Firefox/");
+  mCompatFirefox += mCompatFirefoxVersion;
 
   nsCOMPtr<nsIXULAppInfo> appInfo =
       do_GetService("@mozilla.org/xre/app-info;1");
@@ -1126,6 +1129,21 @@ void nsHttpHandler::PrefsChanged(nsIPrefBranch *prefs, const char *pref) {
   if (PREF_CHANGED(UA_PREF("compatMode.firefox"))) {
     rv = prefs->GetBoolPref(UA_PREF("compatMode.firefox"), &cVar);
     mCompatFirefoxEnabled = (NS_SUCCEEDED(rv) && cVar);
+    mUserAgentIsDirty = true;
+  }
+
+  // general.useragent.compatMode.version
+  // This is the version number used in rv: for Gecko compatibility
+  // and in the Firefox/nn.nn slice when compatMode.firefox is enabled.
+  if (PREF_CHANGED(UA_PREF("compatMode.version"))) {
+    prefs->GetCharPref(UA_PREF("compatMode.version"), mCompatFirefoxVersion);
+    
+    // rebuild mMisc and compatMode slice
+    mMisc.AssignLiteral("rv:");
+    mMisc += mCompatFirefoxVersion;
+    mCompatFirefox.AssignLiteral("Firefox/");
+    mCompatFirefox += mCompatFirefoxVersion;
+    
     mUserAgentIsDirty = true;
   }
 

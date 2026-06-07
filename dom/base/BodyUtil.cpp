@@ -519,8 +519,7 @@ BodyUtil::ConsumeFormData(nsIGlobalObject* aParent, const nsCString& aMimeType,
   if (isValidUrlEncodedMimeType) {
     RefPtr<FormData> fd = new FormData(aParent);
     FillFormIterator iterator(fd);
-    mozilla::dom::URLParams params;
-    DebugOnly<bool> status = params.Parse(aStr, iterator);
+    DebugOnly<bool> status = URLParams::Parse(aStr, iterator);
     MOZ_ASSERT(status);
 
     return fd.forget();

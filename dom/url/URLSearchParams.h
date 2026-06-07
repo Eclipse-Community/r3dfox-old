@@ -96,7 +96,9 @@ class URLParams final {
   };
 
   nsTArray<Param> mParams;
-  nsCOMPtr<nsIUnicodeDecoder> mDecoder;
+
+  // No c++17 yet sp can't static inline.
+  static nsCOMPtr<nsIUnicodeDecoder> mDecoder;
 };
 
 class URLSearchParams final : public nsISupports, public nsWrapperCache {

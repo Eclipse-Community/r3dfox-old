@@ -98,6 +98,10 @@ URLParams::Delete(const nsAString& aName)
   }
 }
 
+// Initialized to nullptr by non-local static initialization.
+/* static */
+nsCOMPtr<nsIUnicodeDecoder> URLParams::mDecoder;
+
 /* static */ void
 URLParams::ConvertString(const nsACString& aInput, nsAString& aOutput)
 {

@@ -499,8 +499,7 @@ already_AddRefed<FormData> BodyUtil::ConsumeFormData(nsIGlobalObject* aParent,
   if (isValidUrlEncodedMimeType) {
     RefPtr<FormData> fd = new FormData(aParent);
     FillFormIterator iterator(fd);
-    mozilla::dom::URLParams params;
-    DebugOnly<bool> status = params.Parse(aStr, iterator);
+    DebugOnly<bool> status = URLParams::Parse(aStr, iterator);
     MOZ_ASSERT(status);
 
     return fd.forget();

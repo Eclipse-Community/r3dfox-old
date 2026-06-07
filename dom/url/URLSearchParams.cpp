@@ -86,7 +86,7 @@ void URLParams::Delete(const nsAString& aName) {
   }
 }
 
-void URLParams::ConvertString(const nsACString& aInput,
+/* static */ void URLParams::ConvertString(const nsACString& aInput,
                                            nsAString& aOutput) {
   aOutput.Truncate();
 
@@ -123,7 +123,7 @@ void URLParams::ConvertString(const nsACString& aInput,
   }
 }
 
-void URLParams::DecodeString(const nsACString& aInput,
+/* static */ void URLParams::DecodeString(const nsACString& aInput,
                                           nsAString& aOutput) {
   nsACString::const_iterator start, end;
   aInput.BeginReading(start);
@@ -176,7 +176,7 @@ void URLParams::DecodeString(const nsACString& aInput,
   ConvertString(unescaped, aOutput);
 }
 
-bool URLParams::Parse(const nsACString& aInput,
+/* static */ bool URLParams::Parse(const nsACString& aInput,
                                    ForEachIterator& aIterator) {
   nsACString::const_iterator start, end;
   aInput.BeginReading(start);
@@ -260,8 +260,7 @@ class MOZ_STACK_CLASS ExtractURLParam final
                                      nsAString& aValue) {
   aValue.SetIsVoid(true);
   ExtractURLParam iterator(aName, aValue);
-  mozilla::dom::URLParams params;
-  return params.Parse(aInput, iterator);
+  return !URLParams::Parse(aInput, iterator);
 }
 
 class MOZ_STACK_CLASS PopulateIterator final

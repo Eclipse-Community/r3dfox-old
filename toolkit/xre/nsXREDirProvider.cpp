@@ -305,6 +305,9 @@ nsXREDirProvider::GetFile(const char* aProperty, bool* aPersistent,
 
   bool gettingProfile = false;
 
+  uint32_t portable;
+  Portable(&portable);
+
   if (!strcmp(aProperty, NS_APP_USER_PROFILE_LOCAL_50_DIR)) {
     // If XRE_NotifyProfile hasn't been called, don't fall through to
     // mAppProvider on the profile keys.
@@ -360,7 +363,8 @@ nsXREDirProvider::GetFile(const char* aProperty, bool* aPersistent,
     }
   } else if (!strcmp(aProperty, NS_APP_APPLICATION_REGISTRY_DIR) ||
              !strcmp(aProperty, XRE_USER_APP_DATA_DIR)) {
-    rv = GetUserAppDataDirectory(getter_AddRefs(file));
+    if (mProfileDir && portable > 0) rv = mProfileDir->Clone(getter_AddRefs(file));
+      else rv = GetUserAppDataDirectory(getter_AddRefs(file));
   }
 #if defined(XP_UNIX) || defined(XP_MACOSX)
   else if (!strcmp(aProperty, XRE_SYS_NATIVE_MANIFESTS)) {

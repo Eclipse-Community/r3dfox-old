@@ -35,6 +35,8 @@ class nsXREDirProvider final : public nsIDirectoryServiceProvider2,
 
   static nsXREDirProvider* GetSingleton();
 
+  nsresult Portable(uint32_t *aResult);
+
   nsresult GetUserProfilesRootDir(nsIFile** aResult);
   nsresult GetUserProfilesLocalDir(nsIFile** aResult);
 

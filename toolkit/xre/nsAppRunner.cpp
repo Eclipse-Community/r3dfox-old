@@ -3507,6 +3507,7 @@ int XREMain::XRE_mainInit(bool* aExitFlag) {
   // Handle --no-remote and --new-instance command line arguments. Setup
   // the environment to better accommodate other components and various
   // restart scenarios.
+  uint32_t portable;
   ar = CheckArg("no-remote", true);
   if (ar == ARG_BAD) {
     PR_fprintf(PR_STDERR,
@@ -3514,13 +3515,10 @@ int XREMain::XRE_mainInit(bool* aExitFlag) {
                "is specified\n");
     return 1;
   }
-  if (ar == ARG_FOUND) {
+  mDirProvider.Portable(&portable);
+  if (ar == ARG_FOUND|| portable == 1) {
     SaveToEnv("MOZ_NO_REMOTE=1");
   }
-
-  mDirProvider.Portable(&portable);
-
-  if (portable == 1) SaveToEnv("MOZ_NO_REMOTE=1");
 
   ar = CheckArg("new-instance", true);
   if (ar == ARG_BAD) {

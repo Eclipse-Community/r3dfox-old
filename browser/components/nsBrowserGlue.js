@@ -77,7 +77,6 @@ XPCOMUtils.defineLazyServiceGetter(this, "WindowsUIUtils", "@mozilla.org/windows
 XPCOMUtils.defineLazyGetter(this, "WeaveService", () =>
   Cc["@mozilla.org/weave/service;1"].getService().wrappedJSObject
 );
-XPCOMUtils.defineLazyServiceGetter(this, "winShellService", "@mozilla.org/browser/shell-service;1","nsIWindowsShellService");
 
 // lazy module getters
 
@@ -2383,8 +2382,11 @@ BrowserGlue.prototype = {
       isDefaultError = true;
     }
 
-    var profService = Cc["@mozilla.org/toolkit/profile-service;1"].getService(Ci.nsIToolkitProfileService);
-    if (profService.portable()!=1) {
+    let pService = Cc["@mozilla.org/toolkit/profile-service;1"].getService(
+      Ci.nsIToolkitProfileService
+    );
+
+    if (pService.portable() !=1 ) {
       if (isDefault) {
         let now = (Math.floor(Date.now() / 1000)).toString();
         Services.prefs.setCharPref("browser.shell.mostRecentDateSetAsDefault", now);

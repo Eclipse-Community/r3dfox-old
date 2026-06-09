@@ -704,70 +704,13 @@ Section "-InstallEndCleanup"
 SectionEnd
 
 ################################################################################
-# Install Abort Survey Functions
+# Install Abort Functions
 
 Function CustomAbort
-  ${If} "${AB_CD}" == "en-US"
-  ${AndIf} "$PageName" != ""
-  ${AndIf} ${FileExists} "$EXEDIR\core\distribution\distribution.ini"
-    ReadINIStr $0 "$EXEDIR\core\distribution\distribution.ini" "Global" "about"
-    ClearErrors
-    ${WordFind} "$0" "Funnelcake" "E#" $1
-    ${Unless} ${Errors}
-      ; Yes = fill out the survey and exit, No = don't fill out survey and exit,
-      ; Cancel = don't exit.
-      MessageBox MB_YESNO|MB_ICONEXCLAMATION \
-                 "Would you like to tell us why you are canceling this installation?" \
-                 IDYes +1 IDNO CustomAbort_finish
-      ${If} "$PageName" == "Welcome"
-          GetFunctionAddress $0 AbortSurveyWelcome
-      ${ElseIf} "$PageName" == "Options"
-          GetFunctionAddress $0 AbortSurveyOptions
-      ${ElseIf} "$PageName" == "Directory"
-          GetFunctionAddress $0 AbortSurveyDirectory
-      ${ElseIf} "$PageName" == "Shortcuts"
-          GetFunctionAddress $0 AbortSurveyShortcuts
-      ${ElseIf} "$PageName" == "Summary"
-          GetFunctionAddress $0 AbortSurveySummary
-      ${EndIf}
-      ClearErrors
-      ${GetParameters} $1
-      ${GetOptions} "$1" "/UAC:" $2
-      ${If} ${Errors}
-        Call $0
-      ${Else}
-        UAC::ExecCodeSegment $0
-      ${EndIf}
-
-      CustomAbort_finish:
-      Return
-    ${EndUnless}
-  ${EndIf}
-
   MessageBox MB_YESNO|MB_ICONEXCLAMATION "$(MOZ_MUI_TEXT_ABORTWARNING)" \
              IDYES +1 IDNO +2
   Return
   Abort
-FunctionEnd
-
-Function AbortSurveyWelcome
-  ExecShell "open" "${AbortSurveyURL}step1"
-FunctionEnd
-
-Function AbortSurveyOptions
-  ExecShell "open" "${AbortSurveyURL}step2"
-FunctionEnd
-
-Function AbortSurveyDirectory
-  ExecShell "open" "${AbortSurveyURL}step3"
-FunctionEnd
-
-Function AbortSurveyShortcuts
-  ExecShell "open" "${AbortSurveyURL}step4"
-FunctionEnd
-
-Function AbortSurveySummary
-  ExecShell "open" "${AbortSurveyURL}step5"
 FunctionEnd
 
 ################################################################################

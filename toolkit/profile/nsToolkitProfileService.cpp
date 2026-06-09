@@ -110,14 +110,14 @@ class nsToolkitProfileService final : public nsIToolkitProfileService {
  private:
   friend class nsToolkitProfile;
   friend class nsToolkitProfileFactory;
-  friend nsresult NS_NewToolkitProfileService(nsIToolkitProfileService**, uint32_t);
+  friend nsresult NS_NewToolkitProfileService(nsIToolkitProfileService**);
 
   nsToolkitProfileService() : mStartWithLast(true), mStartOffline(false) {
     gService = this;
   }
   ~nsToolkitProfileService() { gService = nullptr; }
 
-  nsresult Init(uint32_t portable);
+  nsresult Init();
 
   nsresult CreateTimesInternal(nsIFile* profileDir);
 
@@ -361,9 +361,11 @@ nsToolkitProfileService* nsToolkitProfileService::gService = nullptr;
 
 NS_IMPL_ISUPPORTS(nsToolkitProfileService, nsIToolkitProfileService)
 
-nsresult nsToolkitProfileService::Init(uint32_t portable) {
+nsresult nsToolkitProfileService::Init() {
   NS_ASSERTION(gDirServiceProvider, "No dirserviceprovider!");
   nsresult rv;
+  uint32_t portable;
+  gDirServiceProvider->Portable(&portable);
 
   if (portable > 0) {
     nsCOMPtr<nsIFile> appFile;
@@ -898,7 +900,7 @@ nsToolkitProfileFactory::CreateInstance(nsISupports* aOuter, const nsID& aIID,
   nsCOMPtr<nsIToolkitProfileService> profileService =
       nsToolkitProfileService::gService;
   if (!profileService) {
-    nsresult rv = NS_NewToolkitProfileService(getter_AddRefs(profileService), 0);
+    nsresult rv = NS_NewToolkitProfileService(getter_AddRefs(profileService));
     if (NS_FAILED(rv)) return rv;
   }
   return profileService->QueryInterface(aIID, aResult);
@@ -915,10 +917,10 @@ nsresult NS_NewToolkitProfileFactory(nsIFactory** aResult) {
   return NS_OK;
 }
 
-nsresult NS_NewToolkitProfileService(nsIToolkitProfileService** aResult, uint32_t portable) {
+nsresult NS_NewToolkitProfileService(nsIToolkitProfileService** aResult) {
   nsToolkitProfileService* profileService = new nsToolkitProfileService();
   if (!profileService) return NS_ERROR_OUT_OF_MEMORY;
-  nsresult rv = profileService->Init(portable);
+  nsresult rv = profileService->Init();
   if (NS_FAILED(rv)) {
     NS_ERROR("nsToolkitProfileService::Init failed!");
     delete profileService;

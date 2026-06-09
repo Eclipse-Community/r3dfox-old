@@ -4112,7 +4112,7 @@ int XREMain::XRE_mainStartup(bool* aExitFlag) {
   }
 #endif
 
-  rv = NS_NewToolkitProfileService(getter_AddRefs(mProfileSvc), portable);
+  rv = NS_NewToolkitProfileService(getter_AddRefs(mProfileSvc));
   if (rv == NS_ERROR_FILE_ACCESS_DENIED) {
     PR_fprintf(PR_STDERR,
                "Error: Access was denied while trying to open files in "

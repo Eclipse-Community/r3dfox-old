@@ -253,6 +253,7 @@ char** gRestartArgv;
 bool gIsGtest = false;
 
 nsString gAbsoluteArgv0Path;
+uint32_t portable;
 
 #if defined(MOZ_WIDGET_GTK)
 #include <glib.h>
@@ -2249,6 +2250,14 @@ static nsresult SelectProfile(nsIProfileLock** aResult,
     return NS_LockProfilePath(lf, localDir, nullptr, aResult);
   }
 
+  nsCOMPtr<nsIFile> exeFile;
+  nsIFile* rootDir=nullptr;
+    if (portable > 0) {
+      XRE_GetBinaryPath(getter_AddRefs(exeFile));
+      exeFile->GetParent(&rootDir);
+      rootDir->AppendNative(NS_LITERAL_CSTRING("Profile"));
+    }
+
   ar = CheckArg("profile", true, &arg);
   if (ar == ARG_BAD) {
     PR_fprintf(PR_STDERR, "Error: argument --profile requires a path\n");
@@ -2306,6 +2315,12 @@ static nsresult SelectProfile(nsIProfileLock** aResult,
       // main profile directory.
       rv = aProfileSvc->CreateProfile(lf, nsDependentCSubstring(arg, delim),
                                       getter_AddRefs(profile));
+    } else if (portable > 0) {
+      nsCOMPtr<nsIFile> lf;
+      rootDir->GetParent(getter_AddRefs(lf));
+      lf->AppendNative(nsDependentCString(arg));
+      rv = aProfileSvc->CreateProfile(lf, nsDependentCString(arg),
+                                     getter_AddRefs(profile));
     } else {
       rv = aProfileSvc->CreateProfile(nullptr, nsDependentCString(arg),
                                       getter_AddRefs(profile));
@@ -2448,7 +2463,7 @@ static nsresult SelectProfile(nsIProfileLock** aResult,
     // create a default profile
     nsCOMPtr<nsIToolkitProfile> profile;
     nsresult rv =
-        aProfileSvc->CreateProfile(nullptr,  // choose a default dir for us
+        aProfileSvc->CreateProfile(rootDir,  // choose a default dir for us
 #ifdef MOZ_DEV_EDITION
                                    NS_LITERAL_CSTRING("dev-edition-default"),
 #else
@@ -3503,6 +3518,10 @@ int XREMain::XRE_mainInit(bool* aExitFlag) {
     SaveToEnv("MOZ_NO_REMOTE=1");
   }
 
+  mDirProvider.Portable(&portable);
+
+  if (portable == 1) SaveToEnv("MOZ_NO_REMOTE=1");
+
   ar = CheckArg("new-instance", true);
   if (ar == ARG_BAD) {
     PR_fprintf(PR_STDERR,
@@ -4095,7 +4114,7 @@ int XREMain::XRE_mainStartup(bool* aExitFlag) {
   }
 #endif
 
-  rv = NS_NewToolkitProfileService(getter_AddRefs(mProfileSvc));
+  rv = NS_NewToolkitProfileService(getter_AddRefs(mProfileSvc), portable);
   if (rv == NS_ERROR_FILE_ACCESS_DENIED) {
     PR_fprintf(PR_STDERR,
                "Error: Access was denied while trying to open files in "

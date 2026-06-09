@@ -200,6 +200,30 @@ static nsresult GetAppRegName(nsAutoString& aAppRegName) {
 }
 
 NS_IMETHODIMP
+nsWindowsShellService::CancelPortableMode() {
+  nsresult rv;
+
+  nsCOMPtr<nsIFile> portmodemark;
+
+  rv = NS_GetSpecialDirectory(NS_OS_CURRENT_PROCESS_DIR,
+                              getter_AddRefs(portmodemark));
+  NS_ENSURE_SUCCESS(rv, rv);
+
+  rv = portmodemark->AppendNative(NS_LITERAL_CSTRING("pmprt.mod"));
+
+  NS_ENSURE_SUCCESS(rv, rv);
+
+  bool fileExists;
+  rv = portmodemark->Exists(&fileExists);
+
+  NS_ENSURE_SUCCESS(rv, rv);
+  if (fileExists)
+  portmodemark->Remove(false);
+
+  return NS_OK;
+}
+
+NS_IMETHODIMP
 nsWindowsShellService::IsDefaultBrowser(bool aStartupCheck, bool aForAllTypes,
                                         bool* aIsDefaultBrowser) {
   mozilla::Unused << aStartupCheck;

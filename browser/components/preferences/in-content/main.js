@@ -1112,6 +1112,8 @@ var gMainPane = {
         defaultBrowserBox.hidden = true;
         return;
       }
+      var profService = Components.classes["@mozilla.org/toolkit/profile-service;1"].getService(Components.interfaces.nsIToolkitProfileService);
+      if (profService.portable()==1) return;
       let setDefaultPane = document.getElementById("setDefaultPane");
       let isDefault = shellSvc.isDefaultBrowser(false, true);
       setDefaultPane.selectedIndex = isDefault ? 1 : 0;
@@ -1133,9 +1135,12 @@ var gMainPane = {
       this._backoffIndex = 0;
 
       let shellSvc = getShellService();
+      var profService = Components.classes["@mozilla.org/toolkit/profile-service;1"].getService(Components.interfaces.nsIToolkitProfileService);
+      let isPortable;
       if (!shellSvc)
         return;
       try {
+      isPortable = profService.portable();
         shellSvc.setDefaultBrowser(true, false);
       } catch (ex) {
         Cu.reportError(ex);

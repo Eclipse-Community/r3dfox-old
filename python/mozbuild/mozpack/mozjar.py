@@ -794,7 +794,7 @@ class Brotli(object):
     def brotli_tool():
             from buildconfig import topobjdir, substs
             return os.path.join(topobjdir, 'dist', 'host', 'bin',
-                               'bro' + substs.get('BIN_SUFFIX', ''))
+                               'brotli' + substs.get('BIN_SUFFIX', ''))
 
     @staticmethod
     def run_brotli_tool(args, input):
@@ -809,7 +809,7 @@ class Brotli(object):
 
     @staticmethod
     def compress(data):
-        return Brotli.run_brotli_tool(['--window', '17'], data)
+        return Brotli.run_brotli_tool(["--lgwin=0"], data)
 
     @staticmethod
     def decompress(data):

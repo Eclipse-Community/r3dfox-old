@@ -3514,13 +3514,10 @@ int XREMain::XRE_mainInit(bool* aExitFlag) {
                "is specified\n");
     return 1;
   }
-  if (ar == ARG_FOUND) {
+  mDirProvider.Portable(&portable);
+  if (ar == ARG_FOUND || portable == 1) {
     SaveToEnv("MOZ_NO_REMOTE=1");
   }
-
-  mDirProvider.Portable(&portable);
-
-  if (portable == 1) SaveToEnv("MOZ_NO_REMOTE=1");
 
   ar = CheckArg("new-instance", true);
   if (ar == ARG_BAD) {

@@ -33,6 +33,9 @@ export MOZ_TELEMETRY_REPORTING=
 # Add-ons
 ac_add_options --with-unsigned-addon-scopes=app,system
 
+# Brotli
+mk_add_options "export JAR_COMPRESSION=brotli"
+
 # x64 build
 ac_add_options --host=x86_64-pc-mingw32
 ac_add_options --target=x86_64-pc-mingw32

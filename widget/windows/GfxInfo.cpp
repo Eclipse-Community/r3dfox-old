@@ -1615,10 +1615,16 @@ nsresult GfxInfo::GetFeatureStatusImpl(
         // FIXME - these special hex values are currently used in xpcshell tests
         // introduced by bug 625160 patch 8/8. Maybe these tests need to be
         // adjusted now that we're only whitelisting intel/ati/nvidia.
+        // Also allow common virtual GPU vendor IDs (VirtualBox, VMware, QEMU/virtio, Parallels).
         !adapterVendorID.LowerCaseEqualsLiteral("0xabcd") &&
         !adapterVendorID.LowerCaseEqualsLiteral("0xdcba") &&
         !adapterVendorID.LowerCaseEqualsLiteral("0xabab") &&
-        !adapterVendorID.LowerCaseEqualsLiteral("0xdcdc")) {
+        !adapterVendorID.LowerCaseEqualsLiteral("0xdcdc") &&
+        !adapterVendorID.LowerCaseEqualsLiteral("0x80ee") && /* VirtualBox */
+        !adapterVendorID.LowerCaseEqualsLiteral("0x15ad") && /* VMware */
+        !adapterVendorID.LowerCaseEqualsLiteral("0x1234") && /* QEMU (common) */
+        !adapterVendorID.LowerCaseEqualsLiteral("0x1af4") && /* virtio/QEMU */
+        !adapterVendorID.LowerCaseEqualsLiteral("0x1ab8")) { /* Parallels */
       aFailureId = "FEATURE_FAILURE_UNKNOWN_DEVICE_VENDOR";
       *aStatus = FEATURE_BLOCKED_DEVICE;
       return NS_OK;

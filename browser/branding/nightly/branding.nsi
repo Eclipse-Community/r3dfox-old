@@ -8,14 +8,10 @@
 
 # BrandFullNameInternal is used for some registry and file system values
 # instead of BrandFullName and typically should not be modified.
-!define BrandFullNameInternal "Nightly"
-!define BrandFullName         "Firefox Nightly"
-!define CompanyName           "mozilla.org"
-!define URLInfoAbout          "https://www.mozilla.org"
-!define HelpLink              "https://support.mozilla.org"
-
-!define URLStubDownload32 "https://download.mozilla.org/?os=win&lang=${AB_CD}&product=firefox-nightly-latest"
-!define URLStubDownload64 "https://download.mozilla.org/?os=win64&lang=${AB_CD}&product=firefox-nightly-latest"
-!define URLManualDownload "https://www.mozilla.org/${AB_CD}/firefox/installer-help/?channel=nightly&installer_lang=${AB_CD}"
-!define URLSystemRequirements "https://www.mozilla.org/firefox/system-requirements/"
-!define Channel "nightly"
+!define BrandFullNameInternal "Eclipxe eXPeriment"
+!define BrandFullName         "Eclipxe eXPeriment"
+!define CompanyName           "Eclipse Community"
+!define URLInfoAbout          "https://eclipse.cx"
+!define URLUpdateInfo         "https://github.com/Eclipse-Community/eXPeriment/releases"
+!define HelpLink              "https://board.eclipse.cx/viewtopic.php?t=xxx"
+!define URLSystemRequirements "https://github.com/Eclipse-Community/eXPeriment"

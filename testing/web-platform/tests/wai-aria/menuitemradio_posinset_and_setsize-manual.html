@@ -2,7 +2,6 @@
 <html>
   <head>
     <title>menuitemradio posinset and setsize</title>
-    <meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
     <link rel="stylesheet" href="/resources/testharness.css">
     <link rel="stylesheet" href="/wai-aria/scripts/manual.css">
     <script src="/resources/testharness.js"></script>
@@ -113,14 +112,14 @@
                   "setsize:8"
                ],
                [
-                  "property",
-                  "groupPosition",
+                  "result",
+                  "groupPosition()",
                   "contains",
                   "similarItemsInGroup:8"
                ],
                [
-                  "property",
-                  "groupPosition",
+                  "result",
+                  "groupPosition()",
                   "contains",
                   "positionInGroup:4"
                ]
@@ -129,15 +128,15 @@
                [
                   "property",
                   "role",
-                  "isAny",
+                  "anyOf",
                   "[ROLE_SYSTEM_RADIOBUTTON, ROLE_SYSTEM_MENUITEM]"
                ]
             ],
             "UIA" : [
                [
                   "property",
-                  "ControlType",
-                  "is",
+                  "Control Type",
+                  "isNot",
                   "MenuItem"
                ],
                [
@@ -154,21 +153,21 @@
                ],
                [
                   "property",
-                  "Toggle.ToggleState",
-                  "is",
-                  "Off"
+                  "Toggle",
+                  "contains",
+                  "ToggleState:Off"
                ],
                [
                   "property",
-                  "AriaProperties.posinset",
-                  "is",
-                  "4"
+                  "AriaProperties",
+                  "contains",
+                  "posinset:4"
                ],
                [
                   "property",
-                  "AriaProperties.setsize",
-                  "is",
-                  "8"
+                  "AriaProperties",
+                  "contains",
+                  "setsize:8"
                ]
             ]
          },
@@ -195,3 +194,4 @@
   <div id="ATTAmessages"></div>
   </body>
 </html>
+

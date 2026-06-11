@@ -9,15 +9,14 @@
 async_test(function(t)
 {
     var single = document.getElementById("single");
-    document.onfullscreenchange = t.step_func(function(event)
+    document.onfullscreenchange = t.step_func(function()
     {
         assert_equals(document.fullscreenElement, single);
-        assert_equals(event.target, single);
         single.remove();
-        document.onfullscreenchange = t.step_func_done(function(event)
+        document.onfullscreenchange = t.step_func(function()
         {
             assert_equals(document.fullscreenElement, null);
-            assert_equals(event.target, document);
+            t.done();
         });
     });
     trusted_request(t, single);

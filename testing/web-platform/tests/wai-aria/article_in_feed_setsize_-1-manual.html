@@ -2,7 +2,6 @@
 <html>
   <head>
     <title>article in feed setsize -1</title>
-    <meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
     <link rel="stylesheet" href="/resources/testharness.css">
     <link rel="stylesheet" href="/wai-aria/scripts/manual.css">
     <script src="/resources/testharness.js"></script>
@@ -77,8 +76,8 @@
                   "setsize:-1"
                ],
                [
-                  "property",
-                  "groupPosition",
+                  "result",
+                  "groupPosition()",
                   "contains",
                   "similarItemsInGroup:-1"
                ]
@@ -100,21 +99,21 @@
             "UIA" : [
                [
                   "property",
-                  "ControlType",
+                  "control type",
                   "is",
                   "Group"
                ],
                [
                   "property",
-                  "LocalizedControlType",
+                  "localize control type",
                   "is",
                   "article"
                ],
                [
                   "property",
-                  "AriaProperties.setsize",
-                  "is",
-                  "-1"
+                  "AriaProperties",
+                  "contains",
+                  "setsize:-1"
                ]
             ]
          },
@@ -139,3 +138,4 @@
   <div id="ATTAmessages"></div>
   </body>
 </html>
+

@@ -2,7 +2,6 @@
 <html>
   <head>
     <title>aria-current with value step</title>
-    <meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
     <link rel="stylesheet" href="/resources/testharness.css">
     <link rel="stylesheet" href="/wai-aria/scripts/manual.css">
     <script src="/resources/testharness.js"></script>
@@ -56,19 +55,13 @@
                   "property",
                   "role",
                   "is",
-                  "ROLE_SYSTEM_LINK"
+                  "ROLE_SYSTEM_LINK + STATE_LINKED"
                ],
                [
                   "property",
-                  "objectAttributes",
-                  "contains",
-                  "current:step"
-               ],
-               [
-                  "property",
-                  "interfaces",
-                  "contains",
-                  "IAccessibleHypertext"
+                  "active",
+                  "is",
+                  "step"
                ]
             ],
             "MSAA" : [
@@ -76,19 +69,19 @@
                   "property",
                   "role",
                   "is",
-                  "ROLE_SYSTEM_LINK"
+                  "ROLE_SYSTEM_LINK + STATE_LINKED"
                ],
                [
                   "property",
-                  "states",
-                  "contains",
-                  "STATE_SYSTEM_LINKED"
+                  "active",
+                  "is",
+                  "step"
                ]
             ],
             "UIA" : [
                [
                   "property",
-                  "ControlType",
+                  "role",
                   "is",
                   "HyperLink"
                ],
@@ -119,3 +112,4 @@
   <div id="ATTAmessages"></div>
   </body>
 </html>
+

@@ -1,5 +1,5 @@
+// Up-to-date as of 2013-04-06.
 var embeddedElements = {
-  picture: {},
   img: {
     // Conforming
     alt: "string",
@@ -11,7 +11,6 @@ var embeddedElements = {
     width: {type: "unsigned long", customGetter: true},
     height: {type: "unsigned long", customGetter: true},
     referrerPolicy: {type: "enum", keywords: ["", "no-referrer", "no-referrer-when-downgrade", "same-origin", "origin", "strict-origin", "origin-when-cross-origin", "strict-origin-when-cross-origin", "unsafe-url"]},
-    decoding: {type: "enum", keywords: ["async", "sync", "auto"], defaultVal: "auto", invalidVal: "auto"},
 
     // Obsolete
     name: "string",
@@ -34,7 +33,6 @@ var embeddedElements = {
     width: "string",
     height: "string",
     referrerPolicy: {type: "enum", keywords: ["", "no-referrer", "no-referrer-when-downgrade", "same-origin", "origin", "strict-origin", "origin-when-cross-origin", "strict-origin-when-cross-origin", "unsafe-url"]},
-    delegateStickyUserActivation: {type: "enum", keywords: ["vibration", "media"], defaultVal: null},
 
     // Obsolete
     align: "string",
@@ -94,6 +92,7 @@ var embeddedElements = {
     preload: {type: "enum", keywords: ["none", "metadata", "auto"], nonCanon: {"": "auto"}, defaultVal: null},
     autoplay: "boolean",
     loop: "boolean",
+    mediaGroup: "string",
     controls: "boolean",
     defaultMuted: {type: "boolean", domAttrName: "muted"},
 
@@ -109,14 +108,13 @@ var embeddedElements = {
     preload: {type: "enum", keywords: ["none", "metadata", "auto"], nonCanon: {"": "auto"}, defaultVal: null},
     autoplay: "boolean",
     loop: "boolean",
+    mediaGroup: "string",
     controls: "boolean",
     defaultMuted: {type: "boolean", domAttrName: "muted"}
   },
   source: {
     src: "url",
     type: "string",
-    srcset: "string",
-    sizes: "string",
     media: "string"
   },
   track: {

@@ -2,7 +2,6 @@
 <html>
   <head>
     <title>columnheader aria-colspan 2 on th html colspan 3</title>
-    <meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
     <link rel="stylesheet" href="/resources/testharness.css">
     <link rel="stylesheet" href="/wai-aria/scripts/manual.css">
     <script src="/resources/testharness.js"></script>
@@ -60,9 +59,9 @@
                ],
                [
                   "property",
-                  "objectAttributes",
-                  "doesNotContain",
-                  "colspan:2"
+                  "colspan",
+                  "isNot",
+                  "2"
                ]
             ],
             "MSAA" : [
@@ -71,12 +70,18 @@
                   "role",
                   "is",
                   "ROLE_SYSTEM_COLUMNHEADER"
+               ],
+               [
+                  "property",
+                  "colspan",
+                  "isNot",
+                  "2"
                ]
             ],
             "UIA" : [
                [
                   "property",
-                  "ControlType",
+                  "Control Type",
                   "is",
                   "HeaderItem"
                ],
@@ -111,3 +116,4 @@
   <div id="ATTAmessages"></div>
   </body>
 </html>
+

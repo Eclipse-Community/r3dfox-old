@@ -2,7 +2,6 @@
 <html>
   <head>
     <title>searchbox activedescendant value changes</title>
-    <meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
     <link rel="stylesheet" href="/resources/testharness.css">
     <link rel="stylesheet" href="/wai-aria/scripts/manual.css">
     <script src="/resources/testharness.js"></script>
@@ -15,15 +14,15 @@
     {
    "steps" : [
       {
+         "type" : "event",
          "element" : "test",
          "event" : "focus",
-         "title" : "step 1",
-         "type" : "event"
+         "title": "Put focus on test element"
       },
       {
          "attribute" : "aria-activedescendant",
          "element" : "test",
-         "title" : "step 2",
+         "title" : "step 1",
          "type" : "attribute",
          "value" : "\"bob\""
       },
@@ -88,9 +87,21 @@
                   "false"
                ],
                [
+                  "event",
+                  "type",
+                  "is",
+                  "AXSelectedChildrenChanged"
+               ],
+               [
                   "result",
                   "AXUIElementIsAttributeSettable(AXFocused)",
                   "is",
+                  "true"
+               ],
+               [
+                  "result",
+                  "array",
+                  "isNot",
                   "true"
                ]
             ],
@@ -105,7 +116,7 @@
                   "event",
                   "type",
                   "is",
-                  "EVENT_OBJECT_FOCUS"
+                  "IA2_EVENT_ACTIVE_DESCENDANT_CHANGED"
                ]
             ],
             "MSAA" : [
@@ -131,13 +142,13 @@
             "UIA" : [
                [
                   "property",
-                  "ControlType",
+                  "Control Type",
                   "is",
                   "Edit"
                ],
                [
                   "property",
-                  "LocalizedControlType",
+                  "Localized Control Type",
                   "is",
                   "search box"
                ],
@@ -153,9 +164,23 @@
                   "is",
                   "false"
                ]
+            ],
+            "WAIFAKE" : [
+               [
+                  "property",
+                  "role",
+                  "is",
+                  "ROLE_TABLE_CELL"
+               ],
+               [
+                  "property",
+                  "interfaces",
+                  "contains",
+                  "TableCell"
+               ]
             ]
          },
-         "title" : "step 3",
+         "title" : "step 2",
          "type" : "test"
       },
       {
@@ -246,9 +271,23 @@
                   "is",
                   "UIA_AutomationFocusChangedEventId"
                ]
+            ],
+            "WAIFAKE" : [
+               [
+                  "property",
+                  "role",
+                  "is",
+                  "ROLE_TABLE_CELL"
+               ],
+               [
+                  "property",
+                  "interfaces",
+                  "contains",
+                  "TableCell"
+               ]
             ]
          },
-         "title" : "step 4",
+         "title" : "step 3",
          "type" : "test"
       }
    ],
@@ -261,7 +300,7 @@
   <body>
   <p>This test examines the ARIA properties for searchbox activedescendant value changes.</p>
      <div id='test' tabindex="0" role='searchbox'>
-     <div id='bob' role='group'>Hello world</div>
+     <div id='bob'>Hello world</div>
   </div>
  then role:searchbox, aria-activedescendant: bob
 
@@ -270,3 +309,4 @@
   <div id="ATTAmessages"></div>
   </body>
 </html>
+

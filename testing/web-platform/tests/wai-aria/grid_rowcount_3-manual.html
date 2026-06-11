@@ -2,7 +2,6 @@
 <html>
   <head>
     <title>grid rowcount 3</title>
-    <meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
     <link rel="stylesheet" href="/resources/testharness.css">
     <link rel="stylesheet" href="/wai-aria/scripts/manual.css">
     <script src="/resources/testharness.js"></script>
@@ -66,9 +65,23 @@
                ],
                [
                   "property",
-                  "interfaces",
+                  "objectAttributes",
                   "contains",
-                  "IAccessibleTable2"
+                  "xml-roles:grid"
+               ],
+               [
+                  "property",
+                  "rowcount",
+                  "is",
+                  "3"
+               ]
+            ],
+            "MSAA" : [
+               [
+                  "property",
+                  "role",
+                  "is",
+                  "ROLE_SYSTEM_TABLE"
                ],
                [
                   "property",
@@ -78,23 +91,15 @@
                ],
                [
                   "property",
-                  "objectAttributes",
-                  "contains",
-                  "rowcount:3"
-               ]
-            ],
-            "MSAA" : [
-               [
-                  "property",
-                  "role",
+                  "rowcount",
                   "is",
-                  "ROLE_SYSTEM_TABLE"
+                  "3"
                ]
             ],
             "UIA" : [
                [
                   "property",
-                  "ControlType",
+                  "Control Type",
                   "is",
                   "DataGrid"
                ],
@@ -131,3 +136,4 @@
   <div id="ATTAmessages"></div>
   </body>
 </html>
+

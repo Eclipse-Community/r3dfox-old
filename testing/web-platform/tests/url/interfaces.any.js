@@ -3,8 +3,7 @@
 
 let idlArray,
     idl = `[Constructor(USVString url, optional USVString base),
- Exposed=(Window,Worker),
- LegacyWindowAlias=webkitURL]
+ Exposed=(Window,Worker)]
 interface URL {
   stringifier attribute USVString href;
   readonly attribute USVString origin;
@@ -16,7 +15,7 @@ interface URL {
            attribute USVString port;
            attribute USVString pathname;
            attribute USVString search;
-  [SameObject] readonly attribute URLSearchParams searchParams;
+  readonly attribute URLSearchParams searchParams;
            attribute USVString hash;
 
   USVString toJSON();

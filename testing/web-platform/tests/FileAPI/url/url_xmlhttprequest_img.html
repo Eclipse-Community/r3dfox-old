@@ -20,8 +20,9 @@
   http.onloadend = function() {
     var fileDisplay = document.querySelector("#fileDisplay");
     fileDisplay.src = window.URL.createObjectURL(http.response);
-    fileDisplay.onload = takeScreenshot;
+    takeScreenshot();
   };
   http.send();
 </script>
 </html>
+

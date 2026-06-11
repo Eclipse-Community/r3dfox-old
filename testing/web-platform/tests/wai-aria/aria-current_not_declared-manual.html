@@ -2,7 +2,6 @@
 <html>
   <head>
     <title>aria-current not declared</title>
-    <meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
     <link rel="stylesheet" href="/resources/testharness.css">
     <link rel="stylesheet" href="/wai-aria/scripts/manual.css">
     <script src="/resources/testharness.js"></script>
@@ -56,13 +55,13 @@
                   "property",
                   "role",
                   "is",
-                  "ROLE_SYSTEM_LISTITEM"
+                  "ROLE_SYSTEM_LISTITEM + STATE_SYSTEM_READONLY"
                ],
                [
                   "property",
-                  "objectAttributes",
-                  "doesNotContain",
-                  "current:false"
+                  "active",
+                  "is",
+                  "false"
                ]
             ],
             "MSAA" : [
@@ -70,19 +69,19 @@
                   "property",
                   "role",
                   "is",
-                  "ROLE_SYSTEM_LISTITEM"
+                  "ROLE_SYSTEM_LISTITEM + STATE_SYSTEM_READONLY"
                ],
                [
                   "property",
-                  "states",
-                  "contains",
-                  "STATE_SYSTEM_READONLY"
+                  "active",
+                  "is",
+                  "false"
                ]
             ],
             "UIA" : [
                [
                   "property",
-                  "ControlType",
+                  "role",
                   "is",
                   "ListItem"
                ],
@@ -90,7 +89,7 @@
                   "property",
                   "current",
                   "is",
-                  ""
+                  "false"
                ]
             ]
          },
@@ -115,3 +114,4 @@
   <div id="ATTAmessages"></div>
   </body>
 </html>
+

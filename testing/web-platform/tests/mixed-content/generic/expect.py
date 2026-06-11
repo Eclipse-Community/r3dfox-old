@@ -71,13 +71,14 @@ def main(request, response):
                 response_data = open(os.path.join(request.doc_root,
                                                   "images",
                                                   "smiley.png"), "rb").read()
-            elif content_type == "audio/wav":
-                response_data = open(os.path.join(request.doc_root,
-                                                  "webaudio", "resources", "sin_440Hz_-6dBFS_1s.wav"), "rb").read()
-            elif content_type == "video/ogg":
+            elif content_type == "audio/mpeg":
                 response_data = open(os.path.join(request.doc_root,
                                                   "media",
-                                                  "movie_5.ogv"), "rb").read()
+                                                  "sound_5.oga"), "rb").read()
+            elif content_type == "video/mp4":
+                response_data = open(os.path.join(request.doc_root,
+                                                  "media",
+                                                  "movie_5.mp4"), "rb").read()
             elif content_type == "application/javascript":
                 response_data = open(os.path.join(request.doc_root,
                                                   "mixed-content",

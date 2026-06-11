@@ -20,9 +20,12 @@ interface Navigator {
 </pre>
 
 <pre id="web-nfc">
-dictionary NFCMessage {
-    sequence<NFCRecord> records;
-    USVString           url;
+enum NFCRecordType {
+    "empty",
+    "text",
+    "url",
+    "json",
+    "opaque"
 };
 
 typedef (DOMString or unrestricted double or ArrayBuffer or Dictionary) NFCRecordData;
@@ -33,12 +36,9 @@ dictionary NFCRecord {
     NFCRecordData data;
 };
 
-enum NFCRecordType {
-    "empty",
-    "text",
-    "url",
-    "json",
-    "opaque"
+dictionary NFCMessage {
+    sequence<NFCRecord> data;
+    USVString           url;
 };
 
 partial interface Navigator {
@@ -57,15 +57,20 @@ interface NFC {
 
 callback MessageCallback = void (NFCMessage message);
 
+enum NFCPushTarget {
+    "tag",
+    "peer",
+    "any"
+};
+
 dictionary NFCPushOptions {
     NFCPushTarget       target = "any";
     unrestricted double timeout = Infinity;
     boolean             ignoreRead = true;
 };
 
-enum NFCPushTarget {
-    "tag",
-    "peer",
+enum NFCWatchMode {
+    "web-nfc-only",
     "any"
 };
 
@@ -74,11 +79,6 @@ dictionary NFCWatchOptions {
     NFCRecordType? recordType;
     USVString      mediaType = "";
     NFCWatchMode   mode = "web-nfc-only";
-};
-
-enum NFCWatchMode {
-    "web-nfc-only",
-    "any"
 };
 </pre>
 

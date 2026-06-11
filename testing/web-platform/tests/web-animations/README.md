@@ -1,7 +1,7 @@
 Web Animations Test Suite
 =========================
 
-Specification: https://drafts.csswg.org/web-animations/
+Specification: https://w3c.github.io/web-animations/
 
 
 Guidelines for writing tests
@@ -51,24 +51,24 @@ Guidelines for writing tests
     e.g.
 
       ```javascript
-      test(t => {
+      test(function(t) {
         const animation = createDiv(t).animate(null);
         assert_class_string(animation, 'Animation', 'Returned object is an Animation');
       }, 'Element.animate() creates an Animation object');
       ```
 
       ```javascript
-      test(t => {
-        assert_throws({ name: 'TypeError' }, () => {
+      test(function(t) {
+        assert_throws({ name: 'TypeError' }, function() {
           createDiv(t).animate(null, -1);
         });
       }, 'Setting a negative duration throws a TypeError');
       ```
 
       ```javascript
-      promise_test(t => {
+      promise_test(function(t) {
         const animation = createDiv(t).animate(null, 100 * MS_PER_SEC);
-        return animation.ready.then(() => {
+        return animation.ready.then(function() {
           assert_greater_than(animation.startTime, 0, 'startTime when running');
         });
       }, 'startTime is resolved when running');

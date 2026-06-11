@@ -2,11 +2,12 @@
 <html>
 
 <head>
-    <meta http-equiv="Content-Security-Policy" content="base-uri {{location[scheme]}}://{{domains[]}}:{{ports[http][0]}}/base/">
-
+    <meta charset="utf-8">
     <title>base-uri works correctly inside a sandboxed iframe.</title>
     <script src='/resources/testharness.js'></script>
     <script src='/resources/testharnessreport.js'></script>
+
+    <!-- CSP served: base-uri 'self' -->
 </head>
 
 <body>
@@ -15,7 +16,7 @@
 
     <script>
         window.addEventListener('securitypolicyviolation', function(e) {
-            assert_unreached('No CSP violation report should have been fired.');
+            assert_unreached('No CSP violation report has fired.');
         });
 
         async_test(function(t) {
@@ -23,21 +24,21 @@
             i.sandbox = 'allow-scripts';
             i.style.display = 'none';
             i.srcdoc = `
-              <script>
-                window.addEventListener('securitypolicyviolation', function() {
-                  top.postMessage('FAIL', '*');
-                });
-              </sc` + `ript>
-              <base href="{{location[scheme]}}://{{domains[]}}:{{ports[http][0]}}/base/">
-              <script>
-                top.postMessage(document.baseURI, '*');
-              </sc` + `ript>`;
+            <script>
+              window.addEventListener('securitypolicyviolation', function() {
+                top.postMessage('FAIL', '*');
+              });
+            </sc` + `ript>
+            <base href="{{location[scheme]}}://{{domains[]}}:{{ports[http][0]}}/base/">
+            <script>
+              top.postMessage(document.baseURI, '*');
+            </sc` + `ript>`;
 
             window.addEventListener('message', t.step_func(function(e) {
-              if (e.source === i.contentWindow) {
-                assert_equals(e.data, location.origin + '/base/');
-                t.done();
-              }
+                if (e.source === i.contentWindow) {
+                    assert_equals(e.data, location.origin + '/base/');
+                    t.done();
+                }
             }));
 
             document.body.appendChild(i);

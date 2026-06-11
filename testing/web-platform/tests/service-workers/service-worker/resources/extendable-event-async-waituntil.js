@@ -43,36 +43,19 @@ self.addEventListener('message', function(event) {
         async_task_waituntil(event).then(reportResultExpecting('InvalidStateError'));
         break;
       case 'script-extendable-event':
-        self.dispatchEvent(new ExtendableEvent('nontrustedevent'));
+        new_event_waituntil().then(reportResultExpecting('InvalidStateError'));
         break;
     }
-
     event.source.postMessage('ACK');
   });
 
 self.addEventListener('fetch', function(event) {
-    if (event.request.url.indexOf('pending-respondwith-async-waituntil') != -1) {
-      var resolveFetch;
-      let response = new Promise((res) => { resolveFetch = res; });
-      event.respondWith(response);
-      async_task_waituntil(event)
-        .then(reportResultExpecting('OK'))
-        .then(() => { resolveFetch(new Response('OK')); });
-    } else if (event.request.url.indexOf('respondwith-microtask-sync-waituntil') != -1) {
-      response = Promise.resolve(new Response('RESP'));
-      event.respondWith(response);
-      response.then(() => { return sync_waituntil(event); })
-        .then(reportResultExpecting('OK'))
-    } else if (event.request.url.indexOf('respondwith-microtask-async-waituntil') != -1) {
-      response = Promise.resolve(new Response('RESP'));
-      event.respondWith(response);
-      response.then(() => { return async_microtask_waituntil(event); })
-        .then(reportResultExpecting('InvalidStateError'))
-    }
-  });
-
-self.addEventListener('nontrustedevent', function(event) {
-    sync_waituntil(event).then(reportResultExpecting('InvalidStateError'));
+    var resolveFetch;
+    let response = new Promise((res) => { resolveFetch = res; });
+    event.respondWith(response);
+    async_task_waituntil(event)
+      .then(reportResultExpecting('OK'))
+      .then(() => { resolveFetch(new Response('OK')); });
   });
 
 function reportResultExpecting(expectedResult) {
@@ -85,7 +68,19 @@ function reportResultExpecting(expectedResult) {
 function sync_waituntil(event) {
   return new Promise((res, rej) => {
     try {
-      event.waitUntil(Promise.resolve());
+        event.waitUntil(Promise.resolve());
+        res('OK');
+      } catch (error) {
+        res(error.name);
+      }
+  });
+}
+
+function new_event_waituntil() {
+  return new Promise((res, rej) => {
+    try {
+      let e = new ExtendableEvent('foo');
+      e.waitUntil(new Promise(() => {}));
       res('OK');
     } catch (error) {
       res(error.name);

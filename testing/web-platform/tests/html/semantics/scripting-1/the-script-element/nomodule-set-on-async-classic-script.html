@@ -17,6 +17,12 @@ waitForLoadEvent = new Promise((resolve) => {
     window.onload = resolve;
 });
 
+waitForAsyncScript = () => {
+    return new Promise((resolve) => {
+        waitForLoadEvent.then(() => setTimeout(resolve, 200));
+    });
+}
+
 promise_test(() => {
     window.executed = false;
     let loaded = false;
@@ -30,7 +36,7 @@ promise_test(() => {
     script.noModule = false;
     document.body.appendChild(script);
 
-    return waitForLoadEvent.then(() => {
+    return waitForAsyncScript().then(() => {
         assert_true(supportsNoModule);
         assert_true(executed);
         assert_true(loaded);
@@ -50,7 +56,7 @@ promise_test(() => {
     script.noModule = true;
     document.body.appendChild(script);
 
-    return waitForLoadEvent.then(() => {
+    return waitForAsyncScript().then(() => {
         assert_true(supportsNoModule);
         assert_false(executed);
         assert_false(loaded);

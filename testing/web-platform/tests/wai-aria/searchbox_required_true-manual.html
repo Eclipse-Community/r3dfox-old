@@ -2,7 +2,6 @@
 <html>
   <head>
     <title>searchbox required true</title>
-    <meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
     <link rel="stylesheet" href="/resources/testharness.css">
     <link rel="stylesheet" href="/wai-aria/scripts/manual.css">
     <script src="/resources/testharness.js"></script>
@@ -66,15 +65,15 @@
                ],
                [
                   "property",
-                  "objectAttributes",
-                  "contains",
+                  "attribute",
+                  "is",
                   "text-input-type:search"
                ],
                [
-                  "property",
-                  "states",
-                  "contains",
-                  "IA2_STATE_REQUIRED"
+                  "state",
+                  "IA2_STATE_REQUIRED",
+                  "is",
+                  "true"
                ]
             ],
             "MSAA" : [
@@ -83,18 +82,30 @@
                   "role",
                   "is",
                   "ROLE_SYSTEM_TEXT"
+               ],
+               [
+                  "property",
+                  "attribute",
+                  "is",
+                  "text-input-type:search"
+               ],
+               [
+                  "property",
+                  "states",
+                  "contains",
+                  "STATE_REQUIRED"
                ]
             ],
             "UIA" : [
                [
                   "property",
-                  "ControlType",
+                  "Control Type",
                   "is",
                   "Edit"
                ],
                [
                   "property",
-                  "LocalizedControlType",
+                  "Localized Control Type",
                   "is",
                   "search box"
                ],
@@ -126,3 +137,4 @@
   <div id="ATTAmessages"></div>
   </body>
 </html>
+

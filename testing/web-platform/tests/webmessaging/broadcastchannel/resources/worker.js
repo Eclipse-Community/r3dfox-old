@@ -6,12 +6,7 @@ function handler(e, reply) {
     return;
   }
   if (e.data.blob) {
-    (() => {
-      c.postMessage({blob: new Blob(e.data.blob)});
-    })();
-    // TODO(https://github.com/w3c/web-platform-tests/issues/7899): Change to
-    // some sort of cross-browser GC trigger.
-    if (self.gc) self.gc();
+    c.postMessage({blob: new Blob(e.data.blob)});
   }
   c = new BroadcastChannel(e.data.channel);
   let messages = [];

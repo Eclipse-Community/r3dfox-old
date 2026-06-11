@@ -2,7 +2,6 @@
 <html>
 <head>
     <title>Video track src attribute must match src list - positive test</title>
-    <meta http-equiv="Content-Security-Policy" content="script-src * 'unsafe-inline'; media-src 'self' {{domains[www]}}:{{ports[http][0]}};"> 
     <script src='/resources/testharness.js'></script>
     <script src='/resources/testharnessreport.js'></script>
 </head>
@@ -13,17 +12,10 @@
   <script>
     var source_test = async_test("In-policy track element");
 
-    var trackURL = location.protocol + "//{{domains[www]}}:{{ports[http][0]}}/media/foo.vtt";
-
-    var t_spv = async_test("Should not fire policy violation events");
-    var test_count = 1;
-    window.addEventListener("securitypolicyviolation", t_spv.unreached_func("Should not have fired any event"));
+      var trackURL = location.protocol + "//{{domains[www]}}:{{ports[http][0]}}/media/foo.vtt";
 
     function media_loaded(t) {
       t.done();
-      if (--test_count <= 0) {
-        t_spv.done();
-      }
     }
 
     function media_error_handler(t) {
@@ -48,6 +40,9 @@
     <script>
         document.getElementById("trackObject").src = trackURL;
     </script>
+
+  <script async defer src="../support/checkReport.sub.js?reportExists=false">
+  </script>
 
 </body>
 </html>

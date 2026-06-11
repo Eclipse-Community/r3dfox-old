@@ -2,7 +2,6 @@
 <html>
   <head>
     <title>aria-current with value location</title>
-    <meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
     <link rel="stylesheet" href="/resources/testharness.css">
     <link rel="stylesheet" href="/wai-aria/scripts/manual.css">
     <script src="/resources/testharness.js"></script>
@@ -60,15 +59,9 @@
                ],
                [
                   "property",
-                  "objectAttributes",
-                  "contains",
-                  "current:location"
-               ],
-               [
-                  "property",
-                  "interfaces",
-                  "contains",
-                  "IAccessibleImage"
+                  "active",
+                  "is",
+                  "location"
                ]
             ],
             "MSAA" : [
@@ -77,12 +70,18 @@
                   "role",
                   "is",
                   "ROLE_SYSTEM_GRAPHIC"
+               ],
+               [
+                  "property",
+                  "active",
+                  "is",
+                  "location"
                ]
             ],
             "UIA" : [
                [
                   "property",
-                  "ControlType",
+                  "role",
                   "is",
                   "Image"
                ],
@@ -113,3 +112,4 @@
   <div id="ATTAmessages"></div>
   </body>
 </html>
+

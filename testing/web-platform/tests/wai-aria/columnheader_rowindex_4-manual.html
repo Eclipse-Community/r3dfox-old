@@ -2,7 +2,6 @@
 <html>
   <head>
     <title>columnheader rowindex 4</title>
-    <meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
     <link rel="stylesheet" href="/resources/testharness.css">
     <link rel="stylesheet" href="/wai-aria/scripts/manual.css">
     <script src="/resources/testharness.js"></script>
@@ -60,9 +59,9 @@
                ],
                [
                   "property",
-                  "objectAttributes",
-                  "contains",
-                  "rowindex:4"
+                  "rowindex",
+                  "is",
+                  "4"
                ]
             ],
             "MSAA" : [
@@ -71,12 +70,18 @@
                   "role",
                   "is",
                   "ROLE_SYSTEM_COLUMNHEADER"
+               ],
+               [
+                  "property",
+                  "rowindex",
+                  "is",
+                  "4"
                ]
             ],
             "UIA" : [
                [
                   "property",
-                  "ControlType",
+                  "Control Type",
                   "is",
                   "HeaderItem"
                ],
@@ -102,7 +107,7 @@
   <p>This test examines the ARIA properties for columnheader rowindex 4.</p>
     <div role="table">
     <div role="row">
-       <div id="test" role="columnheader" aria-rowindex="4">test cell</div>
+       <div id="test" role="columnheader" aria-rowindex ="4">test cell</div>
     </div>
   </div>
 
@@ -111,3 +116,4 @@
   <div id="ATTAmessages"></div>
   </body>
 </html>
+

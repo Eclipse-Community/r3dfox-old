@@ -2,7 +2,6 @@
 <html>
   <head>
     <title>div element without role roledescription valid</title>
-    <meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
     <link rel="stylesheet" href="/resources/testharness.css">
     <link rel="stylesheet" href="/wai-aria/scripts/manual.css">
     <script src="/resources/testharness.js"></script>
@@ -66,14 +65,8 @@
             "IAccessible2" : [
                [
                   "property",
-                  "role",
-                  "is",
-                  "IA2_ROLE_SECTION"
-               ],
-               [
-                  "property",
-                  "localizedExtendedRole",
-                  "is",
+                  "IAccessible2_2.localizedExtendedRole",
+                  "contains",
                   "null"
                ],
                [
@@ -100,7 +93,7 @@
             "UIA" : [
                [
                   "property",
-                  "ControlType",
+                  "Control Type",
                   "is",
                   "Group"
                ]
@@ -127,3 +120,4 @@
   <div id="ATTAmessages"></div>
   </body>
 </html>
+

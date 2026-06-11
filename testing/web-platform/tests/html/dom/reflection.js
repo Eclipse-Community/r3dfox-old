@@ -630,12 +630,6 @@ ReflectionTests.reflects = function(data, idlName, idlObj, domName, domObj) {
     if (defaultVal === undefined) {
         defaultVal = typeInfo.defaultVal;
     }
-    if ((domObj.localName === "form" && domName === "action") ||
-        (["button", "input"].includes(domObj.localName) &&
-         domName === "formAction")) {
-        // Hard-coded special case
-        defaultVal = domObj.ownerDocument.URL;
-    }
     if (defaultVal !== null || data.isNullable) {
         ReflectionHarness.test(function() {
             ReflectionHarness.assertEquals(idlObj[idlName], defaultVal);
@@ -669,12 +663,8 @@ ReflectionTests.reflects = function(data, idlName, idlObj, domName, domObj) {
             }
 
             if (data.keywords[i].length > 1) {
-                var sliced = data.keywords[i].slice(1);
-                // If slicing a value yields another valid value, then skip it since it results in duplicate tests.
-                if (data.keywords.indexOf(sliced) == -1) {
-                    domTests.push(sliced);
-                    idlTests.push(sliced);
-                }
+                domTests.push(data.keywords[i].slice(1));
+                idlTests.push(data.keywords[i].slice(1));
             }
 
             if (data.keywords[i] != data.keywords[i].toLowerCase()) {
@@ -684,10 +674,6 @@ ReflectionTests.reflects = function(data, idlName, idlObj, domName, domObj) {
             if (data.keywords[i] != data.keywords[i].toUpperCase()) {
                 domTests.push(data.keywords[i].toUpperCase());
                 idlTests.push(data.keywords[i].toUpperCase());
-            }
-            if (data.keywords[i] != data.keywords[i].replace(/k/g, "\u212A")) {
-                domTests.push(data.keywords[i].replace(/k/g, "\u212A"));
-                idlTests.push(data.keywords[i].replace(/k/g, "\u212A"));
             }
         }
 
@@ -786,43 +772,24 @@ ReflectionTests.reflects = function(data, idlName, idlObj, domName, domObj) {
         idlDomExpected = idlDomExpected.filter(function(element, index, array) { return idlIdlExpected[index] < 1000; });
         idlIdlExpected = idlIdlExpected.filter(function(element, index, array) { return idlIdlExpected[index] < 1000; });
     }
-    if ((domObj.localName === "form" && domName === "action") ||
-        (["button", "input"].includes(domObj.localName) &&
-         domName === "formAction")) {
-        // Hard-coded special case
-        for (var i = 0; i < domTests.length; i++) {
-            if (domTests[i] === "") {
-                domExpected[i] = domObj.ownerDocument.URL;
-            }
-        }
-        for (var i = 0; i < idlTests.length; i++) {
-            if (idlTests[i] === "") {
-                idlIdlExpected[i] = domObj.ownerDocument.URL;
-            }
-        }
-    }
-    if (data.customGetter) {
-        // These are reflected only on setting, not getting
-        domTests = [];
-        domExpected = [];
-        idlIdlExpected = idlIdlExpected.map(() => null);
-    }
 
-    for (var i = 0; i < domTests.length; i++) {
-        if (domExpected[i] === null && !data.isNullable) {
-            // If you follow all the complicated logic here, you'll find that
-            // this will only happen if there's no expected value at all (like
-            // for tabIndex, where the default is too complicated).  So skip
-            // the test.
-            continue;
+    if (!data.customGetter) {
+        for (var i = 0; i < domTests.length; i++) {
+            if (domExpected[i] === null && !data.isNullable) {
+                // If you follow all the complicated logic here, you'll find that
+                // this will only happen if there's no expected value at all (like
+                // for tabIndex, where the default is too complicated).  So skip
+                // the test.
+                continue;
+            }
+            ReflectionHarness.test(function() {
+                domObj.setAttribute(domName, domTests[i]);
+                ReflectionHarness.assertEquals(domObj.getAttribute(domName),
+                    String(domTests[i]), "getAttribute()");
+                ReflectionHarness.assertEquals(idlObj[idlName], domExpected[i],
+                    "IDL get");
+            }, "setAttribute() to " + ReflectionHarness.stringRep(domTests[i]));
         }
-        ReflectionHarness.test(function() {
-            domObj.setAttribute(domName, domTests[i]);
-            ReflectionHarness.assertEquals(domObj.getAttribute(domName),
-                String(domTests[i]), "getAttribute()");
-            ReflectionHarness.assertEquals(idlObj[idlName], domExpected[i],
-                "IDL get");
-        }, "setAttribute() to " + ReflectionHarness.stringRep(domTests[i]));
     }
 
     for (var i = 0; i < idlTests.length; i++) {
@@ -854,10 +821,6 @@ ReflectionTests.reflects = function(data, idlName, idlObj, domName, domObj) {
     }
 };
 
-function toASCIILowerCase(str) {
-    return str.replace(/[A-Z]/g, function(m) { return m.toLowerCase(); });
-}
-
 /**
  * If we have an enumerated attribute limited to the array of values in
  * keywords, with nonCanon being a map of non-canonical values to their
@@ -868,7 +831,7 @@ function toASCIILowerCase(str) {
 ReflectionTests.enumExpected = function(keywords, nonCanon, invalidVal, contentVal) {
     var ret = invalidVal;
     for (var i = 0; i < keywords.length; i++) {
-        if (toASCIILowerCase(String(contentVal)) === toASCIILowerCase(keywords[i])) {
+        if (String(contentVal).toLowerCase() == keywords[i].toLowerCase()) {
             ret = keywords[i];
             break;
         }

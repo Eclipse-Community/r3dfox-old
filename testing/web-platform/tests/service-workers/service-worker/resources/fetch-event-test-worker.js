@@ -1,8 +1,3 @@
-function handleHeaders(event) {
-  const headers = Array.from(event.request.headers);
-  event.respondWith(new Response(JSON.stringify(headers)));
-}
-
 function handleString(event) {
   event.respondWith(new Response('Test string'));
 }
@@ -29,7 +24,7 @@ function handleReferrerFull(event) {
 
 function handleClientId(event) {
   var body;
-  if (event.clientId !== "") {
+  if (event.clientId !== null) {
     body = 'Client ID Found: ' + event.clientId;
   } else {
     body = 'Client ID Not Found';
@@ -118,21 +113,14 @@ function handleIntegrity(event) {
   event.respondWith(new Response(event.request.integrity));
 }
 
-function handleRequestBody(event) {
-  event.respondWith(event.request.text()
-    .then(text => {
-        return new Response(text);
-      }));
-}
-
-function handleKeepalive(event) {
-  event.respondWith(new Response(event.request.keepalive));
+function handleHeaders(event) {
+  const headers = Array.from(event.request.headers);
+  event.respondWith(new Response(JSON.stringify(headers)));
 }
 
 self.addEventListener('fetch', function(event) {
     var url = event.request.url;
     var handlers = [
-      { pattern: '?headers', fn: handleHeaders },
       { pattern: '?string', fn: handleString },
       { pattern: '?blob', fn: handleBlob },
       { pattern: '?referrerFull', fn: handleReferrerFull },
@@ -149,8 +137,7 @@ self.addEventListener('fetch', function(event) {
       { pattern: '?cache', fn: handleCache },
       { pattern: '?eventsource', fn: handleEventSource },
       { pattern: '?integrity', fn: handleIntegrity },
-      { pattern: '?request-body', fn: handleRequestBody },
-      { pattern: '?keepalive', fn: handleKeepalive },
+      { pattern: '?headers', fn: handleHeaders },
     ];
 
     var handler = null;

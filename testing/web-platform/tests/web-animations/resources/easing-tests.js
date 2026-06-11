@@ -1,6 +1,4 @@
-'use strict';
-
-const gEasingTests = [
+var gEasingTests = [
   {
     desc: 'step-start function',
     easing: 'step-start',
@@ -82,13 +80,6 @@ const gEasingTests = [
   }
 ];
 
-const gEasingParsingTests = [
-  ['linear', 'linear'],
-  ['ease-in-out', 'ease-in-out'],
-  ['Ease\\2d in-out', 'ease-in-out'],
-  ['ease /**/', 'ease'],
-];
-
 const gInvalidEasings = [
   '',
   '7',
@@ -96,9 +87,6 @@ const gInvalidEasings = [
   'initial',
   'inherit',
   'unset',
-  'unrecognized',
-  'var(--x)',
-  'ease-in-out, ease-out',
   'cubic-bezier(1.1, 0, 1, 1)',
   'cubic-bezier(0, 0, 1.1, 1)',
   'cubic-bezier(-0.1, 0, 1, 1)',

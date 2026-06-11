@@ -1,6 +1,6 @@
 'use strict';
 
-const gCSSProperties = {
+var gCSSProperties = {
   'align-content': {
     // https://drafts.csswg.org/css-align/#propdef-align-content
     types: [
@@ -146,7 +146,7 @@ const gCSSProperties = {
     // https://drafts.csswg.org/css-backgrounds-3/#border-bottom-width
     types: [ 'length' ],
     setup: t => {
-      const element = createElement(t);
+      var element = createElement(t);
       element.style.borderBottomStyle = 'solid';
       return element;
     }
@@ -233,7 +233,7 @@ const gCSSProperties = {
     // https://drafts.csswg.org/css-backgrounds-3/#border-left-width
     types: [ 'length' ],
     setup: t => {
-      const element = createElement(t);
+      var element = createElement(t);
       element.style.borderLeftStyle = 'solid';
       return element;
     }
@@ -252,7 +252,7 @@ const gCSSProperties = {
     // https://drafts.csswg.org/css-backgrounds-3/#border-right-width
     types: [ 'length' ],
     setup: t => {
-      const element = createElement(t);
+      var element = createElement(t);
       element.style.borderRightStyle = 'solid';
       return element;
     }
@@ -285,7 +285,7 @@ const gCSSProperties = {
     // https://drafts.csswg.org/css-backgrounds-3/#border-top-width
     types: [ 'length' ],
     setup: t => {
-      const element = createElement(t);
+      var element = createElement(t);
       element.style.borderTopStyle = 'solid';
       return element;
     }
@@ -402,7 +402,7 @@ const gCSSProperties = {
     // https://drafts.csswg.org/css-multicol/#propdef-column-rule-width
     types: [ 'length' ],
     setup: t => {
-      const element = createElement(t);
+      var element = createElement(t);
       element.style.columnRuleStyle = 'solid';
       return element;
     }
@@ -618,16 +618,6 @@ const gCSSProperties = {
       { type: 'discrete', options: [ [ 'sub', 'super' ] ] }
     ]
   },
-  'font-variation-settings': {
-    // https://drafts.csswg.org/css-fonts-4/#descdef-font-face-font-variation-settings
-    types: [
-      'fontVariationSettings',
-      { type: 'discrete',
-        options: [ ['"wght" 1.1, "wdth" 1', '"wdth" 5'],
-                   ['"wdth" 5', 'normal']
-                 ] },
-    ]
-  },
   'font-weight': {
     // https://drafts.csswg.org/css-fonts-3/#propdef-font-weight
     types: [
@@ -751,19 +741,19 @@ const gCSSProperties = {
   'justify-content': {
     // https://drafts.csswg.org/css-align/#propdef-justify-content
     types: [
-      { type: 'discrete', options: [ [ 'start', 'end' ] ] }
+      { type: 'discrete', options: [ [ 'baseline', 'last baseline' ] ] }
     ]
   },
   'justify-items': {
     // https://drafts.csswg.org/css-align/#propdef-justify-items
     types: [
-      { type: 'discrete', options: [ [ 'start', 'end' ] ] }
+      { type: 'discrete', options: [ [ 'baseline', 'last baseline' ] ] }
     ]
   },
   'justify-self': {
     // https://drafts.csswg.org/css-align/#propdef-justify-self
     types: [
-      { type: 'discrete', options: [ [ 'start', 'end' ] ] }
+      { type: 'discrete', options: [ [ 'baseline', 'last baseline' ] ] }
     ]
   },
   'left': {
@@ -1044,7 +1034,7 @@ const gCSSProperties = {
     // https://drafts.csswg.org/css-ui-3/#propdef-outline-width
     types: [ 'length' ],
     setup: t => {
-      const element = createElement(t);
+      var element = createElement(t);
       element.style.outlineStyle = 'solid';
       return element;
     }
@@ -1052,6 +1042,12 @@ const gCSSProperties = {
   'overflow': {
     // https://drafts.csswg.org/css-overflow/#propdef-overflow
     types: [
+    ]
+  },
+  'overflow-clip-box': {
+    // https://developer.mozilla.org/en/docs/Web/CSS/overflow-clip-box
+    types: [
+      { type: 'discrete', options: [ [ 'padding-box', 'content-box' ] ] }
     ]
   },
   'overflow-wrap': {
@@ -1235,10 +1231,7 @@ const gCSSProperties = {
   },
   'stroke-dasharray': {
     // https://svgwg.org/svg2-draft/painting.html#StrokeDasharrayProperty
-    types: [
-      'dasharray',
-      { type: 'discrete', options: [ [ 'none', '10, 20' ] ] }
-    ]
+    types: [ 'dasharray' ]
   },
   'stroke-dashoffset': {
     // https://svgwg.org/svg2-draft/painting.html#StrokeDashoffsetProperty
@@ -1362,7 +1355,7 @@ const gCSSProperties = {
     // https://drafts.csswg.org/css-text-decor-3/#propdef-text-shadow
     types: [ 'textShadowList' ],
     setup: t => {
-      const element = createElement(t);
+      var element = createElement(t);
       element.style.color = 'green';
       return element;
     }
@@ -1404,25 +1397,6 @@ const gCSSProperties = {
     types: [
       { type: 'discrete', options: [ [ 'flat', 'preserve-3d' ] ] }
     ]
-  },
-  'rotate': {
-    // https://drafts.csswg.org/css-transforms-2/#individual-transforms
-    types: [ 'rotateList' ]
-  },
-  'translate': {
-    // https://drafts.csswg.org/css-transforms-2/#individual-transforms
-    types: [ 'translateList' ],
-    setup: t => {
-      // We need to set a width/height for resolving percentages against.
-      const element = createElement(t);
-      element.style.width = '100px';
-      element.style.height = '100px';
-      return element;
-    }
-  },
-  'scale': {
-    // https://drafts.csswg.org/css-transforms-2/#individual-transforms
-    types: [ 'scaleList' ]
   },
   'unicode-bidi': {
     // https://drafts.csswg.org/css-writing-modes-3/#propdef-unicode-bidi
@@ -1486,68 +1460,29 @@ const gCSSProperties = {
 };
 
 function testAnimationSamples(animation, idlName, testSamples) {
-  const type = animation.effect.target.type;
-  const target = animation.effect.target.constructor.name === 'CSSPseudoElement'
-                 ? animation.effect.target.parentElement
-                 : animation.effect.target;
-  for (const testSample of testSamples) {
+  var type = animation.effect.target.type;
+  var target = type
+               ? animation.effect.target.parentElement
+               : animation.effect.target;
+  testSamples.forEach(function(testSample) {
     animation.currentTime = testSample.time;
     assert_equals(getComputedStyle(target, type)[idlName],
                   testSample.expected,
-                  `The value should be ${testSample.expected}` +
-                  ` at ${testSample.time}ms`);
-  }
-}
-
-function toOrderedArray(string) {
-  return string.split(/\s*,\s/).sort();
-}
-
-// This test is for some list-based CSS properties such as font-variant-settings
-// don't specify an order for serializing computed values.
-// This test is for such the property.
-function testAnimationSamplesWithAnyOrder(animation, idlName, testSamples) {
-  const type = animation.effect.target.type;
-  const target = animation.effect.target.constructor.name === 'CSSPseudoElement'
-                 ? animation.effect.target.parentElement
-                 : animation.effect.target;
-  for (const testSample of testSamples) {
-    animation.currentTime = testSample.time;
-
-    // Convert to array and sort the expected and actual value lists first
-    // before comparing them.
-    const computedValues =
-      toOrderedArray(getComputedStyle(target, type)[idlName]);
-    const expectedValues = toOrderedArray(testSample.expected);
-
-    assert_array_equals(computedValues, expectedValues,
-                        `The computed values should be ${expectedValues}` +
-                        ` at ${testSample.time}ms`);
-  }
+                  'The value should be ' + testSample.expected +
+                  ' at ' + testSample.time + 'ms');
+  });
 }
 
 function testAnimationSampleMatrices(animation, idlName, testSamples) {
-  const target = animation.effect.target;
-  for (const testSample of testSamples) {
+  var target = animation.effect.target;
+  testSamples.forEach(function(testSample) {
     animation.currentTime = testSample.time;
-    const actual = getComputedStyle(target)[idlName];
-    const expected = createMatrixFromArray(testSample.expected);
+    var actual = getComputedStyle(target)[idlName];
+    var expected = createMatrixFromArray(testSample.expected);
     assert_matrix_equals(actual, expected,
-                         `The value should be ${expected} at`
-                         + ` ${testSample.time}ms but got ${actual}`);
-  }
-}
-
-function testAnimationSampleRotate3d(animation, idlName, testSamples) {
-  const target = animation.effect.target;
-  for (const testSample of testSamples) {
-    animation.currentTime = testSample.time;
-    const actual = getComputedStyle(target)[idlName];
-    const expected = testSample.expected;
-    assert_rotate3d_equals(actual, expected,
-                         `The value should be ${expected} at`
-                         + ` ${testSample.time}ms but got ${actual}`);
-  }
+                         'The value should be ' + expected +
+                         ' at ' + testSample.time + 'ms but got ' + actual);
+  });
 }
 
 function createTestElement(t, setup) {
@@ -1555,7 +1490,7 @@ function createTestElement(t, setup) {
 }
 
 function isSupported(property) {
-  const testKeyframe = new TestKeyframe(propertyToIDL(property));
+  var testKeyframe = new TestKeyframe(propertyToIDL(property));
   try {
     // Since TestKeyframe returns 'undefined' for |property|,
     // the KeyframeEffect constructor will throw
@@ -1566,7 +1501,7 @@ function isSupported(property) {
 }
 
 function TestKeyframe(testProp) {
-  let _propAccessCount = 0;
+  var _propAccessCount = 0;
 
   Object.defineProperty(this, testProp, {
     get: function() { _propAccessCount++; },
@@ -1579,7 +1514,7 @@ function TestKeyframe(testProp) {
 }
 
 function propertyToIDL(property) {
-  // https://drafts.csswg.org/web-animations/#animation-property-name-to-idl-attribute-name
+  // https://w3c.github.io/web-animations/#animation-property-name-to-idl-attribute-name
   if (property === 'float') {
     return 'cssFloat';
   }
@@ -1588,11 +1523,11 @@ function propertyToIDL(property) {
                             return str.substr(1).toUpperCase(); });
 }
 function calcFromPercentage(idlName, percentageValue) {
-  const examElem = document.createElement('div');
+  var examElem = document.createElement('div');
   document.body.appendChild(examElem);
   examElem.style[idlName] = percentageValue;
 
-  const calcValue = getComputedStyle(examElem)[idlName];
+  var calcValue = getComputedStyle(examElem)[idlName];
   document.body.removeChild(examElem);
 
   return calcValue;

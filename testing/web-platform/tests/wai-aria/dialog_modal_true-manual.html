@@ -2,7 +2,6 @@
 <html>
   <head>
     <title>dialog modal true</title>
-    <meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
     <link rel="stylesheet" href="/resources/testharness.css">
     <link rel="stylesheet" href="/wai-aria/scripts/manual.css">
     <script src="/resources/testharness.js"></script>
@@ -31,13 +30,27 @@
                   "STATE_MODAL"
                ]
             ],
-            "IAccessible2" : [
+            "AXAPI" : [
                [
                   "property",
-                  "role",
+                  "AXRole",
                   "is",
-                  "ROLE_SYSTEM_DIALOG"
+                  "AXGroup"
                ],
+               [
+                  "property",
+                  "AXSubrole",
+                  "is",
+                  "AXApplicationDialog"
+               ],
+               [
+                  "property",
+                  "AXRoleDescription",
+                  "is",
+                  "web dialog"
+               ]
+            ],
+            "IAccessible2" : [
                [
                   "property",
                   "states",
@@ -56,7 +69,7 @@
             "UIA" : [
                [
                   "property",
-                  "ControlType",
+                  "Control Type",
                   "is",
                   "Pane"
                ],
@@ -81,7 +94,8 @@
                   "is",
                   "false"
                ]
-            ]
+            ],
+            "UIA" : []
          },
          "title" : "step 2",
          "type" : "test"
@@ -107,3 +121,4 @@
   <div id="ATTAmessages"></div>
   </body>
 </html>
+

@@ -40,7 +40,7 @@
             config.messagehandler = (new MessageHandler( 'org.w3.clearkey')).messagehandler;
 
         function onComplete() {
-            window.opener.postMessage({ testResult: assertions }, '*');
+            window.opener.postMessage(assertions, '*');
         }
 
         function onFailure(error) {

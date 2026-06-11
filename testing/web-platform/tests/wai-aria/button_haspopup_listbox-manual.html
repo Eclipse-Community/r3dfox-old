@@ -2,7 +2,6 @@
 <html>
   <head>
     <title>button haspopup listbox</title>
-    <meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
     <link rel="stylesheet" href="/resources/testharness.css">
     <link rel="stylesheet" href="/wai-aria/scripts/manual.css">
     <script src="/resources/testharness.js"></script>
@@ -61,15 +60,15 @@
                   "actions",
                   "contains",
                   "AXShowMenu"
+               ],
+               [
+                  "property",
+                  "actions",
+                  "contains",
+                  "AXPress"
                ]
             ],
             "IAccessible2" : [
-               [
-                  "property",
-                  "role",
-                  "is",
-                  "ROLE_SYSTEM_PUSHBUTTON"
-               ],
                [
                   "property",
                   "objectAttributes",
@@ -82,7 +81,7 @@
                   "property",
                   "role",
                   "is",
-                  "ROLE_SYSTEM_PUSHBUTTON"
+                  "ROLE_SYSTEM_BUTTONMENU"
                ],
                [
                   "property",
@@ -133,3 +132,4 @@
   <div id="ATTAmessages"></div>
   </body>
 </html>
+

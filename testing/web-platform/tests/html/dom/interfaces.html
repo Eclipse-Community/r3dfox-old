@@ -32,8 +32,7 @@ function createInput(type) {
 
 function doTest([html, dom, cssom, uievents, touchevents]) {
   var idlArray = new IdlArray();
-  var svg = "interface SVGElement : Element {};";
-  idlArray.add_untested_idls(dom + svg + cssom + uievents + touchevents);
+  idlArray.add_untested_idls(dom + cssom + uievents + touchevents);
   idlArray.add_idls(html);
 
   idlArray.add_objects({
@@ -205,6 +204,7 @@ function doTest([html, dom, cssom, uievents, touchevents]) {
     MessageEvent: ['new MessageEvent("message", { data: 5 })'],
     MessageChannel: [],
     MessagePort: [],
+    HTMLAppletElement: ['document.createElement("applet")'],
     HTMLMarqueeElement: ['document.createElement("marquee")'],
     HTMLFrameSetElement: ['document.createElement("frameset")'],
     HTMLFrameElement: ['document.createElement("frame")'],

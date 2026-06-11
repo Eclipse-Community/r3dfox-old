@@ -2,7 +2,6 @@
 <html>
   <head>
     <title>table colcount -1</title>
-    <meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
     <link rel="stylesheet" href="/resources/testharness.css">
     <link rel="stylesheet" href="/wai-aria/scripts/manual.css">
     <script src="/resources/testharness.js"></script>
@@ -60,15 +59,9 @@
                ],
                [
                   "property",
-                  "interfaces",
-                  "contains",
-                  "IAccessibleTable2"
-               ],
-               [
-                  "property",
-                  "objectAttributes",
-                  "contains",
-                  "colcount:-1"
+                  "colcount",
+                  "is",
+                  "-1"
                ]
             ],
             "MSAA" : [
@@ -77,12 +70,18 @@
                   "role",
                   "is",
                   "ROLE_SYSTEM_TABLE"
+               ],
+               [
+                  "property",
+                  "colcount",
+                  "is",
+                  "-1"
                ]
             ],
             "UIA" : [
                [
                   "property",
-                  "ControlType",
+                  "Control Type",
                   "is",
                   "Table"
                ],
@@ -117,3 +116,4 @@
   <div id="ATTAmessages"></div>
   </body>
 </html>
+

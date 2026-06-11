@@ -10,7 +10,7 @@ setup({ allow_uncaught_exception: true });
 test(function() {
   var events = [];
   window.onerror = function() {
-    events.push("error");
+    events.push("Error");
   };
 
   var div = document.createElement("div");

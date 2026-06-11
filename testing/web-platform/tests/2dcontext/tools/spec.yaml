@@ -1,6 +1,6 @@
-# Extracts from https://html.spec.whatwg.org/
+# Extracts from http://www.whatwg.org/specs/web-apps/current-work/
 #
-# Parts of this specification are © Copyright 2004-2014 Apple Inc., Mozilla Foundation, and Opera Software ASA.
+# (c) Copyright 2004-2011 Apple Computer, Inc., Mozilla Foundation, and Opera Software ASA.
 # You are granted a license to use, reproduce and create derivative works of this document.
 
 assertions:
@@ -586,7 +586,7 @@ assertions:
     text: "If the image argument is <...> an HTMLVideoElement object whose readyState attribute is either HAVE_NOTHING or HAVE_METADATA<^>, then the implementation *must* return without drawing anything."
   - id: 2d.drawImage.zerocanvas
     previously: [ 10, "dw and dh" ]
-    text: "If the image argument is an HTMLCanvasElement or an OffscreenCanvas object with either a horizontal dimension or a vertical dimension equal to zero, then the implementation *must* throw an INVALID_STATE_ERR exception<^>."
+    text: "If the image argument is an HTMLCanvasElement object with either a horizontal dimension or a vertical dimension equal to zero, then the implementation *must* return without drawing anything<^>."
   - id: 2d.drawImage.zerosource
     text: "If one of the sw or sh arguments is zero<^>, the implementation *must* return without drawing anything."
   - id: 2d.drawImage.paint

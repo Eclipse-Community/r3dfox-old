@@ -2,7 +2,6 @@
 <html>
   <head>
     <title>slider all values unspecified</title>
-    <meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
     <link rel="stylesheet" href="/resources/testharness.css">
     <link rel="stylesheet" href="/wai-aria/scripts/manual.css">
     <script src="/resources/testharness.js"></script>
@@ -90,31 +89,25 @@
             "IAccessible2" : [
                [
                   "property",
-                  "role",
-                  "is",
-                  "ROLE_SYSTEM_SLIDER"
-               ],
-               [
-                  "property",
                   "interfaces",
                   "contains",
                   "AccessibleValue"
                ],
                [
-                  "property",
-                  "minimumValue",
+                  "result",
+                  "AccessibleValue.minimumValue",
                   "is",
                   "0"
                ],
                [
-                  "property",
-                  "currentValue",
+                  "result",
+                  "AccessibleValue.currentValue",
                   "is",
                   "50"
                ],
                [
-                  "property",
-                  "maximumValue",
+                  "result",
+                  "AccessibleValue.maximumValue",
                   "is",
                   "100"
                ]
@@ -130,7 +123,7 @@
             "UIA" : [
                [
                   "property",
-                  "ControlType",
+                  "Control Type",
                   "is",
                   "Slider"
                ],
@@ -181,3 +174,4 @@
   <div id="ATTAmessages"></div>
   </body>
 </html>
+

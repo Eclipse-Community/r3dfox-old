@@ -11,7 +11,6 @@
 <div id=log></div>
 <iframe id="B"></iframe>
 <iframe id="C"></iframe>
-<iframe id="D"></iframe>
 <script>
 
 /*
@@ -22,13 +21,10 @@ var host_info = get_host_info();
 
 setup({explicit_done: true});
 path = location.pathname.substring(0, location.pathname.lastIndexOf('/')) + '/frame.html';
-pathWithThen = location.pathname.substring(0, location.pathname.lastIndexOf('/')) + '/frame-with-then.html';
 var B = document.getElementById('B').contentWindow;
 var C = document.getElementById('C').contentWindow;
-var D = document.getElementById('D').contentWindow;
 B.frameElement.uriToLoad = path;
 C.frameElement.uriToLoad = get_host_info().HTTP_REMOTE_ORIGIN + path;
-D.frameElement.uriToLoad = get_host_info().HTTP_REMOTE_ORIGIN + pathWithThen;
 
 function reloadSubframes(cb) {
   var iframes = document.getElementsByTagName('iframe');
@@ -49,8 +45,8 @@ function isObject(x) { return Object(x) === x; }
  */
 
 var testList = [];
-function addTest(func, desc) { testList.push({func, desc, promiseTest: false}); }
-function addPromiseTest(func, desc) { testList.push({func, desc, promiseTest: true}); }
+function addTest(fun, desc) { testList.push([fun, desc]); }
+
 
 /*
  * Basic sanity testing.
@@ -76,10 +72,10 @@ addTest(function() {
 
 var whitelistedWindowIndices = ['0', '1'];
 var whitelistedWindowPropNames = ['location', 'postMessage', 'window', 'frames', 'self', 'top', 'parent',
-                                  'opener', 'closed', 'close', 'blur', 'focus', 'length', 'then'];
+                                  'opener', 'closed', 'close', 'blur', 'focus', 'length'];
 whitelistedWindowPropNames = whitelistedWindowPropNames.concat(whitelistedWindowIndices);
 whitelistedWindowPropNames.sort();
-var whitelistedLocationPropNames = ['href', 'replace', 'then'];
+var whitelistedLocationPropNames = ['href', 'replace'];
 whitelistedLocationPropNames.sort();
 var whitelistedSymbols = [Symbol.toStringTag, Symbol.hasInstance,
                           Symbol.isConcatSpreadable];
@@ -188,22 +184,17 @@ addTest(function() {
 }, "[[GetOwnProperty]] - Properties on cross-origin objects should be reported |own|");
 
 function checkPropertyDescriptor(desc, propName, expectWritable) {
-  const isSymbol = typeof(propName) === "symbol";
-  const isArrayIndexPropertyName = !isSymbol && !isNaN(parseInt(propName, 10));
+  var isSymbol = (typeof(propName) == "symbol");
   propName = String(propName);
   assert_true(isObject(desc), "property descriptor for " + propName + " should exist");
+  assert_equals(desc.enumerable, false, "property descriptor for " + propName + " should be non-enumerable");
   assert_equals(desc.configurable, true, "property descriptor for " + propName + " should be configurable");
-  if (!isArrayIndexPropertyName) {
-    assert_equals(desc.enumerable, false, "property descriptor for " + propName + " should not be enumerable");
-    if (isSymbol || propName == "then") {
-      assert_true("value" in desc,
-                  "property descriptor for " + propName + " should be a value descriptor");
-      assert_equals(desc.value, undefined,
+  if (isSymbol) {
+    assert_true("value" in desc,
+                "property descriptor for " + propName + " should be a value descriptor");
+    assert_equals(desc.value, undefined,
                   "symbol-named cross-origin visible prop " + propName +
                   " should come back as undefined");
-    }
-  } else {
-    assert_equals(desc.enumerable, true, "property descriptor for " + propName + " should be enumerable");
   }
   if ('value' in desc)
     assert_equals(desc.writable, expectWritable, "property descriptor for " + propName + " should have writable: " + expectWritable);
@@ -225,10 +216,6 @@ addTest(function() {
     checkPropertyDescriptor(desc, prop, false);
   });
 }, "[[GetOwnProperty]] - Property descriptors for cross-origin properties should be set up correctly");
-
-addTest(function() {
-  assert_equals(typeof D.then, "object");
-}, "[[GetOwnProperty]] - Subframe named 'then' should shadow the default 'then' value");
 
 /*
  * [[Delete]]
@@ -269,22 +256,15 @@ addTest(function() {
 }, "[[DefineOwnProperty]] Should throw for cross-origin objects");
 
 /*
- * EnumerateObjectProperties (backed by [[OwnPropertyKeys]])
+ * [[Enumerate]]
  */
 
 addTest(function() {
-  let i = 0;
-  for (var prop in C) {
-    i++;
-    assert_true(whitelistedWindowIndices.includes(prop), prop + " is not safelisted for a cross-origin Window");
-  }
-  assert_equals(i, whitelistedWindowIndices.length, "Enumerate all enumerable safelisted cross-origin Window properties");
-  i = 0;
-  for (var prop in C.location) {
-    i++;
-  }
-  assert_equals(i, 0, "There's nothing to enumerate for cross-origin Location properties");
-}, "Can only enumerate safelisted enumerable properties");
+  for (var prop in C)
+    assert_unreached("Shouldn't have been able to enumerate " + prop + " on cross-origin Window");
+  for (var prop in C.location)
+    assert_unreached("Shouldn't have been able to enumerate " + prop + " on cross-origin Location");
+}, "[[Enumerate]] should return an empty iterator");
 
 /*
  * [[OwnPropertyKeys]]
@@ -294,14 +274,9 @@ addTest(function() {
   assert_array_equals(Object.getOwnPropertyNames(C).sort(),
                       whitelistedWindowPropNames,
                       "Object.getOwnPropertyNames() gives the right answer for cross-origin Window");
-  assert_array_equals(Object.keys(C).sort(),
-                      whitelistedWindowIndices,
-                      "Object.keys() gives the right answer for cross-origin Window");
   assert_array_equals(Object.getOwnPropertyNames(C.location).sort(),
                       whitelistedLocationPropNames,
                       "Object.getOwnPropertyNames() gives the right answer for cross-origin Location");
-  assert_equals(Object.keys(C.location).length, 0,
-                      "Object.keys() gives the right answer for cross-origin Location");
 }, "[[OwnPropertyKeys]] should return all properties from cross-origin objects");
 
 addTest(function() {
@@ -317,10 +292,6 @@ addTest(function() {
   indexedWindowProps = allWindowProps.slice(0, whitelistedWindowIndices.length);
   stringWindowProps = allWindowProps.slice(0, -1 * whitelistedSymbols.length);
   symbolWindowProps = allWindowProps.slice(-1 * whitelistedSymbols.length);
-  // stringWindowProps should have "then" last in this case.  Do this
-  // check before we call stringWindowProps.sort() below.
-  assert_equals(stringWindowProps[stringWindowProps.length - 1], "then",
-                "'then' property should be added to the end of the string list if not there");
   assert_array_equals(indexedWindowProps, whitelistedWindowIndices,
                       "Reflect.ownKeys should start with the indices exposed on the cross-origin window.");
   assert_array_equals(stringWindowProps.sort(), whitelistedWindowPropNames,
@@ -336,17 +307,6 @@ addTest(function() {
   assert_array_equals(symbolLocationProps, whitelistedSymbols,
                       "Reflect.ownKeys should end with the cross-origin symbols for a cross-origin Location.")
 }, "[[OwnPropertyKeys]] should place the symbols after the property names after the subframe indices");
-
-addTest(function() {
-  var stringProps = Object.getOwnPropertyNames(D);
-  // Named frames are not exposed via [[OwnPropertyKeys]].
-  assert_equals(stringProps.indexOf("a"), -1);
-  assert_equals(stringProps.indexOf("b"), -1);
-  assert_equals(typeof D.a, "object");
-  assert_equals(typeof D.b, "object");
-  assert_equals(stringProps[stringProps.length - 1], "then");
-  assert_equals(stringProps.indexOf("then"), stringProps.lastIndexOf("then"));
-}, "[[OwnPropertyKeys]] should not reorder where 'then' appears if it's a named subframe, nor add another copy of 'then'");
 
 addTest(function() {
   assert_true(B.eval('parent.C') === C, "A and B observe the same identity for C's Window");
@@ -416,43 +376,16 @@ addTest(function() {
   assert_equals({}.toString.call(C.location), "[object Object]");
 }, "{}.toString.call() does the right thing on cross-origin objects");
 
-addPromiseTest(function() {
-  return Promise.resolve(C).then((arg) => {
-    assert_equals(arg, C);
-  });
-}, "Resolving a promise with a cross-origin window without a 'then' subframe should work.");
-
-addPromiseTest(function() {
-  return Promise.resolve(D).then((arg) => {
-    assert_equals(arg, D);
-  });
-}, "Resolving a promise with a cross-origin window with a 'then' subframe should work.");
-
-addPromiseTest(function() {
-  return Promise.resolve(D.location).then((arg) => {
-    assert_equals(arg, D.location);
-  });
-}, "Resolving a promise with a cross-origin location should work.");
-
 // We do a fresh load of the subframes for each test to minimize side-effects.
 // It would be nice to reload ourselves as well, but we can't do that without
 // disrupting the test harness.
-function testDone() {
-  if (testList.length != 0) {
-    reloadSubframes(runNextTest);
-  } else {
-    done();
-  }
-}
-
 function runNextTest() {
   var entry = testList.shift();
-  if (entry.promiseTest) {
-    promise_test(() => entry.func().finally(testDone), entry.desc);
-  } else {
-    test(entry.func, entry.desc);
-    testDone();
-  }
+  test(() => entry[0](), entry[1])
+  if (testList.length != 0)
+    reloadSubframes(runNextTest);
+  else
+    done();
 }
 reloadSubframes(runNextTest);
 

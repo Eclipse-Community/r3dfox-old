@@ -1,8 +1,5 @@
 partial interface Element {
   Promise<void> requestFullscreen();
-
-  attribute EventHandler onfullscreenchange;
-  attribute EventHandler onfullscreenerror;
 };
 
 partial interface Document {

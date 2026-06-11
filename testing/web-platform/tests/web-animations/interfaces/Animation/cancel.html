@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <meta charset=utf-8>
-<title>Animation.cancel</title>
-<link rel="help" href="https://drafts.csswg.org/web-animations/#dom-animation-cancel">
+<title>Animation.cancel()</title>
+<link rel="help" href="https://w3c.github.io/web-animations/#dom-animation-cancel">
 <script src="/resources/testharness.js"></script>
 <script src="/resources/testharnessreport.js"></script>
 <script src="../../testcommon.js"></script>
@@ -10,13 +10,11 @@
 <script>
 'use strict';
 
-promise_test(t => {
-  const div = createDiv(t);
-  const animation = div.animate(
-    { transform: ['translate(100px)', 'translate(100px)'] },
-    100 * MS_PER_SEC
-  );
-  return animation.ready.then(() => {
+promise_test(function(t) {
+  var div = createDiv(t);
+  var animation = div.animate({transform: ['translate(100px)', 'translate(100px)']},
+                              100 * MS_PER_SEC);
+  return animation.ready.then(function() {
     assert_not_equals(getComputedStyle(div).transform, 'none',
                       'transform style is animated before cancelling');
     animation.cancel();
@@ -25,10 +23,10 @@ promise_test(t => {
   });
 }, 'Animated style is cleared after calling Animation.cancel()');
 
-test(t => {
-  const div = createDiv(t);
-  const animation = div.animate({ marginLeft: ['100px', '200px'] },
-                                100 * MS_PER_SEC);
+test(function(t) {
+  var div = createDiv(t);
+  var animation = div.animate({marginLeft: ['100px', '200px']},
+                              100 * MS_PER_SEC);
   animation.effect.timing.easing = 'linear';
   animation.cancel();
   assert_equals(getComputedStyle(div).marginLeft, '0px',
@@ -40,11 +38,11 @@ test(t => {
                 + ' seeked');
 }, 'After cancelling an animation, it can still be seeked');
 
-promise_test(t => {
-  const div = createDiv(t);
-  const animation = div.animate({ marginLeft:['100px', '200px'] },
-                                100 * MS_PER_SEC);
-  return animation.ready.then(() => {
+promise_test(function(t) {
+  var div = createDiv(t);
+  var animation = div.animate({marginLeft:['100px', '200px']},
+                              100 * MS_PER_SEC);
+  return animation.ready.then(function() {
     animation.cancel();
     assert_equals(getComputedStyle(div).marginLeft, '0px',
                   'margin-left style is not animated after cancelling');
@@ -52,7 +50,7 @@ promise_test(t => {
     assert_equals(getComputedStyle(div).marginLeft, '100px',
                   'margin-left style is animated after re-starting animation');
     return animation.ready;
-  }).then(() => {
+  }).then(function() {
     assert_equals(animation.playState, 'running',
                   'Animation succeeds in running after being re-started');
   });

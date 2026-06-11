@@ -2,7 +2,6 @@
 <html>
   <head>
     <title>row colindex 4</title>
-    <meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
     <link rel="stylesheet" href="/resources/testharness.css">
     <link rel="stylesheet" href="/wai-aria/scripts/manual.css">
     <script src="/resources/testharness.js"></script>
@@ -48,9 +47,9 @@
                ],
                [
                   "property",
-                  "objectAttributes",
-                  "contains",
-                  "colindex:4"
+                  "colindex",
+                  "is",
+                  "4"
                ]
             ],
             "MSAA" : [
@@ -59,12 +58,18 @@
                   "role",
                   "is",
                   "ROLE_SYSTEM_ROW"
+               ],
+               [
+                  "property",
+                  "colindex",
+                  "is",
+                  "4"
                ]
             ],
             "UIA" : [
                [
                   "property",
-                  "ControlType",
+                  "Control Type",
                   "is",
                   "DataItem"
                ],
@@ -110,20 +115,7 @@
                   "4"
                ]
             ],
-            "UIA" : [
-               [
-                  "property",
-                  "ControlType",
-                  "is",
-                  "DataItem"
-               ],
-               [
-                  "property",
-                  "Column",
-                  "is",
-                  "3"
-               ]
-            ]
+            "UIA" : []
          },
          "title" : "step 2",
          "type" : "test"
@@ -148,3 +140,4 @@
   <div id="ATTAmessages"></div>
   </body>
 </html>
+

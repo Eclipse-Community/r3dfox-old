@@ -1,24 +1,22 @@
 <!DOCTYPE html>
 <title>Service Worker: Skip waiting without using registration</title>
 <script src="/resources/testharness.js"></script>
+<script src="resources/testharness-helpers.js"></script>
 <script src="/resources/testharnessreport.js"></script>
 <script src="resources/test-helpers.sub.js"></script>
 <script>
-'use strict';
 
 promise_test(function(t) {
     var scope = 'resources/blank.html?skip-waiting-without-using-registration';
     var url = 'resources/skip-waiting-worker.js';
-    var frame_sw, sw_registration;
+    var frame, frame_sw, sw_registration;
 
     return service_worker_unregister(t, scope)
       .then(function() {
           return with_iframe(scope);
         })
       .then(function(f) {
-          t.add_cleanup(function() {
-              f.remove();
-            });
+          frame = f;
           frame_sw = f.contentWindow.navigator.serviceWorker;
           assert_equals(frame_sw.controller, null,
                         'Document controller should be null');
@@ -26,7 +24,8 @@ promise_test(function(t) {
         })
       .then(function(registration) {
           sw_registration = registration;
-          t.add_cleanup(function() {
+          add_completion_callback(function() {
+              frame.remove();
               registration.unregister();
             });
           return wait_for_state(t, registration.installing, 'activated');

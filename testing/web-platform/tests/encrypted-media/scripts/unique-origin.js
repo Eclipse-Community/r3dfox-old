@@ -10,7 +10,7 @@ function runTest(config) {
                 resolve(iframe);
             };
             iframe.sandbox = sandbox;
-            iframe.srcdoc = src;
+            iframe.src = src;
             document.documentElement.appendChild(iframe);
         });
     }
@@ -25,7 +25,7 @@ function runTest(config) {
     }
 
     promise_test(function (test) {
-        var script =
+        var script = 'data:text/html,' +
           '<script>' +
           '    window.onmessage = function(e) {' +
           '        navigator.requestMediaKeySystemAccess("' + config.keysystem + '", [{' +
@@ -53,7 +53,7 @@ function runTest(config) {
             return access.createMediaKeys();
         }).then(function (mediaKeys) {
             // Success, so now create the iframe and try there.
-            return load_iframe(script, 'allow-scripts allow-secure-context');
+            return load_iframe(script, 'allow-scripts');
         }).then(function (iframe) {
             iframe.contentWindow.postMessage({}, '*');
             return wait_for_message();

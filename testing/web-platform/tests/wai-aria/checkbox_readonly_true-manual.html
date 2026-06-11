@@ -2,7 +2,6 @@
 <html>
   <head>
     <title>checkbox readonly true</title>
-    <meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
     <link rel="stylesheet" href="/resources/testharness.css">
     <link rel="stylesheet" href="/wai-aria/scripts/manual.css">
     <script src="/resources/testharness.js"></script>
@@ -66,15 +65,15 @@
             "IAccessible2" : [
                [
                   "property",
-                  "objectAttributes",
-                  "contains",
-                  "checkable:true"
+                  "objectAttribute",
+                  "checkable",
+                  "true"
                ],
                [
                   "property",
                   "states",
-                  "doesNotContain",
-                  "IA2_STATE_EDITABLE"
+                  "contains",
+                  "IA2_STATE_SYSTEM_EDITABLE"
                ]
             ],
             "MSAA" : [
@@ -94,7 +93,7 @@
             "UIA" : [
                [
                   "property",
-                  "ControlType",
+                  "Control Type",
                   "is",
                   "Checkbox"
                ],
@@ -125,3 +124,4 @@
   <div id="ATTAmessages"></div>
   </body>
 </html>
+

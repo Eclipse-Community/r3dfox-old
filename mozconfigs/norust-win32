@@ -14,7 +14,7 @@ ac_add_options --disable-webrender
 ac_add_options --disable-accessibility
 ac_add_options --disable-av1
 
-ac_add_options --disable-tests
+ac_add_options --enable-tests
 
 ac_add_options --disable-debug
 

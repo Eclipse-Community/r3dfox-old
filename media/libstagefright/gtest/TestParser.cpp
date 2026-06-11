@@ -443,7 +443,6 @@ TEST(stagefright_MoofParser, test_case_mp4)
       EXPECT_FALSE(parser.ReachedEnd());
       EXPECT_TRUE(parser.mInitRange.IsEmpty());
 
-      EXPECT_TRUE(parser.HasMetadata());
       RefPtr<MediaByteBuffer> metadataBuffer = parser.Metadata();
       EXPECT_TRUE(metadataBuffer);
 

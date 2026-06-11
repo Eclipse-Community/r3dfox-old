@@ -131,8 +131,6 @@ include('/ipc/chromium/chromium-config.mozbuild')
 
 FINAL_LIBRARY = 'xul'
 
-DEFINES['MOZ_APP_BASENAME'] = '"%s"' % CONFIG['MOZ_APP_BASENAME']
-
 if CONFIG['OS_ARCH'] == 'Linux' and 'lib64' in CONFIG['libdir']:
     DEFINES['HAVE_USR_LIB64_DIR'] = True
 

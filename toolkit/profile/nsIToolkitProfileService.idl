@@ -78,8 +78,6 @@ interface nsIToolkitProfileService : nsISupports
      * Flush the profiles list file.
      */
     void flush();
-
-    uint32_t portable();
 };
 
 %{C++

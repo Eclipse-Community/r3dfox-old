@@ -1,3 +1,6 @@
+importScripts('../../resources/test-helpers.sub.js');
+importScripts('../../resources/worker-testharness.js');
+
 var events_seen = [];
 
 self.registration.addEventListener('updatefound', function() {

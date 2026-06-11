@@ -3,7 +3,6 @@
 
 <head>
     <title>child-src-allowed</title>
-    <meta http-equiv="Content-Security-Policy" content="child-src 'self'; script-src 'self' 'unsafe-inline'; connect-src 'self';">
     <script src="/resources/testharness.js"></script>
     <script src="/resources/testharnessreport.js"></script>
     <script src='../support/logTest.sub.js?logs=["PASS IFrame %231 generated a load event."]'></script>
@@ -11,10 +10,6 @@
         window.addEventListener("message", function(event) {
             alert_assert(event.data);
         }, false);
-        
-        window.addEventListener("securitypolicyviolation", function(e) {
-            alert_assert("Fail");
-        });
 
         var t_alert = async_test('Expecting alerts: ["PASS"]');
         var expected_alerts = ["PASS"];
@@ -41,6 +36,9 @@
         }
 
     </script>
+    <!-- enforcing policy:
+Content-Security-Policy: child-src 'self'; script-src 'self' 'unsafe-inline'; connect-src 'self';
+-->
     <p>
         This iframe should be allowed.
     </p>
@@ -59,6 +57,7 @@
 <body>
     <iframe src="/content-security-policy/support/postmessage-pass.html" onload="loadEvent()"></iframe>
     <div id="log"></div>
+    <script async defer src="../support/checkReport.sub.js?reportExists=false"></script>
 </body>
 
 </html>

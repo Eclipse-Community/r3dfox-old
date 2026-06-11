@@ -2,7 +2,6 @@
 <html>
   <head>
     <title>combobox haspopup true</title>
-    <meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
     <link rel="stylesheet" href="/resources/testharness.css">
     <link rel="stylesheet" href="/wai-aria/scripts/manual.css">
     <script src="/resources/testharness.js"></script>
@@ -79,15 +78,15 @@
                   "actions",
                   "contains",
                   "AXShowMenu"
+               ],
+               [
+                  "property",
+                  "actions",
+                  "contains",
+                  "AXPress"
                ]
             ],
             "IAccessible2" : [
-               [
-                  "property",
-                  "role",
-                  "is",
-                  "ROLE_SYSTEM_COMBOBOX"
-               ],
                [
                   "property",
                   "objectAttributes",
@@ -118,7 +117,7 @@
             "UIA" : [
                [
                   "property",
-                  "ControlType",
+                  "Control Type",
                   "is",
                   "Combobox"
                ],
@@ -161,3 +160,4 @@
   <div id="ATTAmessages"></div>
   </body>
 </html>
+

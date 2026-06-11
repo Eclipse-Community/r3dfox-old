@@ -15,7 +15,9 @@
       typedef any JSON;
       typedef (Blob or BufferSource or FormData or URLSearchParams or USVString) BodyInit;
 
-      interface mixin Body {
+      [NoInterfaceObject,
+      Exposed=(Window,Worker)]
+      interface Body {
         readonly attribute ReadableStream? body;
         readonly attribute boolean bodyUsed;
         [NewObject] Promise<ArrayBuffer> arrayBuffer();
@@ -43,7 +45,7 @@
 
         [NewObject] Response clone();
       };
-      Response includes Body;
+      Response implements Body;
 
       dictionary ResponseInit {
         unsigned short status = 200;

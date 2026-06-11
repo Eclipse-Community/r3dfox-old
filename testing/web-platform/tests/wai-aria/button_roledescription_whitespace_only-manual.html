@@ -2,7 +2,6 @@
 <html>
   <head>
     <title>button roledescription whitespace only</title>
-    <meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
     <link rel="stylesheet" href="/resources/testharness.css">
     <link rel="stylesheet" href="/wai-aria/scripts/manual.css">
     <script src="/resources/testharness.js"></script>
@@ -54,8 +53,8 @@
             "IAccessible2" : [
                [
                   "property",
-                  "localizedExtendedRole",
-                  "is",
+                  "IAccessible2_2.localizedExtendedRole",
+                  "contains",
                   "null"
                ]
             ],
@@ -70,13 +69,13 @@
             "UIA" : [
                [
                   "property",
-                  "ControlType",
+                  "Control Type",
                   "is",
                   "Button"
                ],
                [
                   "property",
-                  "LocalizedControlType",
+                  "Localized Control Type",
                   "is",
                   "Button"
                ]
@@ -103,3 +102,4 @@
   <div id="ATTAmessages"></div>
   </body>
 </html>
+

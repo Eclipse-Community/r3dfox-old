@@ -2,7 +2,6 @@
 <html>
   <head>
     <title>errormessage object in invalid state</title>
-    <meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
     <link rel="stylesheet" href="/resources/testharness.css">
     <link rel="stylesheet" href="/wai-aria/scripts/manual.css">
     <script src="/resources/testharness.js"></script>
@@ -21,32 +20,32 @@
                [
                   "relation",
                   "RELATION_ERROR_MESSAGE",
-                  "is",
-                  "[error]"
+                  "exists",
+                  "false"
                ]
             ],
             "AXAPI" : [
                [
                   "property",
-                  "AXValidationError",
+                  "TBD",
                   "is",
-                  "You did not enter a valid date!"
+                  "TBD"
                ]
             ],
             "IAccessible2" : [
                [
-                  "properties",
-                  "relations",
-                  "contains",
-                  "IA2_RELATION_ERROR_MESSAGE"
+                  "relation",
+                  "IA2_RELATION_ERROR_MESSAGE",
+                  "exists",
+                  "false"
                ]
             ],
             "UIA" : [
                [
                   "property",
                   "IUIAutomationElement.ControllerFor",
-                  "is",
-                  "error"
+                  "exists",
+                  "false"
                ]
             ]
          },
@@ -60,18 +59,19 @@
                [
                   "relation",
                   "RELATION_ERROR_FOR",
-                  "is",
-                  "[test]"
+                  "exists",
+                  "false"
                ]
             ],
             "IAccessible2" : [
                [
-                  "property",
-                  "relations",
-                  "contains",
-                  "IA2_RELATION_ERROR_FOR"
+                  "relation",
+                  "IA2_RELATION_ERROR_FOR",
+                  "exists",
+                  "false"
                ]
-            ]
+            ],
+            "UIA" : []
          },
          "title" : "step 2",
          "type" : "test"
@@ -86,8 +86,8 @@
   <body>
   <p>This test examines the ARIA properties for errormessage object in invalid state.</p>
     <div role="form">
-  <label for="test">date</label><input type="text" id="test" value="foo" aria-invalid="true" aria-errormessage="error">
-  <label for="test1">surname</label><input type="text" id="test1">
+  <label for="test">date</label><input type="text" id="test" value="April 12" aria-errormessage="error2">
+  <label for="test1">surname</label><input type="text" id="test1" value="April 14">
   </div>
   <div id="error">
      You did not enter a valid date!
@@ -99,3 +99,4 @@
   <div id="ATTAmessages"></div>
   </body>
 </html>
+

@@ -2,7 +2,6 @@
 <html>
   <head>
     <title>aria-details pointing to div element</title>
-    <meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
     <link rel="stylesheet" href="/resources/testharness.css">
     <link rel="stylesheet" href="/wai-aria/scripts/manual.css">
     <script src="/resources/testharness.js"></script>
@@ -22,15 +21,23 @@
                   "relation",
                   "RELATION_DETAILS",
                   "is",
-                  "[details]"
+                  "details"
+               ]
+            ],
+            "AXAPI" : [
+               [
+                  "property",
+                  "TBD",
+                  "is",
+                  "TBD"
                ]
             ],
             "IAccessible2" : [
                [
-                  "property",
-                  "relations",
-                  "contains",
-                  "IA2_RELATION_DETAILS"
+                  "relation",
+                  "IA2_RELATION_DETAILS",
+                  "is",
+                  "details"
                ]
             ],
             "UIA" : [
@@ -53,17 +60,18 @@
                   "relation",
                   "RELATION_DETAILS_FOR",
                   "is",
-                  "[test]"
+                  "test"
                ]
             ],
             "IAccessible2" : [
                [
-                  "property",
-                  "relations",
-                  "contains",
-                  "IA2_RELATION_DETAILS_FOR"
+                  "relation",
+                  "IA2_RELATION_DETAILS_FOR",
+                  "is",
+                  "test"
                ]
-            ]
+            ],
+            "UIA" : []
          },
          "title" : "step 2",
          "type" : "test"
@@ -79,7 +87,7 @@
   <p>This test examines the ARIA properties for aria-details pointing to div element.</p>
     <img id="test" src="foo.jpg" aria-details="details">
   <div id="details">
-    <iframe src="data:text/html,<body>foo</body>"/>
+    <iframe src="http://www.w3.org"/>
   </div>
 
 
@@ -88,3 +96,4 @@
   <div id="ATTAmessages"></div>
   </body>
 </html>
+

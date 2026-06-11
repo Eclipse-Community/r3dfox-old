@@ -1,8 +1,9 @@
+// Up-to-date as of 2013-04-08.
 var metadataElements = {
   head: {},
   title: {},
   base: {
-    href: {type: "url", customGetter: true},
+    // XXX href is weird. href: "url",
     target: "string",
   },
   link: {
@@ -10,13 +11,13 @@ var metadataElements = {
     href: "url",
     crossOrigin: {type: "enum", keywords: ["anonymous", "use-credentials"], nonCanon:{"": "anonymous"}, isNullable: true, defaultVal: null, invalidVal: "anonymous"},
     rel: "string",
+    relList: {type: "tokenlist", domAttrName: "rel"},
     as: {
       type: "enum",
-      keywords: ["fetch", "audio", "document", "embed", "font", "image", "manifest", "object", "report", "script", "sharedworker", "style", "track", "video", "worker", "xslt"],
+      keywords: ["", "audio", "document", "embed", "font", "image", "manifest", "object", "report", "script", "serviceworker", "sharedworker", "style", "track", "video", "worker", "xslt"],
       defaultVal: "",
       invalidVal: ""
     },
-    relList: {type: "tokenlist", domAttrName: "rel"},
     media: "string",
     nonce: "string",
     integrity: "string",
@@ -41,7 +42,6 @@ var metadataElements = {
   },
   style: {
     media: "string",
-    nonce: "string",
     type: "string",
   },
 };

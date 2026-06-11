@@ -74,14 +74,12 @@ function runTest(config,qualifier) {
 
             // Lisen for an event from the new window containing its test assertions
             window.addEventListener('message', test.step_func(function(messageEvent) {
-                if (messageEvent.data.testResult) {
-                    messageEvent.data.testResult.forEach(test.step_func(function(assertion) {
-                        assert_equals(assertion.actual, assertion.expected, assertion.message);
-                    }));
+                messageEvent.data.forEach(test.step_func(function(assertion) {
+                    assert_equals(assertion.actual, assertion.expected, assertion.message);
+                }));
 
-                    win.close();
-                    test.done();
-                }
+                win.close();
+                test.done();
             }));
 
             // Delete things which can't be cloned and posted over to the new window
@@ -98,8 +96,7 @@ function runTest(config,qualifier) {
             return access.createMediaKeys();
         }).then(function(mediaKeys) {
             _mediaKeys = mediaKeys;
-            return _video.setMediaKeys( mediaKeys );
-        }).then(function() {
+            _video.setMediaKeys( mediaKeys );
             _mediaKeySession = _mediaKeys.createSession('persistent-license');
             waitForEventAndRunStep('encrypted', _video, onEncrypted, test);
             waitForEventAndRunStep('playing', _video, onPlaying, test);

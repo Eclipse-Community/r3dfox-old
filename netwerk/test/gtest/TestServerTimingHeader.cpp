@@ -5,6 +5,8 @@
 #include <string>
 #include <vector>
 
+using mozilla::net::ServerTimingParser;
+
 void testServerTimingHeader(
     const char* headerValue,
     std::vector<std::vector<std::string>> expectedResults) {

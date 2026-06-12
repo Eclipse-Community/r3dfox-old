@@ -4283,19 +4283,16 @@ NS_IMETHODIMP
 HttpBaseChannel::GetServerTiming(nsIArray** aServerTiming) {
   NS_ENSURE_ARG_POINTER(aServerTiming);
 
-  bool isHTTPS = false;
-  if (NS_SUCCEEDED(mURI->SchemeIs("https", &isHTTPS)) && isHTTPS) {
-    nsTArray<nsCOMPtr<nsIServerTiming>> data;
-    nsresult rv = NS_OK;
-    nsCOMPtr<nsIMutableArray> array =
-        do_CreateInstance(NS_ARRAY_CONTRACTID, &rv);
-    NS_ENSURE_SUCCESS(rv, rv);
+  nsTArray<nsCOMPtr<nsIServerTiming>> data;
+  nsresult rv = NS_OK;
+  nsCOMPtr<nsIMutableArray> array =
+      do_CreateInstance(NS_ARRAY_CONTRACTID, &rv);
+  NS_ENSURE_SUCCESS(rv, rv);
 
-    ParseServerTimingHeader(mResponseHead, array);
-    ParseServerTimingHeader(mResponseTrailers, array);
+  ParseServerTimingHeader(mResponseHead, array);
+  ParseServerTimingHeader(mResponseTrailers, array);
 
-    array.forget(aServerTiming);
-  }
+  array.forget(aServerTiming);
 
   return NS_OK;
 }

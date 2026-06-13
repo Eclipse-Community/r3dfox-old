@@ -20,6 +20,4 @@ MOZ_DISTRIBUTION_ID=com.eclipse
 
 MOZ_MACBUNDLE_NAME="eXPeriment.app"
 
-MOZ_SOURCE_REPO=https://github.com/Eclipse-Community/eXPeriment
-
 MOZ_DEVTOOLS=all

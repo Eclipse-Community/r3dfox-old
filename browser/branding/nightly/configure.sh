@@ -19,5 +19,3 @@ MOZ_APP_REMOTINGNAME=com.eclipse.eXPeriment
 MOZ_DISTRIBUTION_ID=com.eclipse
 
 MOZ_MACBUNDLE_NAME="eXPeriment.app"
-
-MOZ_DEVTOOLS=all

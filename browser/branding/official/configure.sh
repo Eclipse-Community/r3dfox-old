@@ -19,5 +19,3 @@ MOZ_APP_REMOTINGNAME=com.eclipse.eXPlorer
 MOZ_DISTRIBUTION_ID=com.eclipse
 
 MOZ_MACBUNDLE_NAME="eXPlorer.app"
-
-MOZ_DEVTOOLS=all

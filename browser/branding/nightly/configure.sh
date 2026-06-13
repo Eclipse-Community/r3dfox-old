@@ -12,8 +12,6 @@ MOZ_APP_UA_NAME="eXPeriment"
 
 MOZ_APP_VENDOR="Eclipse Community"
 
-MOZ_APP_FULLNAME="Eclipse eXPeriment"
-
 MOZ_APP_PROFILE="Eclipse Community/eXPeriment"
 
 MOZ_APP_REMOTINGNAME=com.eclipse.eXPeriment

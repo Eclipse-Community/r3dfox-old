@@ -2477,7 +2477,8 @@ void gfxPlatform::DisableBufferRotation() {
 
   if (firstTime) {
     MOZ_ASSERT(sLayersAccelerationPrefsInitialized);
-    result = !gfxPrefs::LayersOffMainThreadCompositionForceDisabled();
+    result = gfxVars::BrowserTabsRemoteAutostart() ||
+             !gfxPrefs::LayersOffMainThreadCompositionForceDisabled();
 #if defined(MOZ_WIDGET_GTK)
     // Linux users who chose OpenGL are being grandfathered in to OMTC
     result |= gfxPrefs::LayersAccelerationForceEnabledDoNotUseDirectly();

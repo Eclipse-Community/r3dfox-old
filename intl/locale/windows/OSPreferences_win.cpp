@@ -6,9 +6,8 @@
 
 #include "OSPreferences.h"
 #include "mozilla/intl/LocaleService.h"
+#include "nsWin32Locale.h"
 #include "nsReadableUtils.h"
-
-#include <windows.h>
 
 using namespace mozilla::intl;
 
@@ -19,11 +18,10 @@ OSPreferences::~OSPreferences() {}
 bool OSPreferences::ReadSystemLocales(nsTArray<nsCString>& aLocaleList) {
   MOZ_ASSERT(aLocaleList.IsEmpty());
 
-  WCHAR locale[LOCALE_NAME_MAX_LENGTH];
-  if (NS_WARN_IF(!LCIDToLocaleName(LOCALE_SYSTEM_DEFAULT, locale,
-                                   LOCALE_NAME_MAX_LENGTH, 0))) {
-    return false;
-  }
+  nsAutoString locale;
+
+  LCID win_lcid = GetSystemDefaultLCID();
+  nsWin32Locale::GetXPLocale(win_lcid, locale);
 
   NS_LossyConvertUTF16toASCII loc(locale);
 
@@ -37,11 +35,10 @@ bool OSPreferences::ReadSystemLocales(nsTArray<nsCString>& aLocaleList) {
 bool OSPreferences::ReadRegionalPrefsLocales(nsTArray<nsCString>& aLocaleList) {
   MOZ_ASSERT(aLocaleList.IsEmpty());
 
-  WCHAR locale[LOCALE_NAME_MAX_LENGTH];
-  if (NS_WARN_IF(!LCIDToLocaleName(LOCALE_USER_DEFAULT, locale,
-                                   LOCALE_NAME_MAX_LENGTH, 0))) {
-    return false;
-  }
+  nsAutoString locale;
+
+  LCID win_lcid = GetSystemDefaultLCID();
+  nsWin32Locale::GetXPLocale(win_lcid, locale);
 
   NS_LossyConvertUTF16toASCII loc(locale);
 

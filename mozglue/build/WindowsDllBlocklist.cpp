@@ -1066,11 +1066,13 @@ MFBT_API void DllBlocklist_SetDllServices(
               ::GetProcAddress(::GetModuleHandleW(L"ntdll.dll"),
                                "LdrRegisterDllNotification"));
 
-      MOZ_DIAGNOSTIC_ASSERT(pLdrRegisterDllNotification);
+      if (pLdrRegisterDllNotification) {
+        MOZ_DIAGNOSTIC_ASSERT(pLdrRegisterDllNotification);
 
-      NTSTATUS ntStatus = pLdrRegisterDllNotification(
-          0, &DllLoadNotification, nullptr, &gNotificationCookie);
-      MOZ_DIAGNOSTIC_ASSERT(NT_SUCCESS(ntStatus));
+        NTSTATUS ntStatus = pLdrRegisterDllNotification(
+            0, &DllLoadNotification, nullptr, &gNotificationCookie);
+        MOZ_DIAGNOSTIC_ASSERT(NT_SUCCESS(ntStatus));
+      }
     }
   }
 

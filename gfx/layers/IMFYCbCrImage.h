@@ -23,10 +23,13 @@ class IMFYCbCrImage : public RecyclingPlanarYCbCrImage {
 
   TextureClient* GetTextureClient(KnowsCompositor* aForwarder) override;
 
+  static DXGIYCbCrTextureData* GetD3D9TextureData(Data aData,
+                                                  gfx::IntSize aSize);
   static DXGIYCbCrTextureData* GetD3D11TextureData(Data aData,
                                                    gfx::IntSize aSize);
 
  protected:
+  TextureClient* GetD3D9TextureClient(KnowsCompositor* aForwarder);
   TextureClient* GetD3D11TextureClient(KnowsCompositor* aForwarder);
 
   virtual ~IMFYCbCrImage();

@@ -49,6 +49,7 @@ class FeatureState;
 class DeviceManagerDx;
 }  // namespace gfx
 namespace layers {
+class DeviceManagerD3D9;
 class ReadbackManagerD3D11;
 }
 }  // namespace mozilla

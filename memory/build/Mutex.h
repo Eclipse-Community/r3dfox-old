@@ -22,7 +22,7 @@
 // they would fire after the first use of malloc, resetting the locks.
 struct Mutex {
 #if defined(XP_WIN)
-  SRWLOCK mMutex;
+  CRITICAL_SECTION mMutex;
 #elif defined(XP_DARWIN)
   OSSpinLock mMutex;
 #else
@@ -32,7 +32,9 @@ struct Mutex {
   // Initializes a mutex. Returns whether initialization succeeded.
   inline bool Init() {
 #if defined(XP_WIN)
-    InitializeSRWLock(&mMutex);
+    if (!InitializeCriticalSectionAndSpinCount(&mMutex, 5000)) {
+      return false;
+    }
 #elif defined(XP_DARWIN)
     mMutex = OS_SPINLOCK_INIT;
 #elif defined(XP_LINUX) && !defined(ANDROID)
@@ -56,7 +58,7 @@ struct Mutex {
 
   inline void Lock() {
 #if defined(XP_WIN)
-    AcquireSRWLockExclusive(&mMutex);
+    EnterCriticalSection(&mMutex);
 #elif defined(XP_DARWIN)
     OSSpinLockLock(&mMutex);
 #else
@@ -66,7 +68,7 @@ struct Mutex {
 
   inline void Unlock() {
 #if defined(XP_WIN)
-    ReleaseSRWLockExclusive(&mMutex);
+    LeaveCriticalSection(&mMutex);
 #elif defined(XP_DARWIN)
     OSSpinLockUnlock(&mMutex);
 #else

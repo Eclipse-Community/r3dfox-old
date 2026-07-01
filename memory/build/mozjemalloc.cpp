@@ -546,7 +546,7 @@ static Atomic<bool> malloc_initialized;
 #endif
 
 #if defined(XP_WIN)
-static Mutex gInitLock = { SRWLOCK_INIT };
+// No init lock for Windows.
 #elif defined(XP_DARWIN)
 static Mutex gInitLock = { OS_SPINLOCK_INIT };
 #elif defined(XP_LINUX) && !defined(ANDROID)
@@ -1182,7 +1182,12 @@ static void* chunk_alloc(size_t aSize, size_t aAlignment, bool aBase,
 static void chunk_dealloc(void* aChunk, size_t aSize, ChunkType aType);
 static void chunk_ensure_zero(void* aPtr, size_t aSize, bool aZeroed);
 static void huge_dalloc(void* aPtr, arena_t* aArena);
-static bool malloc_init_hard();
+#ifdef XP_WIN
+extern "C"
+#else
+static
+#endif
+  bool malloc_init_hard();
 
 #ifdef XP_DARWIN
 #define FORK_HOOK extern "C"
@@ -1199,6 +1204,9 @@ FORK_HOOK void _malloc_postfork_child(void);
 // FreeBSD's pthreads implementation calls malloc(3), so the malloc
 // implementation has to take pains to avoid infinite recursion during
 // initialization.
+#if defined(XP_WIN)
+#define malloc_init() true
+#else
 // Returns whether the allocator was successfully initialized.
 static inline bool malloc_init() {
   if (malloc_initialized == false) {
@@ -1207,6 +1215,7 @@ static inline bool malloc_init() {
 
   return true;
 }
+#endif
 
 static void _malloc_message(const char* p) {
 #if !defined(XP_WIN)
@@ -3711,12 +3720,17 @@ static size_t GetKernelPageSize() {
 }
 
 // Returns whether the allocator was successfully initialized.
-static bool malloc_init_hard() {
+#if !defined(XP_WIN)
+static
+#endif
+  bool malloc_init_hard() {
   unsigned i;
   const char* opts;
   long result;
 
+#ifndef XP_WIN
   MutexAutoLock lock(gInitLock);
+#endif
 
   if (malloc_initialized) {
     // Another thread initialized the allocator before this one
@@ -4626,4 +4640,26 @@ void* _expand(void* aPtr, size_t newsize) {
 }
 
 size_t _msize(void* aPtr) { return DefaultMalloc::malloc_usable_size(aPtr); }
+
+// In the new style jemalloc integration jemalloc is built as a separate
+// shared library.  Since we're no longer hooking into the CRT binary,
+// we need to initialize the heap at the first opportunity we get.
+// DLL_PROCESS_ATTACH in DllMain is that opportunity.
+BOOL APIENTRY
+DllMain(HINSTANCE hModule, DWORD reason, LPVOID lpReserved) {
+  switch (reason) {
+    case DLL_PROCESS_ATTACH:
+      // Don't force the system to page DllMain back in every time
+      // we create/destroy a thread
+      DisableThreadLibraryCalls(hModule);
+      // Initialize the heap
+      malloc_init_hard();
+      break;
+
+    case DLL_PROCESS_DETACH:
+      break;
+  }
+
+  return TRUE;
+}
 #endif

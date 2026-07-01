@@ -49,12 +49,12 @@ TextureSourceD3D9::~TextureSourceD3D9()
 already_AddRefed<TextureHost>
 CreateTextureHostD3D9(const SurfaceDescriptor& aDesc,
                       ISurfaceAllocator* aDeallocator,
-                      TextureFlags aFlags)
+                      LayersBackend aBackend, TextureFlags aFlags)
 {
   RefPtr<TextureHost> result;
   switch (aDesc.type()) {
     case SurfaceDescriptor::TSurfaceDescriptorBuffer: {
-      result = CreateBackendIndependentTextureHost(aDesc, aDeallocator, aFlags);
+      result = CreateBackendIndependentTextureHost(aDesc, aDeallocator, aBackend, aFlags);
       break;
     }
     case SurfaceDescriptor::TSurfaceDescriptorD3D9: {
@@ -233,7 +233,7 @@ TextureSourceD3D9::DataToTexture(DeviceManagerD3D9* aDeviceManager,
                                  _D3DFORMAT aFormat,
                                  uint32_t aBPP)
 {
-  PROFILER_LABEL_FUNC(js::ProfileEntry::Category::GRAPHICS);
+  AUTO_PROFILER_LABEL("TextureSourceD3D9::DataToTexture", GRAPHICS);
   RefPtr<IDirect3DSurface9> surface;
   D3DLOCKED_RECT lockedRect;
   RefPtr<IDirect3DTexture9> texture = InitTextures(aDeviceManager, aSize, aFormat,
@@ -331,7 +331,7 @@ DataTextureSourceD3D9::Update(gfx::DataSourceSurface* aSurface,
                               nsIntRegion* aDestRegion,
                               gfx::IntPoint* aSrcOffset)
 {
-  PROFILER_LABEL_FUNC(js::ProfileEntry::Category::GRAPHICS);
+  AUTO_PROFILER_LABEL("DataTextureSourceD3D9::Update", GRAPHICS);
   // Right now we only support full surface update. If aDestRegion is provided,
   // It will be ignored. Incremental update with a source offset is only used
   // on Mac so it is not clear that we ever will need to support it for D3D.
@@ -514,18 +514,21 @@ static CompositorD3D9* AssertD3D9Compositor(Compositor* aCompositor)
   return compositor;
 }
 
-void
-DataTextureSourceD3D9::SetCompositor(Compositor* aCompositor)
-{
-  CompositorD3D9* d3dCompositor = AssertD3D9Compositor(aCompositor);
-  if (!d3dCompositor) {
+void DataTextureSourceD3D9::SetTextureSourceProvider(
+    TextureSourceProvider* aProvider) {
+  IDirect3DDevice9* newDevice =
+      aProvider ? aProvider->GetD3D9Device() : nullptr;
+  if (!mDevice) {
+    mDevice = newDevice;
+  } else if (mDevice != newDevice) {
+    // We do not support switching devices.
     Reset();
-    return;
+    mDevice = nullptr;
   }
-  if (mCompositor && mCompositor != d3dCompositor) {
-    Reset();
+
+  if (mNextSibling) {
+    mNextSibling->SetTextureSourceProvider(aProvider);
   }
-  mCompositor = d3dCompositor;
 }
 
 void
@@ -767,7 +770,7 @@ DXGID3D9TextureData::Create(gfx::IntSize aSize, gfx::SurfaceFormat aFormat,
                             TextureFlags aFlags,
                             IDirect3DDevice9* aDevice)
 {
-  PROFILER_LABEL_FUNC(js::ProfileEntry::Category::GRAPHICS);
+  AUTO_PROFILER_LABEL("DXGID3D9TextureData::Create", GRAPHICS);
   MOZ_ASSERT(aFormat == gfx::SurfaceFormat::B8G8R8A8);
   if (aFormat != gfx::SurfaceFormat::B8G8R8A8) {
     return nullptr;
@@ -850,7 +853,7 @@ bool
 DataTextureSourceD3D9::UpdateFromTexture(IDirect3DTexture9* aTexture,
                                          const nsIntRegion* aRegion)
 {
-  PROFILER_LABEL_FUNC(js::ProfileEntry::Category::GRAPHICS);
+  AUTO_PROFILER_LABEL("DataTextureSourceD3D9::UpdateFromTexture", GRAPHICS);
   MOZ_ASSERT(aTexture);
 
   D3DSURFACE_DESC desc;
@@ -955,16 +958,18 @@ TextureHostD3D9::GetDevice()
   return mCompositor ? mCompositor->device() : nullptr;
 }
 
-void
-TextureHostD3D9::SetCompositor(Compositor* aCompositor)
-{
-  mCompositor = AssertD3D9Compositor(aCompositor);
-  if (!mCompositor) {
+void TextureHostD3D9::SetTextureSourceProvider(
+    TextureSourceProvider* aProvider) {
+  if (!aProvider || !aProvider->GetD3D9Device()) {
+    mProvider = nullptr;
     mTextureSource = nullptr;
     return;
   }
+
+  mProvider = aProvider;
+
   if (mTextureSource) {
-    mTextureSource->SetCompositor(aCompositor);
+    mTextureSource->SetTextureSourceProvider(aProvider);
   }
 }
 
@@ -1091,12 +1096,16 @@ DXGITextureHostD3D9::Unlock()
   mIsLocked = false;
 }
 
-void
-DXGITextureHostD3D9::SetCompositor(Compositor* aCompositor)
-{
-  mCompositor = AssertD3D9Compositor(aCompositor);
-  if (!mCompositor) {
+void DXGITextureHostD3D9::SetTextureSourceProvider(
+    TextureSourceProvider* aProvider) {
+  mProvider = aProvider;
+
+  if (!aProvider->GetD3D9Device()) {
     mTextureSource = nullptr;
+  }
+
+  if (mTextureSource) {
+    mTextureSource->SetTextureSourceProvider(aProvider);
   }
 }
 
@@ -1134,15 +1143,16 @@ DXGIYCbCrTextureHostD3D9::GetDevice()
   return mCompositor ? mCompositor->device() : nullptr;
 }
 
-void
-DXGIYCbCrTextureHostD3D9::SetCompositor(Compositor* aCompositor)
-{
-  mCompositor = AssertD3D9Compositor(aCompositor);
-  if (!mCompositor) {
+void DXGIYCbCrTextureHostD3D9::SetTextureSourceProvider(
+    TextureSourceProvider* aProvider) {
+  if (!aProvider || !aProvider->GetD3D9Device()) {
+    mProvider = nullptr;
     mTextureSources[0] = nullptr;
     mTextureSources[1] = nullptr;
     mTextureSources[2] = nullptr;
   }
+
+  mProvider = aProvider;
 }
 
 Compositor*

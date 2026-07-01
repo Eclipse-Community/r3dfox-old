@@ -67,13 +67,11 @@ if CONFIG['MOZ_WIDGET_TOOLKIT'] == 'windows':
             'd3d9/CompositorD3D9.h',
             'd3d9/TextureD3D9.h',
         ]
-        UNIFIED_SOURCES += [
-            'd3d9/TextureD3D9.cpp',
-        ]
         SOURCES += [
             'd3d9/CompositorD3D9.cpp',
             'd3d9/DeviceManagerD3D9.cpp',
             'd3d9/Nv3DVUtils.cpp',
+            'd3d9/TextureD3D9.cpp',
         ]
     if CONFIG['MOZ_ENABLE_D3D10_LAYER']:
         EXPORTS.mozilla.layers += [

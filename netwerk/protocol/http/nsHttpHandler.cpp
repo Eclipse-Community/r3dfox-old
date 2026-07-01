@@ -101,7 +101,6 @@
 #define H2MANDATORY_SUITE "security.ssl3.ecdhe_rsa_aes_128_gcm_sha256"
 #define TELEMETRY_ENABLED "toolkit.telemetry.enabled"
 #define ALLOW_EXPERIMENTS "network.allow-experiments"
-#define SAFE_HINT_HEADER_VALUE "safeHint.enabled"
 #define SECURITY_PREFIX "security."
 
 #define TCP_FAST_OPEN_ENABLE "network.tcp.tcp_fastopen_enable"
@@ -236,7 +235,6 @@ nsHttpHandler::nsHttpHandler()
       mPromptTempRedirect(true),
       mEnablePersistentHttpsCaching(false),
       mGPCEnabled(false),
-      mSafeHintEnabled(false),
       mHandlerActive(false),
       mTelemetryEnabled(false),
       mAllowExperiments(true),
@@ -449,7 +447,6 @@ nsresult nsHttpHandler::Init() {
                             this, true);
     prefBranch->AddObserver(HTTP_PREF("tcp_keepalive.long_lived_connections"),
                             this, true);
-    prefBranch->AddObserver(SAFE_HINT_HEADER_VALUE, this, true);
     prefBranch->AddObserver(SECURITY_PREFIX, this, true);
     prefBranch->AddObserver(TCP_FAST_OPEN_ENABLE, this, true);
     prefBranch->AddObserver(TCP_FAST_OPEN_FAILURE_LIMIT, this, true);
@@ -640,12 +637,6 @@ nsresult nsHttpHandler::AddStandardRequestHeaders(nsHttpRequestHead *request) {
                           nsHttpHeaderArray::eVarietyRequestDefault);
   if (NS_FAILED(rv)) return rv;
 
-  // add the "Send Hint" header
-  if (mSafeHintEnabled) {
-    rv = request->SetHeader(nsHttp::Prefer, NS_LITERAL_CSTRING("safe"), false,
-                            nsHttpHeaderArray::eVarietyRequestDefault);
-    if (NS_FAILED(rv)) return rv;
-  }
   return NS_OK;
 }
 
@@ -1717,14 +1708,6 @@ void nsHttpHandler::PrefsChanged(nsIPrefBranch *prefs, const char *pref) {
     rv = prefs->GetBoolPref(GPC_HEADER_ENABLED, &cVar);
     if (NS_SUCCEEDED(rv)) {
       mGPCEnabled = cVar;
-    }
-  }
-  // Hint option
-  if (PREF_CHANGED(SAFE_HINT_HEADER_VALUE)) {
-    cVar = false;
-    rv = prefs->GetBoolPref(SAFE_HINT_HEADER_VALUE, &cVar);
-    if (NS_SUCCEEDED(rv)) {
-      mSafeHintEnabled = cVar;
     }
   }
 

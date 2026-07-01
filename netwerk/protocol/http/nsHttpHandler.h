@@ -527,10 +527,6 @@ class nsHttpHandler final : public nsIHttpProtocolHandler,
   // For broadcasting Global Privacy Control preference
   bool mGPCEnabled;
 
-  // for broadcasting safe hint;
-  bool mSafeHintEnabled;
-  bool mParentalControlEnabled;
-
   // true in between init and shutdown states
   Atomic<bool, Relaxed> mHandlerActive;
 

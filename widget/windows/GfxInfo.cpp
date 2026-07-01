@@ -211,26 +211,41 @@ static nsresult GetKeyValue(const WCHAR* keyLocation, const WCHAR* keyName,
 
 static nsresult GetKeyValues(const WCHAR* keyLocation, const WCHAR* keyName,
                              nsTArray<nsString>& destStrings) {
-  // First ask for the size of the value
-  DWORD size;
-  LONG rv = RegGetValueW(HKEY_LOCAL_MACHINE, keyLocation, keyName,
-                         RRF_RT_REG_MULTI_SZ, nullptr, nullptr, &size);
+  if (!keyLocation || !keyName) {
+    return NS_ERROR_INVALID_ARG;
+  }
+
+  HKEY hkey = nullptr;
+  LONG rv = RegOpenKeyExW(HKEY_LOCAL_MACHINE, keyLocation, 0, KEY_QUERY_VALUE, &hkey);
   if (rv != ERROR_SUCCESS) {
     return NS_ERROR_FAILURE;
   }
 
-  // Create a buffer with the proper size and retrieve the value
+  nsAutoRegKey key(hkey);
+
+  // First ask for the size (in bytes) of the value data.
+  DWORD size = 0;
+  DWORD type = 0;
+  rv = RegQueryValueExW(hkey, keyName, nullptr, &type, nullptr, &size);
+  if (rv != ERROR_SUCCESS || type != REG_MULTI_SZ) {
+    return NS_ERROR_FAILURE;
+  }
+
+  if (size == 0) {
+    return NS_OK; // empty MULTI_SZ
+  }
+
+  // Allocate a buffer large enough for the MULTI_SZ (size is bytes).
   WCHAR* wCharValue = new WCHAR[size / sizeof(WCHAR)];
-  rv = RegGetValueW(HKEY_LOCAL_MACHINE, keyLocation, keyName,
-                    RRF_RT_REG_MULTI_SZ, nullptr, (LPBYTE)wCharValue, &size);
-  if (rv != ERROR_SUCCESS) {
+
+  rv = RegQueryValueExW(hkey, keyName, nullptr, &type,
+                        reinterpret_cast<LPBYTE>(wCharValue), &size);
+  if (rv != ERROR_SUCCESS || type != REG_MULTI_SZ) {
     delete[] wCharValue;
     return NS_ERROR_FAILURE;
   }
 
-  // The value is a sequence of null-terminated strings, usually terminated by
-  // an empty string (\0). RegGetValue ensures that the value is properly
-  // terminated with a null character.
+  // MULTI_SZ is a sequence of null-terminated strings, terminated by an extra '\0'.
   DWORD i = 0;
   DWORD strLen = size / sizeof(WCHAR);
   while (i < strLen) {

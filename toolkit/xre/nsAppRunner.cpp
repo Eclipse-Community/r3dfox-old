@@ -2996,10 +2996,20 @@ class XREMain {
 namespace {
 
 bool PolicyHasRegValue(HKEY aKey, LPCWSTR aName, DWORD* aValue) {
+  if (!aValue) return false;
+
+  HKEY hkey = nullptr;
+  LONG ret = RegOpenKeyExW(aKey, L"SOFTWARE\\Policies\\Mozilla\\Firefox",
+                           0, KEY_QUERY_VALUE, &hkey);
+  if (ret != ERROR_SUCCESS) {
+    return false;
+  }
+  nsAutoRegKey key(hkey);
   DWORD len = sizeof(DWORD);
-  LONG ret = ::RegGetValueW(aKey, L"SOFTWARE\\Policies\\Mozilla\\Firefox",
-                            aName, RRF_RT_DWORD, nullptr, aValue, &len);
-  return ret == ERROR_SUCCESS;
+  DWORD type = 0;
+  ret = RegQueryValueExW(hkey, aName, nullptr, &type,
+                         reinterpret_cast<LPBYTE>(aValue), &len);
+  return ret == ERROR_SUCCESS && type == REG_DWORD;
 }
 
 bool SafeModeBlockedByPolicy() {

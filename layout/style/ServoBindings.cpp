@@ -70,7 +70,6 @@
 #include "mozilla/SystemGroup.h"
 #include "mozilla/ServoMediaList.h"
 #include "mozilla/Telemetry.h"
-#include "mozilla/RWLock.h"
 #include "mozilla/dom/Element.h"
 #include "mozilla/dom/ElementInlines.h"
 #include "mozilla/dom/HTMLTableCellElement.h"
@@ -97,30 +96,25 @@ using namespace mozilla::dom;
 SERVO_ARC_TYPE(StyleContext, ServoStyleContext)
 #undef SERVO_ARC_TYPE
 
-static RWLock* sServoFFILock = nullptr;
-
 static const nsFont* ThreadSafeGetDefaultFontHelper(
     const nsPresContext* aPresContext, nsAtom* aLanguage, uint8_t aGenericId) {
   bool needsCache = false;
   const nsFont* retval;
 
   {
-    AutoReadLock guard(*sServoFFILock);
     retval = aPresContext->GetDefaultFont(aGenericId, aLanguage, &needsCache);
   }
   if (!needsCache) {
     return retval;
   }
   {
-    AutoWriteLock guard(*sServoFFILock);
     retval = aPresContext->GetDefaultFont(aGenericId, aLanguage, nullptr);
   }
   return retval;
 }
 
 void AssertIsMainThreadOrServoLangFontPrefsCacheLocked() {
-  MOZ_ASSERT(NS_IsMainThread() ||
-             sServoFFILock->LockedForWritingByCurrentThread());
+  MOZ_ASSERT(NS_IsMainThread());
 }
 
 /*
@@ -735,7 +729,6 @@ nscolor Gecko_GetLookAndFeelSystemColor(
   bool useStandinsForNativeColors = aPresContext && !aPresContext->IsChrome();
   nscolor result;
   LookAndFeel::ColorID colorId = static_cast<LookAndFeel::ColorID>(aId);
-  AutoWriteLock guard(*sServoFFILock);
   LookAndFeel::GetColor(colorId, useStandinsForNativeColors, &result);
   return result;
 }
@@ -1117,7 +1110,6 @@ void Gecko_nsFont_InitSystem(nsFont* aDest, int32_t aFontId,
   *aDest = *defaultVariableFont;
   LookAndFeel::FontID fontID = static_cast<LookAndFeel::FontID>(aFontId);
 
-  AutoWriteLock guard(*sServoFFILock);
   nsLayoutUtils::ComputeSystemFont(aDest, fontID, aPresContext,
                                    defaultVariableFont);
 }
@@ -1969,12 +1961,10 @@ void Gecko_nsStyleFont_FixupMinFontSize(
   bool needsCache = false;
 
   {
-    AutoReadLock guard(*sServoFFILock);
     minFontSize = aPresContext->MinFontSize(aFont->mLanguage, &needsCache);
   }
 
   if (needsCache) {
-    AutoWriteLock guard(*sServoFFILock);
     minFontSize = aPresContext->MinFontSize(aFont->mLanguage, nullptr);
   }
 
@@ -2026,28 +2016,18 @@ void InitializeServo() {
 
   gUACacheReporter = new UACacheReporter();
   RegisterWeakMemoryReporter(gUACacheReporter);
-
-  sServoFFILock = new RWLock("Servo::FFILock");
 }
 
 void ShutdownServo() {
-  MOZ_ASSERT(sServoFFILock);
-
   UnregisterWeakMemoryReporter(gUACacheReporter);
   gUACacheReporter = nullptr;
 
-  delete sServoFFILock;
   Servo_Shutdown();
 }
 
 namespace mozilla {
 
-void AssertIsMainThreadOrServoFontMetricsLocked() {
-  if (!NS_IsMainThread()) {
-    MOZ_ASSERT(sServoFFILock &&
-               sServoFFILock->LockedForWritingByCurrentThread());
-  }
-}
+void AssertIsMainThreadOrServoFontMetricsLocked() {}
 
 }  // namespace mozilla
 
@@ -2055,7 +2035,6 @@ GeckoFontMetrics Gecko_GetFontMetrics(RawGeckoPresContextBorrowed aPresContext,
                                       bool aIsVertical,
                                       const nsStyleFont* aFont,
                                       nscoord aFontSize, bool aUseUserFontSet) {
-  AutoWriteLock guard(*sServoFFILock);
   GeckoFontMetrics ret;
 
   // Getting font metrics can require some main thread only work to be

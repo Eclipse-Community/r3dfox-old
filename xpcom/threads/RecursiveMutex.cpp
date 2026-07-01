@@ -37,7 +37,8 @@ RecursiveMutex::RecursiveMutex(
   DWORD flags = 0;
 #endif
   BOOL r =
-      InitializeCriticalSectionEx(NativeHandle(mMutex), sLockSpinCount, flags);
+      InitializeCriticalSectionAndSpinCount(NativeHandle(mMutex), sLockSpinCount);
+// Make this use other crit section if winver is 600+
   MOZ_RELEASE_ASSERT(r);
 #else
   pthread_mutexattr_t attr;

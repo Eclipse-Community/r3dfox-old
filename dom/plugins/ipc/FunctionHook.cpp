@@ -4,6 +4,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+#include "mozilla/DynamicallyLinkedFunctionPtr.h"
 #include "FunctionHook.h"
 #include "FunctionBroker.h"
 #include "nsClassHashtable.h"
@@ -200,15 +201,21 @@ static HANDLE WINAPI CreateFileAHookFn(LPCSTR aFname, DWORD aAccess,
 static bool GetLocalLowTempPath(size_t aLen, LPWSTR aPath) {
   NS_NAMED_LITERAL_STRING(tempname, "\\Temp");
   LPWSTR path;
-  if (SUCCEEDED(
-          SHGetKnownFolderPath(FOLDERID_LocalAppDataLow, 0, nullptr, &path))) {
-    if (wcslen(path) + tempname.Length() < aLen) {
-      wcscpy(aPath, path);
-      wcscat(aPath, tempname.get());
+
+  mozilla::DynamicallyLinkedFunctionPtr<decltype(&SHGetKnownFolderPath)>
+    pSHGetKnownFolderPath(L"shell32.dll", "SHGetKnownFolderPath");
+
+  if (pSHGetKnownFolderPath) {
+    if (SUCCEEDED(
+            pSHGetKnownFolderPath(FOLDERID_LocalAppDataLow, 0, nullptr, &path))) {
+      if (wcslen(path) + tempname.Length() < aLen) {
+        wcscpy(aPath, path);
+        wcscat(aPath, tempname.get());
+        CoTaskMemFree(path);
+        return true;
+      }
       CoTaskMemFree(path);
-      return true;
     }
-    CoTaskMemFree(path);
   }
 
   // XP doesn't support SHGetKnownFolderPath and LocalLow

@@ -30,6 +30,7 @@ EXPORTS += [
     'nsCollationCID.h',
     'nsLanguageAtomService.h',
     'nsUConvPropertySearch.h',
+    'nsWin32Locale.h',
 ]
 
 EXPORTS.mozilla.intl += [

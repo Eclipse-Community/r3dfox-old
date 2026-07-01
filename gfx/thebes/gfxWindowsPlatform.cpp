@@ -1320,10 +1320,10 @@ void gfxWindowsPlatform::InitializeD3D11Config() {
   // that haven't been performance tested yet.
   if (al.IsEnabled() && !IsWin8OrLater()) {
     if (gfxPrefs::AdvancedLayersEnableOnWindows7()) {
-      al.UserEnable("Enabled for Windows 7 via user-preference");
+      al.UserEnable("Enabled for Windows Vista & 7 via user-preference");
     } else {
       al.Disable(FeatureStatus::Disabled,
-                 "Advanced Layers is disabled on Windows 7 by default",
+                 "Advanced Layers is disabled on Windows Vista & 7 by default",
                  NS_LITERAL_CSTRING("FEATURE_FAILURE_DISABLED_ON_WIN7"));
     }
   }

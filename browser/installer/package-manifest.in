@@ -270,7 +270,6 @@
 @RESPATH@/components/necko_wyciwyg.xpt
 @RESPATH@/components/necko.xpt
 @RESPATH@/components/loginmgr.xpt
-@RESPATH@/components/parentalcontrols.xpt
 #ifdef MOZ_WEBRTC
 @RESPATH@/components/peerconnection.xpt
 #endif

@@ -44,7 +44,6 @@
 #include "nsIStreamConverterService.h"
 #include "nsCRT.h"
 #include "nsIMemoryReporter.h"
-#include "nsIParentalControlsService.h"
 #include "nsPIDOMWindow.h"
 #include "nsINetworkLinkService.h"
 #include "nsHttpChannelAuthProvider.h"
@@ -238,7 +237,6 @@ nsHttpHandler::nsHttpHandler()
       mEnablePersistentHttpsCaching(false),
       mGPCEnabled(false),
       mSafeHintEnabled(false),
-      mParentalControlEnabled(false),
       mHandlerActive(false),
       mTelemetryEnabled(false),
       mAllowExperiments(true),
@@ -567,11 +565,6 @@ nsresult nsHttpHandler::Init() {
   mWifiTickler = new Tickler();
   if (NS_FAILED(mWifiTickler->Init())) mWifiTickler = nullptr;
 
-  nsCOMPtr<nsIParentalControlsService> pc =
-      do_CreateInstance("@mozilla.org/parental-controls-service;1");
-  if (pc) {
-    pc->GetParentalControlsEnabled(&mParentalControlEnabled);
-  }
   return NS_OK;
 }
 
@@ -648,7 +641,7 @@ nsresult nsHttpHandler::AddStandardRequestHeaders(nsHttpRequestHead *request) {
   if (NS_FAILED(rv)) return rv;
 
   // add the "Send Hint" header
-  if (mSafeHintEnabled || mParentalControlEnabled) {
+  if (mSafeHintEnabled) {
     rv = request->SetHeader(nsHttp::Prefer, NS_LITERAL_CSTRING("safe"), false,
                             nsHttpHeaderArray::eVarietyRequestDefault);
     if (NS_FAILED(rv)) return rv;

@@ -12,10 +12,6 @@
 #include "nsUpdateDriver.h"
 #endif
 
-#if !defined(MOZ_DISABLE_PARENTAL_CONTROLS)
-#include "nsParentalControlsService.h"
-#endif
-
 #include "mozilla/AlertNotification.h"
 #include "nsAlertsService.h"
 
@@ -75,10 +71,6 @@ NS_GENERIC_FACTORY_CONSTRUCTOR(nsTerminator)
 
 NS_GENERIC_FACTORY_CONSTRUCTOR(nsUserInfo)
 NS_GENERIC_FACTORY_CONSTRUCTOR(nsFindService)
-
-#if !defined(MOZ_DISABLE_PARENTAL_CONTROLS)
-NS_GENERIC_FACTORY_CONSTRUCTOR(nsParentalControlsService)
-#endif
 
 NS_GENERIC_FACTORY_CONSTRUCTOR(AlertNotification)
 NS_GENERIC_FACTORY_CONSTRUCTOR(nsAlertsService)
@@ -140,9 +132,6 @@ NS_DEFINE_NAMED_CID(NS_TOOLKIT_TERMINATOR_CID);
 NS_DEFINE_NAMED_CID(NS_USERINFO_CID);
 NS_DEFINE_NAMED_CID(ALERT_NOTIFICATION_CID);
 NS_DEFINE_NAMED_CID(NS_ALERTSSERVICE_CID);
-#if !defined(MOZ_DISABLE_PARENTAL_CONTROLS)
-NS_DEFINE_NAMED_CID(NS_PARENTALCONTROLSSERVICE_CID);
-#endif
 NS_DEFINE_NAMED_CID(NS_DOWNLOADPLATFORM_CID);
 NS_DEFINE_NAMED_CID(NS_FIND_SERVICE_CID);
 NS_DEFINE_NAMED_CID(NS_TYPEAHEADFIND_CID);
@@ -176,10 +165,6 @@ static const Module::CIDEntry kToolkitCIDs[] = {
     {&kNS_USERINFO_CID, false, nullptr, nsUserInfoConstructor},
     {&kALERT_NOTIFICATION_CID, false, nullptr, AlertNotificationConstructor},
     {&kNS_ALERTSSERVICE_CID, false, nullptr, nsAlertsServiceConstructor},
-#if !defined(MOZ_DISABLE_PARENTAL_CONTROLS)
-    {&kNS_PARENTALCONTROLSSERVICE_CID, false, nullptr,
-     nsParentalControlsServiceConstructor},
-#endif
     {&kNS_DOWNLOADPLATFORM_CID, false, nullptr, DownloadPlatformConstructor},
     {&kNS_FIND_SERVICE_CID, false, nullptr, nsFindServiceConstructor},
     {&kNS_TYPEAHEADFIND_CID, false, nullptr, nsTypeAheadFindConstructor},
@@ -227,9 +212,6 @@ static const Module::ContractIDEntry kToolkitContracts[] = {
     {NS_USERINFO_CONTRACTID, &kNS_USERINFO_CID},
     {ALERT_NOTIFICATION_CONTRACTID, &kALERT_NOTIFICATION_CID},
     {NS_ALERTSERVICE_CONTRACTID, &kNS_ALERTSSERVICE_CID},
-#if !defined(MOZ_DISABLE_PARENTAL_CONTROLS)
-    {NS_PARENTALCONTROLSSERVICE_CONTRACTID, &kNS_PARENTALCONTROLSSERVICE_CID},
-#endif
     {NS_DOWNLOADPLATFORM_CONTRACTID, &kNS_DOWNLOADPLATFORM_CID},
     {NS_FIND_SERVICE_CONTRACTID, &kNS_FIND_SERVICE_CID},
     {NS_TYPEAHEADFIND_CONTRACTID, &kNS_TYPEAHEADFIND_CID},

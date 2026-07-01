@@ -38,7 +38,6 @@ UNIFIED_SOURCES += [
     'TestPriorityQueue.cpp',
     'TestRacingServiceManager.cpp',
     'TestRecursiveMutex.cpp',
-    'TestRWLock.cpp',
     'TestSlicedInputStream.cpp',
     'TestSnappyStreams.cpp',
     'TestStateWatching.cpp',

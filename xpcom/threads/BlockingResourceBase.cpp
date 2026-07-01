@@ -23,7 +23,6 @@
 #include "mozilla/RecursiveMutex.h"
 #include "mozilla/ReentrantMonitor.h"
 #include "mozilla/Mutex.h"
-#include "mozilla/RWLock.h"
 
 #if defined(MOZILLA_INTERNAL_API)
 #include "GeckoProfiler.h"
@@ -357,36 +356,6 @@ void OffTheBooksMutex::Unlock() {
 
 void OffTheBooksMutex::AssertCurrentThreadOwns() const {
   MOZ_ASSERT(IsAcquired() && mOwningThread == PR_GetCurrentThread());
-}
-
-//
-// Debug implementation of RWLock
-//
-
-void RWLock::ReadLock() {
-  // All we want to ensure here is that we're not attempting to acquire the
-  // read lock while this thread is holding the write lock.
-  CheckAcquire();
-  this->ReadLockInternal();
-  MOZ_ASSERT(mOwningThread == nullptr);
-}
-
-void RWLock::ReadUnlock() {
-  MOZ_ASSERT(mOwningThread == nullptr);
-  this->ReadUnlockInternal();
-}
-
-void RWLock::WriteLock() {
-  CheckAcquire();
-  this->WriteLockInternal();
-  mOwningThread = PR_GetCurrentThread();
-  Acquire();
-}
-
-void RWLock::WriteUnlock() {
-  Release();
-  mOwningThread = nullptr;
-  this->WriteUnlockInternal();
 }
 
 //

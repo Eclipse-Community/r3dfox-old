@@ -545,7 +545,15 @@ static bool malloc_initialized;
 static Atomic<bool> malloc_initialized;
 #endif
 
-static StaticMutex gInitLock = {STATIC_MUTEX_INIT};
+#if defined(XP_WIN)
+static Mutex gInitLock = { SRWLOCK_INIT };
+#elif defined(XP_DARWIN)
+static Mutex gInitLock = { OS_SPINLOCK_INIT };
+#elif defined(XP_LINUX) && !defined(ANDROID)
+static Mutex gInitLock = { PTHREAD_ADAPTIVE_MUTEX_INITIALIZER_NP };
+#else
+static Mutex gInitLock = { PTHREAD_MUTEX_INITIALIZER };
+#endif
 
 // ***************************************************************************
 // Statistics data structures.
@@ -3708,7 +3716,7 @@ static bool malloc_init_hard() {
   const char* opts;
   long result;
 
-  AutoLock<StaticMutex> lock(gInitLock);
+  MutexAutoLock lock(gInitLock);
 
   if (malloc_initialized) {
     // Another thread initialized the allocator before this one

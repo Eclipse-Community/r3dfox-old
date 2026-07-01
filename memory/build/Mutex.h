@@ -22,7 +22,7 @@
 // they would fire after the first use of malloc, resetting the locks.
 struct Mutex {
 #if defined(XP_WIN)
-  CRITICAL_SECTION mMutex;
+  SRWLOCK mMutex;
 #elif defined(XP_DARWIN)
   OSSpinLock mMutex;
 #else
@@ -32,9 +32,7 @@ struct Mutex {
   // Initializes a mutex. Returns whether initialization succeeded.
   inline bool Init() {
 #if defined(XP_WIN)
-    if (!InitializeCriticalSectionAndSpinCount(&mMutex, 5000)) {
-      return false;
-    }
+    InitializeSRWLock(&mMutex);
 #elif defined(XP_DARWIN)
     mMutex = OS_SPINLOCK_INIT;
 #elif defined(XP_LINUX) && !defined(ANDROID)
@@ -58,7 +56,7 @@ struct Mutex {
 
   inline void Lock() {
 #if defined(XP_WIN)
-    EnterCriticalSection(&mMutex);
+    AcquireSRWLockExclusive(&mMutex);
 #elif defined(XP_DARWIN)
     OSSpinLockLock(&mMutex);
 #else
@@ -68,7 +66,7 @@ struct Mutex {
 
   inline void Unlock() {
 #if defined(XP_WIN)
-    LeaveCriticalSection(&mMutex);
+    ReleaseSRWLockExclusive(&mMutex);
 #elif defined(XP_DARWIN)
     OSSpinLockUnlock(&mMutex);
 #else
@@ -77,54 +75,18 @@ struct Mutex {
   }
 };
 
-// Mutex that can be used for static initialization.
-// On Windows, CRITICAL_SECTION requires a function call to be initialized,
-// but for the initialization lock, a static initializer calling the
-// function would be called too late. We need no-function-call
-// initialization, which SRWLock provides.
-// Ideally, we'd use the same type of locks everywhere, but SRWLocks
-// everywhere incur a performance penalty. See bug 1418389.
-#if defined(XP_WIN)
-struct StaticMutex {
-  SRWLOCK mMutex;
-
-  inline void Lock() { AcquireSRWLockExclusive(&mMutex); }
-
-  inline void Unlock() { ReleaseSRWLockExclusive(&mMutex); }
-};
-
-// Normally, we'd use a constexpr constructor, but MSVC likes to create
-// static initializers anyways.
-#define STATIC_MUTEX_INIT SRWLOCK_INIT
-
-#else
-typedef Mutex StaticMutex;
-
-#if defined(XP_DARWIN)
-#define STATIC_MUTEX_INIT OS_SPINLOCK_INIT
-#elif defined(XP_LINUX) && !defined(ANDROID)
-#define STATIC_MUTEX_INIT PTHREAD_ADAPTIVE_MUTEX_INITIALIZER_NP
-#else
-#define STATIC_MUTEX_INIT PTHREAD_MUTEX_INITIALIZER
-#endif
-
-#endif
-
-template <typename T>
-struct MOZ_RAII AutoLock {
-  explicit AutoLock(T& aMutex MOZ_GUARD_OBJECT_NOTIFIER_PARAM)
+struct MOZ_RAII MutexAutoLock {
+  explicit MutexAutoLock(Mutex& aMutex MOZ_GUARD_OBJECT_NOTIFIER_PARAM)
       : mMutex(aMutex) {
     MOZ_GUARD_OBJECT_NOTIFIER_INIT;
     mMutex.Lock();
   }
 
-  ~AutoLock() { mMutex.Unlock(); }
+  ~MutexAutoLock() { mMutex.Unlock(); }
 
  private:
   MOZ_DECL_USE_GUARD_OBJECT_NOTIFIER;
-  T& mMutex;
+  Mutex& mMutex;
 };
-
-using MutexAutoLock = AutoLock<Mutex>;
 
 #endif

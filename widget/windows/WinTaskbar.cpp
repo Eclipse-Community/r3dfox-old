@@ -33,6 +33,8 @@
 #include <propkey.h>
 #include <shellapi.h>
 
+const wchar_t kShellLibraryName[] =  L"shell32.dll";
+
 static NS_DEFINE_CID(kJumpListBuilderCID, NS_WIN_JUMPLISTBUILDER_CID);
 
 namespace {
@@ -68,14 +70,30 @@ nsresult SetWindowAppUserModelProp(mozIDOMWindow *aParent,
 
   if (!toplevelHWND) return NS_ERROR_INVALID_ARG;
 
-  RefPtr<IPropertyStore> pPropStore;
-  if (FAILED(SHGetPropertyStoreForWindow(toplevelHWND, IID_IPropertyStore,
-                                         getter_AddRefs(pPropStore)))) {
+  typedef HRESULT (WINAPI * SHGetPropertyStoreForWindowPtr)
+                    (HWND hwnd, REFIID riid, void** ppv);
+  SHGetPropertyStoreForWindowPtr funcGetProStore = nullptr;
+
+  HMODULE hDLL = ::LoadLibraryW(kShellLibraryName);
+  funcGetProStore = (SHGetPropertyStoreForWindowPtr)
+    GetProcAddress(hDLL, "SHGetPropertyStoreForWindow");
+
+  if (!funcGetProStore) {
+    FreeLibrary(hDLL);
+    return NS_ERROR_NO_INTERFACE;
+  }
+
+  IPropertyStore* pPropStore;
+  if (FAILED(funcGetProStore(toplevelHWND,
+                             IID_PPV_ARGS(&pPropStore)))) {
+    FreeLibrary(hDLL);
     return NS_ERROR_INVALID_ARG;
   }
 
   PROPVARIANT pv;
   if (FAILED(InitPropVariantFromString(aIdentifier.get(), &pv))) {
+    pPropStore->Release();
+    FreeLibrary(hDLL);
     return NS_ERROR_UNEXPECTED;
   }
 
@@ -86,6 +104,8 @@ nsresult SetWindowAppUserModelProp(mozIDOMWindow *aParent,
   }
 
   PropVariantClear(&pv);
+  pPropStore->Release();
+  FreeLibrary(hDLL);
 
   return rv;
 }
@@ -272,10 +292,29 @@ WinTaskbar::GetDefaultGroupId(nsAString &aDefaultGroupId) {
 
 // (static) Called from AppShell
 bool WinTaskbar::RegisterAppUserModelID() {
+  SetCurrentProcessExplicitAppUserModelIDPtr funcAppUserModelID = nullptr;
+  bool retVal = false;
+
   nsAutoString uid;
   if (!GetAppUserModelID(uid)) return false;
 
-  return SUCCEEDED(SetCurrentProcessExplicitAppUserModelID(uid.get()));
+  HMODULE hDLL = ::LoadLibraryW(kShellLibraryName);
+
+  funcAppUserModelID = (SetCurrentProcessExplicitAppUserModelIDPtr)
+                        GetProcAddress(hDLL, "SetCurrentProcessExplicitAppUserModelID");
+
+  if (!funcAppUserModelID) {
+    ::FreeLibrary(hDLL);
+    return false;
+  }
+
+  if (SUCCEEDED(funcAppUserModelID(uid.get())))
+    retVal = true;
+
+  if (hDLL)
+    ::FreeLibrary(hDLL);
+
+  return retVal;
 }
 
 NS_IMETHODIMP

@@ -917,41 +917,79 @@ MFBT_API bool DllBlocklist_CheckStatus() {
 // This section is for DLL Services
 // ============================================================================
 
-static SRWLOCK gDllServicesLock = SRWLOCK_INIT;
-static mozilla::glue::detail::DllServicesBase* gDllServices;
+// XP-compatible reader/writer lock (not fair, but works)
+struct XRWLOCK {
+  CRITICAL_SECTION mMutex;   // protects counters
+  LONG mReaders = 0;
+  HANDLE mWritersEvent;      // signaled when writer(s) may proceed
+
+  XRWLOCK() : mWritersEvent(nullptr) {
+    ::InitializeCriticalSection(&mMutex);
+    // Start signaled so writers can proceed when no readers block them.
+    mWritersEvent = ::CreateEventW(nullptr, TRUE, TRUE, nullptr);
+  }
+
+  ~XRWLOCK() {
+    if (mWritersEvent) {
+      ::CloseHandle(mWritersEvent);
+      mWritersEvent = nullptr;
+    }
+    ::DeleteCriticalSection(&mMutex);
+  }
+
+  XRWLOCK(const XRWLOCK&) = delete;
+  XRWLOCK& operator=(const XRWLOCK&) = delete;
+};
+
+static XRWLOCK gDllServicesLock;
+static mozilla::glue::detail::DllServicesBase* gDllServices = nullptr;
 
 class MOZ_RAII AutoSharedLock final {
  public:
-  explicit AutoSharedLock(SRWLOCK& aLock) : mLock(aLock) {
-    ::AcquireSRWLockShared(&aLock);
+  explicit AutoSharedLock(XRWLOCK& aLock) : mLock(aLock) {
+    ::EnterCriticalSection(&mLock.mMutex);
+    if (++mLock.mReaders == 1) {
+      // First reader blocks writers.
+      ::ResetEvent(mLock.mWritersEvent);
+    }
+    ::LeaveCriticalSection(&mLock.mMutex);
   }
 
-  ~AutoSharedLock() { ::ReleaseSRWLockShared(&mLock); }
-
-  AutoSharedLock(const AutoSharedLock&) = delete;
-  AutoSharedLock(AutoSharedLock&&) = delete;
-  AutoSharedLock& operator=(const AutoSharedLock&) = delete;
-  AutoSharedLock& operator=(AutoSharedLock&&) = delete;
+  ~AutoSharedLock() {
+    ::EnterCriticalSection(&mLock.mMutex);
+    LONG r = --mLock.mReaders;
+    if (r == 0) {
+      // Last reader allows writers.
+      ::SetEvent(mLock.mWritersEvent);
+    }
+    ::LeaveCriticalSection(&mLock.mMutex);
+  }
 
  private:
-  SRWLOCK& mLock;
+  XRWLOCK& mLock;
 };
 
 class MOZ_RAII AutoExclusiveLock final {
  public:
-  explicit AutoExclusiveLock(SRWLOCK& aLock) : mLock(aLock) {
-    ::AcquireSRWLockExclusive(&aLock);
+  explicit AutoExclusiveLock(XRWLOCK& aLock) : mLock(aLock) {
+    // Wait until no readers are holding the lock.
+    ::WaitForSingleObject(mLock.mWritersEvent, INFINITE);
+
+    // Take “writer ownership” so new readers don't starve-walk in.
+    ::EnterCriticalSection(&mLock.mMutex);
+    ::ResetEvent(mLock.mWritersEvent); // keep writers blocked while we hold exclusive
+    ::LeaveCriticalSection(&mLock.mMutex);
   }
 
-  ~AutoExclusiveLock() { ::ReleaseSRWLockExclusive(&mLock); }
-
-  AutoExclusiveLock(const AutoExclusiveLock&) = delete;
-  AutoExclusiveLock(AutoExclusiveLock&&) = delete;
-  AutoExclusiveLock& operator=(const AutoExclusiveLock&) = delete;
-  AutoExclusiveLock& operator=(AutoExclusiveLock&&) = delete;
+  ~AutoExclusiveLock() {
+    ::EnterCriticalSection(&mLock.mMutex);
+    // No readers are possible while event is reset; release writer.
+    ::SetEvent(mLock.mWritersEvent);
+    ::LeaveCriticalSection(&mLock.mMutex);
+  }
 
  private:
-  SRWLOCK& mLock;
+  XRWLOCK& mLock;
 };
 
 // These types are documented on MSDN but not provided in any SDK headers

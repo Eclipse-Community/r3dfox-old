@@ -238,6 +238,7 @@ void PlatformThread::Join(PlatformThreadHandle thread_handle) {
   base::ThreadRestrictions::AssertIOAllowed();
 #endif
 
+#if 0
   DWORD thread_id = 0;
   thread_id = ::GetThreadId(thread_handle.platform_handle());
   DWORD last_error = 0;
@@ -247,6 +248,7 @@ void PlatformThread::Join(PlatformThreadHandle thread_handle) {
   // Record information about the exiting thread in case joining hangs.
   base::debug::Alias(&thread_id);
   base::debug::Alias(&last_error);
+#endif
 
   // Record the event that this thread is blocking upon (for hang diagnosis).
   base::debug::ScopedThreadJoinActivity thread_activity(&thread_handle);

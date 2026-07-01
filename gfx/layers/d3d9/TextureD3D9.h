@@ -136,7 +136,7 @@ public:
 
   virtual gfx::SurfaceFormat GetFormat() const override { return mFormat; }
 
-  virtual void SetCompositor(Compositor* aCompositor) override;
+  virtual void SetTextureSourceProvider(TextureSourceProvider* aProvider) override;
 
   // BigImageIterator
 
@@ -167,6 +167,7 @@ protected:
   void Reset();
 
   std::vector< RefPtr<IDirect3DTexture9> > mTileTextures;
+  RefPtr<IDirect3DDevice9> mDevice;
   RefPtr<CompositorD3D9> mCompositor;
   gfx::SurfaceFormat mFormat;
   uint32_t mCurrentTile;
@@ -278,9 +279,9 @@ public:
 
   virtual void DeallocateDeviceData() override;
 
-  virtual void SetCompositor(Compositor* aCompositor) override;
+  virtual void SetTextureSourceProvider(TextureSourceProvider* aProvider) override;
 
-  virtual Compositor* GetCompositor() override;
+  Compositor* GetCompositor();
 
   virtual gfx::SurfaceFormat GetFormat() const override { return mFormat; }
 
@@ -321,9 +322,9 @@ public:
 
   virtual void DeallocateDeviceData() override;
 
-  virtual void SetCompositor(Compositor* aCompositor) override;
+  virtual void SetTextureSourceProvider(TextureSourceProvider* aProvider) override;
 
-  virtual Compositor* GetCompositor() override;
+  Compositor* GetCompositor();
 
   virtual gfx::SurfaceFormat GetFormat() const override { return mFormat; }
 
@@ -360,9 +361,9 @@ public:
 
   virtual void DeallocateDeviceData() override {}
 
-  virtual void SetCompositor(Compositor* aCompositor) override;
+  virtual void SetTextureSourceProvider(TextureSourceProvider* aProvider) override;
 
-  virtual Compositor* GetCompositor() override;
+  Compositor* GetCompositor();
 
   virtual gfx::SurfaceFormat GetFormat() const override { return gfx::SurfaceFormat::YUV; }
 

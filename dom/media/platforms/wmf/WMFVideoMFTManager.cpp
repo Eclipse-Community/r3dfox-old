@@ -441,10 +441,11 @@ const nsCString GetFoundD3D9BlacklistedDLL() {
 
 class CreateDXVAManagerEvent : public Runnable {
  public:
-  CreateDXVAManagerEvent(layers::KnowsCompositor* aKnowsCompositor,
+  CreateDXVAManagerEvent(LayersBackend aBackend,
+                         layers::KnowsCompositor* aKnowsCompositor,
                          nsCString& aFailureReason)
       : Runnable("CreateDXVAManagerEvent"),
-        mBackend(LayersBackend::LAYERS_D3D11),
+        mBackend(aBackend),
         mKnowsCompositor(aKnowsCompositor),
         mFailureReason(aFailureReason) {}
 
@@ -492,7 +493,7 @@ class CreateDXVAManagerEvent : public Runnable {
   nsACString& mFailureReason;
 };
 
-bool WMFVideoMFTManager::InitializeDXVA() {
+bool WMFVideoMFTManager::InitializeDXVA(bool aForceD3D9) {
   // If we use DXVA but aren't running with a D3D layer manager then the
   // readback of decoded video frames from GPU to CPU memory grinds painting
   // to a halt, and makes playback performance *worse*.
@@ -506,14 +507,17 @@ bool WMFVideoMFTManager::InitializeDXVA() {
   bool useANGLE =
       mKnowsCompositor ? mKnowsCompositor->GetCompositorUseANGLE() : false;
   bool wrWithANGLE = (backend == LayersBackend::LAYERS_WR) && useANGLE;
-  if (backend != LayersBackend::LAYERS_D3D11 && !wrWithANGLE) {
+  if (backend != LayersBackend::LAYERS_D3D9 &&
+      backend != LayersBackend::LAYERS_D3D11 && !wrWithANGLE) {
     mDXVAFailureReason.AssignLiteral("Unsupported layers backend");
     return false;
   }
 
   // The DXVA manager must be created on the main thread.
   RefPtr<CreateDXVAManagerEvent> event =
-      new CreateDXVAManagerEvent(mKnowsCompositor, mDXVAFailureReason);
+      new CreateDXVAManagerEvent(aForceD3D9 ? LayersBackend::LAYERS_D3D9
+                                            : backend,
+                                 mKnowsCompositor, mDXVAFailureReason);
 
   if (NS_IsMainThread()) {
     event->Run();
@@ -584,7 +588,7 @@ MediaResult WMFVideoMFTManager::Init() {
     return result;
   }
 
-  result = InitInternal();
+  result = InitInternal(/* aForceD3D9 = */ false);
   if (NS_FAILED(result) && mAMDVP9InUse) {
     // Something failed with the AMD VP9 decoder; attempt again defaulting back
     // to Microsoft MFT.
@@ -592,7 +596,7 @@ MediaResult WMFVideoMFTManager::Init() {
     if (mDXVA2Manager) {
       DeleteOnMainThread(mDXVA2Manager);
     }
-    result = InitInternal();
+    result = InitInternal(/* aForceD3D9 = */ false);
   }
 
   if (NS_SUCCEEDED(result) && mDXVA2Manager) {
@@ -608,7 +612,7 @@ MediaResult WMFVideoMFTManager::Init() {
   return result;
 }
 
-MediaResult WMFVideoMFTManager::InitInternal() {
+MediaResult WMFVideoMFTManager::InitInternal(bool aForceD3D9) {
   // The H264 SanityTest uses a 132x132 videos to determine if DXVA can be used.
   // so we want to use the software decoder for videos with lower resolutions.
   static const int MIN_H264_HW_WIDTH = 132;
@@ -618,7 +622,7 @@ MediaResult WMFVideoMFTManager::InitInternal() {
   bool useDxva = (mStreamType != H264 ||
                   (mVideoInfo.ImageRect().width > MIN_H264_HW_WIDTH &&
                    mVideoInfo.ImageRect().height > MIN_H264_HW_HEIGHT)) &&
-                 InitializeDXVA();
+                 InitializeDXVA(aForceD3D9);
 
   RefPtr<MFTDecoder> decoder;
 
@@ -709,7 +713,7 @@ MediaResult WMFVideoMFTManager::InitInternal() {
     mDXVAEnabled = false;
     // DXVA initialization with current decoder actually failed,
     // re-do initialization.
-    return InitInternal();
+    return InitInternal(/* aForceD3D9 = */ false);
   }
 
   LOG("Video Decoder initialized, Using DXVA: %s",
@@ -966,7 +970,8 @@ WMFVideoMFTManager::CreateBasicVideoFrame(IMFSample* aSample,
       mVideoInfo.ScaledImageRect(videoWidth, videoHeight);
 
   LayersBackend backend = GetCompositorBackendType(mKnowsCompositor);
-  if (backend != LayersBackend::LAYERS_D3D11 || !mIMFUsable) {
+  if (backend != LayersBackend::LAYERS_D3D9 &&
+      backend != LayersBackend::LAYERS_D3D11 || !mIMFUsable) {
     RefPtr<VideoData> v = VideoData::CreateAndCopyData(
         mVideoInfo, mImageContainer, aStreamOffset, pts, duration, b, false,
         TimeUnit::FromMicroseconds(-1), pictureRegion);

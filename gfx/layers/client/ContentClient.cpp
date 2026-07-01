@@ -72,6 +72,7 @@ static IntRect ComputeBufferRect(const IntRect& aRequestedRect) {
     CompositableForwarder* aForwarder) {
   LayersBackend backend = aForwarder->GetCompositorBackendType();
   if (backend != LayersBackend::LAYERS_OPENGL &&
+      backend != LayersBackend::LAYERS_D3D9 &&
       backend != LayersBackend::LAYERS_D3D11 &&
       backend != LayersBackend::LAYERS_WR &&
       backend != LayersBackend::LAYERS_BASIC) {

@@ -62,9 +62,9 @@ class WMFVideoMFTManager : public MFTManager {
  private:
   MediaResult ValidateVideoInfo();
 
-  bool InitializeDXVA();
+  bool InitializeDXVA(bool aForceD3D9);
 
-  MediaResult InitInternal();
+  MediaResult InitInternal(bool aForceD3D9);
 
   HRESULT CreateBasicVideoFrame(IMFSample* aSample, int64_t aStreamOffset,
                                 VideoData** aOutVideoData);

@@ -19,6 +19,9 @@
 #include "base/win_util.h"
 
 #include <algorithm>
+#include "prenv.h"
+
+#include "mozilla/WindowsVersion.h"
 
 namespace {
 
@@ -301,8 +304,11 @@ bool LaunchApp(const std::wstring& cmdline, const LaunchOptions& options,
   // We want to inherit the std handles so dump() statements and assertion
   // messages in the child process can be seen - but we *do not* want to
   // blindly have all handles inherited.  Vista and later has a technique
-  // where only specified handles are inherited - so we use this technique.
-  // If that fails we just don't inherit anything.
+  // where only specified handles are inherited - so we use this technique if
+  // we can.  If that technique isn't available (or it fails), we just don't
+  // inherit anything.  This can cause us a problem for Windows XP testing,
+  // because we sometimes need the handles to get inherited for test logging to
+  // work. So we also inherit when a specific environment variable is set.
   DWORD dwCreationFlags = 0;
   BOOL bInheritHandles = FALSE;
 
@@ -323,29 +329,40 @@ bool LaunchApp(const std::wstring& cmdline, const LaunchOptions& options,
     handlesToInherit.push_back(h);
   }
 
-  // setup our handle array first - if we end up with no handles that can
-  // be inherited we can avoid trying to do the ThreadAttributeList dance...
-  HANDLE stdOut = ::GetStdHandle(STD_OUTPUT_HANDLE);
-  HANDLE stdErr = ::GetStdHandle(STD_ERROR_HANDLE);
+  // Don't even bother trying pre-Vista...
+  if (mozilla::IsVistaOrLater()) {
+    // setup our handle array first - if we end up with no handles that can
+    // be inherited we can avoid trying to do the ThreadAttributeList dance...
+    HANDLE stdOut = ::GetStdHandle(STD_OUTPUT_HANDLE);
+    HANDLE stdErr = ::GetStdHandle(STD_ERROR_HANDLE);
 
-  if (IsInheritableHandle(stdOut)) handlesToInherit.push_back(stdOut);
-  if (stdErr != stdOut && IsInheritableHandle(stdErr))
-    handlesToInherit.push_back(stdErr);
+    if (IsInheritableHandle(stdOut)) handlesToInherit.push_back(stdOut);
+    if (stdErr != stdOut && IsInheritableHandle(stdErr))
+      handlesToInherit.push_back(stdErr);
 
-  if (!handlesToInherit.empty()) {
-    lpAttributeList = CreateThreadAttributeList(handlesToInherit.data(),
-                                                handlesToInherit.size());
-    if (lpAttributeList) {
-      // it's safe to inherit handles, so arrange for that...
-      startup_info.cb = sizeof(startup_info_ex);
-      startup_info.dwFlags |= STARTF_USESTDHANDLES;
-      startup_info.hStdOutput = stdOut;
-      startup_info.hStdError = stdErr;
-      startup_info.hStdInput = INVALID_HANDLE_VALUE;
-      startup_info_ex.lpAttributeList = lpAttributeList;
-      dwCreationFlags |= EXTENDED_STARTUPINFO_PRESENT;
-      bInheritHandles = TRUE;
+    if (!handlesToInherit.empty()) {
+      lpAttributeList = CreateThreadAttributeList(handlesToInherit.data(),
+                                                  handlesToInherit.size());
+      if (lpAttributeList) {
+        // it's safe to inherit handles, so arrange for that...
+        startup_info.cb = sizeof(startup_info_ex);
+        startup_info.dwFlags |= STARTF_USESTDHANDLES;
+        startup_info.hStdOutput = stdOut;
+        startup_info.hStdError = stdErr;
+        startup_info.hStdInput = INVALID_HANDLE_VALUE;
+        startup_info_ex.lpAttributeList = lpAttributeList;
+        dwCreationFlags |= EXTENDED_STARTUPINFO_PRESENT;
+        bInheritHandles = TRUE;
+      }
     }
+  } else if (PR_GetEnv("MOZ_WIN_INHERIT_STD_HANDLES_PRE_VISTA")) {
+    // Even if we can't limit what gets inherited, we sometimes want to inherit
+    // stdout/err for testing purposes.
+    startup_info.dwFlags |= STARTF_USESTDHANDLES;
+    startup_info.hStdOutput = ::GetStdHandle(STD_OUTPUT_HANDLE);
+    startup_info.hStdError = ::GetStdHandle(STD_ERROR_HANDLE);
+    startup_info.hStdInput = INVALID_HANDLE_VALUE;
+    bInheritHandles = TRUE;
   }
 
   dwCreationFlags |= CREATE_UNICODE_ENVIRONMENT;

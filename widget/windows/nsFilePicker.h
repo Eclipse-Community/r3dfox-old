@@ -9,6 +9,17 @@
 
 #include <windows.h>
 
+// For Vista IFileDialog interfaces which aren't exposed
+// unless _WIN32_WINNT >= _WIN32_WINNT_LONGHORN.
+#if _WIN32_WINNT < _WIN32_WINNT_LONGHORN
+#define _WIN32_WINNT_bak _WIN32_WINNT
+#undef _WIN32_WINNT
+#define _WIN32_WINNT _WIN32_WINNT_LONGHORN
+#define _WIN32_IE_bak _WIN32_IE
+#undef _WIN32_IE
+#define _WIN32_IE _WIN32_IE_IE70
+#endif
+
 #include "nsIFile.h"
 #include "nsITimer.h"
 #include "nsISimpleEnumerator.h"
@@ -137,5 +148,12 @@ class nsFilePicker : public IFileDialogEvents, public nsBaseWinFilePicker {
   ComDlgFilterSpec mComFilterList;
   DWORD mFDECookie;
 };
+
+#if defined(_WIN32_WINNT_bak)
+#undef _WIN32_WINNT
+#define _WIN32_WINNT _WIN32_WINNT_bak
+#undef _WIN32_IE
+#define _WIN32_IE _WIN32_IE_bak
+#endif
 
 #endif  // nsFilePicker_h__

@@ -184,7 +184,7 @@ void nsUXThemeData::UpdateTitlebarInfo(HWND aWnd) {
 
   if (!sTitlebarInfoPopulatedAero && nsUXThemeData::CheckForCompositor()) {
     RECT captionButtons;
-    if (SUCCEEDED(DwmGetWindowAttribute(aWnd, DWMWA_CAPTION_BUTTON_BOUNDS,
+    if (SUCCEEDED(WinUtils::dwmGetWindowAttributePtr(aWnd, DWMWA_CAPTION_BUTTON_BOUNDS,
                                         &captionButtons,
                                         sizeof(captionButtons)))) {
       sCommandButtonBoxMetrics.cx =
@@ -308,8 +308,8 @@ bool nsUXThemeData::IsHighContrastOn() { return sIsHighContrastOn; }
 // static
 bool nsUXThemeData::CheckForCompositor(bool aUpdateCache) {
   static BOOL sCachedValue = FALSE;
-  if (aUpdateCache) {
-    DwmIsCompositionEnabled(&sCachedValue);
+  if (aUpdateCache && WinUtils::dwmIsCompositionEnabledPtr) {
+    WinUtils::dwmIsCompositionEnabledPtr(&sCachedValue);
   }
   return sCachedValue;
 }

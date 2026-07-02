@@ -516,7 +516,7 @@ nsresult JumpListLink::GetShellItem(nsCOMPtr<nsIJumpListItem> &item,
   NS_ENSURE_SUCCESS(rv, rv);
 
   // Create the IShellItem
-  if (FAILED(SHCreateItemFromParsingName(NS_ConvertASCIItoUTF16(spec).get(),
+  if (FAILED(WinUtils::SHCreateItemFromParsingName(NS_ConvertASCIItoUTF16(spec).get(),
                                          nullptr, IID_PPV_ARGS(&psi)))) {
     return NS_ERROR_INVALID_ARG;
   }

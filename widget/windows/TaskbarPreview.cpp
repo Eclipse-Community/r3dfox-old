@@ -138,7 +138,7 @@ TaskbarPreview::Invalidate() {
   if (!nsUXThemeData::CheckForCompositor()) return NS_OK;
 
   HWND previewWindow = PreviewWindow();
-  return FAILED(DwmInvalidateIconicBitmaps(previewWindow)) ? NS_ERROR_FAILURE
+  return FAILED(WinUtils::dwmInvalidateIconicBitmapsPtr(previewWindow)) ? NS_ERROR_FAILURE
                                                            : NS_OK;
 }
 
@@ -267,10 +267,10 @@ WindowHook &TaskbarPreview::GetWindowHook() {
 
 void TaskbarPreview::EnableCustomDrawing(HWND aHWND, bool aEnable) {
   BOOL enabled = aEnable;
-  DwmSetWindowAttribute(aHWND, DWMWA_FORCE_ICONIC_REPRESENTATION, &enabled,
+  WinUtils::dwmSetWindowAttributePtr(aHWND, DWMWA_FORCE_ICONIC_REPRESENTATION, &enabled,
                         sizeof(enabled));
 
-  DwmSetWindowAttribute(aHWND, DWMWA_HAS_ICONIC_BITMAP, &enabled,
+  WinUtils::dwmSetWindowAttributePtr(aHWND, DWMWA_HAS_ICONIC_BITMAP, &enabled,
                         sizeof(enabled));
 }
 
@@ -359,10 +359,10 @@ TaskbarPreviewCallback::Done(nsISupports *aCanvas, bool aDrawBorder) {
   POINT pptClient = {0, 0};
   HRESULT hr;
   if (!mIsThumbnail) {
-    hr = DwmSetIconicLivePreviewBitmap(mPreview->PreviewWindow(), hBitmap,
+    hr = WinUtils::dwmSetIconicLivePreviewBitmapPtr(mPreview->PreviewWindow(), hBitmap,
                                        &pptClient, flags);
   } else {
-    hr = DwmSetIconicThumbnail(mPreview->PreviewWindow(), hBitmap, flags);
+    hr = WinUtils::dwmSetIconicThumbnailPtr(mPreview->PreviewWindow(), hBitmap, flags);
   }
   MOZ_ASSERT(SUCCEEDED(hr));
   return NS_OK;

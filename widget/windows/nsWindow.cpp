@@ -815,9 +815,9 @@ nsresult nsWindow::Create(nsIWidget* aParent, nsNativeWidget aNativeParent,
   // that we have a mWnd.
   mDefaultScale = -1.0;
 
-  if (mIsRTL) {
+  if (mIsRTL && WinUtils::dwmSetWindowAttributePtr) {
     DWORD dwAttribute = TRUE;
-    DwmSetWindowAttribute(mWnd, DWMWA_NONCLIENT_RTL_LAYOUT, &dwAttribute,
+    WinUtils::dwmSetWindowAttributePtr(mWnd, DWMWA_NONCLIENT_RTL_LAYOUT, &dwAttribute,
                           sizeof dwAttribute);
   }
 
@@ -2024,8 +2024,10 @@ void nsWindow::SetSizeMode(nsSizeMode aMode) {
 
 void nsWindow::SuppressAnimation(bool aSuppress) {
   DWORD dwAttribute = aSuppress ? TRUE : FALSE;
-  DwmSetWindowAttribute(mWnd, DWMWA_TRANSITIONS_FORCEDISABLED, &dwAttribute,
-                        sizeof dwAttribute);
+
+  if (WinUtils::dwmSetWindowAttributePtr)
+    WinUtils::dwmSetWindowAttributePtr(mWnd, DWMWA_TRANSITIONS_FORCEDISABLED,
+                                       &dwAttribute, sizeof dwAttribute);
 }
 
 // Constrain a potential move to fit onscreen
@@ -3004,8 +3006,8 @@ void nsWindow::UpdateGlass() {
 
   // Extends the window frame behind the client area
   if (nsUXThemeData::CheckForCompositor()) {
-    DwmExtendFrameIntoClientArea(mWnd, &margins);
-    DwmSetWindowAttribute(mWnd, DWMWA_NCRENDERING_POLICY, &policy,
+    WinUtils::dwmExtendFrameIntoClientAreaPtr(mWnd, &margins);
+    WinUtils::dwmSetWindowAttributePtr(mWnd, DWMWA_NCRENDERING_POLICY, &policy,
                           sizeof policy);
   }
 }
@@ -4899,7 +4901,7 @@ bool nsWindow::ProcessMessage(UINT msg, WPARAM& wParam, LPARAM& lParam,
       /* We don't do this for win10 glass with a custom titlebar,
        * in order to avoid the caption buttons breaking. */
       !(IsWin10OrLater() && HasGlass()) &&
-      DwmDefWindowProc(mWnd, msg, wParam, lParam, &dwmHitResult)) {
+      WinUtils::dwmDwmDefWindowProcPtr(mWnd, msg, wParam, lParam, &dwmHitResult)) {
     *aRetValue = dwmHitResult;
     return true;
   }

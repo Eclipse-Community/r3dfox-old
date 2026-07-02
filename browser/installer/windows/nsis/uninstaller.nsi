@@ -25,7 +25,7 @@ ManifestDPIAware true
 
 !addplugindir ./
 
-; Attempt to elevate Standard Users in addition to users that
+; On Vista and above attempt to elevate Standard Users in addition to users that
 ; are a member of the Administrators group.
 !define NONADMIN_ELEVATE
 
@@ -199,7 +199,7 @@ Section "Uninstall"
     ApplicationID::UninstallJumpLists "$AppUserModelID"
   ${EndIf}
 
-  ; Remove the updates directory
+  ; Remove the updates directory for Vista and above
   ${un.CleanUpdateDirectories} "${CompanyName}\${BrandShortName}" "${CompanyName}\updates"
 
   ; Remove any app model id's stored in the registry for this install path

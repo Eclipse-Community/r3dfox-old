@@ -82,7 +82,6 @@ class BASE_EXPORT Lock {
   // Both Windows and POSIX implementations of ConditionVariable need to be
   // able to see our lock and tweak our debugging counters, as they release and
   // acquire locks inside of their condition variable APIs.
-  friend class ConditionVariable;
 #endif
 
  private:

@@ -82,6 +82,7 @@
 namespace base {
 class TimeDelta;
 }
+class ConditionVarImpl;
 
 class ConditionVariable {
  public:
@@ -104,8 +105,7 @@ class ConditionVariable {
 
  private:
 #if defined(OS_WIN)
-  CONDITION_VARIABLE cv_;
-  PCRITICAL_SECTION crit_sec_;
+  ConditionVarImpl* impl_;
 #elif defined(OS_POSIX)
   pthread_cond_t condition_;
   pthread_mutex_t* user_mutex_;

@@ -19,6 +19,9 @@
 #include <shlobj.h>
 #include <knownfolders.h>
 #include <guiddef.h>
+#include "mozilla/WindowsVersion.h"
+
+using mozilla::IsWin7OrLater;
 
 #elif defined(XP_UNIX)
 
@@ -109,12 +112,18 @@ __inline HRESULT SHLoadLibraryFromKnownFolder(REFKNOWNFOLDERID aFolderId,
 #endif
 
 /*
- * Return the default save-to location for the Windows Library passed in
- * through aFolderId.
+ * Check to see if we're on Win7 and up, and if so, returns the default
+ * save-to location for the Windows Library passed in through aFolderId.
+ * Otherwise falls back on pre-win7 GetWindowsFolder.
  */
 static nsresult GetLibrarySaveToPath(int aFallbackFolderId,
                                      REFKNOWNFOLDERID aFolderId,
                                      nsIFile** aFile) {
+  // Skip off checking for library support if the os is Vista or lower.
+  if (!IsWin7OrLater()) {
+    return GetWindowsFolder(aFallbackFolderId, aFile);
+  }
+
   RefPtr<IShellLibrary> shellLib;
   RefPtr<IShellItem> savePath;
   SHLoadLibraryFromKnownFolder(aFolderId, STGM_READ, IID_IShellLibrary,
@@ -662,6 +671,8 @@ nsresult GetSpecialSystemDirectory(SystemDirectories aSystemSystemDirectory,
     }
 #if defined(MOZ_CONTENT_SANDBOX)
     case Win_LocalAppdataLow: {
+      // This should only really fail on versions pre-Vista, in which case this
+      // shouldn't have been used in the first place.
       GUID localAppDataLowGuid = FOLDERID_LocalAppDataLow;
       return GetKnownFolder(&localAppDataLowGuid, aFile);
     }

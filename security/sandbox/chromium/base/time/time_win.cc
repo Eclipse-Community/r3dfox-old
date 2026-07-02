@@ -110,6 +110,16 @@ base::Lock* GetHighResLock() {
   return lock;
 }
 
+// Returns a pointer to the QueryThreadCycleTime() function from Windows.
+// Can't statically link to it because it is not available on XP.
+using QueryThreadCycleTimePtr = decltype(::QueryThreadCycleTime)*;
+QueryThreadCycleTimePtr GetQueryThreadCycleTimeFunction() {
+  static const QueryThreadCycleTimePtr query_thread_cycle_time_fn =
+      reinterpret_cast<QueryThreadCycleTimePtr>(::GetProcAddress(
+          ::GetModuleHandle(L"kernel32.dll"), "QueryThreadCycleTime"));
+  return query_thread_cycle_time_fn;
+}
+
 // Returns the current value of the performance counter.
 uint64_t QPCNowRaw() {
   LARGE_INTEGER perf_counter_now = {};
@@ -622,7 +632,7 @@ ThreadTicks ThreadTicks::GetForThread(
 
   // Get the number of TSC ticks used by the current thread.
   ULONG64 thread_cycle_time = 0;
-  ::QueryThreadCycleTime(thread_handle.platform_handle(), &thread_cycle_time);
+  GetQueryThreadCycleTimeFunction()(::GetCurrentThread(), &thread_cycle_time);
 
   // Get the frequency of the TSC.
   double tsc_ticks_per_second = TSCTicksPerSecond();
@@ -637,7 +647,8 @@ ThreadTicks ThreadTicks::GetForThread(
 
 // static
 bool ThreadTicks::IsSupportedWin() {
-  static bool is_supported = base::CPU().has_non_stop_time_stamp_counter() &&
+  static bool is_supported = GetQueryThreadCycleTimeFunction() &&
+                             base::CPU().has_non_stop_time_stamp_counter() &&
                              !IsBuggyAthlon(base::CPU());
   return is_supported;
 }

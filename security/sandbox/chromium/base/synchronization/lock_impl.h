@@ -26,9 +26,9 @@ namespace internal {
 class BASE_EXPORT LockImpl {
  public:
 #if defined(OS_WIN)
-  using NativeHandle = SRWLOCK;
+  typedef CRITICAL_SECTION NativeHandle;
 #elif defined(OS_POSIX)
-  using NativeHandle = pthread_mutex_t;
+  typedef pthread_mutex_t NativeHandle;
 #endif
 
   LockImpl();
@@ -63,7 +63,7 @@ class BASE_EXPORT LockImpl {
 
 #if defined(OS_WIN)
 void LockImpl::Unlock() {
-  ::ReleaseSRWLockExclusive(&native_handle_);
+  ::LeaveCriticalSection(&native_handle_);
 }
 #elif defined(OS_POSIX)
 void LockImpl::Unlock() {

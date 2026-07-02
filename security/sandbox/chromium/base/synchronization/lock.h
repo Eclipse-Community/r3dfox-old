@@ -38,9 +38,9 @@ class BASE_EXPORT Lock {
   Lock();
   ~Lock();
 
-  // NOTE: We do not permit recursive locks and will commonly fire a DCHECK() if
-  // a thread attempts to acquire the lock a second time (while already holding
-  // it).
+  // NOTE: Although windows critical sections support recursive locks, we do not
+  // allow this, and we will commonly fire a DCHECK() if a thread attempts to
+  // acquire the lock a second time (while already holding it).
   void Acquire() {
     lock_.Lock();
     CheckUnheldAndMark();

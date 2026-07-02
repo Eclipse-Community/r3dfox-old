@@ -106,7 +106,7 @@ class BASE_EXPORT ConditionVariable {
 
 #if defined(OS_WIN)
   CONDITION_VARIABLE cv_;
-  SRWLOCK* const srwlock_;
+  CRITICAL_SECTION* const crit_sec_;
 #elif defined(OS_POSIX)
   pthread_cond_t condition_;
   pthread_mutex_t* user_mutex_;

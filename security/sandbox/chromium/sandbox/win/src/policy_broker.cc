@@ -101,14 +101,17 @@ bool SetupBasicInterceptions(InterceptionManager* manager,
       !INTERCEPT_NT(manager, NtOpenThreadToken, OPEN_THREAD_TOKEN_ID, 20))
     return false;
 
-  // This one is also provided by process_thread_policy.
-  if (!INTERCEPT_NT(manager, NtOpenProcessTokenEx, OPEN_PROCESS_TOKEN_EX_ID,
-                    20))
-    return false;
+  if (base::win::GetVersion() >= base::win::VERSION_XP) {
+    // Bug 27218: We don't have dispatch for some x64 syscalls.
+    // This one is also provided by process_thread_policy.
+    if (!INTERCEPT_NT(manager, NtOpenProcessTokenEx, OPEN_PROCESS_TOKEN_EX_ID,
+                      20))
+      return false;
 
-  if (!INTERCEPT_NT(manager, NtOpenThreadTokenEx, OPEN_THREAD_TOKEN_EX_ID,
-                    24))
-    return false;
+    if (!INTERCEPT_NT(manager, NtOpenThreadTokenEx, OPEN_THREAD_TOKEN_EX_ID,
+                      24))
+      return false;
+  }
 
   if (!is_csrss_connected) {
     if (!INTERCEPT_EAT(manager, kKerneldllName, CreateThread, CREATE_THREAD_ID,

@@ -456,7 +456,8 @@ ResultCode PolicyBase::MakeTokens(base::win::ScopedHandle* initial,
   // integrity label on the object is no higher than the sandboxed process's
   // integrity level. So, we lower the label on the desktop process if it's
   // not already low enough for our process.
-  if (use_alternate_desktop_ && integrity_level_ != INTEGRITY_LEVEL_LAST) {
+  if (use_alternate_desktop_ && integrity_level_ != INTEGRITY_LEVEL_LAST &&
+      base::win::OSInfo::GetInstance()->version() >= base::win::VERSION_VISTA) {
     // Integrity label enum is reversed (higher level is a lower value).
     static_assert(INTEGRITY_LEVEL_SYSTEM < INTEGRITY_LEVEL_UNTRUSTED,
                   "Integrity level ordering reversed.");

@@ -29,8 +29,12 @@ LookAndFeel::OperatingSystemVersion nsLookAndFeel::GetOperatingSystemVersion() {
     version = eOperatingSystemVersion_Windows10;
   } else if (IsWin8OrLater()) {
     version = eOperatingSystemVersion_Windows8;
-  } else {
+  } else if (IsWin7OrLater()) {
     version = eOperatingSystemVersion_Windows7;
+  } else if (IsVistaOrLater()) {
+    version = eOperatingSystemVersion_WindowsVista;
+  } else {
+    version = eOperatingSystemVersion_WindowsXP;
   }
 
   return version;
@@ -192,7 +196,7 @@ nsresult nsLookAndFeel::NativeGetColor(ColorID aID, nscolor &aColor) {
       idx = COLOR_HIGHLIGHT;
       break;
     case eColorID__moz_menubarhovertext:
-      if (!IsAppThemed()) {
+      if (!IsVistaOrLater() || !IsAppThemed()) {
         idx = nsUXThemeData::sFlatMenus ? COLOR_HIGHLIGHTTEXT : COLOR_MENUTEXT;
         break;
       }
@@ -590,7 +594,7 @@ static bool GetSysFontInfo(HDC aHDC, LookAndFeel::FontID anID,
       break;
 
     default:
-      ncm.cbSize = sizeof(NONCLIENTMETRICSW);
+      ncm.cbSize = sizeof(NONCLIENTMETRICSW);//-sizeof(ncm.iPaddedBorderWidth);
       if (!::SystemParametersInfoW(SPI_GETNONCLIENTMETRICS, sizeof(ncm),
                                    (PVOID)&ncm, 0))
         return false;

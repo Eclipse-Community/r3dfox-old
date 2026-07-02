@@ -20,6 +20,7 @@
 #include "mozilla/MiscEvents.h"
 #include "mozilla/MouseEvents.h"
 #include "mozilla/Preferences.h"
+#include "mozilla/WindowsVersion.h"
 
 #include <psapi.h>
 
@@ -944,8 +945,10 @@ bool MouseScrollHandler::SystemSettings::InitScrollChars() {
     MOZ_LOG(gMouseScrollLog, LogLevel::Info,
             ("MouseScroll::SystemSettings::InitScrollChars(): "
              "::SystemParametersInfo("
-             "SPI_GETWHEELSCROLLCHARS) failed, this is unexpected on Vista or "
-             "later"));
+             "SPI_GETWHEELSCROLLCHARS) failed, %s",
+             IsVistaOrLater() ?
+               "this is unexpected on Vista or later" :
+               "but on XP or earlier, this is not a problem"));
     // XXX Should we use DefaultScrollChars()?
     mScrollChars = 1;
   }
@@ -1024,7 +1027,7 @@ void MouseScrollHandler::SystemSettings::TrustedScrollSettingsDriver() {
 bool MouseScrollHandler::SystemSettings::
     IsOverridingSystemScrollSpeedAllowed() {
   return mScrollLines == DefaultScrollLines() &&
-         mScrollChars == DefaultScrollChars();
+         (!IsVistaOrLater() || mScrollChars == DefaultScrollChars());
 }
 
 /******************************************************************************

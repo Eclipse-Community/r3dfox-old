@@ -38,6 +38,7 @@
 #include "nsUXThemeConstants.h"
 #include <algorithm>
 
+using mozilla::IsVistaOrLater;
 using namespace mozilla;
 using namespace mozilla::widget;
 
@@ -293,6 +294,10 @@ static HRESULT DrawThemeBGRTLAware(HANDLE aTheme, HDC aHdc, int aPart,
  *  aero basic max          0        2        1        2
  *  aero basic close        1        2        1        2
  *
+ *  xp theme min            0        2        0        2
+ *  xp theme max            0        2        1        2
+ *  xp theme close          1        2        2        2
+ *
  *  'cold' button padding - generic button padding, should
  *  be handled in css.
  *                       left      top    right   bottom
@@ -303,11 +308,16 @@ static HRESULT DrawThemeBGRTLAware(HANDLE aTheme, HDC aHdc, int aPart,
  *  aero basic min          0        0        1        0
  *  aero basic max          1        0        0        0
  *  aero basic close        0        0        0        0
+ *
+ *  xp theme min            0        0        1        0
+ *  xp theme max            1        0        0        0
+ *  xp theme close          0        0        0        0
  */
 
 enum CaptionDesktopTheme {
   CAPTION_CLASSIC = 0,
   CAPTION_BASIC,
+  CAPTION_XPTHEME,
 };
 
 enum CaptionButton {
@@ -332,6 +342,8 @@ static void AddPaddingRect(LayoutDeviceIntSize* aSize, CaptionButton button) {
   RECT offset;
   if (!IsAppThemed())
     offset = buttonData[CAPTION_CLASSIC].hotPadding[button];
+  else if (!IsVistaOrLater())
+    offset = buttonData[CAPTION_XPTHEME].hotPadding[button];
   else
     offset = buttonData[CAPTION_BASIC].hotPadding[button];
   aSize->width += offset.left + offset.right;
@@ -344,6 +356,8 @@ static void OffsetBackgroundRect(RECT& rect, CaptionButton button) {
   RECT offset;
   if (!IsAppThemed())
     offset = buttonData[CAPTION_CLASSIC].hotPadding[button];
+  else if (!IsVistaOrLater())
+    offset = buttonData[CAPTION_XPTHEME].hotPadding[button];
   else
     offset = buttonData[CAPTION_BASIC].hotPadding[button];
   rect.left += offset.left;
@@ -389,7 +403,9 @@ static const double kProgressDeterminateTimeSpan = 3.0;
 static const double kProgressIndeterminateTimeSpan = 5.0;
 // The width of the overlay used to animate the horizontal progress bar (Vista
 // and later).
-static const int32_t kProgressHorizontalOverlaySize = 120;
+static const int32_t kProgressHorizontalVistaOverlaySize = 120;
+// The width of the overlay used for the horizontal indeterminate progress bars on XP.
+static const int32_t kProgressHorizontalXPOverlaySize = 55;
 // The height of the overlay used to animate the vertical progress bar (Vista
 // and later).
 static const int32_t kProgressVerticalOverlaySize = 45;
@@ -405,7 +421,17 @@ static const int32_t kProgressClassicOverlaySize = 40;
  * progress bars based on os and orientation.
  */
 static int32_t GetProgressOverlayStyle(bool aIsVertical) {
-  return aIsVertical ? PP_MOVEOVERLAYVERT : PP_MOVEOVERLAY;
+  if (aIsVertical) {
+    if (IsVistaOrLater()) {
+      return PP_MOVEOVERLAYVERT;
+    }
+    return PP_CHUNKVERT;
+  } else {
+    if (IsVistaOrLater()) {
+      return PP_MOVEOVERLAY;
+    }
+    return PP_CHUNK;
+  }
 }
 
 /*
@@ -414,11 +440,14 @@ static int32_t GetProgressOverlayStyle(bool aIsVertical) {
  * and vista pulse overlays.
  */
 static int32_t GetProgressOverlaySize(bool aIsVertical, bool aIsIndeterminate) {
-  if (aIsVertical) {
-    return aIsIndeterminate ? kProgressVerticalIndeterminateOverlaySize
-                            : kProgressVerticalOverlaySize;
+  if (IsVistaOrLater()) {
+    if (aIsVertical) {
+      return aIsIndeterminate ? kProgressVerticalIndeterminateOverlaySize
+                              : kProgressVerticalOverlaySize;
+    }
+    return kProgressHorizontalVistaOverlaySize;
   }
-  return kProgressHorizontalOverlaySize;
+  return kProgressHorizontalXPOverlaySize;
 }
 
 /*
@@ -503,6 +532,87 @@ RECT nsNativeThemeWin::CalculateProgressOverlayRect(nsIFrame* aFrame,
 }
 
 /*
+ * DrawChunkProgressMeter - renders an xp style chunked progress meter. Called
+ * by DrawProgressMeter.
+ *
+ * @param aTheme       progress theme handle
+ * @param aHdc         hdc returned by gfxWindowsNativeDrawing
+ * @param aPart        the PP_X progress part
+ * @param aState       the theme state
+ * @param aFrame       the elements frame
+ * @param aWidgetRect  bounding rect for the widget
+ * @param aClipRect    dirty rect that needs drawing.
+ * @param aAppUnits    app units per device pixel
+ * @param aIsIndeterm  is an indeterminate progress?
+ * @param aIsVertical  render a vertical progress?
+ * @param aIsRtl       direction is rtl
+ */
+static void
+DrawChunkProgressMeter(HTHEME aTheme, HDC aHdc, int aPart,
+                       int aState, nsIFrame* aFrame, RECT* aWidgetRect,
+                       RECT* aClipRect, gfxFloat aAppUnits, bool aIsIndeterm,
+                       bool aIsVertical, bool aIsRtl)
+{
+  NS_ASSERTION(aTheme, "Bad theme.");
+  NS_ASSERTION(aHdc, "Bad hdc.");
+  NS_ASSERTION(aWidgetRect, "Bad rect.");
+  NS_ASSERTION(aClipRect, "Bad clip rect.");
+  NS_ASSERTION(aFrame, "Bad frame.");
+
+  // For horizontal meters, the theme lib paints the right graphic but doesn't
+  // paint the chunks, so we do that manually. For vertical meters, the theme
+  // library draws everything correctly.
+  if (aIsVertical) {
+    DrawThemeBackground(aTheme, aHdc, aPart, aState, aWidgetRect, aClipRect);
+    return;
+  }
+
+  // query for the proper chunk metrics
+  int chunkSize, spaceSize;
+  if (FAILED(GetThemeMetric(aTheme, aHdc, aPart, aState,
+                            TMT_PROGRESSCHUNKSIZE, &chunkSize)) ||
+      FAILED(GetThemeMetric(aTheme, aHdc, aPart, aState,
+                            TMT_PROGRESSSPACESIZE, &spaceSize))) {
+    DrawThemeBackground(aTheme, aHdc, aPart, aState, aWidgetRect, aClipRect);
+    return;
+  }
+
+  // render chunks
+  if (!aIsRtl || aIsIndeterm) {
+    for (int chunk = aWidgetRect->left; chunk <= aWidgetRect->right;
+         chunk += (chunkSize+spaceSize)) {
+      if (!aIsIndeterm && ((chunk + chunkSize) > aWidgetRect->right)) {
+        // aWidgetRect->right represents the end of the meter. Partial blocks
+        // don't get rendered with one exception, so exit here if we don't have
+        // a full chunk to draw.
+        // The above is true *except* when the meter is at 100% fill, in which
+        // case Windows renders any remaining partial block. Query the parent
+        // frame to find out if we're at 100%.
+        if (!IsProgressMeterFilled(aFrame)) {
+          break;
+        }
+      }
+      RECT bounds =
+        { chunk, aWidgetRect->top, chunk + chunkSize, aWidgetRect->bottom };
+      DrawThemeBackground(aTheme, aHdc, aPart, aState, &bounds, aClipRect);
+    }
+  } else {
+    // rtl needs to grow in the opposite direction to look right.
+    for (int chunk = aWidgetRect->right; chunk >= aWidgetRect->left;
+         chunk -= (chunkSize+spaceSize)) {
+      if ((chunk - chunkSize) < aWidgetRect->left) {
+        if (!IsProgressMeterFilled(aFrame)) {
+          break;
+        }
+      }
+      RECT bounds =
+        { chunk - chunkSize, aWidgetRect->top, chunk, aWidgetRect->bottom };
+      DrawThemeBackground(aTheme, aHdc, aPart, aState, &bounds, aClipRect);
+    }
+  }
+}
+
+/*
  * DrawProgressMeter - render an appropriate progress meter based on progress
  * meter style, orientation, and os. Note, this does not render the underlying
  * progress track.
@@ -521,7 +631,8 @@ void nsNativeThemeWin::DrawThemedProgressMeter(nsIFrame* aFrame,
                                                int aWidgetType, HANDLE aTheme,
                                                HDC aHdc, int aPart, int aState,
                                                RECT* aWidgetRect,
-                                               RECT* aClipRect) {
+                                               RECT* aClipRect,
+                                               gfxFloat aAppUnits) {
   if (!aFrame || !aTheme || !aHdc) return;
 
   NS_ASSERTION(aWidgetRect, "bad rect pointer");
@@ -530,6 +641,12 @@ void nsNativeThemeWin::DrawThemedProgressMeter(nsIFrame* aFrame,
   RECT adjWidgetRect, adjClipRect;
   adjWidgetRect = *aWidgetRect;
   adjClipRect = *aClipRect;
+  if (!IsVistaOrLater()) {
+    // Adjust clipping out by one pixel. XP progress meters are inset,
+    // Vista+ are not.
+    InflateRect(&adjWidgetRect, 1, 1);
+    InflateRect(&adjClipRect, 1, 1);
+  }
 
   nsIFrame* parentFrame = aFrame->GetParent();
   if (!parentFrame) {
@@ -544,21 +661,34 @@ void nsNativeThemeWin::DrawThemedProgressMeter(nsIFrame* aFrame,
   bool indeterminate = IsIndeterminateProgress(parentFrame, eventStates);
   bool animate = indeterminate;
 
-  // Vista and up progress meter is fill style, rendered here. We render
-  // the pulse overlay in the follow up section below.
-  DrawThemeBackground(aTheme, aHdc, aPart, aState, &adjWidgetRect,
-                      &adjClipRect);
-  if (!IsProgressMeterFilled(aFrame)) {
-    animate = true;
-  }
+  if (IsVistaOrLater()) {
+    // Vista and up progress meter is fill style, rendered here. We render
+    // the pulse overlay in the follow up section below.
+    DrawThemeBackground(aTheme, aHdc, aPart, aState,
+                        &adjWidgetRect, &adjClipRect);
+    if (!IsProgressMeterFilled(aFrame)) {
+      animate = true;
+    }
+  } else if (!indeterminate) {
+    // XP progress meters are 'chunk' style.
+    DrawChunkProgressMeter(aTheme, aHdc, aPart, aState, aFrame,
+                           &adjWidgetRect, &adjClipRect, aAppUnits,
+                           indeterminate, vertical, IsFrameRTL(aFrame));
+  }    
 
   if (animate) {
     // Indeterminate rendering
     int32_t overlayPart = GetProgressOverlayStyle(vertical);
     RECT overlayRect = CalculateProgressOverlayRect(
         aFrame, &adjWidgetRect, vertical, indeterminate, false);
-    DrawThemeBackground(aTheme, aHdc, overlayPart, aState, &overlayRect,
-                        &adjClipRect);
+    if (IsVistaOrLater()) {
+      DrawThemeBackground(aTheme, aHdc, overlayPart, aState, &overlayRect,
+                          &adjClipRect);
+    } else {
+      DrawChunkProgressMeter(aTheme, aHdc, overlayPart, aState, aFrame,
+                             &overlayRect, &adjClipRect, aAppUnits,
+                             indeterminate, vertical, IsFrameRTL(aFrame));
+    }
 
     if (!QueueAnimatedContentForRefresh(aFrame->GetContent(), 60)) {
       NS_WARNING("unable to animate progress widget!");
@@ -670,6 +800,15 @@ nsresult nsNativeThemeWin::GetCachedMinimumWidgetSize(
 
 mozilla::Maybe<nsUXThemeClass> nsNativeThemeWin::GetThemeClass(
     uint8_t aWidgetType) {
+  if (!IsVistaOrLater()) {
+    // On XP or earlier, render dropdowns as textfields;
+    // doing it the right way works fine with the MS themes,
+    // but breaks on a lot of custom themes (presumably because MS
+    // apps do the textfield border business as well).
+    if (aWidgetType == NS_THEME_MENULIST)
+      aWidgetType = NS_THEME_TEXTFIELD;
+  }
+
   switch (aWidgetType) {
     case NS_THEME_BUTTON:
     case NS_THEME_RADIO:
@@ -682,7 +821,9 @@ mozilla::Maybe<nsUXThemeClass> nsNativeThemeWin::GetThemeClass(
     case NS_THEME_FOCUS_OUTLINE:
       return Some(eUXEdit);
     case NS_THEME_TOOLTIP:
-      return Some(eUXTooltip);
+      // XP/2K3 should force a classic treatment of tooltips
+      return !IsVistaOrLater() ?
+        Nothing() : Some(eUXTooltip);
     case NS_THEME_TOOLBOX:
       return Some(eUXRebar);
     case NS_THEME_WIN_MEDIA_TOOLBOX:
@@ -815,6 +956,12 @@ nsresult nsNativeThemeWin::GetThemePartAndState(nsIFrame* aFrame,
                                                 uint8_t aWidgetType,
                                                 int32_t& aPart,
                                                 int32_t& aState) {
+  if (!IsVistaOrLater()) {
+    // See GetTheme
+    if (aWidgetType == NS_THEME_MENULIST)
+      aWidgetType = NS_THEME_TEXTFIELD;
+  }
+
   switch (aWidgetType) {
     case NS_THEME_BUTTON: {
       aPart = BP_BUTTON;
@@ -883,44 +1030,63 @@ nsresult nsNativeThemeWin::GetThemePartAndState(nsIFrame* aFrame,
     case NS_THEME_TEXTFIELD_MULTILINE: {
       EventStates eventState = GetContentState(aFrame, aWidgetType);
 
-      /* Note: the NOSCROLL type has a rounded corner in each corner.  The more
-       * specific HSCROLL, VSCROLL, HVSCROLL types have side and/or top/bottom
-       * edges rendered as straight horizontal lines with sharp corners to
-       * accommodate a scrollbar.  However, the scrollbar gets rendered on top
-       * of this for us, so we don't care, and can just use NOSCROLL here.
-       */
-      aPart = TFP_EDITBORDER_NOSCROLL;
-
-      if (!aFrame) {
-        aState = TFS_EDITBORDER_NORMAL;
-      } else if (IsDisabled(aFrame, eventState)) {
-        aState = TFS_EDITBORDER_DISABLED;
-      } else if (IsReadOnly(aFrame)) {
-        /* no special read-only state */
-        aState = TFS_EDITBORDER_NORMAL;
-      } else {
-        nsIContent* content = aFrame->GetContent();
-
-        /* XUL textboxes don't get focused themselves, because they have child
-         * html:input.. but we can check the XUL focused attributes on them
+      if (IsVistaOrLater()) {
+        /* Note: the NOSCROLL type has a rounded corner in each
+         * corner.  The more specific HSCROLL, VSCROLL, HVSCROLL types
+         * have side and/or top/bottom edges rendered as straight
+         * horizontal lines with sharp corners to accommodate a
+         * scrollbar.  However, the scrollbar gets rendered on top of
+         * this for us, so we don't care, and can just use NOSCROLL
+         * here.
          */
-        if (content && content->IsXULElement() && IsFocused(aFrame))
-          aState = TFS_EDITBORDER_FOCUSED;
-        else if (eventState.HasAtLeastOneOfStates(NS_EVENT_STATE_ACTIVE |
-                                                  NS_EVENT_STATE_FOCUS))
-          aState = TFS_EDITBORDER_FOCUSED;
-        else if (eventState.HasState(NS_EVENT_STATE_HOVER))
-          aState = TFS_EDITBORDER_HOVER;
-        else
+        aPart = TFP_EDITBORDER_NOSCROLL;
+
+        if (!aFrame) {
           aState = TFS_EDITBORDER_NORMAL;
+        } else if (IsDisabled(aFrame, eventState)) {
+          aState = TFS_EDITBORDER_DISABLED;
+        } else if (IsReadOnly(aFrame)) {
+          /* no special read-only state */
+          aState = TFS_EDITBORDER_NORMAL;
+        } else {
+          nsIContent* content = aFrame->GetContent();
+
+          /* XUL textboxes don't get focused themselves, because they have child
+           * html:input.. but we can check the XUL focused attributes on them
+           */
+          if (content && content->IsXULElement() && IsFocused(aFrame))
+            aState = TFS_EDITBORDER_FOCUSED;
+          else if (eventState.HasAtLeastOneOfStates(NS_EVENT_STATE_ACTIVE | NS_EVENT_STATE_FOCUS))
+            aState = TFS_EDITBORDER_FOCUSED;
+          else if (eventState.HasState(NS_EVENT_STATE_HOVER))
+            aState = TFS_EDITBORDER_HOVER;
+          else
+            aState = TFS_EDITBORDER_NORMAL;
+        }
+      } else {
+        aPart = TFP_TEXTFIELD;
+        
+        if (!aFrame)
+          aState = TS_NORMAL;
+        else if (IsDisabled(aFrame, eventState))
+          aState = TS_DISABLED;
+        else if (IsReadOnly(aFrame))
+          aState = TFS_READONLY;
+        else
+          aState = StandardGetState(aFrame, aWidgetType, true);
       }
 
       return NS_OK;
     }
     case NS_THEME_FOCUS_OUTLINE: {
-      // XXX the EDITBORDER values don't respect DTBG_OMITCONTENT
-      aPart = TFP_TEXTFIELD;  // TFP_EDITBORDER_NOSCROLL;
-      aState = TS_FOCUSED;    // TFS_EDITBORDER_FOCUSED;
+      if (IsVistaOrLater()) {
+        // XXX the EDITBORDER values don't respect DTBG_OMITCONTENT
+        aPart = TFP_TEXTFIELD;  // TFP_EDITBORDER_NOSCROLL;
+        aState = TS_FOCUSED;    // TFS_EDITBORDER_FOCUSED;
+      } else {
+        aPart = TFP_TEXTFIELD;
+        aState = TS_FOCUSED;
+      }
       return NS_OK;
     }
     case NS_THEME_TOOLTIP: {
@@ -944,9 +1110,11 @@ nsresult nsNativeThemeWin::GetThemePartAndState(nsIFrame* aFrame,
       nsIFrame* parentFrame = aFrame->GetParent();
       if (aWidgetType == NS_THEME_PROGRESSCHUNK_VERTICAL ||
           IsVerticalProgress(parentFrame)) {
-        aPart = PP_FILLVERT;
+        aPart = IsVistaOrLater() ?
+          PP_FILLVERT : PP_CHUNKVERT;
       } else {
-        aPart = PP_FILL;
+        aPart = IsVistaOrLater() ?
+          PP_FILL : PP_CHUNK;
       }
 
       aState = PBBVS_NORMAL;
@@ -1010,7 +1178,7 @@ nsresult nsNativeThemeWin::GetThemePartAndState(nsIFrame* aFrame,
           aState += TS_ACTIVE;
         else if (eventState.HasState(NS_EVENT_STATE_HOVER))
           aState += TS_HOVER;
-        else if (parentState.HasState(NS_EVENT_STATE_HOVER))
+        else if (IsVistaOrLater() && parentState.HasState(NS_EVENT_STATE_HOVER))
           aState = (aWidgetType - NS_THEME_SCROLLBARBUTTON_UP) +
                    SP_BUTTON_IMPLICIT_HOVER_BASE;
         else
@@ -1120,7 +1288,14 @@ nsresult nsNativeThemeWin::GetThemePartAndState(nsIFrame* aFrame,
     case NS_THEME_SCROLLBAR:
     case NS_THEME_SCROLLBAR_SMALL: {
       aState = 0;
-      aPart = RP_BACKGROUND;
+      if (IsVistaOrLater()) {
+        // On vista, they have a part
+        aPart = RP_BACKGROUND;
+      } else {
+        // Otherwise, they don't.  (But I bet
+        // RP_BACKGROUND would work here, too);
+        aPart = 0;
+      }
       return NS_OK;
     }
     case NS_THEME_TOOLBAR: {
@@ -1247,7 +1422,8 @@ nsresult nsNativeThemeWin::GetThemePartAndState(nsIFrame* aFrame,
       if (isHTML || isMenulist) aFrame = parentFrame;
 
       EventStates eventState = GetContentState(aFrame, aWidgetType);
-      aPart = CBP_DROPMARKER_VISTA;
+      aPart = IsVistaOrLater() ?
+        CBP_DROPMARKER_VISTA : CBP_DROPMARKER;
 
       // For HTML controls with author styling, we should fall
       // back to the old dropmarker style to avoid clashes with
@@ -1268,25 +1444,28 @@ nsresult nsNativeThemeWin::GetThemePartAndState(nsIFrame* aFrame,
         isOpen = IsOpenButton(aFrame);
 
       bool isChrome = aFrame->GetContent()->IsInChromeDocument();
-      if (isHTML || (isChrome && IsMenuListEditable(aFrame))) {
-        if (isOpen) {
-          /* Hover is propagated, but we need to know whether we're hovering
-           * just the combobox frame, not the dropdown frame. But, we can't get
-           * that information, since hover is on the content node, and they
-           * share the same content node.  So, instead, we cheat -- if the
-           * dropdown is open, we always show the hover state.  This looks fine
-           * in practice.
+      if (IsVistaOrLater()) {
+        if (isHTML || (isChrome && IsMenuListEditable(aFrame))) {
+          if (isOpen) {
+            /* Hover is propagated, but we need to know whether we're
+             * hovering just the combobox frame, not the dropdown frame.
+             * But, we can't get that information, since hover is on the
+             * content node, and they share the same content node.  So,
+             * instead, we cheat -- if the dropdown is open, we always
+             * show the hover state.  This looks fine in practice.
+             */
+            aState = TS_HOVER;
+            return NS_OK;
+          }
+        } else {
+          /* On Vista, the dropdown indicator on a menulist button in  
+           * chrome is not given a hover effect. When the frame isn't
+           * isn't HTML content, we cheat and force the dropdown state
+           * to be normal. (Bug 430434)
            */
-          aState = TS_HOVER;
+          aState = TS_NORMAL;
           return NS_OK;
         }
-      } else {
-        /* The dropdown indicator on a menulist button in chrome is not given a
-         * hover effect. When the frame isn't isn't HTML content, we cheat and
-         * force the dropdown state to be normal. (Bug 430434)
-         */
-        aState = TS_NORMAL;
-        return NS_OK;
       }
 
       aState = TS_NORMAL;
@@ -1775,7 +1954,7 @@ RENDER_AGAIN:
   } else if (aWidgetType == NS_THEME_PROGRESSCHUNK ||
              aWidgetType == NS_THEME_PROGRESSCHUNK_VERTICAL) {
     DrawThemedProgressMeter(aFrame, aWidgetType, theme, hdc, part, state,
-                            &widgetRect, &clipRect);
+                            &widgetRect, &clipRect, p2a);
   } else if (aWidgetType == NS_THEME_FOCUS_OUTLINE) {
     // Inflate 'widgetRect' with the focus outline size.
     nsIntMargin border;
@@ -2019,39 +2198,42 @@ bool nsNativeThemeWin::GetWidgetPadding(nsDeviceContext* aContext,
     return ok;
   }
 
-  if (aWidgetType == NS_THEME_NUMBER_INPUT ||
-      aWidgetType == NS_THEME_TEXTFIELD ||
-      aWidgetType == NS_THEME_TEXTFIELD_MULTILINE ||
-      aWidgetType == NS_THEME_MENULIST) {
-    // If we have author-specified padding for these elements, don't do the
-    // fixups below.
-    if (aFrame->PresContext()->HasAuthorSpecifiedRules(
-            aFrame, NS_AUTHOR_SPECIFIED_PADDING))
-      return false;
-  }
+  if (IsVistaOrLater()) {
+    if (aWidgetType == NS_THEME_NUMBER_INPUT ||
+        aWidgetType == NS_THEME_TEXTFIELD ||
+        aWidgetType == NS_THEME_TEXTFIELD_MULTILINE ||
+        aWidgetType == NS_THEME_MENULIST) {
+      // If we have author-specified padding for these elements, don't do the
+      // fixups below.
+      if (aFrame->PresContext()->HasAuthorSpecifiedRules(
+              aFrame, NS_AUTHOR_SPECIFIED_PADDING))
+        return false;
+    }
 
-  /* textfields need extra pixels on all sides, otherwise they wrap their
-   * content too tightly.  The actual border is drawn 1px inside the specified
-   * rectangle, so Gecko will end up making the contents look too small.
-   * Instead, we add 2px padding for the contents and fix this. (Used to be 1px
-   * added, see bug 430212)
-   */
-  if (aWidgetType == NS_THEME_NUMBER_INPUT ||
-      aWidgetType == NS_THEME_TEXTFIELD ||
-      aWidgetType == NS_THEME_TEXTFIELD_MULTILINE) {
-    aResult->top = aResult->bottom = 2;
-    aResult->left = aResult->right = 2;
-    ScaleForFrameDPI(aResult, aFrame);
-    return ok;
-  } else if (IsHTMLContent(aFrame) && aWidgetType == NS_THEME_MENULIST) {
-    /* For content menulist controls, we need an extra pixel so that we have
-     * room to draw our focus rectangle stuff. Otherwise, the focus rect might
-     * overlap the control's border.
+    /* textfields need extra pixels on all sides, otherwise they
+     * wrap their content too tightly.  The actual border is drawn 1px
+     * inside the specified rectangle, so Gecko will end up making the
+     * contents look too small.  Instead, we add 2px padding for the
+     * contents and fix this. (Used to be 1px added, see bug 430212)
      */
-    aResult->top = aResult->bottom = 1;
-    aResult->left = aResult->right = 1;
-    ScaleForFrameDPI(aResult, aFrame);
-    return ok;
+    if (aWidgetType == NS_THEME_NUMBER_INPUT ||
+        aWidgetType == NS_THEME_TEXTFIELD ||
+        aWidgetType == NS_THEME_TEXTFIELD_MULTILINE) {
+      aResult->top = aResult->bottom = 2;
+      aResult->left = aResult->right = 2;
+      ScaleForFrameDPI(aResult, aFrame);
+      return ok;
+    } else if (IsHTMLContent(aFrame) && aWidgetType == NS_THEME_MENULIST) {
+      /* For content menulist controls, we need an extra pixel so
+       * that we have room to draw our focus rectangle stuff.
+       * Otherwise, the focus rect might overlap the control's
+       * border.
+       */
+      aResult->top = aResult->bottom = 1;
+      aResult->left = aResult->right = 1;
+      ScaleForFrameDPI(aResult, aFrame);
+      return ok;
+    }
   }
 
   int32_t right, left, top, bottom;
@@ -2107,21 +2289,23 @@ bool nsNativeThemeWin::GetWidgetOverflow(nsDeviceContext* aContext,
  * a border only shows up if the widget is being hovered.
  */
 #if 0
-  /* We explicitly draw dropdown buttons in HTML content 1px bigger up, right,
-   * and bottom so that they overlap the dropdown's border like they're
-   * supposed to.
-   */
-  if (aWidgetType == NS_THEME_MENULIST_BUTTON &&
-      IsHTMLContent(aFrame) &&
-      !IsWidgetStyled(aFrame->GetParent()->PresContext(),
-                      aFrame->GetParent(),
-                      NS_THEME_MENULIST))
-  {
-    int32_t p2a = aContext->AppUnitsPerDevPixel();
-    /* Note: no overflow on the left */
-    nsMargin m(p2a, p2a, p2a, 0);
-    aOverflowRect->Inflate (m);
-    return true;
+  if (IsVistaOrLater()) {
+    /* We explicitly draw dropdown buttons in HTML content 1px bigger
+     * up, right, and bottom so that they overlap the dropdown's border
+     * like they're supposed to.
+     */
+    if (aWidgetType == NS_THEME_MENULIST_BUTTON &&
+        IsHTMLContent(aFrame) &&
+        !IsWidgetStyled(aFrame->GetParent()->PresContext(),
+                        aFrame->GetParent(),
+                        NS_THEME_MENULIST))
+    {
+      int32_t p2a = aContext->AppUnitsPerDevPixel();
+      /* Note: no overflow on the left */
+      nsMargin m(p2a, p2a, p2a, 0);
+      aOverflowRect->Inflate (m);
+      return true;
+    }
   }
 #endif
 
@@ -2249,18 +2433,22 @@ nsNativeThemeWin::GetMinimumWidgetSize(nsPresContext* aPresContext,
     case NS_THEME_SCALETHUMB_HORIZONTAL:
     case NS_THEME_SCALETHUMB_VERTICAL: {
       *aIsOverridable = false;
-      // On Vista, GetThemePartAndState returns odd values for
+      // on Vista, GetThemePartAndState returns odd values for
       // scale thumbs, so use a hardcoded size instead.
-      if (aWidgetType == NS_THEME_SCALETHUMB_HORIZONTAL ||
-          (aWidgetType == NS_THEME_RANGE_THUMB && IsRangeHorizontal(aFrame))) {
-        aResult->width = 12;
-        aResult->height = 20;
-      } else {
-        aResult->width = 20;
-        aResult->height = 12;
+      if (IsVistaOrLater()) {
+        if (aWidgetType == NS_THEME_SCALETHUMB_HORIZONTAL ||
+            (aWidgetType == NS_THEME_RANGE_THUMB && IsRangeHorizontal(aFrame))) {
+          aResult->width = 12;
+          aResult->height = 20;
+        }
+        else {
+          aResult->width = 20;
+          aResult->height = 12;
+        }
+        ScaleForFrameDPI(aResult, aFrame);
+        return rv;
       }
-      ScaleForFrameDPI(aResult, aFrame);
-      return rv;
+      break;
     }
 
     case NS_THEME_SCROLLBAR: {
@@ -2300,6 +2488,11 @@ nsNativeThemeWin::GetMinimumWidgetSize(nsPresContext* aPresContext,
           nsUXThemeData::GetCommandButtonMetrics(CMDBUTTONIDX_RESTORE).cx;
       aResult->height =
           nsUXThemeData::GetCommandButtonMetrics(CMDBUTTONIDX_RESTORE).cy;
+      // For XP, subtract 4 from system metrics dimensions.
+      if (!IsVistaOrLater()) {
+        aResult->width -= 4;
+        aResult->height -= 4;
+      }
       AddPaddingRect(aResult, CAPTIONBUTTON_RESTORE);
       *aIsOverridable = false;
       return rv;
@@ -2309,6 +2502,10 @@ nsNativeThemeWin::GetMinimumWidgetSize(nsPresContext* aPresContext,
           nsUXThemeData::GetCommandButtonMetrics(CMDBUTTONIDX_MINIMIZE).cx;
       aResult->height =
           nsUXThemeData::GetCommandButtonMetrics(CMDBUTTONIDX_MINIMIZE).cy;
+      if (!IsVistaOrLater()) {
+        aResult->width -= 4;
+        aResult->height -= 4;
+      }
       AddPaddingRect(aResult, CAPTIONBUTTON_MINIMIZE);
       *aIsOverridable = false;
       return rv;
@@ -2318,6 +2515,10 @@ nsNativeThemeWin::GetMinimumWidgetSize(nsPresContext* aPresContext,
           nsUXThemeData::GetCommandButtonMetrics(CMDBUTTONIDX_CLOSE).cx;
       aResult->height =
           nsUXThemeData::GetCommandButtonMetrics(CMDBUTTONIDX_CLOSE).cy;
+      if (!IsVistaOrLater()) {
+        aResult->width -= 4;
+        aResult->height -= 4;
+      }
       AddPaddingRect(aResult, CAPTIONBUTTON_CLOSE);
       *aIsOverridable = false;
       return rv;
@@ -2412,9 +2613,17 @@ nsNativeThemeWin::WidgetStateChanged(nsIFrame* aFrame, uint8_t aWidgetType,
     return NS_OK;
   }
 
+  // On Vista, the scrollbar buttons need to change state when the track has/doesn't have hover
+  if (!IsVistaOrLater() &&
+      (aWidgetType == NS_THEME_SCROLLBAR_VERTICAL || 
+      aWidgetType == NS_THEME_SCROLLBAR_HORIZONTAL)) {
+    *aShouldRepaint = false;
+    return NS_OK;
+  }
+
   // We need to repaint the dropdown arrow in vista HTML combobox controls when
   // the control is closed to get rid of the hover effect.
-  if ((aWidgetType == NS_THEME_MENULIST ||
+  if (IsVistaOrLater() && (aWidgetType == NS_THEME_MENULIST ||
        aWidgetType == NS_THEME_MENULIST_BUTTON) &&
       IsHTMLContent(aFrame)) {
     *aShouldRepaint = true;

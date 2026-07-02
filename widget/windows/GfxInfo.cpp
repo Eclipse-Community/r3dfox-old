@@ -284,6 +284,9 @@ uint32_t ParseIDFromDeviceID(const nsAString& key, const char* prefix,
 // based on http://msdn.microsoft.com/en-us/library/ms724834(VS.85).aspx
 enum {
   kWindowsUnknown = 0,
+  kWindowsXP = 0x50001,
+  kWindowsServer2003 = 0x50002,
+  kWindowsVista = 0x60000,
   kWindows7 = 0x60001,
   kWindows8 = 0x60002,
   kWindows8_1 = 0x60003,
@@ -972,6 +975,12 @@ void GfxInfo::AddCrashReportAnnotations() {
 static OperatingSystem WindowsVersionToOperatingSystem(
     int32_t aWindowsVersion) {
   switch (aWindowsVersion) {
+    case kWindowsXP:
+      return OperatingSystem::WindowsXP;
+    case kWindowsServer2003:
+      return OperatingSystem::WindowsServer2003;
+    case kWindowsVista:
+      return OperatingSystem::WindowsVista;
     case kWindows7:
       return OperatingSystem::Windows7;
     case kWindows8:
@@ -1029,6 +1038,11 @@ const nsTArray<GfxDriverInfo>& GfxInfo::GetGfxDriverInfo() {
     /*
      * NVIDIA entries
      */
+    APPEND_TO_DRIVER_BLOCKLIST(OperatingSystem::WindowsXP,
+      (nsAString&) GfxDriverInfo::GetDeviceVendor(VendorNVIDIA), GfxDriverInfo::allDevices,
+      GfxDriverInfo::allFeatures, nsIGfxInfo::FEATURE_BLOCKED_DRIVER_VERSION,
+      DRIVER_LESS_THAN_OR_EQUAL, V(6,14,11,8745), "FEATURE_FAILURE_NV_XP", "nVidia driver > 187.45" );
+
     /*
      * The last 5 digit of the NVIDIA driver version maps to the version that
      * NVIDIA uses. The minor version (15, 16, 17) corresponds roughtly to the
@@ -1040,12 +1054,26 @@ const nsTArray<GfxDriverInfo>& GfxInfo::GetGfxDriverInfo() {
      * to crash on shutdown.
      */
     APPEND_TO_DRIVER_BLOCKLIST(
+        OperatingSystem::WindowsVista,
+        (nsAString&)GfxDriverInfo::GetDeviceVendor(VendorNVIDIA),
+        GfxDriverInfo::allDevices, GfxDriverInfo::allFeatures,
+        nsIGfxInfo::FEATURE_BLOCKED_DRIVER_VERSION, DRIVER_LESS_THAN_OR_EQUAL,
+        V(8, 15, 11, 8745), "FEATURE_FAILURE_NV_VISTA_15",
+        "nVidia driver > 187.45");
+    APPEND_TO_DRIVER_BLOCKLIST(
         OperatingSystem::Windows7,
         (nsAString&)GfxDriverInfo::GetDeviceVendor(VendorNVIDIA),
         GfxDriverInfo::allDevices, GfxDriverInfo::allFeatures,
         nsIGfxInfo::FEATURE_BLOCKED_DRIVER_VERSION, DRIVER_LESS_THAN_OR_EQUAL,
         V(8, 15, 11, 8745), "FEATURE_FAILURE_NV_W7_15",
         "nVidia driver > 187.45");
+    APPEND_TO_DRIVER_BLOCKLIST_RANGE(
+        OperatingSystem::WindowsVista,
+        (nsAString&)GfxDriverInfo::GetDeviceVendor(VendorNVIDIA),
+        GfxDriverInfo::allDevices, GfxDriverInfo::allFeatures,
+        nsIGfxInfo::FEATURE_BLOCKED_DRIVER_VERSION,
+        DRIVER_BETWEEN_INCLUSIVE_START, V(8, 16, 10, 0000), V(8, 16, 11, 8745),
+        "FEATURE_FAILURE_NV_VISTA_16", "nVidia driver > 187.45");
     APPEND_TO_DRIVER_BLOCKLIST_RANGE(
         OperatingSystem::Windows7,
         (nsAString&)GfxDriverInfo::GetDeviceVendor(VendorNVIDIA),
@@ -1062,6 +1090,15 @@ const nsTArray<GfxDriverInfo>& GfxInfo::GetGfxDriverInfo() {
         nsIGfxInfo::FEATURE_BLOCKED_DRIVER_VERSION,
         DRIVER_BETWEEN_INCLUSIVE_START, V(8, 17, 10, 0000), V(8, 17, 11, 8745),
         "FEATURE_FAILURE_NV_W7_17", "nVidia driver > 187.45");
+    // Telemetry doesn't show any driver in this range so it might not even be
+    // required.
+    APPEND_TO_DRIVER_BLOCKLIST_RANGE(
+        OperatingSystem::WindowsVista,
+        (nsAString&)GfxDriverInfo::GetDeviceVendor(VendorNVIDIA),
+        GfxDriverInfo::allDevices, GfxDriverInfo::allFeatures,
+        nsIGfxInfo::FEATURE_BLOCKED_DRIVER_VERSION,
+        DRIVER_BETWEEN_INCLUSIVE_START, V(8, 17, 10, 0000), V(8, 17, 11, 8745),
+        "FEATURE_FAILURE_NV_VISTA_17", "nVidia driver > 187.45");
 
     /*
      * AMD/ATI entries. 8.56.1.15 is the driver that shipped with Windows 7 RTM
@@ -1180,6 +1217,23 @@ const nsTArray<GfxDriverInfo>& GfxInfo::GetGfxDriverInfo() {
       nsIGfxInfo::FEATURE_BLOCKED_DRIVER_VERSION, DRIVER_BUILD_ID_LESS_THAN, \
       driverVer, ruleId)
 
+    IMPLEMENT_INTEL_DRIVER_BLOCKLIST_D2D(OperatingSystem::WindowsVista, IntelGMA500,
+                                         1006, "FEATURE_FAILURE_594877_1");
+    IMPLEMENT_INTEL_DRIVER_BLOCKLIST_D2D(OperatingSystem::WindowsVista, IntelGMA900,
+                                         GfxDriverInfo::allDriverVersions,
+                                         "FEATURE_FAILURE_594877_2");
+    IMPLEMENT_INTEL_DRIVER_BLOCKLIST_D2D(OperatingSystem::WindowsVista, IntelGMA950,
+                                         1504, "FEATURE_FAILURE_594877_3");
+    IMPLEMENT_INTEL_DRIVER_BLOCKLIST_D2D(OperatingSystem::WindowsVista,
+                                         IntelGMA3150, 2124,
+                                         "FEATURE_FAILURE_594877_4");
+    IMPLEMENT_INTEL_DRIVER_BLOCKLIST_D2D(OperatingSystem::WindowsVista,
+                                         IntelGMAX3000, 1666,
+                                         "FEATURE_FAILURE_594877_5");
+    IMPLEMENT_INTEL_DRIVER_BLOCKLIST_D2D(OperatingSystem::WindowsVista,
+                                         IntelHDGraphicsToSandyBridge, 2202,
+                                         "FEATURE_FAILURE_594877_6");
+
     IMPLEMENT_INTEL_DRIVER_BLOCKLIST_D2D(OperatingSystem::Windows7, IntelGMA500,
                                          2026, "FEATURE_FAILURE_594877_7");
     IMPLEMENT_INTEL_DRIVER_BLOCKLIST_D2D(OperatingSystem::Windows7, IntelGMA900,
@@ -1209,6 +1263,59 @@ const nsTArray<GfxDriverInfo>& GfxInfo::GetGfxDriverInfo() {
         nsIGfxInfo::FEATURE_DIRECT2D, nsIGfxInfo::FEATURE_BLOCKED_DEVICE,
         DRIVER_LESS_THAN, GfxDriverInfo::allDriverVersions,
         "FEATURE_FAILURE_1180379");
+
+    IMPLEMENT_INTEL_DRIVER_BLOCKLIST(OperatingSystem::WindowsXP, IntelGMA500,
+                                     V(3, 0, 20, 3200),
+                                     "FEATURE_FAILURE_INTEL_1");
+    IMPLEMENT_INTEL_DRIVER_BLOCKLIST(OperatingSystem::WindowsXP, IntelGMA900,
+                                     V(6, 14, 10, 4764),
+                                     "FEATURE_FAILURE_INTEL_2");
+    IMPLEMENT_INTEL_DRIVER_BLOCKLIST(OperatingSystem::WindowsXP, IntelGMA950,
+                                     V(6, 14, 10, 4926),
+                                     "FEATURE_FAILURE_INTEL_3");
+    IMPLEMENT_INTEL_DRIVER_BLOCKLIST(OperatingSystem::WindowsXP, IntelGMA3150,
+                                     V(6, 14, 10, 5134),
+                                     "FEATURE_FAILURE_INTEL_4");
+    IMPLEMENT_INTEL_DRIVER_BLOCKLIST(OperatingSystem::WindowsXP, IntelGMAX3000,
+                                     V(6, 14, 10, 5218),
+                                     "FEATURE_FAILURE_INTEL_5");
+    IMPLEMENT_INTEL_DRIVER_BLOCKLIST(OperatingSystem::WindowsXP, IntelGMAX4500HD,
+                                     V(6, 14, 10, 4969),
+                                     "FEATURE_FAILURE_INTEL_6");
+    IMPLEMENT_INTEL_DRIVER_BLOCKLIST(
+        OperatingSystem::WindowsXP, IntelHDGraphicsToSandyBridge,
+        V(6, 14, 10, 4969), "FEATURE_FAILURE_INTEL_7");
+
+    // StrechRect seems to suffer from precision issues which leads to artifacting
+    // during content drawing starting with at least version 6.14.10.5082
+    // and going until 6.14.10.5218. See bug 919454 and bug 949275 for more info.
+    APPEND_TO_DRIVER_BLOCKLIST_RANGE(OperatingSystem::WindowsXP,
+      const_cast<nsAString&>(GfxDriverInfo::GetDeviceVendor(VendorIntel)),
+      const_cast<GfxDeviceFamily*>(GfxDriverInfo::GetDeviceFamily(IntelGMAX4500HD)),
+      GfxDriverInfo::allFeatures, nsIGfxInfo::FEATURE_BLOCKED_DRIVER_VERSION,
+      DRIVER_BETWEEN_EXCLUSIVE, V(6,14,10,5076), V(6,14,10,5218), "FEATURE_FAILURE_INTEL_8", "6.14.10.5218");
+
+    IMPLEMENT_INTEL_DRIVER_BLOCKLIST(OperatingSystem::WindowsVista, IntelGMA500,
+                                     V(3, 0, 20, 3200),
+                                     "FEATURE_FAILURE_INTEL_9");
+    IMPLEMENT_INTEL_DRIVER_BLOCKLIST(OperatingSystem::WindowsVista, IntelGMA900,
+                                     GfxDriverInfo::allDriverVersions,
+                                     "FEATURE_FAILURE_INTEL_10");
+    IMPLEMENT_INTEL_DRIVER_BLOCKLIST(OperatingSystem::WindowsVista, IntelGMA950,
+                                     V(7, 14, 10, 1504),
+                                     "FEATURE_FAILURE_INTEL_11");
+    IMPLEMENT_INTEL_DRIVER_BLOCKLIST(OperatingSystem::WindowsVista, IntelGMA3150,
+                                     V(7, 14, 10, 1910),
+                                     "FEATURE_FAILURE_INTEL_12");
+    IMPLEMENT_INTEL_DRIVER_BLOCKLIST(OperatingSystem::WindowsVista, IntelGMAX3000,
+                                     V(7, 15, 10, 1666),
+                                     "FEATURE_FAILURE_INTEL_13");
+    IMPLEMENT_INTEL_DRIVER_BLOCKLIST(OperatingSystem::WindowsVista, IntelGMAX4500HD,
+                                     V(7, 15, 10, 1666),
+                                     "FEATURE_FAILURE_INTEL_14");
+    IMPLEMENT_INTEL_DRIVER_BLOCKLIST(
+        OperatingSystem::WindowsVista, IntelHDGraphicsToSandyBridge,
+        V(7, 15, 10, 1666), "FEATURE_FAILURE_INTEL_15");
 
     IMPLEMENT_INTEL_DRIVER_BLOCKLIST(OperatingSystem::Windows7, IntelGMA500,
                                      V(5, 0, 0, 2026),
@@ -1651,6 +1758,23 @@ nsresult GfxInfo::GetFeatureStatusImpl(
       *aStatus = FEATURE_BLOCKED_DRIVER_VERSION;
       return NS_OK;
     }
+
+    // special-case the WinXP test slaves: they have out-of-date drivers, but we still want to
+    // whitelist them, actually we do know that this combination of device and driver version
+    // works well.
+    if (mWindowsVersion == kWindowsXP &&
+        adapterVendorID.Equals(GfxDriverInfo::GetDeviceVendor(VendorNVIDIA), nsCaseInsensitiveStringComparator()) &&
+        adapterDeviceID.LowerCaseEqualsLiteral("0x0861") && // GeForce 9400
+        driverVersion == V(6,14,11,7756))
+    {
+      *aStatus = FEATURE_STATUS_OK;
+      return NS_OK;
+    }
+
+    // Windows Server 2003 should be just like Windows XP for present purpose, but still has a different version number.
+    // OTOH Windows Server 2008 R1 and R2 already have the same version numbers as Vista and Seven respectively
+    if (os == OperatingSystem::WindowsServer2003)
+      os = OperatingSystem::WindowsXP;
 
     if (mHasDriverVersionMismatch) {
       *aStatus = nsIGfxInfo::FEATURE_BLOCKED_MISMATCHED_VERSION;

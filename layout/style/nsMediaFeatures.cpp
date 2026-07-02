@@ -77,6 +77,8 @@ struct OperatingSystemVersionInfo {
 
 // Os version identities used in the -moz-os-version media query.
 const OperatingSystemVersionInfo kOsVersionStrings[] = {
+    {LookAndFeel::eOperatingSystemVersion_WindowsXP, &nsGkAtoms::windows_xp},
+    {LookAndFeel::eOperatingSystemVersion_WindowsVista, &nsGkAtoms::windows_win7},
     {LookAndFeel::eOperatingSystemVersion_Windows7, &nsGkAtoms::windows_win7},
     {LookAndFeel::eOperatingSystemVersion_Windows8, &nsGkAtoms::windows_win8},
     {LookAndFeel::eOperatingSystemVersion_Windows10,

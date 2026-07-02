@@ -110,7 +110,8 @@ class nsNativeThemeWin : private nsNativeTheme, public nsITheme {
                                     bool aIsClassic);
   void DrawThemedProgressMeter(nsIFrame* aFrame, int aWidgetType, HANDLE aTheme,
                                HDC aHdc, int aPart, int aState,
-                               RECT* aWidgetRect, RECT* aClipRect);
+                               RECT* aWidgetRect, RECT* aClipRect,
+                               gfxFloat aAppUnits);
 
   nsresult GetCachedWidgetBorder(nsIFrame* aFrame, HANDLE aTheme,
                                  nsUXThemeClass aThemeClass,

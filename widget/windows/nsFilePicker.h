@@ -76,20 +76,33 @@ class nsFilePicker : public IFileDialogEvents, public nsBaseWinFilePicker {
                                         FDE_OVERWRITE_RESPONSE *pResponse);
 
  protected:
+  enum PickerType {
+    PICKER_TYPE_OPEN,
+    PICKER_TYPE_SAVE,
+  };
+
   /* method from nsBaseFilePicker */
   virtual void InitNative(nsIWidget *aParent, const nsAString &aTitle) override;
   nsresult Show(int16_t *aReturnVal) override;
   nsresult ShowW(int16_t *aReturnVal);
+  static void GetQualifiedPath(const wchar_t *aInPath, nsString &aOutPath);
   void GetFilterListArray(nsString &aFilterList);
-  bool ShowFolderPicker(const nsString &aInitialDir);
-  bool ShowFilePicker(const nsString &aInitialDir);
+  static bool GetFileNameWrapper(OPENFILENAMEW* ofn, PickerType aType);
+  bool FilePickerWrapper(OPENFILENAMEW* ofn, PickerType aType);
+  bool ShowXPFolderPicker(const nsString& aInitialDir);
+  bool ShowXPFilePicker(const nsString& aInitialDir);
+  bool ShowFolderPicker(const nsString& aInitialDir, bool &aWasInitError);
+  bool ShowFilePicker(const nsString& aInitialDir, bool &aWasInitError);
+  void AppendXPFilter(const nsAString& aTitle, const nsAString& aFilter);
   void RememberLastUsedDirectory();
   bool IsPrivacyModeEnabled();
   bool IsDefaultPathLink();
   bool IsDefaultPathHtml();
   void SetDialogHandle(HWND aWnd);
-  bool ClosePickerIfNeeded();
+  bool ClosePickerIfNeeded(bool aIsXPDialog);
   static void PickerCallbackTimerFunc(nsITimer *aTimer, void *aPicker);
+  static UINT_PTR CALLBACK MultiFilePickerHook(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
+  static UINT_PTR CALLBACK FilePickerHook(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam);
 
   nsCOMPtr<nsILoadContext> mLoadContext;
   nsCOMPtr<nsIWidget> mParentWidget;

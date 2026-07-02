@@ -451,7 +451,6 @@ class LookAndFeel {
    * Operating system versions.
    */
   enum OperatingSystemVersion {
-    // XXX: The XP and Vista values can now be removed (see bug 1330146).
     eOperatingSystemVersion_WindowsXP = 0,
     eOperatingSystemVersion_WindowsVista,
     eOperatingSystemVersion_Windows7,

@@ -499,6 +499,7 @@ class nsWindow final : public nsWindowBase {
       bool aIntersectWithExisting) override;
   LayoutDeviceIntRegion GetRegionToPaint(bool aForceFullRepaint, PAINTSTRUCT ps,
                                          HDC aDC);
+  static void ActivateOtherWindowHelper(HWND aWnd);
   void ClearCachedResources();
   nsIWidgetListener* GetPaintListener();
 
@@ -569,7 +570,7 @@ class nsWindow final : public nsWindowBase {
   static bool sJustGotDeactivate;
   static bool sJustGotActivate;
   static bool sIsInMouseCapture;
-  static bool sHaveInitializedPrefs;
+  static int sTrimOnMinimize;
 
   PlatformCompositorWidgetDelegate* mCompositorWidgetDelegate;
 

@@ -252,6 +252,33 @@ nsWindowsShellService::IsDefaultBrowser(bool aStartupCheck, bool aForAllTypes,
   return NS_OK;
 }
 
+static nsresult DynSHOpenWithDialog(HWND hwndParent, const OPENASINFO *poainfo) {
+  // shell32.dll is in the knownDLLs list so will always be loaded from the
+  // system32 directory.
+  static const wchar_t kSehllLibraryName[] =  L"shell32.dll";
+  HMODULE shellDLL = ::LoadLibraryW(kSehllLibraryName);
+  if (!shellDLL) {
+    return NS_ERROR_FAILURE;
+  }
+
+  decltype(SHOpenWithDialog)* SHOpenWithDialogFn =
+    (decltype(SHOpenWithDialog)*) GetProcAddress(shellDLL, "SHOpenWithDialog");
+
+  if (!SHOpenWithDialogFn) {
+    return NS_ERROR_FAILURE;
+  }
+
+  nsresult rv;
+  HRESULT hr = SHOpenWithDialogFn(hwndParent, poainfo);
+  if (SUCCEEDED(hr) || (hr == HRESULT_FROM_WIN32(ERROR_CANCELLED))) {
+    rv = NS_OK;
+  } else {
+    rv = NS_ERROR_FAILURE;
+  }
+  FreeLibrary(shellDLL);
+  return rv;
+}
+
 nsresult nsWindowsShellService::LaunchControlPanelDefaultsSelectionUI() {
   IApplicationAssociationRegistrationUI* pAARUI;
   HRESULT hr = CoCreateInstance(
@@ -412,11 +439,7 @@ nsresult nsWindowsShellService::LaunchHTTPHandlerPane() {
   info.oaifInFlags =
       OAIF_FORCE_REGISTRATION | OAIF_URL_PROTOCOL | OAIF_REGISTER_EXT;
 
-  HRESULT hr = SHOpenWithDialog(nullptr, &info);
-  if (SUCCEEDED(hr) || (hr == HRESULT_FROM_WIN32(ERROR_CANCELLED))) {
-    return NS_OK;
-  }
-  return NS_ERROR_FAILURE;
+  return DynSHOpenWithDialog(nullptr, &info);
 }
 
 NS_IMETHODIMP

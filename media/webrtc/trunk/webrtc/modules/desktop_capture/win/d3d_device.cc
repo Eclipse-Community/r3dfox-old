@@ -30,9 +30,26 @@ bool D3dDevice::Initialize(const ComPtr<IDXGIAdapter>& adapter) {
     return false;
   }
 
+// We don't have access to the D3D11CreateDevice type in gfxWindowsPlatform.h,
+// since it doesn't include d3d11.h, so we use a static here. It should only
+// be used within InitializeD3D11.
+decltype(D3D11CreateDevice)* sD3D11CreateDeviceFn = nullptr;
+
+  HMODULE module=LoadLibraryW(L"d3d11.dll");
+  if (!module) {
+    return false;
+  }
+
+  sD3D11CreateDeviceFn =
+      (decltype(D3D11CreateDevice)*)GetProcAddress(module, "D3D11CreateDevice");
+  if (!sD3D11CreateDeviceFn) {
+    // We should just be on Windows Vista or XP in this case.
+    return false;
+  }
+
   D3D_FEATURE_LEVEL feature_level;
   // Default feature levels contain D3D 9.1 through D3D 11.0.
-  _com_error error = D3D11CreateDevice(
+  _com_error error = sD3D11CreateDeviceFn(
       adapter.Get(), D3D_DRIVER_TYPE_UNKNOWN, nullptr,
       D3D11_CREATE_DEVICE_BGRA_SUPPORT | D3D11_CREATE_DEVICE_SINGLETHREADED,
       nullptr, 0, D3D11_SDK_VERSION, d3d_device_.GetAddressOf(), &feature_level,
@@ -65,8 +82,17 @@ bool D3dDevice::Initialize(const ComPtr<IDXGIAdapter>& adapter) {
 
 // static
 std::vector<D3dDevice> D3dDevice::EnumDevices() {
+typedef HRESULT (APIENTRY *PFN_CreateDXGIFactory1)(REFIID riid, void **ppFactory);
+static PFN_CreateDXGIFactory1 fpCreateDXGIFactory1;
+    HMODULE dxgi_module = LoadLibraryW(L"dxgi.dll");
+    fpCreateDXGIFactory1 = dxgi_module == NULL ? NULL :
+        (PFN_CreateDXGIFactory1)GetProcAddress(dxgi_module, "CreateDXGIFactory1");
+  if (!fpCreateDXGIFactory1) {
+    return std::vector<D3dDevice>();
+  }
+
   ComPtr<IDXGIFactory1> factory;
-  _com_error error = CreateDXGIFactory1(__uuidof(IDXGIFactory1),
+  _com_error error = fpCreateDXGIFactory1(__uuidof(IDXGIFactory1),
       reinterpret_cast<void**>(factory.GetAddressOf()));
   if (error.Error() != S_OK || !factory) {
     return std::vector<D3dDevice>();

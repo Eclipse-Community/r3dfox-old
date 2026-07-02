@@ -429,7 +429,8 @@ void gfxGDIFont::FillLogFont(LOGFONTW &aLogFont, gfxFloat aSize) {
     weight = mNeedsBold ? 700 : fe->Weight();
   }
 
-  fe->FillLogFont(&aLogFont, weight, aSize);
+  fe->FillLogFont(&aLogFont, weight, aSize, 
+                  (mAntialiasOption == kAntialiasSubpixel) ? true : false);
 }
 
 uint32_t gfxGDIFont::GetGlyph(uint32_t aUnicode, uint32_t aVarSelector) {

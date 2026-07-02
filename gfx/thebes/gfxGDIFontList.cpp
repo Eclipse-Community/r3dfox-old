@@ -29,6 +29,7 @@
 
 #include "mozilla/MemoryReporting.h"
 #include "mozilla/Telemetry.h"
+#include "mozilla/WindowsVersion.h"
 
 #include <usp10.h>
 
@@ -36,6 +37,10 @@ using namespace mozilla;
 using namespace mozilla::gfx;
 
 #define ROUND(x) floor((x) + 0.5)
+
+#ifndef CLEARTYPE_QUALITY
+#define CLEARTYPE_QUALITY 5
+#endif
 
 #define LOG_FONTLIST(args) \
   MOZ_LOG(gfxPlatform::GetLog(eGfxLog_fontlist), LogLevel::Debug, args)
@@ -193,7 +198,16 @@ nsresult GDIFontEntry::ReadCMAP(FontInfoData* aFontInfoData) {
 
 gfxFont* GDIFontEntry::CreateFontInstance(const gfxFontStyle* aFontStyle,
                                           bool aNeedsBold) {
-  return new gfxGDIFont(this, aFontStyle, aNeedsBold);
+  bool isXP = !IsVistaOrLater();
+
+  bool useClearType = isXP && !aFontStyle->systemFont &&
+      (gfxWindowsPlatform::GetPlatform()->UseClearTypeAlways() ||
+       (mIsDataUserFont &&
+        gfxWindowsPlatform::GetPlatform()->UseClearTypeForDownloadableFonts()));
+
+  return new gfxGDIFont(this, aFontStyle, aNeedsBold, 
+                        (useClearType ? gfxFont::kAntialiasSubpixel
+                                      : gfxFont::kAntialiasDefault));
 }
 
 nsresult GDIFontEntry::CopyFontTable(uint32_t aTableTag,
@@ -233,7 +247,8 @@ already_AddRefed<UnscaledFontGDI> GDIFontEntry::LookupUnscaledFont(
 }
 
 void GDIFontEntry::FillLogFont(LOGFONTW* aLogFont, uint16_t aWeight,
-                               gfxFloat aSize) {
+                               gfxFloat aSize,
+                               bool aUseCleartype) {
   memcpy(aLogFont, &mLogFont, sizeof(LOGFONTW));
 
   aLogFont->lfHeight = (LONG)-ROUND(aSize);
@@ -258,6 +273,8 @@ void GDIFontEntry::FillLogFont(LOGFONTW* aLogFont, uint16_t aWeight,
   if (mIsDataUserFont) {
     aLogFont->lfItalic = 0;
   }
+
+  aLogFont->lfQuality = (aUseCleartype ? CLEARTYPE_QUALITY : DEFAULT_QUALITY);
 }
 
 #define MISSING_GLYPH \

@@ -97,7 +97,8 @@ class GDIFontEntry : public gfxFontEntry {
 
   nsresult ReadCMAP(FontInfoData* aFontInfoData = nullptr) override;
 
-  void FillLogFont(LOGFONTW* aLogFont, uint16_t aWeight, gfxFloat aSize);
+  void FillLogFont(LOGFONTW* aLogFont, uint16_t aWeight, gfxFloat aSize,
+                   bool aUseCleartype);
 
   static gfxWindowsFontType DetermineFontType(const NEWTEXTMETRICW& metrics,
                                               DWORD fontType) {

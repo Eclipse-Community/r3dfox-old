@@ -1447,7 +1447,8 @@
 
 !macro RegisterDLL DLL
 
-  ; The x64 regsvr32.exe registers x86 DLL's properly so just use it
+  ; The x64 regsvr32.exe registers x86 DLL's properly on Windows Vista and above
+  ; (not on Windows XP http://support.microsoft.com/kb/282747) so just use it
   ; when installing on an x64 systems even when installing an x86 application.
   ${If} ${RunningX64}
     ${DisableX64FSRedirection}
@@ -1461,7 +1462,8 @@
 
 !macro UnregisterDLL DLL
 
-  ; The x64 regsvr32.exe registers x86 DLL's properly so just use it
+  ; The x64 regsvr32.exe registers x86 DLL's properly on Windows Vista and above
+  ; (not on Windows XP http://support.microsoft.com/kb/282747) so just use it
   ; when installing on an x64 systems even when installing an x86 application.
   ${If} ${RunningX64}
     ${DisableX64FSRedirection}
@@ -6017,7 +6019,13 @@
       ${LogMsg} "App Version: $R8"
       ${LogMsg} "GRE Version: $R9"
 
-      ${If} ${IsWin7}
+      ${If} ${IsWinXP}
+        ${LogMsg} "OS Name    : Windows XP"
+      ${ElseIf} ${IsWin2003}
+        ${LogMsg} "OS Name    : Windows 2003"
+      ${ElseIf} ${IsWinVista}
+        ${LogMsg} "OS Name    : Windows Vista"
+      ${ElseIf} ${IsWin7}
         ${LogMsg} "OS Name    : Windows 7"
       ${ElseIf} ${IsWin8}
         ${LogMsg} "OS Name    : Windows 8"

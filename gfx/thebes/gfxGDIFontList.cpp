@@ -198,9 +198,7 @@ nsresult GDIFontEntry::ReadCMAP(FontInfoData* aFontInfoData) {
 
 gfxFont* GDIFontEntry::CreateFontInstance(const gfxFontStyle* aFontStyle,
                                           bool aNeedsBold) {
-  bool isXP = !IsVistaOrLater();
-
-  bool useClearType = isXP && !aFontStyle->systemFont &&
+  bool useClearType = !aFontStyle->systemFont &&
       (gfxWindowsPlatform::GetPlatform()->UseClearTypeAlways() ||
        (mIsDataUserFont &&
         gfxWindowsPlatform::GetPlatform()->UseClearTypeForDownloadableFonts()));

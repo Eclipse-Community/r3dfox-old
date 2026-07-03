@@ -33,5 +33,5 @@ ac_add_options --with-unsigned-addon-scopes=app,system
 # x64 build
 ac_add_options --host=x86_64-pc-mingw32
 ac_add_options --target=x86_64-pc-mingw32
-#WIN32_REDIST_DIR="${VCINSTALLDIR}/redist/x64/Microsoft.VC141.CRT"
-#WIN_UCRT_REDIST_DIR="${WINDOWSSDKDIR}/Redist/ucrt/DLLs/r64"
+WIN32_REDIST_DIR="${VCINSTALLDIR}/redist/x64/Microsoft.VC141.CRT"
+WIN_UCRT_REDIST_DIR="${WINDOWSSDKDIR}/Redist/ucrt/DLLs/r64"

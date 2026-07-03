@@ -4,6 +4,12 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+// We need Windows 7 headers
+#ifdef WINVER
+#undef WINVER
+#endif
+#define WINVER 0x0601
+
 #include <d3d11.h>
 #include "DXVA2Manager.h"
 #include "D3D9SurfaceImage.h"

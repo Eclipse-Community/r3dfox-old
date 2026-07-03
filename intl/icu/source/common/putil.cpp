@@ -39,6 +39,12 @@
 ******************************************************************************
 */
 
+// We need Windows 7 headers
+#ifdef WINVER
+#undef WINVER
+#endif
+#define WINVER 0x0601
+
 // Defines _XOPEN_SOURCE for access to POSIX functions.
 // Must be before any other #includes.
 #include "uposixdefs.h"

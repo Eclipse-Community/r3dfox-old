@@ -4,6 +4,12 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+// We need Windows 7 headers
+#ifdef _WIN32_WINNT
+#undef _WIN32_WINNT
+#endif
+#define _WIN32_WINNT 0x0601
+
 #include "mozilla/DynamicallyLinkedFunctionPtr.h"
 #include "FunctionHook.h"
 #include "FunctionBroker.h"

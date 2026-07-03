@@ -27,6 +27,12 @@
  * 08/23/01     george      Convert to C
  */
 
+// We need Windows 7 headers
+#ifdef WINVER
+#undef WINVER
+#endif
+#define WINVER 0x0601
+
 #include "locmap.h"
 #include "cstring.h"
 #include "cmemory.h"

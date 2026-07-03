@@ -21,6 +21,7 @@ EXPORTS.mozilla.mscom += [
 ]
 
 SOURCES += [
+    'Utils.cpp',
     'VTableBuilder.c',
 ]
 
@@ -33,7 +34,6 @@ UNIFIED_SOURCES += [
     'PassthruProxy.cpp',
     'ProxyStream.cpp',
     'RegistrationAnnotator.cpp',
-    'Utils.cpp',
 ]
 
 if CONFIG['ACCESSIBILITY']:

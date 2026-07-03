@@ -69,7 +69,7 @@
 #   endif
 
 #if defined(ANGLE_ENABLE_D3D9) || defined(ANGLE_ENABLE_D3D11)
-#include <wrl.h>
+#include "stupidwrlbase.h"
 #endif
 
 #   if defined(ANGLE_ENABLE_WINDOWS_STORE)

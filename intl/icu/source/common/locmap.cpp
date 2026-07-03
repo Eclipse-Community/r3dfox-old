@@ -1072,8 +1072,17 @@ uprv_convertToPosix(uint32_t hostid, char *posixID, int32_t posixIDCapacity, UEr
         int32_t tmpLen = 0;
         UChar windowsLocaleName[LOCALE_NAME_MAX_LENGTH];  // ULOC_FULLNAME_CAPACITY > LOCALE_NAME_MAX_LENGTH
 
+        int (WINAPI * pfnLCIDToLocaleName)(LCID, LPWSTR, int, DWORD);
+        // For Windows 7, use "LocaleName" registry key for the user locale
+        // as they seem to switch from "Locale".
+        HMODULE hmod = GetModuleHandleW(L"kernel32");
+        *(FARPROC*)&pfnLCIDToLocaleName =
+            GetProcAddress(hmod, "LCIDToLocaleName");
         // Note: LOCALE_ALLOW_NEUTRAL_NAMES was enabled in Windows7+, prior versions did not handle neutral (no-region) locale names.
-        tmpLen = LCIDToLocaleName(hostid, (PWSTR)windowsLocaleName, UPRV_LENGTHOF(windowsLocaleName), LOCALE_ALLOW_NEUTRAL_NAMES);
+        if (pfnLCIDToLocaleName != NULL) {
+        tmpLen = pfnLCIDToLocaleName(hostid, (PWSTR)windowsLocaleName, UPRV_LENGTHOF(windowsLocaleName), LOCALE_ALLOW_NEUTRAL_NAMES);
+        }
+
         if (tmpLen > 1) {
             int32_t i = 0;
             // Only need to look up in table if have _, eg for de-de_phoneb type alternate sort.
@@ -1230,7 +1239,18 @@ uprv_convertToLCIDPlatform(const char* localeID)
         {
             // Ensure it's null terminated
             bcp47Tag[i] = L'\0';
-            LCID lcid = LocaleNameToLCID(bcp47Tag, nameLCIDFlags);
+
+            LCID (WINAPI * pfnLocaleNameToLCID)(LPCWSTR, DWORD);
+            // For Windows 7, use "LocaleName" registry key for the user locale
+            // as they seem to switch from "Locale".
+            HMODULE hmod = GetModuleHandleW(L"kernel32");
+            *(FARPROC*)&pfnLocaleNameToLCID =
+                GetProcAddress(hmod, "LocaleNameToLCID");
+                LCID lcid = 0;
+            if (pfnLocaleNameToLCID != NULL) {
+                lcid = pfnLocaleNameToLCID(bcp47Tag, LOCALE_ALLOW_NEUTRAL_NAMES);
+            }
+
             if (lcid > 0)
             {
                 // Found LCID from windows, return that one, unless its completely ambiguous

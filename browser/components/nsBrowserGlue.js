@@ -110,7 +110,6 @@ XPCOMUtils.defineLazyModuleGetters(this, {
   LoginManagerParent: "resource://gre/modules/LoginManagerParent.jsm",
   NetUtil: "resource://gre/modules/NetUtil.jsm",
   NewTabUtils: "resource://gre/modules/NewTabUtils.jsm",
-  Normandy: "resource://normandy/Normandy.jsm",
   ObjectUtils: "resource://gre/modules/ObjectUtils.jsm",
   OS: "resource://gre/modules/osfile.jsm",
   PageActions: "resource:///modules/PageActions.jsm",
@@ -696,8 +695,6 @@ BrowserGlue.prototype = {
       author: vendorShortName,
     });
 
-    Normandy.init();
-
     // Initialize the default l10n resource sources for L10nRegistry.
     let locales = Services.locale.getPackagedLocales();
     const appSource = new FileSource("app", locales, "resource://app/localization/{locale}/");
@@ -1040,7 +1037,6 @@ BrowserGlue.prototype = {
     NewTabUtils.uninit();
     AutoCompletePopup.uninit();
     DateTimePickerHelper.uninit();
-    Normandy.uninit();
   },
 
   // All initial windows have opened.
@@ -2429,87 +2425,6 @@ BrowserGlue.prototype = {
         DefaultBrowserCheck.prompt(RecentWindow.getMostRecentBrowserWindow());
       }
     }
-  },
-
-  async _migrateMatchBucketsPrefForUI66() {
-    // This does two related things.
-    //
-    // (1) Profiles created on or after Firefox 57's release date were eligible
-    // for a Shield study that changed the browser.urlbar.matchBuckets pref in
-    // order to show search suggestions above history/bookmarks in the urlbar
-    // popup.  This uninstalls that study.  (It's actually slightly more
-    // complex.  The study set the pref to several possible values, but the
-    // overwhelming number of profiles in the study got search suggestions
-    // first, followed by history/bookmarks.)
-    //
-    // (2) This also ensures that (a) new users see search suggestions above
-    // history/bookmarks, thereby effectively making the study permanent, and
-    // (b) old users (including those in the study) continue to see whatever
-    // they were seeing before.  This works together with UnifiedComplete.js.
-    // By default, the browser.urlbar.matchBuckets pref does not exist, and
-    // UnifiedComplete.js internally hardcodes a default value for it.  Before
-    // Firefox 60, the hardcoded default was to show history/bookmarks first.
-    // After 60, it's to show search suggestions first.
-
-    // Wait for Shield init to complete.
-    await new Promise(resolve => {
-      if (this._shieldInitComplete) {
-        resolve();
-        return;
-      }
-      let topic = "shield-init-complete";
-      Services.obs.addObserver(function obs() {
-        Services.obs.removeObserver(obs, topic);
-        resolve();
-      }, topic);
-    });
-
-    // Now get the pref's value.  If the study is active, the value will have
-    // just been set (on the default branch) as part of Shield's init.  The pref
-    // should not exist otherwise (normally).
-    let prefName = "browser.urlbar.matchBuckets";
-    let prefValue = Services.prefs.getCharPref(prefName, "");
-
-    // Get the study (aka experiment).  It may not be installed.
-    let experiment = null;
-    let experimentName = "pref-flip-search-composition-57-release-1413565";
-    let {PreferenceExperiments} =
-      ChromeUtils.import("resource://normandy/lib/PreferenceExperiments.jsm", {});
-    try {
-      experiment = await PreferenceExperiments.get(experimentName);
-    } catch (e) {}
-
-    // Uninstall the study, resetting the pref to its state before the study.
-    if (experiment && !experiment.expired) {
-      await PreferenceExperiments.stop(experimentName, {
-        resetValue: true,
-        reason: "external:search-ui-migration",
-      });
-    }
-
-    // At this point, normally the pref should not exist.  If it does, then it
-    // either has a user value, or something unexpectedly set its value on the
-    // default branch.  Either way, preserve that value.
-    if (Services.prefs.getCharPref(prefName, "")) {
-      return;
-    }
-
-    // The new default is "suggestion:4,general:5" (show search suggestions
-    // before history/bookmarks), but we implement that by leaving the pref
-    // undefined, and UnifiedComplete.js hardcodes that value internally.  So if
-    // the pref was "suggestion:4,general:5" (modulo whitespace), we're done.
-    if (prefValue) {
-      let buckets = PlacesUtils.convertMatchBucketsStringToArray(prefValue);
-      if (ObjectUtils.deepEqual(buckets, [["suggestion", 4], ["general", 5]])) {
-        return;
-      }
-    }
-
-    // Set the pref on the user branch.  If the pref had a value, then preserve
-    // it.  Otherwise, set the previous default value, which was to show history
-    // and bookmarks before search suggestions.
-    prefValue = prefValue || "general:5,suggestion:Infinity";
-    Services.prefs.setCharPref(prefName, prefValue);
   },
 
   async ensurePlacesDefaultQueriesInitialized() {

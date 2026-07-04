@@ -36,6 +36,7 @@ PrintTargetWindows::CreateOrNull(HDC aDC) {
     return nullptr;
   }
 
+#ifdef NS_PRINTING
   cairo_surface_t* surface = cairo_win32_printing_surface_create(aDC);
 
   if (cairo_surface_status(surface)) {
@@ -47,6 +48,9 @@ PrintTargetWindows::CreateOrNull(HDC aDC) {
       new PrintTargetWindows(surface, size, aDC);
 
   return target.forget();
+#else
+  return nullptr;
+#endif
 }
 
 nsresult PrintTargetWindows::BeginPrinting(const nsAString& aTitle,

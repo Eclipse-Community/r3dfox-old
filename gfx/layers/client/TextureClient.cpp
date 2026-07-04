@@ -1198,13 +1198,14 @@ already_AddRefed<TextureClient> TextureClient::CreateForRawBufferAccess(
     aAllocFlags = TextureAllocationFlags(aAllocFlags | ALLOC_CLEAR_BUFFER);
   }
 
+//   Figure out what to do about this
   // Note that we ignore the backend type if we get here. It should only be D2D
   // or Skia, and D2D does not support data surfaces. Therefore it is safe to
   // force the buffer to be Skia.
-  NS_WARNING_ASSERTION(aMoz2DBackend == gfx::BackendType::SKIA ||
-                           aMoz2DBackend == gfx::BackendType::DIRECT2D ||
-                           aMoz2DBackend == gfx::BackendType::DIRECT2D1_1,
-                       "Unsupported TextureClient backend type");
+//  NS_WARNING_ASSERTION(aMoz2DBackend == gfx::BackendType::SKIA ||
+//                           aMoz2DBackend == gfx::BackendType::DIRECT2D ||
+//                           aMoz2DBackend == gfx::BackendType::DIRECT2D1_1,
+//                       "Unsupported TextureClient backend type");
 
   TextureData* texData = BufferTextureData::Create(
       aSize, aFormat, gfx::BackendType::SKIA, aLayersBackend, aTextureFlags,

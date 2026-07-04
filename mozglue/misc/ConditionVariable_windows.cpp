@@ -150,7 +150,23 @@ struct ConditionVariableFallback {
     uint32_t wcwm = InterlockedExchangeAdd(&sleepersCountAndWakeupMode_,
                                            wakeupMode);
     uint32_t sleepersCount = wcwm & SLEEPERS_COUNT_MASK;
-    MOZ_RELEASE_ASSERT((wcwm & WAKEUP_MODE_MASK) == WAKEUP_MODE_NONE);
+    if ((wcwm & WAKEUP_MODE_MASK) != WAKEUP_MODE_NONE) {
+      if (sleepersCount == 0) {
+        if (wcwm & WAKEUP_MODE_ONE) {
+          ResetEvent(wakeOneEvent_);
+        }
+        if (wcwm & WAKEUP_MODE_ALL) {
+          ResetEvent(wakeAllEvent_);
+        }
+        sleepersCountAndWakeupMode_ = 0 | WAKEUP_MODE_NONE;
+
+        BOOL success = ReleaseSemaphore(sleepWakeupSemaphore_, 1, NULL);
+        MOZ_RELEASE_ASSERT(success);
+        return;
+      }
+
+      MOZ_RELEASE_ASSERT((wcwm & WAKEUP_MODE_MASK) == WAKEUP_MODE_NONE);
+    }
 
     if (sleepersCount > 0) {
       // If there are any sleepers, set the wake event. The (last) woken
@@ -228,11 +244,20 @@ struct ConditionVariableFallback {
       // it, it should already have been reset. We also already removed
       // the WAKEUP_MODE_ONE bit so the wakeup mode should now be 'none'
       // again.
-      MOZ_RELEASE_ASSERT(wakeupMode == WAKEUP_MODE_NONE);
-
-      // The signaling thread has acquired the enter-wakeup semaphore and
-      // expects the woken (this) thread to release it again.
-      releaseSleepWakeupSemaphore = true;
+      if (wakeupMode != WAKEUP_MODE_NONE) {
+        if (sleepersCount == 0) {
+          if (wakeupMode & WAKEUP_MODE_ALL) {
+            ResetEvent(wakeAllEvent_);
+          }
+          sleepersCountAndWakeupMode_ = 0 | WAKEUP_MODE_NONE;
+        } else {
+          MOZ_RELEASE_ASSERT(wakeupMode == WAKEUP_MODE_NONE);
+        }
+      } else {
+        // The signaling thread has acquired the enter-wakeup semaphore and
+        // expects the woken (this) thread to release it again.
+        releaseSleepWakeupSemaphore = true;
+      }
 
     } else if (waitResult == WAIT_TIMEOUT && wakeupMode == WAKEUP_MODE_ONE &&
                sleepersCount == 0) {
@@ -353,15 +378,31 @@ void mozilla::detail::ConditionVariableImpl::wait(MutexImpl& lock) {
 
 mozilla::detail::CVStatus mozilla::detail::ConditionVariableImpl::wait_for(
     MutexImpl& lock, const mozilla::TimeDuration& rel_time) {
+  if (rel_time == mozilla::TimeDuration::Forever()) {
+    wait(lock);
+    return CVStatus::NoTimeout;
+  }
+
   CRITICAL_SECTION* cs = &lock.platformData()->criticalSection;
 
-  // Note that DWORD is unsigned, so we have to be careful to clamp at 0.
-  // If rel_time is Forever, then ToMilliseconds is +inf, which evaluates as
-  // greater than UINT32_MAX, resulting in the correct INFINITE wait.
+  // Note that DWORD is unsigned, so we have to be careful to clamp at 0. If
+  // rel_time is Forever, then ToMilliseconds is +inf, which evaluates as
+  // greater than UINT32_MAX, resulting in the correct INFINITE wait. We also
+  // don't want to round sub-millisecond waits to 0, as that wastes energy (see
+  // bug 1437167 comment 6), so we instead round submillisecond waits to 1ms.
   double msecd = rel_time.ToMilliseconds();
-  DWORD msec = msecd < 0.0
-                   ? 0
-                   : msecd > UINT32_MAX ? INFINITE : static_cast<DWORD>(msecd);
+  DWORD msec;
+  if (msecd < 0.0) {
+    msec = 0;
+  } else if (msecd > UINT32_MAX) {
+    msec = INFINITE;
+  } else {
+    msec = static_cast<DWORD>(msecd);
+    // Round submillisecond waits to 1ms.
+    if (msec == 0 && !rel_time.IsZero()) {
+      msec = 1;
+    }
+  }
 
   BOOL r;
   if (sNativeImports.supported())

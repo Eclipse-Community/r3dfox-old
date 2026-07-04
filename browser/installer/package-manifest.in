@@ -192,9 +192,6 @@
 @RESPATH@/components/dom.xpt
 @RESPATH@/components/dom_base.xpt
 @RESPATH@/components/dom_bindings.xpt
-#ifdef MOZ_DEBUG
-@RESPATH@/components/dom_bindings_test.xpt
-#endif
 @RESPATH@/components/dom_file.xpt
 @RESPATH@/components/dom_system.xpt
 @RESPATH@/components/dom_core.xpt
@@ -237,9 +234,6 @@
 @RESPATH@/components/jsdebugger.xpt
 @RESPATH@/browser/components/jsinspector.xpt
 @RESPATH@/components/layout_base.xpt
-#ifdef MOZ_DEBUG
-@RESPATH@/components/layout_debug.xpt
-#endif
 #ifdef NS_PRINTING
 @RESPATH@/components/layout_printing.xpt
 #endif

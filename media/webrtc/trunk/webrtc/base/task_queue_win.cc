@@ -20,32 +20,16 @@ namespace {
 #define WM_RUN_TASK WM_USER + 1
 #define WM_QUEUE_DELAYED_TASK WM_USER + 2
 
-// Use a sentinel so we can distinguish “not initialized yet” from a valid TLS index.
-DWORD g_queue_ptr_tls = TLS_OUT_OF_INDEXES;
+DWORD g_queue_ptr_tls = 0;
 
-// 0 = not started, 1 = initializing/done (single-flight), (optionally you can add error handling)
-static LONG g_tlsInitState = 0;
+BOOL CALLBACK InitializeTls(PINIT_ONCE init_once, void* param, void** context) {
+  g_queue_ptr_tls = TlsAlloc();
+  return TRUE;
+}
 
 DWORD GetQueuePtrTls() {
-  // Fast path: already initialized.
-  if (g_tlsInitState == 1) {
-    MemoryBarrier();
-    return g_queue_ptr_tls;
-  }
-
-  // Try to become the initializer.
-  if (InterlockedCompareExchange(&g_tlsInitState, 1, 0) == 0) {
-    // We won; initialize.
-    g_queue_ptr_tls = TlsAlloc();
-    MemoryBarrier();
-    return g_queue_ptr_tls;
-  }
-
-  // Another thread is initializing; wait until g_queue_ptr_tls is set.
-  while (g_queue_ptr_tls == TLS_OUT_OF_INDEXES) {
-    Sleep(0);
-  }
-  MemoryBarrier();
+  static INIT_ONCE init_once = INIT_ONCE_STATIC_INIT;
+  InitOnceExecuteOnce(&init_once, InitializeTls, nullptr, nullptr);
   return g_queue_ptr_tls;
 }
 

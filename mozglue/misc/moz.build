@@ -33,9 +33,6 @@ OS_LIBS += CONFIG['REALTIME_LIBS']
 DEFINES['IMPL_MFBT'] = True
 
 if CONFIG['OS_ARCH'] == 'WINNT':
-    EXPORTS += [
-        'InitOnceExecOnceXP.h',
-    ]
     EXPORTS.mozilla += [
         'DynamicallyLinkedFunctionPtr.h',
     ]

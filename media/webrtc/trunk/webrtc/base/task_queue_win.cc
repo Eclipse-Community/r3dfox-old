@@ -15,8 +15,6 @@
 #include "webrtc/base/checks.h"
 #include "webrtc/base/logging.h"
 
-#include "InitOnceExecOnceXP.h"
-
 namespace rtc {
 namespace {
 #define WM_RUN_TASK WM_USER + 1
@@ -31,7 +29,7 @@ BOOL CALLBACK InitializeTls(PINIT_ONCE init_once, void* param, void** context) {
 
 DWORD GetQueuePtrTls() {
   static INIT_ONCE init_once = INIT_ONCE_STATIC_INIT;
-  WinxpStuff::InitOnceExecOnceXP(&init_once, InitializeTls, nullptr, nullptr);
+  InitOnceExecuteOnce(&init_once, InitializeTls, nullptr, nullptr);
   return g_queue_ptr_tls;
 }
 

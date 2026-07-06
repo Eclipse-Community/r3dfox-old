@@ -22,7 +22,7 @@
 #include "common.h"
 #include "aes_ctr.h"
 #include "aes.h"
-#include "random_seed.h"
+#include "ff_random_seed.h"
 
 #define AES_BLOCK_SIZE (16)
 

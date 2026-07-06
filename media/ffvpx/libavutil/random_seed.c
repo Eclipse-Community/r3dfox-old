@@ -38,7 +38,7 @@
 #include "internal.h"
 #include "intreadwrite.h"
 #include "timer.h"
-#include "random_seed.h"
+#include "ff_random_seed.h"
 #include "sha.h"
 
 #ifndef TEST

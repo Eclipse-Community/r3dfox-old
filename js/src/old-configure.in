@@ -193,6 +193,7 @@ case "$target" in
         _CC_SUITE=14
         MSVC_C_RUNTIME_DLL=vcruntime140.dll
         MSVC_CXX_RUNTIME_DLL=msvcp140.dll
+        MSVC_CONCUR_RUNTIME_DLL=concrt140.dll
 
         # C5026: move constructor was implicitly defined as deleted
         CXXFLAGS="$CXXFLAGS -wd5026"
@@ -209,6 +210,7 @@ case "$target" in
 
         AC_SUBST(MSVC_C_RUNTIME_DLL)
         AC_SUBST(MSVC_CXX_RUNTIME_DLL)
+        AC_SUBST(MSVC_CONCUR_RUNTIME_DLL)
 
         # Check linker version, except in lld builds
         case "$LINKER" in

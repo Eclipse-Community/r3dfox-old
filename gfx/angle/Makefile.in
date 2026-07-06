@@ -9,9 +9,11 @@ ifdef MOZ_D3DCOMPILER_VISTA_DLL_PATH
 	cp -fp "$(MOZ_D3DCOMPILER_VISTA_DLL_PATH)" "$(DIST)/bin"
 endif
 
+# Make sure this exists
 ifdef MOZ_D3DCOMPILER_XP_CAB
 	expand '$(MOZ_D3DCOMPILER_XP_CAB)' -F:$(MOZ_D3DCOMPILER_XP_DLL) '$(DIST)/bin'
 endif
+# or not idk I'm not your dad
 
 endif
 

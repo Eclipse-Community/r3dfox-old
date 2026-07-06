@@ -210,6 +210,7 @@ def old_configure_options(*options):
     '--enable-raw',
     '--enable-readline',
     '--enable-reflow-perf',
+    '--enable-require-all-d3dc-versions',
     '--enable-sandbox',
     '--enable-signmar',
     '--enable-startup-notification',

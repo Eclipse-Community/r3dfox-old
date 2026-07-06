@@ -6,6 +6,7 @@
 
 ac_add_options --enable-update-channel=${MOZ_UPDATE_CHANNEL}
 ac_add_options --enable-jemalloc
+ac_add_options --enable-require-all-d3dc-versions
 
 ac_add_options --with-google-location-service-api-keyfile=${WORKSPACE}/gls-gapi.data
 ac_add_options --with-google-safebrowsing-api-keyfile=${WORKSPACE}/sb-gapi.data

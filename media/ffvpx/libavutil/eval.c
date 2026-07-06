@@ -35,7 +35,7 @@
 #include "internal.h"
 #include "log.h"
 #include "mathematics.h"
-#include "fftime.h"
+#include "time.h"
 #include "avstring.h"
 #include "timer.h"
 #include "reverse.h"
@@ -297,7 +297,7 @@ static double eval_expr(Parser *p, AVExpr *e)
             double d = eval_expr(p, e->param[0]);
             double d2 = eval_expr(p, e->param[1]);
             switch (e->type) {
-                case e_mod: return e->value * (d - floor((!CONFIG_FTRAPV || d2) ? d / d2 : d * INFINITY) * d2);
+                case e_mod: return e->value * (d - floor(d2 ? d / d2 : d * INFINITY) * d2);
                 case e_gcd: return e->value * av_gcd(d,d2);
                 case e_max: return e->value * (d >  d2 ?   d : d2);
                 case e_min: return e->value * (d <  d2 ?   d : d2);

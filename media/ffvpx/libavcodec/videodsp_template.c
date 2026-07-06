@@ -44,7 +44,8 @@ void FUNC(ff_emulated_edge_mc)(uint8_t *buf, const uint8_t *src,
         src_y = 1 - block_h;
     }
     if (src_x >= w) {
-        src  += (w - 1 - src_x) * sizeof(pixel);
+        // The subtracted expression has an unsigned type and must thus not be negative
+        src  -= (1 + src_x - w) * sizeof(pixel);
         src_x = w - 1;
     } else if (src_x <= -block_w) {
         src  += (1 - block_w - src_x) * sizeof(pixel);
@@ -59,7 +60,7 @@ void FUNC(ff_emulated_edge_mc)(uint8_t *buf, const uint8_t *src,
     av_assert2(start_x < end_x && block_w);
 
     w    = end_x - start_x;
-    src += start_y * src_linesize + start_x * sizeof(pixel);
+    src += start_y * src_linesize + start_x * (ptrdiff_t)sizeof(pixel);
     buf += start_x * sizeof(pixel);
 
     // top
@@ -82,7 +83,7 @@ void FUNC(ff_emulated_edge_mc)(uint8_t *buf, const uint8_t *src,
         buf += buf_linesize;
     }
 
-    buf -= block_h * buf_linesize + start_x * sizeof(pixel);
+    buf -= block_h * buf_linesize + start_x * (ptrdiff_t)sizeof(pixel);
     while (block_h--) {
         pixel *bufp = (pixel *) buf;
 

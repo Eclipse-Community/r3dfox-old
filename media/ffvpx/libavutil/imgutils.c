@@ -261,7 +261,7 @@ int av_image_check_size2(unsigned int w, unsigned int h, int64_t max_pixels, enu
         stride = 8LL*w;
     stride += 128*8;
 
-    if ((int)w<=0 || (int)h<=0 || stride >= INT_MAX || stride*(uint64_t)(h+128) >= INT_MAX) {
+    if (w==0 || h==0 || w > INT32_MAX || h > INT32_MAX || stride >= INT_MAX || stride*(h + 128ULL) >= INT_MAX) {
         av_log(&imgutils, AV_LOG_ERROR, "Picture size %ux%u is invalid\n", w, h);
         return AVERROR(EINVAL);
     }
@@ -499,7 +499,6 @@ int av_image_copy_to_buffer(uint8_t *dst, int dst_size,
 static void memset_bytes(uint8_t *dst, size_t dst_size, uint8_t *clear,
                          size_t clear_size)
 {
-    size_t pos = 0;
     int same = 1;
     int i;
 
@@ -519,28 +518,12 @@ static void memset_bytes(uint8_t *dst, size_t dst_size, uint8_t *clear,
     if (clear_size == 1) {
         memset(dst, clear[0], dst_size);
         dst_size = 0;
-    } else if (clear_size == 2) {
-        uint16_t val = AV_RN16(clear);
-        for (; dst_size >= 2; dst_size -= 2) {
-            AV_WN16(dst, val);
-            dst += 2;
-        }
-    } else if (clear_size == 4) {
-        uint32_t val = AV_RN32(clear);
-        for (; dst_size >= 4; dst_size -= 4) {
-            AV_WN32(dst, val);
-            dst += 4;
-        }
-    } else if (clear_size == 8) {
-        uint32_t val = AV_RN64(clear);
-        for (; dst_size >= 8; dst_size -= 8) {
-            AV_WN64(dst, val);
-            dst += 8;
-        }
+    } else {
+        if (clear_size > dst_size)
+            clear_size = dst_size;
+        memcpy(dst, clear, clear_size);
+        av_memcpy_backptr(dst + clear_size, clear_size, dst_size - clear_size);
     }
-
-    for (; dst_size; dst_size--)
-        *dst++ = clear[pos++ % clear_size];
 }
 
 // Maximum size in bytes of a plane element (usually a pixel, or multiple pixels

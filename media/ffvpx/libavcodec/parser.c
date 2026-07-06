@@ -262,6 +262,9 @@ int ff_combine_frame(ParseContext *pc, int next,
     for (; pc->overread > 0; pc->overread--)
         pc->buffer[pc->index++] = pc->buffer[pc->overread_index++];
 
+    if (next > *buf_size)
+        return AVERROR(EINVAL);
+
     /* flush remaining if EOF */
     if (!*buf_size && next == END_NOT_FOUND)
         next = 0;
@@ -281,6 +284,7 @@ int ff_combine_frame(ParseContext *pc, int next,
         }
         pc->buffer = new_buffer;
         memcpy(&pc->buffer[pc->index], *buf, *buf_size);
+        memset(&pc->buffer[pc->index + *buf_size], 0, AV_INPUT_BUFFER_PADDING_SIZE);
         pc->index += *buf_size;
         return -1;
     }

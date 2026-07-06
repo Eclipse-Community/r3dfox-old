@@ -260,7 +260,7 @@ static int decode_residuals(FLACContext *s, int32_t *decoded, int pred_order)
         } else {
             int real_limit = tmp ? (INT_MAX >> tmp) + 2 : INT_MAX;
             for (; i < samples; i++) {
-                int v = get_sr_golomb_flac(&s->gb, tmp, real_limit, 0);
+                int v = get_sr_golomb_flac(&s->gb, tmp, real_limit, 1);
                 if (v == 0x80000000){
                     av_log(s->avctx, AV_LOG_ERROR, "invalid residual\n");
                     return AVERROR_INVALIDDATA;
@@ -298,7 +298,7 @@ static int decode_subframe_fixed(FLACContext *s, int32_t *decoded,
     if (pred_order > 2)
         c = b - decoded[pred_order-2] + decoded[pred_order-3];
     if (pred_order > 3)
-        d = c - decoded[pred_order-2] + 2*decoded[pred_order-3] - decoded[pred_order-4];
+        d = c - decoded[pred_order-2] + 2U*decoded[pred_order-3] - decoded[pred_order-4];
 
     switch (pred_order) {
     case 0:
@@ -456,7 +456,7 @@ static inline int decode_subframe(FLACContext *s, int channel)
         return AVERROR_INVALIDDATA;
     }
 
-    if (wasted) {
+    if (wasted && wasted < 32) {
         int i;
         for (i = 0; i < s->blocksize; i++)
             decoded[i] = (unsigned)decoded[i] << wasted;

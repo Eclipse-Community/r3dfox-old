@@ -186,7 +186,6 @@ case "$target" in
         _CC_SUITE=14
         MSVC_C_RUNTIME_DLL=vcruntime140.dll
         MSVC_CXX_RUNTIME_DLL=msvcp140.dll
-        MSVC_CONCUR_RUNTIME_DLL=concrt140.dll
 
         if test "$_MSC_VER" -ge "1910"; then # VS2017+
             # C5038: Enable initializer list order warnings
@@ -231,7 +230,6 @@ case "$target" in
 
         AC_SUBST(MSVC_C_RUNTIME_DLL)
         AC_SUBST(MSVC_CXX_RUNTIME_DLL)
-        AC_SUBST(MSVC_CONCUR_RUNTIME_DLL)
 
         AC_DEFINE(HAVE_SEH_EXCEPTIONS)
 

@@ -1,14 +1,25 @@
-# Auto-generated file. Do not edit!
+# -*- Mode: python; indent-tabs-mode: nil; tab-width: 40 -*-
+# vim: set filetype=python:
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-DIRS += [
-    'x86',
-]
+# Due to duplicate file names, we compile libavutil/x86 in its own
+# moz.build file.
+if CONFIG['FFVPX_ASFLAGS']:
+    if CONFIG['CPU_ARCH'] == 'x86' or CONFIG['CPU_ARCH'] == 'x86_64':
+        DIRS += ['x86']
+    elif CONFIG['CPU_ARCH'] == 'arm':
+        DIRS += ['arm']
+
+#    'dummy_funcs.c',
 
 SharedLibrary('mozavutil')
 SOURCES += [
     'adler32.c',
     'aes.c',
     'aes_ctr.c',
+    'atomic.c',
     'audio_fifo.c',
     'avstring.c',
     'base64.c',
@@ -36,6 +47,7 @@ SOURCES += [
     'hash.c',
     'hmac.c',
     'hwcontext.c',
+    'hwcontext_cuda.c',
     'imgutils.c',
     'integer.c',
     'intmath.c',
@@ -79,7 +91,7 @@ SYMBOLS_FILE =  'avutil.symbols'
 NoVisibilityFlags()
 
 OS_LIBS += CONFIG['REALTIME_LIBS']
-
-OS_LIBS += CONFIG["LIBATOMIC_LIBS"]
+if CONFIG['OS_TARGET'] != 'WINNT':
+    OS_LIBS += ['m']
 
 include("../ffvpxcommon.mozbuild")

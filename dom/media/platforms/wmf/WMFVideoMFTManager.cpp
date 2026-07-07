@@ -746,7 +746,7 @@ WMFVideoMFTManager::InitInternal(bool aForceD3D9)
     mDXVAEnabled = false;
     // DXVA initialization with current decoder actually failed,
     // re-do initialization.
-    return InitInternal();
+    return InitInternal(/* aForceD3D9 = */ false);
   }
 
   LOG("Video Decoder initialized, Using DXVA: %s",

@@ -88,8 +88,7 @@ include('../js/moz.configure')
 
 # Rust
 # ==============================================================
-include('../build/moz.configure/rust.configure',
-        when='--enable-compile-environment')
+include('../build/moz.configure/rust.configure')
 
 
 # L10N

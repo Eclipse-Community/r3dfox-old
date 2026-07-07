@@ -957,6 +957,11 @@ DeviceManagerDx::ForceDeviceReset(ForcedDeviceResetReason aReason)
   }
 }
 
+void DeviceManagerDx::NotifyD3D9DeviceReset() {
+  MutexAutoLock lock(mDeviceLock);
+  mDeviceResetReason = Some(DeviceResetReason::D3D9_RESET);
+}
+
 void
 DeviceManagerDx::DisableD3D11AfterCrash()
 {

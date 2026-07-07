@@ -279,9 +279,9 @@ public:
 
   virtual void DeallocateDeviceData() override;
 
-  virtual void SetCompositor(Compositor* aCompositor) override;
+  virtual void SetTextureSourceProvider(TextureSourceProvider* aProvider) override;
 
-  virtual Compositor* GetCompositor() override;
+  Compositor* GetCompositor();
 
   virtual gfx::SurfaceFormat GetFormat() const override { return mFormat; }
 
@@ -322,9 +322,9 @@ public:
 
   virtual void DeallocateDeviceData() override;
 
-  virtual void SetCompositor(Compositor* aCompositor) override;
+  virtual void SetTextureSourceProvider(TextureSourceProvider* aProvider) override;
 
-  virtual Compositor* GetCompositor() override;
+  Compositor* GetCompositor();
 
   virtual gfx::SurfaceFormat GetFormat() const override { return mFormat; }
 
@@ -361,9 +361,9 @@ public:
 
   virtual void DeallocateDeviceData() override {}
 
-  virtual void SetCompositor(Compositor* aCompositor) override;
+  virtual void SetTextureSourceProvider(TextureSourceProvider* aProvider) override;
 
-  virtual Compositor* GetCompositor() override;
+  Compositor* GetCompositor();
 
   virtual gfx::SurfaceFormat GetFormat() const override { return gfx::SurfaceFormat::YUV; }
 

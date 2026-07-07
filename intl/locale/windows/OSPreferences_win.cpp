@@ -94,28 +94,22 @@ static LCTYPE ToTimeLCType(OSPreferences::DateTimeFormatStyle aFormatStyle) {
 }
 
 // WindowsXP workaround - missing GetLocaleInfoEx
-int callGetLocaleInfoEx(LPCWSTR lpLocaleName, LCTYPE LCType, LPWSTR lpLCData, int cchData)
-{
+int callGetLocaleInfoEx(LPCWSTR lpLocaleName, LCTYPE LCType, LPWSTR lpLCData, int cchData) {
     int rc = -1;
 
     // Normal call
     int (WINAPI * pfnGetLocaleInfoEx)(LPCWSTR, LCTYPE, LPWSTR, int);
     *(FARPROC*)&pfnGetLocaleInfoEx = GetProcAddress(GetModuleHandleW(L"Kernel32"), "GetLocaleInfoEx");
-    if (pfnGetLocaleInfoEx)
-    {
+    if (pfnGetLocaleInfoEx) {
         rc = pfnGetLocaleInfoEx(lpLocaleName, LCType, lpLCData, cchData);
-    }
-    else
-    {
+    } else {
         // Workaround for missing GetLocaleInfoEx
         HMODULE module = LoadLibraryW(L"Mlang");
         HRESULT (WINAPI * pfnRfc1766ToLcidW)(LCID*, LPCWSTR);
         *(FARPROC*)&pfnRfc1766ToLcidW = GetProcAddress(module, "Rfc1766ToLcidW");
-        if (pfnRfc1766ToLcidW)
-        {
+        if (pfnRfc1766ToLcidW) {
              LCID lcid=LOCALE_USER_DEFAULT;
-             if (SUCCEEDED(pfnRfc1766ToLcidW(&lcid, lpLocaleName)));
-             {
+             if (SUCCEEDED(pfnRfc1766ToLcidW(&lcid, lpLocaleName))) {
                 rc = GetLocaleInfoW(lcid, LCType, lpLCData, cchData);
              }
         }

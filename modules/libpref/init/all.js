@@ -4887,6 +4887,9 @@ pref("gfx.direct3d11.enable-debug-layer", false);
 pref("gfx.direct3d11.break-on-error", false);
 
 pref("layers.prefer-opengl", false);
+pref("layers.prefer-d3d9", false);
+// Enable fallback if d3d11 can't be used. See bug #1262187
+pref("layers.allow-d3d9-fallback", true);
 #endif
 
 // Copy-on-write canvas

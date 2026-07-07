@@ -11,6 +11,7 @@
 #include "mozilla/layers/CompositorTypes.h"
 #include "nsTArray.h"
 
+struct IDirect3DDevice9;
 struct ID3D11Device;
 
 namespace mozilla {
@@ -86,6 +87,9 @@ public:
 
 #ifdef XP_WIN
   // On Windows, if this provides Direct3D textures, it must expose the device.
+  virtual IDirect3DDevice9* GetD3D9Device() const {
+    return nullptr;
+  }
   virtual ID3D11Device* GetD3D11Device() const {
     return nullptr;
   }

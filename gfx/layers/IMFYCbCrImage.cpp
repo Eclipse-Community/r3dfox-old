@@ -212,7 +212,7 @@ IMFYCbCrImage::GetD3D9TextureData(Data aData, gfx::IntSize aSize)
     return nullptr;
   }
 
-  return DXGIYCbCrTextureData::Create(textureY,
+  return DXGIYCbCrTextureData::Create(TextureFlags::DEFAULT, textureY,
                                       textureCb, textureCr, shareHandleY,
                                       shareHandleCb, shareHandleCr, aSize,
                                       aData.mYSize, aData.mCbCrSize);

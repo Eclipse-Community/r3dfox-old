@@ -58,6 +58,7 @@ class MacIOSurfaceTextureHostOGL;
 class TextureHostOGL;
 class TextureReadLock;
 class TextureSourceOGL;
+class TextureSourceD3D9;
 class TextureSourceD3D11;
 class TextureSourceBasic;
 class DataTextureSource;
@@ -129,6 +130,7 @@ public:
     gfxCriticalNote << "Failed to cast " << Name() << " into a TextureSourceOGL";
     return nullptr;
   }
+  virtual TextureSourceD3D9* AsSourceD3D9() { return nullptr; }
   virtual TextureSourceD3D11* AsSourceD3D11() { return nullptr; }
   virtual TextureSourceBasic* AsSourceBasic() { return nullptr; }
   /**

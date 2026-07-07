@@ -69,9 +69,9 @@ public:
 private:
   bool ValidateVideoInfo();
 
-  bool InitializeDXVA();
+  bool InitializeDXVA(bool aForceD3D9);
 
-  bool InitInternal();
+  bool InitInternal(bool aForceD3D9);
 
   HRESULT ConfigureVideoFrameGeometry();
 

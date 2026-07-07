@@ -44,6 +44,7 @@
 #include "VRThread.h"
 #include "VsyncBridgeParent.h"
 #if defined(XP_WIN)
+# include "DeviceManagerD3D9.h"
 # include "mozilla/gfx/DeviceManagerDx.h"
 # include <process.h>
 # include <dwrite.h>
@@ -116,6 +117,7 @@ GPUParent::Init(base::ProcessId aParentPid,
   mlg::InitializeMemoryReporters();
 #if defined(XP_WIN)
   DeviceManagerDx::Init();
+  DeviceManagerD3D9::Init();
 #endif
 
   if (NS_FAILED(NS_InitMinimalXPCOM())) {
@@ -180,6 +182,7 @@ GPUParent::RecvInit(nsTArray<GfxPrefSetting>&& prefs,
   // Inherit device preferences.
   gfxConfig::Inherit(Feature::HW_COMPOSITING, devicePrefs.hwCompositing());
   gfxConfig::Inherit(Feature::D3D11_COMPOSITING, devicePrefs.d3d11Compositing());
+  gfxConfig::Inherit(Feature::D3D9_COMPOSITING, devicePrefs.d3d9Compositing());
   gfxConfig::Inherit(Feature::OPENGL_COMPOSITING, devicePrefs.oglCompositing());
   gfxConfig::Inherit(Feature::ADVANCED_LAYERS, devicePrefs.advancedLayers());
   gfxConfig::Inherit(Feature::DIRECT2D, devicePrefs.useD2D1());
@@ -332,6 +335,7 @@ mozilla::ipc::IPCResult
 GPUParent::RecvGetDeviceStatus(GPUDeviceData* aOut)
 {
   CopyFeatureChange(Feature::D3D11_COMPOSITING, &aOut->d3d11Compositing());
+  CopyFeatureChange(Feature::D3D9_COMPOSITING, &aOut->d3d9Compositing());
   CopyFeatureChange(Feature::OPENGL_COMPOSITING, &aOut->oglCompositing());
   CopyFeatureChange(Feature::ADVANCED_LAYERS, &aOut->advancedLayers());
 
@@ -475,6 +479,7 @@ GPUParent::ActorDestroy(ActorDestroyReason aWhy)
   Factory::ShutDown();
 #if defined(XP_WIN)
   DeviceManagerDx::Shutdown();
+  DeviceManagerD3D9::Shutdown();
 #endif
   LayerTreeOwnerTracker::Shutdown();
   gfxVars::Shutdown();

@@ -958,18 +958,16 @@ TextureHostD3D9::GetDevice()
   return mCompositor ? mCompositor->device() : nullptr;
 }
 
-void TextureHostD3D9::SetTextureSourceProvider(
-    TextureSourceProvider* aProvider) {
-  if (!aProvider || !aProvider->GetD3D9Device()) {
-    mProvider = nullptr;
+void
+TextureHostD3D9::SetCompositor(Compositor* aCompositor)
+{
+  mCompositor = AssertD3D9Compositor(aCompositor);
+  if (!mCompositor) {
     mTextureSource = nullptr;
     return;
   }
-
-  mProvider = aProvider;
-
   if (mTextureSource) {
-    mTextureSource->SetTextureSourceProvider(aProvider);
+    mTextureSource->SetTextureSourceProvider(aCompositor);
   }
 }
 
@@ -1096,16 +1094,12 @@ DXGITextureHostD3D9::Unlock()
   mIsLocked = false;
 }
 
-void DXGITextureHostD3D9::SetTextureSourceProvider(
-    TextureSourceProvider* aProvider) {
-  mProvider = aProvider;
-
-  if (!aProvider->GetD3D9Device()) {
+void
+DXGITextureHostD3D9::SetCompositor(Compositor* aCompositor)
+{
+  mCompositor = AssertD3D9Compositor(aCompositor);
+  if (!mCompositor) {
     mTextureSource = nullptr;
-  }
-
-  if (mTextureSource) {
-    mTextureSource->SetTextureSourceProvider(aProvider);
   }
 }
 
@@ -1143,16 +1137,15 @@ DXGIYCbCrTextureHostD3D9::GetDevice()
   return mCompositor ? mCompositor->device() : nullptr;
 }
 
-void DXGIYCbCrTextureHostD3D9::SetTextureSourceProvider(
-    TextureSourceProvider* aProvider) {
-  if (!aProvider || !aProvider->GetD3D9Device()) {
-    mProvider = nullptr;
+void
+DXGIYCbCrTextureHostD3D9::SetCompositor(Compositor* aCompositor)
+{
+  mCompositor = AssertD3D9Compositor(aCompositor);
+  if (!mCompositor) {
     mTextureSources[0] = nullptr;
     mTextureSources[1] = nullptr;
     mTextureSources[2] = nullptr;
   }
-
-  mProvider = aProvider;
 }
 
 Compositor*

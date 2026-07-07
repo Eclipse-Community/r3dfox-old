@@ -76,6 +76,7 @@
 #include "nsXULAppAPI.h"                // for XRE_GetIOMessageLoop
 #ifdef XP_WIN
 #include "mozilla/layers/CompositorD3D11.h"
+#include "mozilla/layers/CompositorD3D9.h"
 #endif
 #include "GeckoProfiler.h"
 #include "mozilla/ipc/ProtocolTypes.h"
@@ -1472,6 +1473,8 @@ CompositorBridgeParent::NewCompositor(const nsTArray<LayersBackend>& aBackendHin
 #ifdef XP_WIN
     } else if (aBackendHints[i] == LayersBackend::LAYERS_D3D11) {
       compositor = new CompositorD3D11(this, mWidget);
+    } else if (aBackendHints[i] == LayersBackend::LAYERS_D3D9) {
+      compositor = new CompositorD3D9(this, mWidget);
 #endif
     }
     nsCString failureReason;
@@ -1485,6 +1488,9 @@ CompositorBridgeParent::NewCompositor(const nsTArray<LayersBackend>& aBackendHin
         Telemetry::Accumulate(Telemetry::OPENGL_COMPOSITING_FAILURE_ID, failureReason);
       }
 #ifdef XP_WIN
+      else if (aBackendHints[i] == LayersBackend::LAYERS_D3D9){
+        Telemetry::Accumulate(Telemetry::D3D9_COMPOSITING_FAILURE_ID, failureReason);
+      }
       else if (aBackendHints[i] == LayersBackend::LAYERS_D3D11){
         Telemetry::Accumulate(Telemetry::D3D11_COMPOSITING_FAILURE_ID, failureReason);
       }
@@ -1500,6 +1506,11 @@ CompositorBridgeParent::NewCompositor(const nsTArray<LayersBackend>& aBackendHin
       Telemetry::Accumulate(Telemetry::OPENGL_COMPOSITING_FAILURE_ID, failureReason);
     }
 #ifdef XP_WIN
+    else if (aBackendHints[i] == LayersBackend::LAYERS_D3D9){
+      gfxCriticalNote << "[D3D9] Failed to init compositor with reason: "
+                      << failureReason.get();
+      Telemetry::Accumulate(Telemetry::D3D9_COMPOSITING_FAILURE_ID, failureReason);
+    }
     else if (aBackendHints[i] == LayersBackend::LAYERS_D3D11){
       gfxCriticalNote << "[D3D11] Failed to init compositor with reason: "
                       << failureReason.get();

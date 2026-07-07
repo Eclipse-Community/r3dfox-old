@@ -131,6 +131,7 @@ class CompositingRenderTarget;
 class CompositorBridgeParent;
 class LayerManagerComposite;
 class CompositorOGL;
+class CompositorD3D9;
 class CompositorD3D11;
 class BasicCompositor;
 class TextureReadLock;
@@ -449,6 +450,7 @@ public:
   virtual LayersBackend GetBackendType() const = 0;
 
   virtual CompositorOGL* AsCompositorOGL() { return nullptr; }
+  virtual CompositorD3D9* AsCompositorD3D9() { return nullptr; }
   virtual CompositorD3D11* AsCompositorD3D11() { return nullptr; }
   virtual BasicCompositor* AsBasicCompositor() { return nullptr; }
 

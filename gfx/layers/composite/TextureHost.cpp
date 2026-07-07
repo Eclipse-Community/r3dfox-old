@@ -181,6 +181,7 @@ already_AddRefed<TextureHost> CreateTextureHostD3D11(const SurfaceDescriptor& aD
 // implemented in TextureD3D9.cpp
 already_AddRefed<TextureHost> CreateTextureHostD3D9(const SurfaceDescriptor& aDesc,
                                                 ISurfaceAllocator* aDeallocator,
+                                                LayersBackend aBackend,
                                                 TextureFlags aFlags);
 
 already_AddRefed<TextureHost>
@@ -218,14 +219,14 @@ TextureHost::Create(const SurfaceDescriptor& aDesc,
 
 #ifdef XP_WIN
     case SurfaceDescriptor::TSurfaceDescriptorD3D9:
-      return CreateTextureHostD3D9(aDesc, aDeallocator, aFlags);
+      return CreateTextureHostD3D9(aDesc, aDeallocator, aBackend, aFlags);
 
     case SurfaceDescriptor::TSurfaceDescriptorD3D10:
     case SurfaceDescriptor::TSurfaceDescriptorDXGIYCbCr:
       if (aBackend == LayersBackend::LAYERS_D3D9) {
-        return CreateTextureHostD3D9(aDesc, aDeallocator, aFlags);
+        return CreateTextureHostD3D9(aDesc, aDeallocator, aBackend, aFlags);
       } else {
-        return CreateTextureHostD3D11(aDesc, aDeallocator, aFlags);
+        return CreateTextureHostD3D11(aDesc, aDeallocator, aBackend, aFlags);
       }
 #endif
     default:

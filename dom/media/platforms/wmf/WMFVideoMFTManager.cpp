@@ -590,7 +590,7 @@ WMFVideoMFTManager::InitInternal(bool aForceD3D9)
   if (mUseHwAccel && !CanUseDXVA(outputType)) {
     mDXVAEnabled = false;
     // DXVA initialization actually failed, re-do initialisation.
-    return InitInternal();
+    return InitInternal(/* aForceD3D9 = */ false);
   }
 
   LOG("Video Decoder initialized, Using DXVA: %s",

@@ -2788,6 +2788,9 @@ if test -n "$MOZ_ANGLE_RENDERER"; then
   if test -n "$MOZ_DIRECTX_SDK_PATH" &&
      test -f "$MOZ_DIRECTX_SDK_PATH"/lib/$MOZ_D3D_CPU_SUFFIX/dxguid.lib ; then
     AC_MSG_RESULT([Found DirectX SDK via registry, using $MOZ_DIRECTX_SDK_PATH])
+  elif test -n "$DXSDK_DIR"; then
+    MOZ_DIRECTX_SDK_PATH="$DXSDK_DIR"
+    AC_MSG_RESULT([Found DirectX SDK via environment variable, using $MOZ_DIRECTX_SDK_PATH])
   else
     AC_MSG_RESULT([DirectX SDK not found.])
     MOZ_DIRECTX_SDK_PATH=

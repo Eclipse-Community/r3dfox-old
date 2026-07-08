@@ -1153,6 +1153,10 @@ void DXGIYCbCrTextureHostD3D9::SetTextureSourceProvider(
   }
 
   mProvider = aProvider;
+
+  if (mTextureSources[0]) {
+    mTextureSources[0]->SetTextureSourceProvider(aProvider);
+  }
 }
 
 Compositor*

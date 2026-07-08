@@ -961,7 +961,8 @@ WMFVideoMFTManager::CreateBasicVideoFrame(IMFSample* aSample,
   gfx::IntRect pictureRegion =
       mVideoInfo.ScaledImageRect(videoWidth, videoHeight);
 
-  if (!mKnowsCompositor || !mKnowsCompositor->SupportsD3D11() || !mIMFUsable) {
+  LayersBackend backend = GetCompositorBackendType(mKnowsCompositor);
+  if (backend != LayersBackend::LAYERS_D3D11 || !mIMFUsable) {
     RefPtr<VideoData> v = VideoData::CreateAndCopyData(
         mVideoInfo, mImageContainer, aStreamOffset, pts, duration, b, false,
         TimeUnit::FromMicroseconds(-1), pictureRegion);

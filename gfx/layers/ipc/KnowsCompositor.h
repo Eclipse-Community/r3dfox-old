@@ -95,12 +95,6 @@ class KnowsCompositor {
     return mTextureFactoryIdentifier.mSupportsComponentAlpha;
   }
 
-  bool SupportsD3D11() const {
-    return GetCompositorBackendType() == layers::LayersBackend::LAYERS_D3D11 ||
-           (GetCompositorBackendType() == layers::LayersBackend::LAYERS_WR &&
-            GetCompositorUseANGLE());
-  }
-
   bool GetCompositorUseANGLE() const {
     return mTextureFactoryIdentifier.mCompositorUseANGLE;
   }

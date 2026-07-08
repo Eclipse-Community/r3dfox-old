@@ -431,7 +431,8 @@ D3D11YCbCrRecycleAllocator* ImageContainer::GetD3D11YCbCrRecycleAllocator(
     device = gfx::DeviceManagerDx::Get()->GetCompositorDevice();
   }
 
-  if (!device || !aAllocator->SupportsD3D11()) {
+  LayersBackend backend = aAllocator->GetCompositorBackendType();
+  if (!device || backend != LayersBackend::LAYERS_D3D11) {
     return nullptr;
   }
 

@@ -5,12 +5,11 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "IMFYCbCrImage.h"
-#include "mozilla/gfx/DeviceManagerDx.h"
-#include "mozilla/gfx/gfxVars.h"
-#include "mozilla/gfx/Types.h"
 #include "mozilla/layers/TextureD3D11.h"
 #include "mozilla/layers/CompositableClient.h"
 #include "mozilla/layers/CompositableForwarder.h"
+#include "mozilla/gfx/DeviceManagerDx.h"
+#include "mozilla/gfx/Types.h"
 #include "mozilla/layers/TextureClient.h"
 #include "d3d9.h"
 
@@ -136,9 +135,7 @@ IMFYCbCrImage::GetD3D11TextureData(Data aData, gfx::IntSize aSize)
   CD3D11_TEXTURE2D_DESC newDesc(DXGI_FORMAT_R8_UNORM,
                                 aData.mYSize.width, aData.mYSize.height, 1, 1);
 
-  // WebRender requests keyed mutex
-  if (device == gfx::DeviceManagerDx::Get()->GetCompositorDevice() &&
-      !gfxVars::UseWebRender()) {
+  if (device == gfx::DeviceManagerDx::Get()->GetCompositorDevice()) {
     newDesc.MiscFlags = D3D11_RESOURCE_MISC_SHARED;
   } else {
     newDesc.MiscFlags = D3D11_RESOURCE_MISC_SHARED_KEYEDMUTEX;
@@ -225,7 +222,8 @@ IMFYCbCrImage::GetTextureClient(KnowsCompositor* aForwarder)
       gfx::DeviceManagerDx::Get()->GetCompositorDevice();
   }
 
-  if (!device || !aForwarder->SupportsD3D11()) {
+  LayersBackend backend = aForwarder->GetCompositorBackendType();
+  if (!device || backend != LayersBackend::LAYERS_D3D11) {
     return nullptr;
   }
   return GetD3D11TextureClient(aForwarder);

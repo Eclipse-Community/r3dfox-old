@@ -12649,6 +12649,13 @@ bool CSSParserImpl::ParseBorderSide(const nsCSSPropertyID aPropIDs[],
       AppendValue(kBorderColorIDs[index], values[2]);
     }
 
+    static const nsCSSPropertyID kBorderColorsProps[] = {
+      eCSSProperty__moz_border_top_colors,
+      eCSSProperty__moz_border_right_colors,
+      eCSSProperty__moz_border_bottom_colors,
+      eCSSProperty__moz_border_left_colors
+    };
+
     // Set the other properties that the border shorthand sets to their
     // initial values.
     nsCSSValue extraValue;
@@ -12668,6 +12675,9 @@ bool CSSParserImpl::ParseBorderSide(const nsCSSPropertyID aPropIDs[],
         extraValue.SetNoneValue();
         SetBorderImageInitialValues();
         break;
+    }
+    NS_FOR_CSS_SIDES(side) {
+      AppendValue(kBorderColorsProps[side], extraValue);
     }
   } else {
     // Just set our one side

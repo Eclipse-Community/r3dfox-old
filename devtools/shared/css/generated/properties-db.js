@@ -345,6 +345,20 @@ exports.CSS_PROPERTIES = {
       "url"
     ]
   },
+  "-moz-border-bottom-colors": {
+    "isInherited": false,
+    "subproperties": [
+      "-moz-border-bottom-colors"
+    ],
+    "supports": [
+      2
+    ],
+    "values": [
+      "inherit",
+      "initial",
+      "unset"
+    ]
+  },
   "-moz-border-end": {
     "isInherited": false,
     "subproperties": [
@@ -480,6 +494,34 @@ exports.CSS_PROPERTIES = {
       "url"
     ]
   },
+  "-moz-border-left-colors": {
+    "isInherited": false,
+    "subproperties": [
+      "-moz-border-left-colors"
+    ],
+    "supports": [
+      2
+    ],
+    "values": [
+      "inherit",
+      "initial",
+      "unset"
+    ]
+  },
+  "-moz-border-right-colors": {
+    "isInherited": false,
+    "subproperties": [
+      "-moz-border-right-colors"
+    ],
+    "supports": [
+      2
+    ],
+    "values": [
+      "inherit",
+      "initial",
+      "unset"
+    ]
+  },
   "-moz-border-start": {
     "isInherited": false,
     "subproperties": [
@@ -571,6 +613,20 @@ exports.CSS_PROPERTIES = {
       "medium",
       "thick",
       "thin",
+      "unset"
+    ]
+  },
+  "-moz-border-top-colors": {
+    "isInherited": false,
+    "subproperties": [
+      "-moz-border-top-colors"
+    ],
+    "supports": [
+      2
+    ],
+    "values": [
+      "inherit",
+      "initial",
       "unset"
     ]
   },
@@ -3661,6 +3717,10 @@ exports.CSS_PROPERTIES = {
       "border-left-color",
       "border-left-style",
       "border-left-width",
+      "-moz-border-top-colors",
+      "-moz-border-right-colors",
+      "-moz-border-bottom-colors",
+      "-moz-border-left-colors",
       "border-image-outset",
       "border-image-repeat",
       "border-image-slice",

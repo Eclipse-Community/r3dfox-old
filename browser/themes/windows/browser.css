@@ -1060,12 +1060,6 @@ panel[touchmode] .PanelUI-subView #appMenu-zoom-controls > .subviewbutton-iconic
   overflow: hidden;
 }
 
-@media (-moz-os-version: windows-win7) {
-  .cui-widget-panelview[id^=PanelUI-webext-] {
-    border-radius: 4px;
-  }
-}
-
 .webextension-popup-browser,
 .webextension-popup-stack {
   border-radius: inherit;

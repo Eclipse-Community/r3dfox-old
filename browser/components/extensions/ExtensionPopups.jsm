@@ -54,9 +54,6 @@ XPCOMUtils.defineLazyGetter(this, "standaloneStylesheets", () => {
   if (AppConstants.platform === "macosx") {
     stylesheets.push("chrome://browser/content/extension-mac-panel.css");
   }
-  if (AppConstants.platform === "win") {
-    stylesheets.push("chrome://browser/content/extension-win-panel.css");
-  }
   return stylesheets;
 });
 

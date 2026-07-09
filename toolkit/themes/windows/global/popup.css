@@ -57,16 +57,6 @@ panel[type="arrow"][side="right"] {
   margin: 4px;
 }
 
-%ifdef XP_WIN
-@media (-moz-os-version: windows-win7) {
-%endif
-.panel-arrowcontent {
-  border-radius: 4px;
-}
-%ifdef XP_WIN
-}
-%endif
-
 .panel-arrow {
   -moz-context-properties: fill, stroke;
   fill: var(--arrowpanel-background);

@@ -27,7 +27,6 @@ ac_add_options --disable-updater
 
 #ac_add_options --disable-sandbox # Bug 1230910
 
-ac_add_options --disable-webrtc
 
 
 

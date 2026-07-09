@@ -89,7 +89,6 @@ ${helpers.gecko_keyword_conversion(
                        spec="Nonstandard (https://developer.mozilla.org/en-US/docs/Web/CSS/-moz-border-*-colors)"
                        products="gecko"
                        flags="APPLIES_TO_FIRST_LETTER"
-                       enabled_in="chrome"
                        ignored_when_colors_disabled="True">
         use std::fmt;
         use style_traits::ToCss;

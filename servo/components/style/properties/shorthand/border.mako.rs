@@ -135,8 +135,15 @@ pub fn parse_border<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>)
         for side in PHYSICAL_SIDES
         for prop in ['color', 'style', 'width'])}
         ${' '.join('border-image-%s' % name
-        for name in ['outset', 'repeat', 'slice', 'source', 'width'])}"
+        for name in ['outset', 'repeat', 'slice', 'source', 'width'])}
+        ${' '.join('-moz-border-%s-colors' % side
+        for side in PHYSICAL_SIDES) if product == 'gecko' else ''}"
     spec="https://drafts.csswg.org/css-backgrounds/#border">
+
+    % if product == "gecko":
+        use properties::longhands::{_moz_border_top_colors, _moz_border_right_colors,
+                                    _moz_border_bottom_colors, _moz_border_left_colors};
+    % endif
 
     pub fn parse_value<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>)
                                -> Result<Longhands, ParseError<'i>> {
@@ -149,6 +156,9 @@ pub fn parse_border<'i, 't>(context: &ParserContext, input: &mut Parser<'i, 't>)
                 border_${side}_color: color.clone(),
                 border_${side}_style: style,
                 border_${side}_width: width.clone(),
+                % if product == "gecko":
+                    _moz_border_${side}_colors: _moz_border_${side}_colors::get_initial_specified_value(),
+                % endif
             % endfor
 
             // The ‘border’ shorthand resets ‘border-image’ to its initial value.

@@ -77,6 +77,12 @@ menulist:-moz-focusring:not([open="true"]) > .menulist-label-box {
   border: 1px dotted ThreeDDarkShadow;
 }
 
+@media (-moz-os-version: windows-xp) {
+  menulist:-moz-focusring:not([open="true"]) > .menulist-label-box {
+    border: 1px dotted #F5DB95;
+  }
+}
+
 /* ..... disabled state ..... */
 
 menulist[disabled="true"] {
@@ -102,6 +108,7 @@ html|*.menulist-editable-input {
 }
 
 @media (-moz-windows-default-theme) {
+@media not all and (-moz-os-version: windows-xp) {
   .menulist-label-box {
     background-color: transparent !important;
     color: inherit !important;
@@ -123,4 +130,5 @@ html|*.menulist-editable-input {
     margin-top: -1px;
     margin-bottom: -1px;
   }
+}
 }

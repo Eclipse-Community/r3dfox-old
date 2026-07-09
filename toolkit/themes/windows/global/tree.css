@@ -294,7 +294,7 @@ treecol:not([hideheader="true"]) > .treecol-sortdirection[sortDirection="descend
 /* ::::: twisty :::::  */
 
 treechildren::-moz-tree-twisty {
-  padding-inline-end: 1px;
+  padding-inline-end: 4px;
   padding-top: 1px;
   width: 9px; /* The image's width is 9 pixels */
   list-style-image: url("chrome://global/skin/tree/twisty.svg#clsd");
@@ -304,32 +304,8 @@ treechildren::-moz-tree-twisty(open) {
   list-style-image: url("chrome://global/skin/tree/twisty.svg#open");
 }
 
-treechildren::-moz-tree-twisty(hover) {
-  list-style-image: url("chrome://global/skin/tree/twisty.svg#clsd-hover");
-}
-
-treechildren::-moz-tree-twisty(hover, open) {
-  list-style-image: url("chrome://global/skin/tree/twisty.svg#open-hover");
-}
-
-treechildren:-moz-locale-dir(rtl)::-moz-tree-twisty {
-  list-style-image: url("chrome://global/skin/tree/twisty.svg#clsd-rtl");
-}
-
-treechildren:-moz-locale-dir(rtl)::-moz-tree-twisty(open) {
-  list-style-image: url("chrome://global/skin/tree/twisty.svg#open-rtl");
-}
-
-treechildren:-moz-locale-dir(rtl)::-moz-tree-twisty(hover) {
-  list-style-image: url("chrome://global/skin/tree/twisty.svg#clsd-hover-rtl");
-}
-
-treechildren:-moz-locale-dir(rtl)::-moz-tree-twisty(hover, open) {
-  list-style-image: url("chrome://global/skin/tree/twisty.svg#open-hover-rtl");
-}
-
 treechildren::-moz-tree-indentation {
-  width: 12px;
+  width: 18px;
 }
 
 /* ::::: editable tree ::::: */
@@ -367,6 +343,7 @@ treechildren::-moz-tree-cell-text(active, selected, editing) {
 }
 
 %ifdef XP_WIN
+@media not all and (-moz-os-version: windows-xp) {
 @media (-moz-windows-default-theme) {
   treechildren {
     --treechildren-outline: none;
@@ -574,6 +551,41 @@ treechildren::-moz-tree-cell-text(active, selected, editing) {
       border-radius: 3px;
       -moz-outline-radius: 3px;
     }
+  }
+}
+
+  /* ::::: twisty :::::  */
+
+  treechildren::-moz-tree-indentation {
+    width: 12px;
+  }
+
+  treechildren::-moz-tree-twisty {
+    padding-inline-end: 1px;
+  }
+
+  treechildren::-moz-tree-twisty(hover) {
+    list-style-image: url("chrome://global/skin/tree/twisty.svg#clsd-hover");
+  }
+
+  treechildren::-moz-tree-twisty(hover, open) {
+    list-style-image: url("chrome://global/skin/tree/twisty.svg#open-hover");
+  }
+
+  treechildren:-moz-locale-dir(rtl)::-moz-tree-twisty {
+    list-style-image: url("chrome://global/skin/tree/twisty.svg#clsd-rtl");
+  }
+
+  treechildren:-moz-locale-dir(rtl)::-moz-tree-twisty(open) {
+    list-style-image: url("chrome://global/skin/tree/twisty.svg#open-rtl");
+  }
+
+  treechildren:-moz-locale-dir(rtl)::-moz-tree-twisty(hover) {
+    list-style-image: url("chrome://global/skin/tree/twisty.svg#clsd-hover-rtl");
+  }
+
+  treechildren:-moz-locale-dir(rtl)::-moz-tree-twisty(hover, open) {
+    list-style-image: url("chrome://global/skin/tree/twisty.svg#open-hover-rtl");
   }
 }
 %endif

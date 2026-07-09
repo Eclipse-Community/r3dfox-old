@@ -111,6 +111,11 @@
   -moz-image-region: rect(16px, 48px, 32px, 32px);
 }
 
+/* Root View */
+#placesView {
+  border-top: 1px solid ThreeDDarkShadow;
+}
+
 /* Info box */
 #detailsDeck {
   border-top: 1px solid ThreeDShadow;
@@ -138,6 +143,12 @@
   padding-inline-end: 9px;
 }
 
+
+@media not all and (-moz-os-version: windows-xp) {
+  #placesView {
+    border-top: none;
+  }
+
 @media (-moz-windows-classic: 0) {
   #placesToolbox {
     -moz-appearance: none;
@@ -161,6 +172,7 @@
     margin-inline-start: -3px;
     position: relative;
   }
+}
 }
 
 @media (-moz-windows-glass) {

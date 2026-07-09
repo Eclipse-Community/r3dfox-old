@@ -18,6 +18,7 @@
 
 /*** Highlighted list items ***/
 
+@media not all and (-moz-os-version: windows-xp) {
 @media (-moz-windows-default-theme) {
   /*
   -moz-appearance: menuitem is almost right, but the hover effect is not
@@ -44,4 +45,5 @@
     -moz-outline-radius: 3px;
     outline-offset: -2px;
   }
+}
 }

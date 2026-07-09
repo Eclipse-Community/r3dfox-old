@@ -146,6 +146,7 @@ listheader[sortable="true"]:hover:active {
 }
 
 @media (-moz-windows-default-theme) {
+@media not all and (-moz-os-version: windows-xp) {
   listitem {
     --listitem-selectedColor: rgb(217,217,217);
     --listitem-selectedBorder: var(--listitem-selectedColor);
@@ -204,6 +205,7 @@ listheader[sortable="true"]:hover:active {
     border-bottom-color: var(--listitem-selectedFocusCurrentBottomBorder);
     background-color: var(--listitem-selectedFocusCurrentBackground);
     outline: none;
+  }
   }
 
   @media (-moz-os-version: windows-win7) {

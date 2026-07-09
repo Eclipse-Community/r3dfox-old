@@ -63,6 +63,7 @@ menu.subviewbutton > .menu-right:-moz-locale-dir(rtl) {
 }
 
 /* Win8 and beyond. */
+@media not all and (-moz-os-version: windows-xp) {
 @media not all and (-moz-os-version: windows-win7) {
   #BMB_bookmarksPopup menupopup[placespopup=true] > hbox,
   #edit-controls@inAnyPanel@,
@@ -71,6 +72,7 @@ menu.subviewbutton > .menu-right:-moz-locale-dir(rtl) {
   #zoom-controls@inAnyPanel@ > toolbarbutton {
     border-radius: 0;
   }
+}
 }
 
 /* Anchor the bookmark menu drop down panel at the same height as other

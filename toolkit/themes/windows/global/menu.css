@@ -138,6 +138,7 @@ menubar > menu:-moz-lwtheme[_moz-menuactive="true"]:not([disabled="true"]) {
 }
 
 @media (-moz-windows-default-theme) {
+@media not all and (-moz-os-version: windows-xp) {
   menubar > menu:-moz-lwtheme {
     -moz-appearance: menuitem;
   }
@@ -146,6 +147,7 @@ menubar > menu:-moz-lwtheme[_moz-menuactive="true"]:not([disabled="true"]) {
     color: inherit !important;
     text-shadow: inherit;
   }
+}
 }
 
 %ifdef XP_WIN

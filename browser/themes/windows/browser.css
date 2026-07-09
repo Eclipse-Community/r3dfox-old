@@ -257,65 +257,6 @@
   }
 }
 
-/* Render a window top border for lwthemes on WinXP modern themes: */
-/* Is this still needed?
-@media (-moz-windows-theme: luna-blue) {
-  #main-window[tabsintitlebar][sizemode="normal"] > #tab-view-deck > #browser-panel:-moz-lwtheme {
-    background-image: linear-gradient(to bottom,
-        rgb(8, 49, 216) 0, rgb(8, 49, 216) 1px,
-        rgb(15, 77, 227) 1px, rgb(15, 77, 227) 2px,
-        rgb(22, 106, 238) 2px, rgb(22, 106, 238) 3px,
-        rgb(8, 85, 221) 3px, rgb(8, 85, 221) 4px,
-        transparent 4px);
-  }
-
-  #main-window[tabsintitlebar][sizemode="normal"] > #tab-view-deck > #browser-panel:-moz-lwtheme:-moz-window-inactive {
-    background-image: linear-gradient(to bottom,
-        rgb(91, 104, 205) 0, rgb(91, 104, 205) 1px,
-        rgb(116, 128, 220) 1px, rgb(116, 128, 220) 2px,
-        rgb(117, 140, 221) 2px, rgb(117, 140, 221) 4px,
-        transparent 4px);
-  }
-}
-
-@media (-moz-windows-theme: luna-silver) {
-  #main-window[tabsintitlebar][sizemode="normal"] > #tab-view-deck > #browser-panel:-moz-lwtheme {
-    background-image: linear-gradient(to bottom,
-        rgb(102,102,126) 0, rgb(102,102,126) 1px,
-        rgb(168,167,191) 1px, rgb(168,167,191) 2px,
-        white 2px, white 3px,
-        rgb(188,188,207) 3px, rgb(188,188,207) 4px,
-        transparent 4px);
-  }
-
-  #main-window[tabsintitlebar][sizemode="normal"] > #tab-view-deck > #browser-panel:-moz-lwtheme:-moz-window-inactive {
-    background-image: linear-gradient(to bottom,
-        rgb(186,186,197) 0, rgb(186,186,197) 1px,
-        rgb(236,238,245) 1px, rgb(236,238,245) 2px,
-        white 2px, white 3px,
-        rgb(215,215,227) 3px, rgb(215,215,227) 4px,
-        transparent 4px);
-  }
-}
-
-@media (-moz-windows-theme: luna-olive) {
-  #main-window[tabsintitlebar][sizemode="normal"] > #tab-view-deck > #browser-panel:-moz-lwtheme {
-    background-image: linear-gradient(to bottom,
-        rgb(139,161,105) 0, rgb(139,161,105) 1px,
-        rgb(171, 189, 133) 1px, rgb(171, 189, 133) 2px,
-        rgb(164,178,127) 2px, rgb(164,178,127) 3px,
-        transparent 3px);
-  }
-
-  #main-window[tabsintitlebar][sizemode="normal"] > #tab-view-deck > #browser-panel:-moz-lwtheme:-moz-window-inactive {
-    background-image: linear-gradient(to bottom,
-        rgb(207, 214, 188) 0, rgb(207, 214, 188) 1px,
-        rgb(224, 226, 200) 1px, rgb(224, 226, 200) 2px,
-        rgb(214, 216, 190) 2px, rgb(214, 216, 190) 3px,
-        transparent 3px);
-  }
-}*/
-
 #TabsToolbar:not([collapsed="true"]) + #nav-bar {
   /* This is needed for some toolbar button animations. Gross :( */
   position: relative;
@@ -368,24 +309,12 @@
   -moz-box-align: center;
 }
 
-/* 68 requires this to be applied on XP and 8 or else the buttons are positioned wrong, but 60 just does not ig. */ 
 @media (-moz-os-version: windows-win7) {
   /* Preserve window control buttons position at the top of the button box. */
   #titlebar-buttonbox-container {
     -moz-box-align: start;
   }
 }
-
-/* add extra margin for unmaximized windows
-   on Win XP Luna themes to look consistent */
-/* 68 Also needs the below, but 60 does not?
-@media not (-moz-windows-classic) {
-  @media (-moz-os-version: windows-xp) {
-    :root[tabsintitlebar]:not([sizemode="maximized"]) .titlebar-buttonbox-container {
-      margin-top: 4px;
-    }
-  }
-}*/
 
 /* titlebar command buttons */
 
@@ -755,13 +684,6 @@ html|*.urlbar-input:-moz-lwtheme::placeholder,
   color: -moz-DialogText;
   text-shadow: none;
 }
-
-/*@media (-moz-os-version: windows-xp) and (-moz-windows-default-theme) {
-  #main-window[sizemode=normal] #TabsToolbar {
-    padding-left: 2px;
-    padding-right: 2px;
-  }
-}*/
 
 /* Tabstrip */
 

@@ -59,7 +59,7 @@ size_of_test!(test_size_of_rule_node, RuleNode, 72);
 size_of_test!(
     test_size_of_parsed_declaration,
     style::properties::SourcePropertyDeclaration,
-    608
+    704
 );
 
 size_of_test!(test_size_of_computed_image, computed::image::Image, 24);

@@ -18,7 +18,7 @@ LOCAL_INCLUDES += [
     '../../chromium/',
 ]
 
-DISABLE_STL_WRAPPING = True
+DisableStlWrapping()
 
 DEFINES['UNICODE'] = True
 
@@ -28,3 +28,7 @@ USE_STATIC_LIBS = True
 # the 64-bits linker, and the 32-bits linker can't do 64-bits compilation for
 # PGO, so disable PGO, which is not interesting for this small binary anyways.
 NO_PGO = True
+
+# OS_COMPILE_CXXFLAGS includes mozilla-config.h, which contains x86-specific
+# defines breaking the build.
+COMPILE_FLAGS['OS_COMPILE_CXXFLAGS'] = []

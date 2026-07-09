@@ -151,11 +151,7 @@ ifdef CLANG_CL
 DEFINES += -DCLANG_CL
 endif
 ifeq (x86,$(CPU_ARCH))
-ifdef _MSC_VER
-ifndef CLANG_CL
 DEFINES += -DWOW_HELPER
-endif
-endif
 endif
 
 ifdef LLVM_SYMBOLIZER

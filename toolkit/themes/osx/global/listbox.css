@@ -29,14 +29,14 @@ listitem[selected="true"] {
   color: -moz-DialogText;
 }
 
-listbox:focus > listitem[selected="true"] {  
+listbox:focus > listitem[selected="true"] {
    background-color: Highlight;
    color: HighlightText;
 }
 
 /* ::::: listheader ::::: */
 
-listheader { 
+listheader {
   -moz-appearance: treeheadercell;
   -moz-box-align: center;
   border: 2px solid;

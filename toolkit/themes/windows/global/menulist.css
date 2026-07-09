@@ -65,7 +65,6 @@ menulist:hover:active > .menulist-dropmarker {
   padding-inline-end: 0px;
 }
 
->>>>>>> parent of 3c5efdcba709 (Bug 1423453 - Remove -moz-border-*-colors where possible. r=dao)
 /* ..... focused state ..... */
 
 menulist:focus:not([open="true"]) > .menulist-label-box {

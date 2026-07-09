@@ -53,7 +53,8 @@ class CompileDBBackend(CommonBackend):
                 'build/unix/elfhack',
                 'build/unix/elfhack/inject',
                 'build/clang-plugin',
-                'build/clang-plugin/tests'):
+                'build/clang-plugin/tests',
+                'security/sandbox/win/wow_helper'):
             return True
 
         consumed = CommonBackend.consume_object(self, obj)

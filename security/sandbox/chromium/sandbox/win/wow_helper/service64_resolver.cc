@@ -7,8 +7,9 @@
 #include <limits.h>
 #include <stddef.h>
 
+#include <memory>
+
 #include "base/bit_cast.h"
-#include "base/memory/scoped_ptr.h"
 #include "sandbox/win/wow_helper/target_code.h"
 
 namespace {
@@ -214,7 +215,7 @@ NTSTATUS Service64ResolverThunk::Setup(const void* target_module,
     return ret;
 
   size_t thunk_bytes = GetThunkSize();
-  scoped_ptr<char[]> thunk_buffer(new char[thunk_bytes]);
+  std::unique_ptr<char[]> thunk_buffer(new char[thunk_bytes]);
   ServiceFullThunk* thunk = reinterpret_cast<ServiceFullThunk*>(
                                 thunk_buffer.get());
 

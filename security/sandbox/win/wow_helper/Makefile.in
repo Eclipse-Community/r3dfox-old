@@ -21,7 +21,7 @@ ORIG_CXX := cl
 else
 ORIG_CXX := $(CXX)
 endif
-CXX = $(call lazy,CXX,"$$(subst amd64_x86/x86_amd64/,amd64/,$$(shell CL=`which "$(ORIG_CXX)"` $(PYTHON) -c 'import os; print os.path.dirname(os.environ["CL"])')/x86_amd64/cl.exe)")
+CXX = $(call lazy,CXX,"$$(subst amd64_x86/x86_amd64/,amd64/,$$(shell CL=`which "$(ORIG_CXX)"` $(PYTHON) -c 'import os; print os.path.dirname(os.environ["CL"])')/../x64/cl.exe)")
 
 MOZ_WINCONSOLE = 0
 
@@ -30,7 +30,7 @@ include $(topsrcdir)/config/config.mk
 # Munge the LIB variable to contain paths to the x64 CRT and system libraries.
 # Unconveniently, none of the paths have the same convention, including the
 # compiler path above.
-LIB = $(call lazy,LIB,$$(shell python -c 'import os; print ";".join(s.lower().replace(os.sep, "/").replace("/vc/lib", "/vc/lib/amd64").replace("/um/x86", "/um/x64").replace("/ucrt/x86", "/ucrt/x64") for s in os.environ["LIB"].split(";"))'))
+LIB = $(call lazy,LIB,$$(shell python -c 'import os; print ";".join(s.lower().replace(os.sep, "/").replace("/lib/x86", "/lib/x64").replace("/um/x86", "/um/x64").replace("/ucrt/x86", "/ucrt/x64") for s in os.environ["LIB"].split(";"))'))
 
 CXXFLAGS := $(filter-out -arch:%,$(CXXFLAGS))
 

@@ -371,8 +371,10 @@ ResultCode BrokerServicesBase::SpawnTarget(const wchar_t* exe_path,
         const_cast<wchar_t*>(desktop.c_str());
   }
 
+  // Does true/false make a difference here?
   bool inherit_handles = false;
 
+  if (base::win::GetVersion() >= base::win::VERSION_VISTA) {
   int attribute_count = 0;
 
   size_t mitigations_size;
@@ -439,13 +441,15 @@ ResultCode BrokerServicesBase::SpawnTarget(const wchar_t* exe_path,
     // Allowing inheritance of handles is only secure now that we
     // have limited which handles will be inherited.
     inherit_handles = true;
-  } else if (getenv("MOZ_WIN_INHERIT_STD_HANDLES_PRE_VISTA")) {
+  }
+  } else {
     // On pre-Vista versions even if we can't limit what gets inherited, we
     // sometimes want to inherit stdout/err for testing purposes.
     startup_info.startup_info()->dwFlags |= STARTF_USESTDHANDLES;
     startup_info.startup_info()->hStdInput = INVALID_HANDLE_VALUE;
     startup_info.startup_info()->hStdOutput = policy_base->GetStdoutHandle();
     startup_info.startup_info()->hStdError = policy_base->GetStderrHandle();
+    inherit_handles = true;
   }
 
   // Construct the thread pool here in case it is expensive.

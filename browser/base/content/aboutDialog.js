@@ -35,14 +35,6 @@ function init(aEvent) {
     }
   }
 
-  // Append "(32-bit)" or "(64-bit)" build architecture to the version number:
-  let bundle = Services.strings.createBundle("chrome://browser/locale/browser.properties");
-  let archResource = Services.appinfo.is64Bit
-                     ? "aboutDialog.architecture.sixtyFourBit"
-                     : "aboutDialog.architecture.thirtyTwoBit";
-  let arch = bundle.GetStringFromName(archResource);
-  versionField.textContent += ` (${arch})`;
-
   // Show a release notes link if we have a URL.
   let relNotesLink = document.getElementById("releasenotes");
   let relNotesPrefType = Services.prefs.getPrefType("app.releaseNotesURL");

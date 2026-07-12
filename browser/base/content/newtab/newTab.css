@@ -710,7 +710,7 @@ html #newtab-customize-button:-moz-any(:hover, :active, [active]),
   background-color: rgba(255,255,255,1);
   box-shadow: 0 20px 17px rgba(0,0,0,.15);
   transition: top 1ms, left 1ms, box-shadow 150ms;
-  /*transition: box-shadow 200ms ease-out;*/
+  transition: box-shadow 200ms ease-out;
 }
 
 #newtab-grid[locked] .newtab-site:not([dragged]){

@@ -1,23 +1,33 @@
+## mozconfig for compiling eXPeriment browser for Windows natively
+
 # Please do not redistribute this build with official branding if you are not part of Eclipse Community.
 ac_add_options --with-branding=browser/branding/nightly
+mk_add_options MOZ_OBJDIR=obj-i686-experiment-pc-mingw32
 
 # 16 jobs for 16 cores
 mk_add_options MOZ_MAKE_FLAGS="-j16"
 
-ac_add_options --enable-optimize
-ac_add_options --enable-strip
+# Disable Rust (MAKE THIS DEFAULT LATER)
 ac_add_options --disable-rust
+
+# x64 build
+ac_add_options --host=i686-pc-mingw32
+ac_add_options --target=i686-pc-mingw32
+WIN32_REDIST_DIR="${VCINSTALLDIR}/redist/x86/Microsoft.VC141.CRT"
+WIN_UCRT_REDIST_DIR="${WINDOWSSDKDIR}/Redist/ucrt/DLLs/r86"
+
+# Build only browser
+ac_add_options --enable-application=browser
+ac_add_options --disable-artifact-builds
+
+# Client settings
 ac_add_options --disable-accessibility
-#ac_add_options --enable-av1
-ac_add_options --disable-tests
-ac_add_options --disable-debug
-ac_add_options --disable-maintenance-service
 ac_add_options --disable-crashreporter
+ac_add_options --disable-maintenance-service
 ac_add_options --disable-necko-wifi
-ac_add_options --disable-updater
-#ac_add_options --disable-sandbox # Bug 1230910
-ac_add_options --disable-eme
 ac_add_options --disable-parental-controls
+ac_add_options --disable-updater
+ac_add_options --with-unsigned-addon-scopes=app,system
 mk_add_options MOZ_CRASHREPORTER=0
 mk_add_options MOZ_DATA_REPORTING=0
 mk_add_options MOZ_SERVICES_HEALTHREPORT=0
@@ -26,12 +36,52 @@ export MOZ_CRASHREPORTER=0
 export MOZ_DATA_REPORTING=0
 export MOZ_REQUIRE_SIGNING=0
 export MOZ_TELEMETRY_REPORTING=
+export MOZ_PACKAGE_JSSHELL=1
 
-# Add-ons
-ac_add_options --with-unsigned-addon-scopes=app,system
+# Media settings
+ac_add_options --disable-eme
+#ac_add_options --enable-av1
+#ac_add_options --enable-jxl
+ac_add_options --enable-raw
+#ac_add_options --enable-webrtc
+ac_add_options --disable-webrtc
 
-# x86 build
-ac_add_options --host=i686-pc-mingw32
-ac_add_options --target=i686-pc-mingw32
-WIN32_REDIST_DIR="${VCINSTALLDIR}/redist/x86/Microsoft.VC141.CRT"
-WIN_UCRT_REDIST_DIR="${WINDOWSSDKDIR}/Redist/ucrt/DLLs/r86"
+# Optimization settings
+ac_add_options --disable-debug
+ac_add_options --disable-debug-js-modules
+ac_add_options --disable-debug-symbols
+ac_add_options --disable-tests
+ac_add_options --enable-hardening
+ac_add_options --enable-install-strip
+ac_add_options --enable-jemalloc
+ac_add_options --enable-optimize="-O2 -Ob2ity- -GS- -GFAT -Qpar -Qfast_transcendentals -openmp"
+ac_add_options --enable-release
+ac_add_options --enable-replace-malloc
+ac_add_options --enable-strip
+MOZ_OPTIMIZE=1
+export MOZ_OPTIMIZE=1
+mk_add_options MOZ_OPTIMIZE=1
+export MOZILLA_OFFICIAL=1
+export STRIP_FLAGS="--strip-debug --strip-unneeded"
+
+# Set -Copt-level=3
+export OPT_LEVEL="3"
+ac_add_options OPT_LEVEL="3"
+
+# Enable LTO
+export MOZ_LTO=1
+ac_add_options MOZ_LTO=1
+
+if test "$GEN_PGO"; then
+    ac_add_options --enable-profile-generate
+elif test "$USE_PGO"; then
+    ac_add_options --enable-profile-use=cross
+fi
+
+# Compiler and linker flags
+export CFLAGS="-O2"
+export CPPFLAGS="-O2"
+export CXXFLAGS="-O2"
+#export LDFLAGS="/opt:REF,ICF"
+export POLLY="-mllvm -polly -mllvm -polly-2nd-level-tiling -mllvm -polly-loopfusion-greedy -mllvm -polly-pattern-matching-based-opts -mllvm -polly-position=before-vectorizer -mllvm -polly-vectorizer=stripmine"
+export VERBOSE=1

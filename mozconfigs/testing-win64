@@ -42,41 +42,9 @@ ac_add_options --enable-raw
 #ac_add_options --enable-webrtc
 ac_add_options --disable-webrtc
 
-# Optimization settings
-ac_add_options --disable-debug
-ac_add_options --disable-debug-js-modules
-ac_add_options --disable-tests
-ac_add_options --enable-hardening
-ac_add_options --enable-install-strip
-ac_add_options --enable-jemalloc
-ac_add_options --enable-optimize="-O2 -Ob2ity -GS- -GFAT -Qpar -Qfast_transcendentals -openmp"
-ac_add_options --enable-release
+# Debug settings
+ac_add_options --enable-debug
+ac_add_options --enable-tests
 ac_add_options --enable-replace-malloc
-ac_add_options --enable-strip
-MOZ_OPTIMIZE=1
-export MOZ_OPTIMIZE=1
-mk_add_options MOZ_OPTIMIZE=1
-export MOZILLA_OFFICIAL=1
-export STRIP_FLAGS="--strip-debug --strip-unneeded"
-
-# Set -Copt-level=3
-export OPT_LEVEL="3"
-ac_add_options OPT_LEVEL="3"
-
-# Enable LTO
-export MOZ_LTO=1
-ac_add_options MOZ_LTO=1
-
-if test "$GEN_PGO"; then
-    ac_add_options --enable-profile-generate
-elif test "$USE_PGO"; then
-    ac_add_options --enable-profile-use=cross
-fi
-
-# Compiler and linker flags
-export CFLAGS="-O2"
-export CPPFLAGS="-O2"
-export CXXFLAGS="-O2"
-#export LDFLAGS="/opt:REF,ICF"
-export POLLY="-mllvm -polly -mllvm -polly-2nd-level-tiling -mllvm -polly-loopfusion-greedy -mllvm -polly-pattern-matching-based-opts -mllvm -polly-position=before-vectorizer -mllvm -polly-vectorizer=stripmine"
+mk_add_options MOZ_OBJDIR=obj-x86_64-testing-pc-mingw32
 export VERBOSE=1

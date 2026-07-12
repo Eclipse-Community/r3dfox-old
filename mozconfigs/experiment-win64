@@ -15,7 +15,7 @@ ac_add_options --disable-maintenance-service
 ac_add_options --disable-crashreporter
 ac_add_options --disable-necko-wifi
 ac_add_options --disable-updater
-ac_add_options --disable-sandbox # Bug 1230910
+#ac_add_options --disable-sandbox # Bug 1230910
 ac_add_options --disable-eme
 ac_add_options --disable-parental-controls
 mk_add_options MOZ_CRASHREPORTER=0

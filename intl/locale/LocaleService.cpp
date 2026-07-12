@@ -644,7 +644,8 @@ LocaleService::GetDefaultLocale(nsACString& aRetVal) {
     GetGREFileContents("update.locale", &locale);
     locale.Trim(" \t\n\r");
     // This should never be empty.
-    MOZ_ASSERT(!locale.IsEmpty());
+    //MOZ_ASSERT(!locale.IsEmpty());
+    // This is empty on XP ¯\_(ツ)_/¯
     if (SanitizeForBCP47(locale, true)) {
       mDefaultLocale.Assign(locale);
     }

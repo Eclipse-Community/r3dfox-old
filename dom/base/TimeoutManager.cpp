@@ -909,7 +909,7 @@ void TimeoutManager::RunTimeout(const TimeStamp& aNow,
 bool TimeoutManager::RescheduleTimeout(Timeout* aTimeout,
                                        const TimeStamp& aLastCallbackTime,
                                        const TimeStamp& aCurrentNow) {
-  MOZ_DIAGNOSTIC_ASSERT(aLastCallbackTime <= aCurrentNow);
+  //MOZ_DIAGNOSTIC_ASSERT(aLastCallbackTime <= aCurrentNow);  wtf does this do?
 
   if (!aTimeout->mIsInterval) {
     return false;

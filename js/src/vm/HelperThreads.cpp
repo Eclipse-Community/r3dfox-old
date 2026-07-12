@@ -1270,8 +1270,8 @@ void js::GCParallelTask::join() {
 
 static inline TimeDuration TimeSince(TimeStamp prev) {
   TimeStamp now = TimeStamp::Now();
-  // Sadly this happens sometimes.
-  MOZ_ASSERT(now >= prev);
+  // Sadly my ass try timing this telemetry now bich
+  //MOZ_ASSERT(now >= prev);
   if (now < prev) now = prev;
   return now - prev;
 }

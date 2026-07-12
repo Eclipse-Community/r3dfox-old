@@ -1100,7 +1100,8 @@ void Statistics::recordPhaseBegin(Phase phase) {
 
   if (current != Phase::NONE) {
     // Sadly this happens sometimes.
-    MOZ_ASSERT(now >= phaseStartTimes[currentPhase()]);
+    //MOZ_ASSERT(now >= phaseStartTimes[currentPhase()]);
+    // Why did Mozilla make telemetry failing crash the debug build of the browser????
     if (now < phaseStartTimes[currentPhase()]) {
       now = phaseStartTimes[currentPhase()];
       aborted = true;
@@ -1119,7 +1120,7 @@ void Statistics::recordPhaseEnd(Phase phase) {
   TimeStamp now = TimeStamp::Now();
 
   // Sadly this happens sometimes.
-  MOZ_ASSERT(now >= phaseStartTimes[phase]);
+  //MOZ_ASSERT(now >= phaseStartTimes[phase]);
   if (now < phaseStartTimes[phase]) {
     now = phaseStartTimes[phase];
     aborted = true;

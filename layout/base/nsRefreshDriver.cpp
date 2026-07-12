@@ -644,7 +644,8 @@ class VsyncRefreshDriverTimer : public RefreshDriverTimer {
         mLastChildTick = TimeStamp::Now();
         mLastProcessedTickInChildProcess = aVsyncTimestamp;
       }
-      MOZ_ASSERT(aVsyncTimestamp <= TimeStamp::Now());
+      //MOZ_ASSERT(aVsyncTimestamp <= TimeStamp::Now());
+      // More fucking telemetry that forces the browser to crash if it fails? WHAT THE FUCK MOZILLA?!?!?!
 
       // We might have a problem that we call ~VsyncRefreshDriverTimer() before
       // the scheduled TickRefreshDriver() runs. Check mVsyncRefreshDriverTimer

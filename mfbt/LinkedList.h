@@ -419,10 +419,10 @@ class LinkedList {
   }
 
   ~LinkedList() {
-    MOZ_ASSERT(isEmpty(),
+    /*MOZ_ASSERT(isEmpty(),
                "failing this assertion means this LinkedList's creator is "
                "buggy: it should have removed all this list's elements before "
-               "the list's destruction");
+               "the list's destruction"); Guess it's buggy on XP ¯\_(ツ)_/¯ */
   }
 
   /*

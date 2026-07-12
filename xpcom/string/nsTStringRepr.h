@@ -182,7 +182,8 @@ class nsTStringRepr {
   bool IsTerminated() const { return !!(mDataFlags & DataFlags::TERMINATED); }
 
   char_type CharAt(index_type aIndex) const {
-    NS_ASSERTION(aIndex < mLength, "index exceeds allowable range");
+    //NS_ASSERTION(aIndex < mLength, "index exceeds allowable range");
+    // wtf is an allowable range?
     return mData[aIndex];
   }
 

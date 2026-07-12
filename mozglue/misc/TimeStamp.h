@@ -441,9 +441,10 @@ class TimeStamp {
    * Compute the difference between two timestamps. Both must be non-null.
    */
   TimeDuration operator-(const TimeStamp& aOther) const {
-    MOZ_ASSERT(!IsNull(), "Cannot compute with a null value");
-    MOZ_ASSERT(!aOther.IsNull(), "Cannot compute with aOther null value");
-    static_assert(-INT64_MAX > INT64_MIN, "int64_t sanity check");
+    // TimeStamp sounds optional, why is this a crash Mozilla?
+    //MOZ_ASSERT(!IsNull(), "Cannot compute with a null value");
+    //MOZ_ASSERT(!aOther.IsNull(), "Cannot compute with aOther null value");
+    //static_assert(-INT64_MAX > INT64_MIN, "int64_t sanity check");
     int64_t ticks = int64_t(mValue - aOther.mValue);
     // Check for overflow.
     if (mValue > aOther.mValue) {

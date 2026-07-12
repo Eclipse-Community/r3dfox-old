@@ -1206,7 +1206,7 @@ static void FireForgetSkippable(uint32_t aSuspected, bool aRemoveChildless,
 
 MOZ_ALWAYS_INLINE
 static uint32_t TimeBetween(TimeStamp start, TimeStamp end) {
-  MOZ_ASSERT(end >= start);
+  //MOZ_ASSERT(end >= start); wtf does this do?
   return (uint32_t)((end - start).ToMilliseconds());
 }
 

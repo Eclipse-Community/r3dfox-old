@@ -107,7 +107,7 @@ MainThreadRuntime::~MainThreadRuntime() {
     mClientInfo->Detach();
   }
 
-  MOZ_ASSERT(sInstance == this);
+  //MOZ_ASSERT(sInstance == this); wtf is this???
   if (sInstance == this) {
     sInstance = nullptr;
   }

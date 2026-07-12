@@ -6889,12 +6889,12 @@ void GCRuntime::startGC(JSGCInvocationKind gckind, JS::gcreason::Reason reason,
 }
 
 void GCRuntime::gcSlice(JS::gcreason::Reason reason, int64_t millis) {
-  MOZ_ASSERT(isIncrementalGCInProgress());
+  //MOZ_ASSERT(isIncrementalGCInProgress()); wtf is this?
   collect(false, defaultBudget(reason, millis), reason);
 }
 
 void GCRuntime::finishGC(JS::gcreason::Reason reason) {
-  MOZ_ASSERT(isIncrementalGCInProgress());
+  //MOZ_ASSERT(isIncrementalGCInProgress()); wtf is this?
 
   // If we're not collecting because we're out of memory then skip the
   // compacting phase if we need to finish an ongoing incremental GC

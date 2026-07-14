@@ -13,7 +13,7 @@ NS_RegisterStaticAtoms(const nsStaticAtom* aAtoms, size_t aAtomsLen);
 namespace mozilla {
 namespace detail {
 
-extern constexpr GkAtoms gGkAtoms = {
+const GkAtoms gGkAtoms = {
   // The initialization of each atom's string.
   #define GK_ATOM(name_, value_, hash_, type_, atom_type_) \
     u"" value_,

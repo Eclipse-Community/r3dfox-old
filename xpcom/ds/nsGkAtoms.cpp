@@ -10,7 +10,7 @@ namespace mozilla {
 namespace detail {
 
 MOZ_PUSH_DISABLE_INTEGRAL_CONSTANT_OVERFLOW_WARNING
-extern constexpr GkAtoms gGkAtoms = {
+const GkAtoms gGkAtoms = {
   #define GK_ATOM(name_, value_) NS_STATIC_ATOM_INIT_STRING(value_)
   #include "nsGkAtomList.h"
   #undef GK_ATOM

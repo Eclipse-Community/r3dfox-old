@@ -14,10 +14,10 @@ splitter {
   -moz-box-align: center;
   -moz-box-pack: center;
   cursor: ew-resize;
-  border-width: 0 2px;
+  border-width: 0 1px;
   border-style: solid;
-  -moz-border-left-colors: ThreeDShadow ThreeDHighlight;
-  -moz-border-right-colors: ThreeDDarkShadow ThreeDFace;
+  border-inline-start-color: ThreeDHighlight;
+  border-inline-end-color: ThreeDShadow;
   min-width: 6px;
   background-color: ThreeDFace;
 }
@@ -40,9 +40,9 @@ splitter[state="collapsed"][substate="before"]:-moz-locale-dir(rtl) {
 
 splitter[orient="vertical"] {
   cursor: ns-resize;
-  border-width: 2px 0;
-  -moz-border-top-colors: ThreeDShadow ThreeDHighlight;
-  -moz-border-bottom-colors: ThreeDDarkShadow ThreeDFace;
+  border-width: 1px 0;
+  border-top-color: ThreeDHighlight;
+  border-bottom-color: ThreeDShadow;
   min-height: 6px;
 }
 

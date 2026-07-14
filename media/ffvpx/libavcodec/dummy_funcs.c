@@ -14,6 +14,25 @@ typedef struct VP8DSPContext VP8DSPContext;
 typedef struct VP9DSPContext VP9DSPContext;
 typedef struct FLACDSPContext FLACDSPContext;
 
+// New in rt1 ffmpreg
+typedef struct AACContext AACContext;
+typedef struct PSDSPContext PSDSPContext;
+typedef struct AACSBRContext AACSBRContext;
+typedef struct FDCTDSPContext FDCTDSPContext;
+typedef struct FFTContext FFTContext;
+typedef struct H264Context H264Context;
+typedef struct H264ChromaContext H264ChromaContext;
+typedef struct AVFrame AVFrame;
+typedef struct H264DSPContext H264DSPContext;
+typedef struct H264QpelContext H264QpelContext;
+typedef struct IDCTDSPContext IDCTDSPContext;
+typedef struct MECmpContext MECmpContext;
+typedef struct MPADSPContext MPADSPContext;
+typedef struct PixblockDSPContext PixblockDSPContext;
+typedef struct SBRDSPContext SBRDSPContext;
+typedef struct FFTComplex FFTComplex;
+typedef struct FLACDSPContext FLACDSPContext;
+
 AVHWAccel ff_h263_vaapi_hwaccel;
 AVHWAccel ff_h263_vdpau_hwaccel;
 AVHWAccel ff_h263_videotoolbox_hwaccel;
@@ -893,4 +912,91 @@ void ff_flac_decorrelate_indep8_16_sse2(uint8_t **out, int32_t **in, int channel
 void ff_flac_decorrelate_indep8_32_avx(uint8_t **out, int32_t **in, int channels, int len, int shift) {}
 void ff_flac_decorrelate_indep8_16_avx(uint8_t **out, int32_t **in, int channels, int len, int shift) {}
 void ff_flac_decorrelate_indep8_32_sse2(uint8_t **out, int32_t **in, int channels, int len, int shift) {}
+#endif
+
+// New in rt1 ffmpreg
+void ff_aacdec_init_mips(AACContext *c) {}
+void ff_psdsp_init_arm(PSDSPContext *s) {}
+void ff_psdsp_init_aarch64(PSDSPContext *s) {}
+void ff_psdsp_init_mips(PSDSPContext *s) {}
+void ff_aacsbr_func_ptr_init_mips(AACSBRContext *c) {}
+void ff_fdctdsp_init_ppc(FDCTDSPContext *c, AVCodecContext *avctx,
+                         unsigned high_bit_depth) {}
+void ff_fft_fixed_init_arm(FFTContext *s) {}
+void ff_vdpau_h264_picture_complete(H264Context *h) {}
+void ff_vdpau_h264_set_reference_frames(H264Context *h) {}
+void ff_h264chroma_init_aarch64(H264ChromaContext *c, int bit_depth) {}
+void ff_h264chroma_init_arm(H264ChromaContext *c, int bit_depth) {}
+void ff_h264chroma_init_ppc(H264ChromaContext *c, int bit_depth) {}
+void ff_h264chroma_init_mips(H264ChromaContext *c, int bit_depth) {}
+void ff_print_debug_info2(AVCodecContext *avctx, AVFrame *pict, uint8_t *mbskip_table,
+                         uint32_t *mbtype_table, int8_t *qscale_table, int16_t (*motion_val[2])[2],
+                         int *low_delay,
+                         int mb_width, int mb_height, int mb_stride, int quarter_sample) {}
+void ff_vdpau_h264_picture_start(H264Context *h) {}
+void ff_vdpau_add_data_chunk(uint8_t *data, const uint8_t *buf,
+                             int buf_size) {}
+void ff_h264dsp_init_aarch64(H264DSPContext *c, const int bit_depth,
+                             const int chroma_format_idc) {}
+void ff_h264dsp_init_arm(H264DSPContext *c, const int bit_depth,
+                         const int chroma_format_idc) {}
+void ff_h264dsp_init_ppc(H264DSPContext *c, const int bit_depth,
+                         const int chroma_format_idc) {}
+void ff_h264dsp_init_mips(H264DSPContext *c, const int bit_depth,
+                          const int chroma_format_idc) {}
+void ff_h264qpel_init_aarch64(H264QpelContext *c, int bit_depth) {}
+void ff_h264qpel_init_arm(H264QpelContext *c, int bit_depth) {}
+void ff_h264qpel_init_ppc(H264QpelContext *c, int bit_depth) {}
+void ff_h264qpel_init_mips(H264QpelContext *c, int bit_depth) {}
+void ff_xvid_idct_init(IDCTDSPContext *c, AVCodecContext *avctx) {}
+void ff_idctdsp_init_aarch64(IDCTDSPContext *c, AVCodecContext *avctx,
+                             unsigned high_bit_depth) {}
+void ff_idctdsp_init_alpha(IDCTDSPContext *c, AVCodecContext *avctx,
+                           unsigned high_bit_depth) {}
+void ff_idctdsp_init_arm(IDCTDSPContext *c, AVCodecContext *avctx,
+                         unsigned high_bit_depth) {}
+void ff_idctdsp_init_ppc(IDCTDSPContext *c, AVCodecContext *avctx,
+                         unsigned high_bit_depth) {}
+void ff_idctdsp_init_mips(IDCTDSPContext *c, AVCodecContext *avctx,
+                          unsigned high_bit_depth) {}
+void ff_me_cmp_init_alpha(MECmpContext *c, AVCodecContext *avctx) {}
+void ff_me_cmp_init_arm(MECmpContext *c, AVCodecContext *avctx) {}
+void ff_me_cmp_init_ppc(MECmpContext *c, AVCodecContext *avctx) {}
+void ff_me_cmp_init_mips(MECmpContext *c, AVCodecContext *avctx) {}
+void ff_mpadsp_init_aarch64(MPADSPContext *s) {}
+void ff_mpadsp_init_arm(MPADSPContext *s) {}
+void ff_mpadsp_init_ppc(MPADSPContext *s) {}
+void ff_mpadsp_init_mipsfpu(MPADSPContext *s) {}
+void ff_mpadsp_init_mipsdsp(MPADSPContext *s) {}
+void ff_pixblockdsp_init_alpha(PixblockDSPContext *c, AVCodecContext *avctx,
+                               unsigned high_bit_depth) {}
+void ff_pixblockdsp_init_arm(PixblockDSPContext *c, AVCodecContext *avctx,
+                             unsigned high_bit_depth) {}
+void ff_pixblockdsp_init_ppc(PixblockDSPContext *c, AVCodecContext *avctx,
+                             unsigned high_bit_depth) {}
+void ff_pixblockdsp_init_mips(PixblockDSPContext *c, AVCodecContext *avctx,
+                              unsigned high_bit_depth) {}
+void ff_sbrdsp_init_arm(SBRDSPContext *s) {}
+void ff_sbrdsp_init_aarch64(SBRDSPContext *s) {}
+void ff_sbrdsp_init_mips(SBRDSPContext *s) {}
+void ff_fdct_mmx(int16_t *block) {}
+void ff_fdct_mmxext(int16_t *block) {}
+void ff_fdct_sse2(int16_t *block) {}
+#if !defined(HAVE_64BIT_BUILD)
+void ff_simple_idct8_sse2(int16_t *block) {}
+void ff_simple_idct8_avx(int16_t *block) {}
+void ff_simple_idct8_put_sse2(uint8_t *dest, ptrdiff_t line_size, int16_t *block) {}
+void ff_simple_idct8_put_avx(uint8_t *dest, ptrdiff_t line_size, int16_t *block) {}
+void ff_simple_idct8_add_sse2(uint8_t *dest, ptrdiff_t line_size, int16_t *block) {}
+void ff_simple_idct8_add_avx(uint8_t *dest, ptrdiff_t line_size, int16_t *block) {}
+void ff_simple_idct10_sse2(int16_t *block) {}
+void ff_simple_idct10_avx(int16_t *block) {}
+void ff_simple_idct10_put_sse2(uint8_t *dest, ptrdiff_t line_size, int16_t *block) {}
+void ff_simple_idct10_put_avx(uint8_t *dest, ptrdiff_t line_size, int16_t *block) {}
+void ff_simple_idct12_sse2(int16_t *block) {}
+void ff_simple_idct12_avx(int16_t *block) {}
+void ff_simple_idct12_put_sse2(uint8_t *dest, ptrdiff_t line_size, int16_t *block) {}
+void ff_simple_idct12_put_avx(uint8_t *dest, ptrdiff_t line_size, int16_t *block) {}
+void ff_fft15_avx(FFTComplex *out, FFTComplex *in, FFTComplex *exptab, ptrdiff_t stride) {}
+void ff_mdct15_postreindex_avx2(FFTComplex *out, FFTComplex *in, FFTComplex *exp, int *lut, ptrdiff_t len8) {}
 #endif

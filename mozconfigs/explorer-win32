@@ -56,7 +56,7 @@ ac_add_options --disable-tests
 ac_add_options --enable-hardening
 #ac_add_options --enable-install-strip
 ac_add_options --enable-jemalloc
-ac_add_options --enable-optimize="-O2 -Ob2ity- -GS- -GFAT -Qpar -Qfast_transcendentals -openmp"
+ac_add_options --enable-optimize="-O2 -Ob2ity- -GS- -GFAT -Qpar -Qfast_transcendentals"
 ac_add_options --enable-release
 ac_add_options --enable-replace-malloc
 ac_add_options --enable-strip

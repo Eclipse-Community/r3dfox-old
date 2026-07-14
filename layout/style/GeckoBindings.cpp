@@ -960,10 +960,6 @@ void Gecko_AddRefAtom(nsAtom* aAtom) { NS_ADDREF(aAtom); }
 
 void Gecko_ReleaseAtom(nsAtom* aAtom) { NS_RELEASE(aAtom); }
 
-void Gecko_EnsureMozBorderColors(nsStyleBorder* aBorder) {
-  aBorder->EnsureBorderColors();
-}
-
 void Gecko_nsTArray_FontFamilyName_AppendNamed(
     nsTArray<FontFamilyName>* aNames, nsAtom* aName,
     StyleFontFamilyNameSyntax aSyntax) {

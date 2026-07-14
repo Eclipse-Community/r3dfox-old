@@ -47,7 +47,7 @@ ac_add_options --disable-debug
 ac_add_options --disable-debug-js-modules
 ac_add_options --disable-tests
 ac_add_options --enable-hardening
-ac_add_options --enable-install-strip
+#ac_add_options --enable-install-strip
 ac_add_options --enable-jemalloc
 ac_add_options --enable-optimize="-O2 -Ob2ity- -GS- -GFAT -Qpar -Qfast_transcendentals -openmp"
 ac_add_options --enable-release

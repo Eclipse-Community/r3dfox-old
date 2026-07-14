@@ -36,9 +36,6 @@ import mozinfo
 
 # List of libraries to shlibsign.
 SIGN_LIBS = [
-    'softokn3',
-    'nssdbm3',
-    'freebl3',
     'freeblpriv3',
     'freebl_32fpu_3',
     'freebl_32int_3',

@@ -12,8 +12,6 @@ if CONFIG['FFVPX_ASFLAGS']:
     elif CONFIG['CPU_ARCH'] == 'arm':
         DIRS += ['arm']
 
-#    'dummy_funcs.c',
-
 SharedLibrary('mozavcodec')
 SOURCES += [
     'aac_ac3_parser.c',

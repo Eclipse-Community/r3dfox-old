@@ -141,7 +141,7 @@ impl From<TexelRect> for GpuBlockData {
 // implement this trait.
 pub trait ToGpuBlocks {
     // Request an arbitrary number of GPU data blocks.
-    fn write_gpu_blocks(&self, GpuDataRequest);
+    fn write_gpu_blocks(&self, _: GpuDataRequest);
 }
 
 // A handle to a GPU resource.

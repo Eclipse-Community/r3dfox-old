@@ -708,7 +708,7 @@ ImgDrawResult nsCSSRendering::CreateWebRenderCommandsForBorderWithStyleBorder(
 
     if (br) {
       if (!br->CanCreateWebRenderCommands()) {
-        return false;
+        return ImgDrawResult::NOT_SUPPORTED;
       }
       br->CreateWebRenderCommands(aItem, aBuilder, aResources, aSc);
       return ImgDrawResult::SUCCESS;

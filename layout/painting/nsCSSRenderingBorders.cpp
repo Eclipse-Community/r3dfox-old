@@ -3144,7 +3144,7 @@ void nsCSSBorderRenderer::DrawBorders() {
   // drawing paths, when none of these can be used we move on to the generalized
   // border drawing code.
   if (mAllBordersSameStyle && mCompositeColors[0] == nullptr &&
-      mAllBordersSameWidth && mBorderStyles[0] == NS_STYLE_BORDER_STYLE_SOLID &&
+      mAllBordersSameWidth && mBorderStyles[0] == StyleBorderStyle::Solid &&
       mNoBorderRadius && !mAvoidStroke) {
     // Very simple case.
     Rect rect = mOuterRect;
@@ -3154,7 +3154,7 @@ void nsCSSBorderRenderer::DrawBorders() {
   }
 
   if (mAllBordersSameStyle && mCompositeColors[0] == nullptr &&
-      mBorderStyles[0] == NS_STYLE_BORDER_STYLE_SOLID &&
+      mBorderStyles[0] == StyleBorderStyle::Solid &&
       !mAvoidStroke && !mNoBorderRadius) {
     // Relatively simple case.
     RoundedRect borderInnerRect(mOuterRect, mBorderRadii);
@@ -3468,8 +3468,8 @@ bool nsCSSBorderRenderer::CanCreateWebRenderCommands() {
   NS_FOR_CSS_SIDES(i) {
     if (mCompositeColors[i] != nullptr &&
         mBorderWidths[i] > 0.0f &&
-        mBorderStyles[i] != NS_STYLE_BORDER_STYLE_HIDDEN &&
-        mBorderStyles[i] != NS_STYLE_BORDER_STYLE_NONE) {
+        mBorderStyles[i] != StyleBorderStyle::Hidden &&
+        mBorderStyles[i] != StyleBorderStyle::None) {
       return false;
     }
   }

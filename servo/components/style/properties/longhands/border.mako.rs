@@ -96,11 +96,11 @@ ${helpers.gecko_keyword_conversion(
 
         pub mod computed_value {
             use cssparser::RGBA;
-            #[derive(Clone, Debug, MallocSizeOf, PartialEq)]
+            #[derive(Clone, Debug, MallocSizeOf, PartialEq, SpecifiedValueInfo)]
             pub struct T(pub Option<Vec<RGBA>>);
         }
 
-        #[derive(Clone, Debug, MallocSizeOf, PartialEq)]
+        #[derive(Clone, Debug, MallocSizeOf, PartialEq, SpecifiedValueInfo)]
         pub enum SpecifiedValue {
             None,
             Colors(Vec<RGBAColor>),

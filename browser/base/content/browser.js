@@ -47,7 +47,6 @@ XPCOMUtils.defineLazyModuleGetters(this, {
   ReaderMode: "resource://gre/modules/ReaderMode.jsm",
   ReaderParent: "resource:///modules/ReaderParent.jsm",
   RecentWindow: "resource:///modules/RecentWindow.jsm",
-  SafeBrowsing: "resource://gre/modules/SafeBrowsing.jsm",
   SessionStore: "resource:///modules/sessionstore/SessionStore.jsm",
   SchedulePressure: "resource:///modules/SchedulePressure.jsm",
   ShortcutUtils: "resource://gre/modules/ShortcutUtils.jsm",
@@ -65,6 +64,11 @@ XPCOMUtils.defineLazyModuleGetters(this, {
   webrtcUI: "resource:///modules/webrtcUI.jsm",
   ZoomUI: "resource:///modules/ZoomUI.jsm",
 });
+
+if (AppConstants.MOZ_SAFE_BROWSING) {
+  XPCOMUtils.defineLazyModuleGetter(this, "SafeBrowsing",
+    "resource://gre/modules/SafeBrowsing.jsm");
+}
 
 if (AppConstants.MOZ_CRASHREPORTER) {
   XPCOMUtils.defineLazyModuleGetter(this, "PluginCrashReporter",
@@ -93,8 +97,10 @@ XPCOMUtils.defineLazyScriptGetter(this, ["PointerLock", "FullScreen"],
                                   "chrome://browser/content/browser-fullScreenAndPointerLock.js");
 XPCOMUtils.defineLazyScriptGetter(this, ["gGestureSupport", "gHistorySwipeAnimation"],
                                   "chrome://browser/content/browser-gestureSupport.js");
-XPCOMUtils.defineLazyScriptGetter(this, "gSafeBrowsing",
-                                  "chrome://browser/content/browser-safebrowsing.js");
+if (AppConstants.MOZ_SAFE_BROWSING) {
+  XPCOMUtils.defineLazyScriptGetter(this, "gSafeBrowsing",
+                                    "chrome://browser/content/browser-safebrowsing.js");
+}
 XPCOMUtils.defineLazyScriptGetter(this, "gSync",
                                   "chrome://browser/content/browser-sync.js");
 XPCOMUtils.defineLazyScriptGetter(this, "gBrowserThumbnails",

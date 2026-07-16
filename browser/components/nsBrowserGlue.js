@@ -18,6 +18,11 @@ XPCOMUtils.defineLazyGetter(this, "WeaveService", () =>
   Cc["@mozilla.org/weave/service;1"].getService().wrappedJSObject
 );
 
+if (AppConstants.MOZ_SAFE_BROWSING) {
+  XPCOMUtils.defineLazyModuleGetter(this, "SafeBrowsing",
+                                    "resource://gre/modules/SafeBrowsing.jsm");
+}
+
 // lazy module getters
 
 XPCOMUtils.defineLazyModuleGetters(this, {
@@ -60,7 +65,6 @@ XPCOMUtils.defineLazyModuleGetters(this, {
   ReaderParent: "resource:///modules/ReaderParent.jsm",
   RecentWindow: "resource:///modules/RecentWindow.jsm",
   RemotePrompt: "resource:///modules/RemotePrompt.jsm",
-  SafeBrowsing: "resource://gre/modules/SafeBrowsing.jsm",
   SessionStore: "resource:///modules/sessionstore/SessionStore.jsm",
   ShellService: "resource:///modules/ShellService.jsm",
   SimpleServiceDiscovery: "resource://gre/modules/SimpleServiceDiscovery.jsm",
@@ -1113,15 +1117,17 @@ BrowserGlue.prototype = {
 
     // It's important that SafeBrowsing is initialized reasonably
     // early, so we use a maximum timeout for it.
-    Services.tm.idleDispatchToMainThread(() => {
-      SafeBrowsing.init();
+    if (AppConstants.MOZ_SAFE_BROWSING) {
+      Services.tm.idleDispatchToMainThread(() => {
+        SafeBrowsing.init();
 
-      // Login reputation depends on the Safe Browsing API.
-      if (Services.prefs.getBoolPref("browser.safebrowsing.passwords.enabled")) {
-        Cc["@mozilla.org/reputationservice/login-reputation-service;1"]
-        .getService(Ci.ILoginReputationService);
-      }
-    }, 5000);
+        // Login reputation depends on the Safe Browsing API.
+        if (Services.prefs.getBoolPref("browser.safebrowsing.passwords.enabled")) {
+          Cc["@mozilla.org/reputationservice/login-reputation-service;1"]
+          .getService(Ci.ILoginReputationService);
+        }
+      }, 5000);
+    }
 
     if (AppConstants.MOZ_CRASHREPORTER) {
       UnsubmittedCrashHandler.scheduleCheckForUnsubmittedCrashReports();

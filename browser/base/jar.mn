@@ -74,7 +74,9 @@ browser.jar:
         content/browser/browser-pageActions.js        (content/browser-pageActions.js)
         content/browser/browser-places.js             (content/browser-places.js)
         content/browser/browser-plugins.js            (content/browser-plugins.js)
+#ifdef MOZ_SAFE_BROWSING
         content/browser/browser-safebrowsing.js       (content/browser-safebrowsing.js)
+#endif
         content/browser/browser-sidebar.js            (content/browser-sidebar.js)
         content/browser/browser-sync.js               (content/browser-sync.js)
 *       content/browser/browser-tabPreviews.xml       (content/browser-tabPreviews.xml)
@@ -152,9 +154,11 @@ browser.jar:
 # the following files are browser-specific overrides
 *       content/browser/license.html                  (/toolkit/content/license.html)
 % override chrome://global/content/license.html chrome://browser/content/license.html
+#ifdef MOZ_SAFE_BROWSING
         content/browser/report-phishing-overlay.xul     (content/report-phishing-overlay.xul)
         content/browser/blockedSite.xhtml               (content/blockedSite.xhtml)
 % overlay chrome://browser/content/browser.xul chrome://browser/content/report-phishing-overlay.xul
+#endif
 
 % override chrome://global/content/netError.xhtml chrome://browser/content/aboutNetError.xhtml
 

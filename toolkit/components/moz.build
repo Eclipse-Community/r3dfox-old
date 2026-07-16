@@ -55,7 +55,6 @@ DIRS += [
     'reader',
     'remotebrowserutils',
     'reflect',
-    'reputationservice',
     'resistfingerprinting',
     'securityreporter',
     'startup',
@@ -66,7 +65,6 @@ DIRS += [
     'tooltiptext',
     'typeaheadfind',
     'utils',
-    'url-classifier',
     'urlformatter',
     'viewconfig',
     'windowcreator',
@@ -92,6 +90,9 @@ if CONFIG['MOZ_XUL']:
 
 if CONFIG['MOZ_TOOLKIT_SEARCH']:
     DIRS += ['search']
+
+if CONFIG['MOZ_URL_CLASSIFIER']:
+    DIRS += [ 'reputationservice', 'url-classifier']
 
 DIRS += ['captivedetect']
 

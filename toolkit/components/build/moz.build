@@ -26,12 +26,16 @@ LOCAL_INCLUDES += [
     '../jsdownloads/src',
     '../perfmonitoring',
     '../protobuf',
-    '../reputationservice',
     '../startup',
     '../statusfilter',
     '../typeaheadfind',
-    '../url-classifier',
 ]
+
+if CONFIG['MOZ_URL_CLASSIFIER']:
+    LOCAL_INCLUDES += [
+      '../reputationservice',
+      '../url-classifier',
+    ]
 
 if not CONFIG['MOZ_DISABLE_PARENTAL_CONTROLS']:
     LOCAL_INCLUDES += [

@@ -1948,6 +1948,7 @@ LIBJPEG_TURBO_AS=
 LIBJPEG_TURBO_ASFLAGS=
 MOZ_PREF_EXTENSIONS=1
 MOZ_REFLOW_PERF=
+MOZ_SAFE_BROWSING=
 MOZ_SPELLCHECK=1
 MOZ_TOOLKIT_SEARCH=1
 MOZ_UNIVERSALCHARDET=1
@@ -3522,8 +3523,24 @@ fi
 AC_SUBST(MOZ_SYSTEM_SQLITE)
 
 dnl ========================================================
+dnl = Enable safe browsing (anti-phishing)
+dnl ========================================================
+MOZ_ARG_ENABLE_BOOL(safe-browsing,
+[  --enable-safe-browsing  Enable safe browsing (anti-phishing) implementation],
+    MOZ_SAFE_BROWSING=1,
+    MOZ_SAFE_BROWSING= )
+if test -n "$MOZ_SAFE_BROWSING"; then
+    AC_DEFINE(MOZ_SAFE_BROWSING)
+fi
+AC_SUBST(MOZ_SAFE_BROWSING)
+
+dnl ========================================================
 dnl = Enable url-classifier
 dnl ========================================================
+dnl Implicitly enabled by default if building with safe-browsing
+if test -n "$MOZ_SAFE_BROWSING"; then
+    MOZ_URL_CLASSIFIER=1
+fi
 MOZ_ARG_ENABLE_BOOL(url-classifier,
 [  --enable-url-classifier Enable url classifier module],
     MOZ_URL_CLASSIFIER=1,

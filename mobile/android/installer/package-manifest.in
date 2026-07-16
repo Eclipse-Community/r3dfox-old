@@ -209,7 +209,6 @@
 @BINPATH@/components/profiler.xpt
 #endif
 @BINPATH@/components/rdf.xpt
-@BINPATH@/components/reputationservice.xpt
 @BINPATH@/components/satchel.xpt
 @BINPATH@/components/saxparser.xpt
 @BINPATH@/components/services-crypto-component.xpt
@@ -405,11 +404,14 @@
 @BINPATH@/modules/*
 
 ; Safe Browsing
+#ifdef MOZ_SAFE_BROWSING
+@BINPATH@/components/reputationservice.xpt
 @BINPATH@/components/nsURLClassifier.manifest
 @BINPATH@/components/nsUrlClassifierHashCompleter.js
 @BINPATH@/components/nsUrlClassifierListManager.js
 @BINPATH@/components/nsUrlClassifierLib.js
 @BINPATH@/components/url-classifier.xpt
+#endif
 
 ; Private Browsing
 @BINPATH@/components/privatebrowsing.xpt

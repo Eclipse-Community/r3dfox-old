@@ -72,9 +72,11 @@ XPCOMUtils.defineLazyGetter(this, "gParentalControlsService", function() {
   return null;
 });
 
+#ifdef MOZ_URL_CLASSIFIER
 XPCOMUtils.defineLazyServiceGetter(this, "gApplicationReputationService",
            "@mozilla.org/reputationservice/application-reputation-service;1",
            Ci.nsIApplicationReputationService);
+#endif
 
 XPCOMUtils.defineLazyServiceGetter(this, "volumeService",
                                    "@mozilla.org/telephony/volume-service;1",
@@ -434,6 +436,12 @@ this.DownloadIntegration = {
    *           }
    */
   shouldBlockForReputationCheck(aDownload) {
+#ifndef MOZ_URL_CLASSIFIER
+    return Promise.resolve({
+      shouldBlock: false,
+      verdict: "",
+    });
+#else
     let hash;
     let sigInfo;
     let channelRedirects;
@@ -474,6 +482,7 @@ this.DownloadIntegration = {
           });
         });
     });
+#endif
   },
 
 #ifdef XP_WIN

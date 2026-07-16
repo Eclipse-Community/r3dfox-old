@@ -25,12 +25,14 @@
 
 #include "nsTypeAheadFind.h"
 
+#ifdef MOZ_URL_CLASSIFIER
 #include "ApplicationReputation.h"
 #include "LoginReputation.h"
 #include "nsUrlClassifierDBService.h"
 #include "nsUrlClassifierStreamUpdater.h"
 #include "nsUrlClassifierUtils.h"
 #include "nsUrlClassifierPrefixSet.h"
+#endif
 
 #include "nsBrowserStatusFilter.h"
 #include "mozilla/FinalizationWitnessService.h"
@@ -90,6 +92,7 @@ NS_GENERIC_FACTORY_CONSTRUCTOR(DownloadPlatform)
 
 NS_GENERIC_FACTORY_CONSTRUCTOR(nsTypeAheadFind)
 
+#ifdef MOZ_URL_CLASSIFIER
 NS_GENERIC_FACTORY_SINGLETON_CONSTRUCTOR(ApplicationReputationService,
                                          ApplicationReputationService::GetSingleton)
 NS_GENERIC_FACTORY_SINGLETON_CONSTRUCTOR(LoginReputationService,
@@ -116,6 +119,7 @@ nsUrlClassifierDBServiceConstructor(nsISupports *aOuter, REFNSIID aIID,
 
     return rv;
 }
+#endif
 
 NS_GENERIC_FACTORY_CONSTRUCTOR(nsBrowserStatusFilter)
 #if defined(MOZ_UPDATER) && !defined(MOZ_WIDGET_ANDROID)
@@ -148,12 +152,14 @@ NS_DEFINE_NAMED_CID(NS_DOWNLOADMANAGER_CID);
 NS_DEFINE_NAMED_CID(NS_DOWNLOADPLATFORM_CID);
 NS_DEFINE_NAMED_CID(NS_FIND_SERVICE_CID);
 NS_DEFINE_NAMED_CID(NS_TYPEAHEADFIND_CID);
+#ifdef MOZ_URL_CLASSIFIER
 NS_DEFINE_NAMED_CID(NS_APPLICATION_REPUTATION_SERVICE_CID);
 NS_DEFINE_NAMED_CID(NS_LOGIN_REPUTATION_SERVICE_CID);
 NS_DEFINE_NAMED_CID(NS_URLCLASSIFIERPREFIXSET_CID);
 NS_DEFINE_NAMED_CID(NS_URLCLASSIFIERDBSERVICE_CID);
 NS_DEFINE_NAMED_CID(NS_URLCLASSIFIERSTREAMUPDATER_CID);
 NS_DEFINE_NAMED_CID(NS_URLCLASSIFIERUTILS_CID);
+#endif
 NS_DEFINE_NAMED_CID(NS_BROWSERSTATUSFILTER_CID);
 #if defined(MOZ_UPDATER) && !defined(MOZ_WIDGET_ANDROID)
 NS_DEFINE_NAMED_CID(NS_UPDATEPROCESSOR_CID);
@@ -184,12 +190,14 @@ static const Module::CIDEntry kToolkitCIDs[] = {
   { &kNS_DOWNLOADPLATFORM_CID, false, nullptr, DownloadPlatformConstructor },
   { &kNS_FIND_SERVICE_CID, false, nullptr, nsFindServiceConstructor },
   { &kNS_TYPEAHEADFIND_CID, false, nullptr, nsTypeAheadFindConstructor },
+#ifdef MOZ_URL_CLASSIFIER
   { &kNS_APPLICATION_REPUTATION_SERVICE_CID, false, nullptr, ApplicationReputationServiceConstructor },
   { &kNS_LOGIN_REPUTATION_SERVICE_CID, false, nullptr, LoginReputationServiceConstructor },
   { &kNS_URLCLASSIFIERPREFIXSET_CID, false, nullptr, nsUrlClassifierPrefixSetConstructor },
   { &kNS_URLCLASSIFIERDBSERVICE_CID, false, nullptr, nsUrlClassifierDBServiceConstructor },
   { &kNS_URLCLASSIFIERSTREAMUPDATER_CID, false, nullptr, nsUrlClassifierStreamUpdaterConstructor },
   { &kNS_URLCLASSIFIERUTILS_CID, false, nullptr, nsUrlClassifierUtilsConstructor },
+#endif
   { &kNS_BROWSERSTATUSFILTER_CID, false, nullptr, nsBrowserStatusFilterConstructor },
 #if defined(MOZ_UPDATER) && !defined(MOZ_WIDGET_ANDROID)
   { &kNS_UPDATEPROCESSOR_CID, false, nullptr, nsUpdateProcessorConstructor },
@@ -222,6 +230,7 @@ static const Module::ContractIDEntry kToolkitContracts[] = {
   { NS_DOWNLOADPLATFORM_CONTRACTID, &kNS_DOWNLOADPLATFORM_CID },
   { NS_FIND_SERVICE_CONTRACTID, &kNS_FIND_SERVICE_CID },
   { NS_TYPEAHEADFIND_CONTRACTID, &kNS_TYPEAHEADFIND_CID },
+#ifdef MOZ_URL_CLASSIFIER
   { NS_APPLICATION_REPUTATION_SERVICE_CONTRACTID, &kNS_APPLICATION_REPUTATION_SERVICE_CID },
   { NS_LOGIN_REPUTATION_SERVICE_CONTRACTID, &kNS_LOGIN_REPUTATION_SERVICE_CID },
   { NS_URLCLASSIFIERPREFIXSET_CONTRACTID, &kNS_URLCLASSIFIERPREFIXSET_CID },
@@ -229,6 +238,7 @@ static const Module::ContractIDEntry kToolkitContracts[] = {
   { NS_URICLASSIFIERSERVICE_CONTRACTID, &kNS_URLCLASSIFIERDBSERVICE_CID },
   { NS_URLCLASSIFIERSTREAMUPDATER_CONTRACTID, &kNS_URLCLASSIFIERSTREAMUPDATER_CID },
   { NS_URLCLASSIFIERUTILS_CONTRACTID, &kNS_URLCLASSIFIERUTILS_CID },
+#endif
   { NS_BROWSERSTATUSFILTER_CONTRACTID, &kNS_BROWSERSTATUSFILTER_CID },
 #if defined(MOZ_UPDATER) && !defined(MOZ_WIDGET_ANDROID)
   { NS_UPDATEPROCESSOR_CONTRACTID, &kNS_UPDATEPROCESSOR_CID },

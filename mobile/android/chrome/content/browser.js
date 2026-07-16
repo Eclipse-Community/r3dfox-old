@@ -46,8 +46,10 @@ XPCOMUtils.defineLazyModuleGetter(this, "UserAgentOverrides",
 XPCOMUtils.defineLazyModuleGetter(this, "Task", "resource://gre/modules/Task.jsm");
 XPCOMUtils.defineLazyModuleGetter(this, "OS", "resource://gre/modules/osfile.jsm");
 
-XPCOMUtils.defineLazyModuleGetter(this, "SafeBrowsing",
-                                  "resource://gre/modules/SafeBrowsing.jsm");
+if (AppConstants.MOZ_SAFE_BROWSING) {
+  XPCOMUtils.defineLazyModuleGetter(this, "SafeBrowsing",
+                                    "resource://gre/modules/SafeBrowsing.jsm");
+}
 
 XPCOMUtils.defineLazyModuleGetter(this, "BrowserUtils",
                                   "resource://gre/modules/BrowserUtils.jsm");
@@ -544,8 +546,10 @@ var BrowserApp = {
       InitLater(() => LightWeightThemeWebInstaller.init());
       InitLater(() => CastingApps.init(), window, "CastingApps");
 
-      // Bug 778855 - Perf regression if we do this here. To be addressed in bug 779008.
-      InitLater(() => SafeBrowsing.init(), window, "SafeBrowsing");
+      if (AppConstants.MOZ_SAFE_BROWSING) {
+        // Bug 778855 - Perf regression if we do this here. To be addressed in bug 779008.
+        InitLater(() => SafeBrowsing.init(), window, "SafeBrowsing");
+      }
 
     }, {once: true});
   },

@@ -480,6 +480,12 @@ this.DownloadIntegration = {
    *           }
    */
   shouldBlockForReputationCheck(aDownload) {
+#ifndef MOZ_URL_CLASSIFIER
+    return Promise.resolve({
+      shouldBlock: false,
+      verdict: "",
+    });
+#else
     let hash;
     let sigInfo;
     let channelRedirects;
@@ -520,6 +526,7 @@ this.DownloadIntegration = {
         });
       });
     return deferred.promise;
+#endif
   },
 
 #ifdef XP_WIN

@@ -35,7 +35,9 @@
 #include "nsPIDOMWindow.h"
 #include "nsXULAppAPI.h"
 #include "nsQueryObject.h"
+#ifdef MOZ_URL_CLASSIFIER
 #include "nsIUrlClassifierDBService.h"
+#endif
 #include "nsIURLFormatter.h"
 
 #include "mozilla/ErrorNames.h"
@@ -1111,6 +1113,7 @@ nsChannelClassifier::SendThreatHitReport(nsIChannel *aChannel,
     return NS_OK;
   }
 
+#ifdef MOZ_URL_CLASSIFIER
   nsCOMPtr<nsIURIClassifier> uriClassifier =
     do_GetService(NS_URLCLASSIFIERDBSERVICE_CONTRACTID);
   if (!uriClassifier) {
@@ -1119,6 +1122,7 @@ nsChannelClassifier::SendThreatHitReport(nsIChannel *aChannel,
 
   nsresult rv = uriClassifier->SendThreatHitReport(mChannel);
   NS_ENSURE_SUCCESS(rv, rv);
+#endif
 
   return NS_OK;
 }

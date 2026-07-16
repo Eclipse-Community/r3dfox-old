@@ -124,6 +124,7 @@ const kObserverTopics = [
 /**
  * Maps nsIApplicationReputationService verdicts with the DownloadError ones.
  */
+#ifdef MOZ_URL_CLASSIFIER
 const kVerdictMap = {
   [Ci.nsIApplicationReputationService.VERDICT_DANGEROUS]:
                 Downloads.Error.BLOCK_VERDICT_MALWARE,
@@ -134,6 +135,7 @@ const kVerdictMap = {
   [Ci.nsIApplicationReputationService.VERDICT_DANGEROUS_HOST]:
                 Downloads.Error.BLOCK_VERDICT_MALWARE,
 };
+#endif
 
 /**
  * Provides functions to integrate with the host application, handling for

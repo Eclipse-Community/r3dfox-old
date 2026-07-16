@@ -224,7 +224,10 @@
 #include "mozilla/dom/PerformanceNavigation.h"
 #include "mozilla/dom/ScriptSettings.h"
 #include "nsJSEnvironment.h"
+
+#ifdef MOZ_URL_CLASSIFIER
 #include "IUrlClassifierUITelemetry.h"
+#endif
 
 #ifdef MOZ_TOOLKIT_SEARCH
 #include "nsIBrowserSearchService.h"
@@ -5185,6 +5188,7 @@ nsDocShell::DisplayLoadError(nsresult aError, nsIURI* aURI,
       errorPage.Assign(alternateErrorPage);
     }
 
+#ifdef MOZ_URL_CLASSIFIER
     uint32_t bucketId;
     bool sendTelemetry = false;
     if (NS_ERROR_PHISHING_URI == aError) {
@@ -5212,6 +5216,7 @@ nsDocShell::DisplayLoadError(nsresult aError, nsIURI* aURI,
     if (sendTelemetry && errorPage.EqualsIgnoreCase("blocked")) {
       Telemetry::Accumulate(Telemetry::URLCLASSIFIER_UI_EVENTS, bucketId);
     }
+#endif
 
     cssClass.AssignLiteral("blacklist");
   } else if (NS_ERROR_CONTENT_CRASHED == aError) {

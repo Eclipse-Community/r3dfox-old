@@ -38,6 +38,7 @@ fi
 # Enable building ./signmar and running libmar signature tests
 MOZ_ENABLE_SIGNMAR=1
 
+MOZ_SAFE_BROWSING=1
 MOZ_APP_VERSION=$FIREFOX_VERSION
 MOZ_APP_VERSION_DISPLAY=$FIREFOX_VERSION_DISPLAY
 # MOZ_APP_DISPLAYNAME will be set by branding/configure.sh

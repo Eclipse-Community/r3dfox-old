@@ -20,8 +20,10 @@ XPCOMUtils.defineLazyGetter(this, "WeaveService", () =>
 XPCOMUtils.defineLazyModuleGetter(this, "ContextualIdentityService",
                                   "resource://gre/modules/ContextualIdentityService.jsm");
 
-XPCOMUtils.defineLazyModuleGetter(this, "SafeBrowsing",
-                                  "resource://gre/modules/SafeBrowsing.jsm");
+if (AppConstants.MOZ_SAFE_BROWSING) {
+  XPCOMUtils.defineLazyModuleGetter(this, "SafeBrowsing",
+                                    "resource://gre/modules/SafeBrowsing.jsm");
+}
 
 // lazy module getters
 
@@ -1188,9 +1190,11 @@ BrowserGlue.prototype = {
       ContextualIdentityService.load();
     });
 
-    Services.tm.idleDispatchToMainThread(() => {
-      SafeBrowsing.init();
-    }, 5000);
+    if (AppConstants.MOZ_SAFE_BROWSING) {
+      Services.tm.idleDispatchToMainThread(() => {
+        SafeBrowsing.init();
+      }, 5000);
+    }
 
     this._sanitizer.onStartup();
     E10SAccessibilityCheck.onWindowsRestored();

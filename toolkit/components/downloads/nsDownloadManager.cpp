@@ -6,6 +6,7 @@
 #include "nsIPrefService.h"
 #include "nsIPropertyBag2.h"
 #include "nsCExternalHandlerService.h"
+#include "nsContentUtils.h"
 #include "nsDirectoryServiceDefs.h"
 #include "nsDownloadManager.h"
 

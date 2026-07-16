@@ -5,6 +5,9 @@
 // This file is loaded into the browser window scope.
 /* eslint-env mozilla/browser-window */
 
+// Note: this file is not shipped (through jar.mn)
+// if MOZ_SAFE_BROWSING is not defined.
+
 var gSafeBrowsing = {
 
   setReportPhishingMenu() {

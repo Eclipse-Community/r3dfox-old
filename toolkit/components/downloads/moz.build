@@ -32,10 +32,14 @@ XPIDL_SOURCES += [
 XPIDL_MODULE = 'downloads'
 
 UNIFIED_SOURCES += [
-    'ApplicationReputation.cpp',
-    'chromium/chrome/common/safe_browsing/csd.pb.cc',
-    'nsDownloadManager.cpp'
+    'nsDownloadManager.cpp',
 ]
+
+if CONFIG['MOZ_URL_CLASSIFIER']:
+    UNIFIED_SOURCES += [
+        'ApplicationReputation.cpp',
+        'chromium/chrome/common/safe_browsing/csd.pb.cc'
+    ]
 
 FINAL_LIBRARY = 'xul'
 

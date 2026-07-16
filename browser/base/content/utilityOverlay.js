@@ -814,9 +814,8 @@ function openTourPage() {
 
 function buildHelpMenu() {
   // Enable/disable the "Report Web Forgery" menu item.
-  if (typeof gSafeBrowsing != "undefined") {
+  if (typeof gSafeBrowsing != "undefined" && AppConstants.MOZ_SAFE_BROWSING)
     gSafeBrowsing.setReportPhishingMenu();
-  }
 }
 
 function isElementVisible(aElement) {

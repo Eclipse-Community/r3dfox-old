@@ -60,8 +60,10 @@ XPCOMUtils.defineLazyServiceGetter(Services, 'captivePortalDetector',
                                   '@mozilla.org/toolkit/captive-detector;1',
                                   'nsICaptivePortalDetector');
 
-XPCOMUtils.defineLazyModuleGetter(this, "SafeBrowsing",
-              "resource://gre/modules/SafeBrowsing.jsm");
+if (AppConstants.MOZ_SAFE_BROWSING) {
+  XPCOMUtils.defineLazyModuleGetter(this, "SafeBrowsing",
+                "resource://gre/modules/SafeBrowsing.jsm");
+}
 
 XPCOMUtils.defineLazyModuleGetter(this, "SafeMode",
                                   "resource://gre/modules/SafeMode.jsm");
@@ -422,9 +424,11 @@ var shell = {
     ppmm.addMessageListener("mail-handler", this);
     ppmm.addMessageListener("file-picker", this);
 
-    setTimeout(function() {
-      SafeBrowsing.init();
-    }, 5000);
+    if (AppConstants.MOZ_SAFE_BROWSING) {
+      setTimeout(function() {
+        SafeBrowsing.init();
+      }, 5000);
+    }
   },
 
   stop: function shell_stop() {

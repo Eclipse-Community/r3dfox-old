@@ -227,6 +227,7 @@ def old_configure_options(*options):
     '--enable-ubsan-int-overflow',
     '--enable-universalchardet',
     '--enable-updater',
+    '--enable-url-classifier',
     '--enable-valgrind',
     '--enable-verify-mar',
     '--enable-xul',

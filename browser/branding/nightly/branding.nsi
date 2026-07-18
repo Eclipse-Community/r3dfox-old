@@ -3,7 +3,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 # NSIS branding defines for nightly builds.
-# The official release build branding.nsi is located in other-license/branding/firefox/
+# The official release build branding.nsi is located in browser/branding/official/
 # The unofficial build branding.nsi is located in browser/branding/unofficial/
 
 # BrandFullNameInternal is used for some registry and file system values

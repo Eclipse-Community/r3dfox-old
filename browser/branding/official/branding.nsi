@@ -8,8 +8,8 @@
 
 # BrandFullNameInternal is used for some registry and file system values
 # instead of BrandFullName and typically should not be modified.
-!define BrandFullNameInternal "Eclipxe eXPlorer"
-!define BrandFullName         "Eclipxe eXPlorer"
+!define BrandFullNameInternal "Eclipse eXPlorer"
+!define BrandFullName         "Eclipse eXPlorer"
 !define CompanyName           "Eclipse Community"
 !define URLInfoAbout          "https://eclipse.cx"
 !define URLUpdateInfo         "https://github.com/Eclipse-Community/eXPlorer/releases"

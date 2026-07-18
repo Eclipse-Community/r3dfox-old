@@ -15,3 +15,5 @@
 !define URLUpdateInfo         "https://github.com/Eclipse-Community/eXPeriment/releases"
 !define HelpLink              "https://board.eclipse.cx/viewtopic.php?t=xxx"
 !define URLSystemRequirements "https://github.com/Eclipse-Community/eXPeriment"
+!define URLManualDownload     "https://github.com/Eclipse-Community/eXPlorer/releases"
+!define Channel               "nightly"

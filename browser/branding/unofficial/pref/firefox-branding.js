@@ -14,10 +14,23 @@ pref("app.update.download.backgroundInterval", 60);
 pref("app.update.promptWaitTime", 86400);
 // URL user can browse to manually if for some reason all update installation
 // attempts fail.
-pref("app.update.url.manual", "https://nightly.mozilla.org");
+pref("app.update.url.manual", "about:");
 // A default value for the "More information about this update" link
 // supplied in the "An update is available" page of the update wizard.
-pref("app.update.url.details", "https://nightly.mozilla.org");
+pref("app.update.url.details", "about:");
+
+pref("app.update.url", "");
+
+// Switch Application Updates off for now
+pref("app.update.enabled", false);
+
+pref("app.releaseNotesURL", "");
+
+// base url for web-based feedback pages
+pref("app.feedback.baseURL", "");
+
+// Vendor home page
+pref("app.vendorURL", "about:");
 
 // The number of days a binary is permitted to be old
 // without checking for an update.  This assumes that

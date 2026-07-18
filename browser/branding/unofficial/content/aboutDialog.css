@@ -15,11 +15,13 @@
 }
 
 #rightBox {
+  background-size: auto 48px;
   /* this margin prevents text from overlapping the planet image */
   margin-left: 280px;
   margin-right: 20px;
 }
 
 #bottomBox {
-  background-color: rgba(0,0,0,.7);
+  background-color: rgba(0,0,0,.5);
+  padding: 12px 10px 15px;
 }

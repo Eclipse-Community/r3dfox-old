@@ -43,7 +43,7 @@
 <!ENTITY helpus.donateLink          "our forum">
 <!ENTITY helpus.middle              " or getting involved in our development by tackling some of the issues found in our ">
 <!-- LOCALIZATION NOTE (helpus.getInvolvedLink): This is a link title that links to http://www.mozilla.org/contribute/. -->
-<!ENTITY helpus.getInvolvedLink     "our issue tracker.">
+<!ENTITY helpus.getInvolvedLink     "issue tracker.">
 <!ENTITY helpus.end                 "">
 
 <!ENTITY releaseNotes.link          "What’s new">

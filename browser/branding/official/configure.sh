@@ -4,11 +4,11 @@
 
 MOZ_APP_NAME=eXPlorer
 
-MOZ_APP_BASENAME="eXPlorer"
+MOZ_APP_BASENAME=eXPlorer
 
-MOZ_APP_DISPLAYNAME="eXPlorer"
+MOZ_APP_DISPLAYNAME=eXPlorer
 
-MOZ_APP_UA_NAME="eXPlorer"
+MOZ_APP_UA_NAME=eXPlorer
 
 MOZ_APP_VENDOR="Eclipse Community"
 
@@ -18,4 +18,4 @@ MOZ_APP_REMOTINGNAME=com.eclipse.eXPlorer
 
 MOZ_DISTRIBUTION_ID=com.eclipse
 
-MOZ_MACBUNDLE_NAME="eXPlorer.app"
+MOZ_MACBUNDLE_NAME=eXPlorer.app

@@ -4,11 +4,11 @@
 
 MOZ_APP_NAME=eXPeriment
 
-MOZ_APP_BASENAME="eXPeriment"
+MOZ_APP_BASENAME=eXPeriment
 
-MOZ_APP_DISPLAYNAME="eXPeriment"
+MOZ_APP_DISPLAYNAME=eXPeriment
 
-MOZ_APP_UA_NAME="eXPeriment"
+MOZ_APP_UA_NAME=eXPlorer
 
 MOZ_APP_VENDOR="Eclipse Community"
 
@@ -18,4 +18,4 @@ MOZ_APP_REMOTINGNAME=com.eclipse.eXPeriment
 
 MOZ_DISTRIBUTION_ID=com.eclipse
 
-MOZ_MACBUNDLE_NAME="eXPeriment.app"
+MOZ_MACBUNDLE_NAME=eXPeriment.app

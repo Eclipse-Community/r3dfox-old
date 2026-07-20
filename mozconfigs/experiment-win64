@@ -1,6 +1,7 @@
 ## mozconfig for compiling eXPeriment browser for Windows natively
 
 # Please do not redistribute this build with official branding if you are not part of Eclipse Community.
+export ECX_OFFICIAL=1
 ac_add_options --with-branding=browser/branding/nightly
 mk_add_options MOZ_OBJDIR=obj-x86_64-experiment-pc-mingw32
 

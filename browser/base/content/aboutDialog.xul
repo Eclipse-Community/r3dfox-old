@@ -123,20 +123,24 @@
             &channel.description.start;<label id="currentChannel"/>&channel.description.end;
           </description>
 #endif
-          <vbox id="experimental" hidden="true">
-            <description class="text-blurb" id="warningDesc">
-              &warningDesc.version;
-            </description>
-            <description class="text-blurb" id="communityExperimentalDesc">
-              &community.exp.start;<label class="text-link" href="http://eclipse.cx/">&community.exp.mozillaLink;</label>&community.exp.middle;<label class="text-link" useoriginprincipal="true" href="about:credits">&community.exp.creditsLink;</label>&community.exp.end;
-            </description>
-          </vbox>
+#ifndef ECX_STABLE
+          <description class="text-blurb" id="warningDesc">
+            &warningDesc.version;
+          </description>
+#endif
+#ifdef ECX_OFFICIAL
           <description class="text-blurb" id="communityDesc">
             &community.start2;<label class="text-link" href="http://eclipse.cx/">&community.mozillaLink;</label>&community.middle2;<label class="text-link" useoriginprincipal="true" href="about:credits">&community.creditsLink;</label>&community.end3;
           </description>
           <description class="text-blurb" id="contributeDesc">
-              &helpus.start;<label class="text-link" href="https://board.eclipse.cx/">&helpus.donateLink;</label>&helpus.middle;<label class="text-link" href="https://github.com/Eclipse-Community/UXP/issues/">&helpus.getInvolvedLink;</label>&helpus.end;
+              &helpus.start;<label class="text-link" href="https://board.eclipse.cx/">&helpus.ecxLink;</label>&helpus.middle;<label class="text-link" href="https://github.com/Eclipse-Community/eXPlorer/issues/">&helpus.getInvolvedLink;</label>&helpus.end;
           </description>
+#else
+          <description class="text-blurb" id="unofficialDesc">
+              &unofficial.start;<label class="text-link" href="https://eclipse.cx/projects/explorer/">&unofficial.ecxLink;</label>&unofficial.end;
+          </description>
+#endif
+
         </vbox>
       </vbox>
     </hbox>

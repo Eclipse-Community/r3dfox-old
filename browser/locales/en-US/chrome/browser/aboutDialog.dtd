@@ -21,15 +21,6 @@
 <!-- LOCALIZATION NOTE (warningDesc.version): This is a warning about the experimental nature of Nightly and Aurora builds. It is only shown in those versions. -->
 <!ENTITY warningDesc.version        "&brandShortName; is experimental and may be unstable.">
 
-<!-- LOCALIZATION NOTE (community.exp.*) This paragraph is shown in "experimental" builds, i.e. Nightly and Aurora builds, instead of the other "community.*" strings below. -->
-<!ENTITY community.exp.start        "">
-<!-- LOCALIZATION NOTE (community.exp.mozillaLink): This is a link title that links to http://www.mozilla.org/. -->
-<!ENTITY community.exp.mozillaLink  "&vendorShortName;">
-<!ENTITY community.exp.middle       " is a ">
-<!-- LOCALIZATION NOTE (community.exp.creditslink): This is a link title that links to about:credits. -->
-<!ENTITY community.exp.creditsLink  "global community">
-<!ENTITY community.exp.end          " working together to keep the Web open, public and accessible to all.">
-
 <!ENTITY community.start2           "&brandShortName; is community software released by ">
 <!-- LOCALIZATION NOTE (community.mozillaLink): This is a link title that links to http://www.mozilla.org/. -->
 <!ENTITY community.mozillaLink      "&vendorShortName;">
@@ -39,12 +30,14 @@
 <!ENTITY community.end3             " to this software.">
 
 <!ENTITY helpus.start               "If you wish to contribute, please consider helping us out by providing support to other users on the ">
-<!-- LOCALIZATION NOTE (helpus.donateLink): This is a link title that links to https://donate.mozilla.org/?utm_source=firefox&utm_medium=referral&utm_campaign=firefox_about&utm_content=firefox_about. -->
-<!ENTITY helpus.donateLink          "our forum">
+<!ENTITY helpus.ecxLink             "our forum">
 <!ENTITY helpus.middle              " or getting involved in our development by tackling some of the issues found in our ">
-<!-- LOCALIZATION NOTE (helpus.getInvolvedLink): This is a link title that links to http://www.mozilla.org/contribute/. -->
-<!ENTITY helpus.getInvolvedLink     "issue tracker.">
-<!ENTITY helpus.end                 "">
+<!ENTITY helpus.getInvolvedLink     "issue tracker">
+<!ENTITY helpus.end                 ".">
+
+<!ENTITY unofficial.start           "This is an unofficial build of the Eclipse eXPlorer web browser. For official builds, please go to ">
+<!ENTITY unofficial.ecxLink         "Eclipse Community website">
+<!ENTITY unofficial.end             ".">
 
 <!ENTITY releaseNotes.link          "What’s new">
 

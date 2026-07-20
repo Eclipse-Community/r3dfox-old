@@ -2191,6 +2191,22 @@ if test -n "$MOZ_OFFICIAL_BRANDING"; then
   fi
 fi
 
+AC_SUBST(ECX_OFFICIAL)
+AC_SUBST(ECX_REAL_BUILD)
+if test -n "$ECX_OFFICIAL"; then
+ if test -n "$ECX_REAL_BUILD"; then
+   AC_MSG_WARN([Please do not redistribute this build with official branding if you are not part of Eclipse Community.])
+   AC_DEFINE(ECX_OFFICIAL)
+ else
+   AC_MSG_ERROR([Please use unofficial branding or the browser-winXX mozconfig for this build. If you really wish to use official branding, set ECX_REAL_BUILD=1 as an environment variable.])
+ fi
+fi
+
+AC_SUBST(ECX_STABLE)
+if test -n "$ECX_STABLE"; then
+  AC_DEFINE(ECX_STABLE)
+fi
+
 MOZ_ARG_WITH_STRING(branding,
 [  --with-branding=dir     Use branding from the specified directory.],
     MOZ_BRANDING_DIRECTORY=$withval)

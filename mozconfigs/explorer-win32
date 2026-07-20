@@ -4,6 +4,8 @@
 ac_add_options --enable-official-branding
 export MOZ_OFFICIAL_BRANDING=1
 export EXPLORER_VERSION=1
+export ECX_STABLE=1
+export ECX_OFFICIAL=1
 mk_add_options MOZ_OBJDIR=obj-i686-explorer-pc-mingw32
 
 # 16 jobs for 16 cores

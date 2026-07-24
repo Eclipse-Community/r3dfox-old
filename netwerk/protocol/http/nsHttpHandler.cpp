@@ -474,11 +474,28 @@ nsresult nsHttpHandler::Init() {
     if (mAppName.Length() == 0) {
       appInfo->GetName(mAppName);
     }
-    appInfo->GetVersion(mAppVersion);
     mAppName.StripChars(R"( ()<>@,;:\"/[]?={})");
-  } else {
-    mAppVersion.AssignLiteral(MOZ_APP_UA_VERSION);
-  }
+    }
+
+    nsCString dynamicBuildID;
+    if (appInfo) {
+      appInfo->GetPlatformBuildID(dynamicBuildID);
+      nsCString sliced;
+      dynamicBuildID.Mid(sliced, 2, 6);
+
+      nsCString a, b, c;
+      sliced.Mid(a, 0, 2);
+      sliced.Mid(b, 2, 2);
+      sliced.Mid(c, 4, 2);
+
+      mAppVersion.Assign(a);
+      mAppVersion.Append('.');
+      mAppVersion.Append(b);
+      mAppVersion.Append('.');
+      mAppVersion.Append(c);
+    } else {
+      mAppVersion.AssignLiteral(MOZ_APP_UA_VERSION);
+    }
 
   // Generating the spoofed User Agent for fingerprinting resistance.
   rv = nsRFPService::GetSpoofedUserAgent(mSpoofedUserAgent, true);

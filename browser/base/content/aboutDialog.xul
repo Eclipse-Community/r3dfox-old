@@ -49,12 +49,7 @@
       <vbox id="leftBox" flex="1"/>
       <vbox id="rightBox" flex="1">
         <hbox align="baseline">
-#ifdef HAVE_64BIT_BUILD
-#expand <label id="version">__MOZ_APP_VERSION_DISPLAY__ (64-bit)</label>
-#else
-#expand <label id="version">__MOZ_APP_VERSION_DISPLAY__ (32-bit)</label>
-#endif
-          <label id="releasenotes" class="text-link" hidden="false">&releaseNotes.link;</label>
+#expand <label id="version"></label>
         </hbox>
 
         <label id="distribution" class="text-blurb"/>

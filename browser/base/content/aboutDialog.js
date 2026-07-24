@@ -35,16 +35,30 @@ function init(aEvent) {
     }
   }
 
-  // Show a release notes link if we have a URL.
-  let relNotesLink = document.getElementById("releasenotes");
-  let relNotesPrefType = Services.prefs.getPrefType("app.releaseNotesURL");
-  if (relNotesPrefType != Services.prefs.PREF_INVALID) {
-    let relNotesURL = Services.urlFormatter.formatURLPref("app.releaseNotesURL");
-    if (relNotesURL != "about:blank") {
-      relNotesLink.href = relNotesURL;
-      relNotesLink.hidden = false;
-    }
-  }
+  let versionField = document.getElementById("version");
+  let buildID = Services.appinfo.appBuildID;
+  let year = buildID.slice(0, 4);
+  let syear = buildID.slice(2, 4);
+  let month = buildID.slice(4, 6);
+  let day = buildID.slice(6, 8);
+  let hour = buildID.slice(8, 10);
+  let minute = buildID.slice(10, 12);
+  let second = buildID.slice(12, 14);
+  versionField.textContent = `v${syear}.${month}.${day}`;
+
+  //if (AppConstants.ECX_IA32) {
+  //  versionField.textContent += ` (IA-32)`;
+  //} else [
+    // Append "(32-bit)" or "(64-bit)" build architecture to the version number:
+    let bundle = Services.strings.createBundle("chrome://browser/locale/browser.properties");
+    let archResource = Services.appinfo.is64Bit
+                       ? "aboutDialog.architecture.sixtyFourBit"
+                       : "aboutDialog.architecture.thirtyTwoBit";
+    let arch = bundle.GetStringFromName(archResource);
+    versionField.textContent += ` (${arch})`;
+  //}
+
+  versionField.textContent += `  Compiled on ${year}/${month}/${day} at ${hour}:${minute}:${second}`;
 
   if (AppConstants.MOZ_UPDATER) {
     gAppUpdater = new appUpdater({ buttonAutoFocus: true });

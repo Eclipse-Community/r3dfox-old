@@ -3,7 +3,6 @@
 # Please do not redistribute this build with official branding if you are not part of Eclipse Community.
 ac_add_options --enable-official-branding
 export MOZ_OFFICIAL_BRANDING=1
-export EXPLORER_VERSION=1
 export ECX_STABLE=1
 export ECX_OFFICIAL=1
 mk_add_options MOZ_OBJDIR=obj-x86_64-explorer-pc-mingw32
@@ -76,8 +75,6 @@ ac_add_options OPT_LEVEL="3"
 # Enable LTO
 export MOZ_LTO=1
 ac_add_options MOZ_LTO=1
-export MOZ_PGO=1
-ac_add_options MOZ_PGO=1
 
 if test "$GEN_PGO"; then
     ac_add_options --enable-profile-generate

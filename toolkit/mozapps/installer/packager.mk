@@ -91,6 +91,24 @@ make-package-internal: prepare-package make-sourcestamp-file
 	@echo 'Compressing...'
 	cd $(DIST) && $(MAKE_PACKAGE)
 
+make-archive-7z-portable:
+	@echo 'Compressing portable .7z...'
+
+	# Drop an empty pmundprt.mod into the staged browser directory.
+	: > '$(DIST)/$(MOZ_PKG_DIR)/browser/pmundprt.mod'
+
+	# Create the .7z with (browser)/ as top-level.
+ifeq (WINNT,$(OS_ARCH))
+	cd '$(DIST)/$(MOZ_PKG_DIR)'; \
+	  $(CYGWIN_WRAPPER) 7z a -t7z -m0=lzma2 -mx=9 -aoa -bb3 -mqs=on -mlc=4 -myx=9 -mfb=273 -mpb=1 '../$(PKG_BASENAME).portable.7z' ./* || exit 1
+else
+	cd '$(DIST)/$(MOZ_PKG_DIR)'; \
+	  XZ_OPT=-9e $(TAR) cfJv '../$(PKG_BASENAME).portable.tar.xz' ./* || exit 1
+endif
+
+	# Clean up so we don't permanently alter the staged contents.
+	$(RM) -f '$(DIST)/$(MOZ_PKG_DIR)/browser/pmundprt.mod'
+
 make-package: FORCE
 	$(MAKE) make-package-internal
 ifeq (WINNT,$(OS_ARCH))
@@ -98,6 +116,10 @@ ifeq ($(MOZ_PKG_FORMAT),ZIP)
 	$(MAKE) -C windows ZIP_IN='$(ABS_DIST)/$(PACKAGE)' installer
 endif
 endif
+
+	# New: also generate portable .7z artifact (with pmundprt.mod embedded).
+	$(MAKE) make-archive-7z-portable
+
 ifdef MOZ_AUTOMATION
 	cp $(DEPTH)/mozinfo.json $(MOZ_MOZINFO_FILE)
 	$(PYTHON) $(MOZILLA_DIR)/toolkit/mozapps/installer/informulate.py \

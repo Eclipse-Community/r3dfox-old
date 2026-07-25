@@ -25,6 +25,11 @@ MBSDIFF_BIN	= $(DIST)/host/bin/mbsdiff$(HOST_BIN_SUFFIX)
 OVERRIDE_DEFAULT_GOAL := full-update
 full-update:: complete-patch
 
+ifeq ($(OS_TARGET), WINNT)
+MOZ_PKG_FORMAT	:= SFX7Z
+UNPACKAGE	= '$(subst $(DIST),$(ABS_DIST),$(INSTALLER_PACKAGE))'
+endif
+
 include $(topsrcdir)/config/rules.mk
 include $(topsrcdir)/toolkit/mozapps/installer/packager.mk
 
@@ -43,6 +48,14 @@ endif
 dir-stage := $(call mkdir_deps,$(STAGE_DIR))
 
 complete-patch:: $(dir-stage)
+# unpack the windows installer, unless we're an l10n repack, we just packed this
+ifndef IS_LANGUAGE_REPACK
+ifeq ($(OS_TARGET), WINNT)
+	test -f $(UNPACKAGE)
+	$(RM) -rf '$(PACKAGE_DIR)'
+	cd $(PACKAGE_BASE_DIR) && $(INNER_UNMAKE_PACKAGE)
+endif
+endif
 	MAR=$(MAR_BIN) \
 	MOZ_PRODUCT_VERSION=$(MOZ_APP_VERSION) \
 	  $(srcdir)/make_full_update.sh \

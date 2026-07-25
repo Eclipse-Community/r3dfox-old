@@ -3,10 +3,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 package:
-	@$(MAKE) -C browser/installer make-archive
-
-mozpackage:
-	@$(MAKE) -C browser/installer make-package
+	@$(MAKE) -C browser/installer
 
 package-compare:
 	@$(MAKE) -C browser/installer package-compare

@@ -771,26 +771,11 @@ class Package(MachCommandBase):
     """Package the built product for distribution."""
 
     @Command('package', category='post-build',
-        description='Package the built product for distribution as an archive.')
+        description='Package the built product for distribution as an APK, DMG, etc.')
     @CommandArgument('-v', '--verbose', action='store_true',
         help='Verbose output for what commands the packaging process is running.')
     def package(self, verbose=False):
         ret = self._run_make(directory=".", target='package',
-                             silent=not verbose, ensure_exit_code=False)
-        if ret == 0:
-            self.notify('Packaging complete')
-        return ret
-
-@CommandProvider
-class Mozpackage(MachCommandBase):
-    """Package the built product for distribution."""
-
-    @Command('mozpackage', category='post-build',
-        description='Package the built product for distribution as an archive. (mozilla orginal routine)')
-    @CommandArgument('-v', '--verbose', action='store_true',
-        help='Verbose output for what commands the packaging process is running.')
-    def mozpackage(self, verbose=False):
-        ret = self._run_make(directory=".", target='mozpackage',
                              silent=not verbose, ensure_exit_code=False)
         if ret == 0:
             self.notify('Packaging complete')

@@ -757,14 +757,6 @@ class ClangCommands(MachCommandBase):
         print('-I%s/ipc/glue' % self.topsrcdir)
         print('-I%s/ipc/ipdl/_ipdlheaders' % self.topobjdir)
 
-@CommandProvider
-class Stage_Package(MachCommandBase):
-    """Stage the built product for distribution but do not create an archive."""
-
-    @Command('stage', category='post-build',
-        description='Stage the built product for distribution but do not create an archive.')
-    def stage_package(self):
-        return self._run_make(directory=".", target='stage-package', ensure_exit_code=False)
 
 @CommandProvider
 class Package(MachCommandBase):

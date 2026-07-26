@@ -5,7 +5,12 @@
 include $(topsrcdir)/toolkit/mozapps/installer/package-name.mk
 
 CONFIG_DIR = instgen
+
+ifdef ECX_OFFICIAL
+SFX_MODULE = $(topsrcdir)/other-licenses/7zstub/eclipse/7zSD.sfx
+else
 SFX_MODULE = $(topsrcdir)/other-licenses/7zstub/unofficial/7zSD.sfx
+endif
 
 INSTALLER_FILES = \
 	app.tag \

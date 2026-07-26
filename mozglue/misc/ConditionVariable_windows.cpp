@@ -15,87 +15,11 @@
 #include "mozilla/PlatformMutex.h"
 #include "MutexPlatformData_windows.h"
 
-// Some versions of the Windows SDK have a bug where some interlocked functions
-// are not redefined as compiler intrinsics. Fix that for the interlocked
-// functions that are used in this file.
-#if defined(_MSC_VER) && !defined(InterlockedExchangeAdd)
-#define InterlockedExchangeAdd(addend, value) \
-  _InterlockedExchangeAdd((volatile long*)(addend), (long)(value))
-#endif
+// Windows XP and Server 2003 do not support condition variables natively.
+// This implementation always uses the fallback (no native condvars).
+// Should be similar enough in performance to native condvars.
+// Also helps to stability test this workaround if all operating systems use it.
 
-#if defined(_MSC_VER) && !defined(InterlockedIncrement)
-#define InterlockedIncrement(addend) \
-  _InterlockedIncrement((volatile long*)(addend))
-#endif
-
-// Windows XP and Server 2003 don't support condition variables natively. The
-// NativeImports class is responsible for detecting native support and
-// retrieving the appropriate function pointers. It gets instantiated once,
-// using a static initializer.
-class ConditionVariableNativeImports {
- public:
-  ConditionVariableNativeImports() {
-    HMODULE kernel32_dll = GetModuleHandle("kernel32.dll");
-    MOZ_RELEASE_ASSERT(kernel32_dll != NULL);
-
-#define LOAD_SYMBOL(symbol) loadSymbol(kernel32_dll, #symbol, symbol)
-    supported_ = LOAD_SYMBOL(InitializeConditionVariable) &&
-                 LOAD_SYMBOL(WakeConditionVariable) &&
-                 LOAD_SYMBOL(WakeAllConditionVariable) &&
-                 LOAD_SYMBOL(SleepConditionVariableCS);
-#undef LOAD_SYMBOL
-  }
-
-  inline bool supported() const {
-    return supported_;
-  }
-
-  void(WINAPI* InitializeConditionVariable)(CONDITION_VARIABLE* ConditionVariable);
-  void(WINAPI* WakeAllConditionVariable)(PCONDITION_VARIABLE ConditionVariable);
-  void(WINAPI* WakeConditionVariable)(CONDITION_VARIABLE* ConditionVariable);
-  BOOL(WINAPI* SleepConditionVariableCS)(CONDITION_VARIABLE* ConditionVariable,
-                                         CRITICAL_SECTION* CriticalSection,
-                                         DWORD dwMilliseconds);
-
- private:
-  template <typename T>
-  inline bool loadSymbol(HMODULE module, const char* name, T& fn) {
-    FARPROC ptr = GetProcAddress(module, name);
-    if (!ptr)
-      return false;
-
-    fn = reinterpret_cast<T>(ptr);
-    return true;
-  }
-
-  bool supported_;
-};
-
-static ConditionVariableNativeImports sNativeImports;
-
-// Wrapper for native condition variable APIs.
-struct ConditionVariableNative {
-  inline void initialize() {
-    sNativeImports.InitializeConditionVariable(&cv_);
-  }
-
-  inline void destroy() {
-    // Native condition variables don't require cleanup.
-  }
-
-  inline void notify_one() { sNativeImports.WakeConditionVariable(&cv_); }
-
-  inline void notify_all() { sNativeImports.WakeAllConditionVariable(&cv_); }
-
-  inline bool wait(CRITICAL_SECTION* cs, DWORD msec) {
-    return sNativeImports.SleepConditionVariableCS(&cv_, cs, msec);
-  }
-
- private:
-  CONDITION_VARIABLE cv_;
-};
-
-// Fast fallback condition variable support for Windows XP and Server 2003.
 struct ConditionVariableFallback {
   uint32_t waiting;
   CRITICAL_SECTION lock_waiting;
@@ -112,9 +36,7 @@ struct ConditionVariableFallback {
     InitializeCriticalSection(&lock_waiting);
 
     events[SIGNAL] = CreateEventW(NULL, FALSE, FALSE, NULL);
-
     events[BROADCAST] = CreateEventW(NULL, TRUE, FALSE, NULL);
-
     broadcast_block_event = CreateEventW(NULL, TRUE, TRUE, NULL);
   }
 
@@ -122,48 +44,40 @@ struct ConditionVariableFallback {
     DeleteCriticalSection(&lock_waiting);
 
     CloseHandle(events[SIGNAL]);
-
     CloseHandle(events[BROADCAST]);
-
     CloseHandle(broadcast_block_event);
   }
 
  public:
   void notify_one() {
     EnterCriticalSection(&lock_waiting);
-  
     if (waiting > 0) {
       SetEvent(events[SIGNAL]);
     }
-
     LeaveCriticalSection(&lock_waiting);
   }
 
   void notify_all() {
     EnterCriticalSection(&lock_waiting);
 
-  /* The mutex protects us from broadcasting if
-     there isn't any thread waiting to open the
-     block gate after this call has closed it. */
+    // Protects us from broadcasting if there isn't any thread waiting to
+    // open the block gate after this call has closed it.
     if (waiting > 0) {
-      /* Close block gate */
-      ResetEvent(broadcast_block_event); 
-      /* Open broadcast gate */
+      // Close block gate
+      ResetEvent(broadcast_block_event);
+      // Open broadcast gate
       SetEvent(events[BROADCAST]);
     }
 
-    LeaveCriticalSection(&lock_waiting);  
+    LeaveCriticalSection(&lock_waiting);
   }
 
   bool wait(CRITICAL_SECTION* userLock, DWORD msec) {
     int result;
-    DWORD timeout; 
+    DWORD timeout = msec;
 
-    timeout= msec;
- 
-  /* Block access if previous broadcast hasn't finished.
-     This is just for safety and should normally not
-     affect the total time spent in this function. */
+    // Block access if previous broadcast hasn't finished. This should normally
+    // not affect total time spent in this function.
     WaitForSingleObject(broadcast_block_event, INFINITE);
 
     EnterCriticalSection(&lock_waiting);
@@ -171,22 +85,21 @@ struct ConditionVariableFallback {
     LeaveCriticalSection(&lock_waiting);
 
     LeaveCriticalSection(userLock);
-    result= WaitForMultipleObjects(2, events, FALSE, timeout);
-  
+
+    result = WaitForMultipleObjects(2, events, FALSE, timeout);
+
     EnterCriticalSection(&lock_waiting);
     waiting--;
-  
+
     if (waiting == 0) {
-      /* We're the last waiter to be notified or to stop waiting,
-         so reset the manual event. */
-      /* Close broadcast gate */
+      // We're the last waiter to be notified or to stop waiting.
+      // Reset state so next broadcast can proceed.
       ResetEvent(events[BROADCAST]);
-      /* Open block gate */
       SetEvent(broadcast_block_event);
     }
 
     LeaveCriticalSection(&lock_waiting);
-  
+
     EnterCriticalSection(userLock);
 
     // Return true if woken up, false when timed out.
@@ -194,46 +107,29 @@ struct ConditionVariableFallback {
       SetLastError(ERROR_TIMEOUT);
       return false;
     }
-
     return true;
   }
 };
 
 struct mozilla::detail::ConditionVariableImpl::PlatformData {
-  union {
-    ConditionVariableNative native;
-    ConditionVariableFallback fallback;
-  };
+  ConditionVariableFallback fallback;
 };
 
 mozilla::detail::ConditionVariableImpl::ConditionVariableImpl() {
-  if (sNativeImports.supported())
-    platformData()->native.initialize();
-  else
-    platformData()->fallback.initialize();
+  platformData()->fallback.initialize();
 }
 
 void mozilla::detail::ConditionVariableImpl::notify_one() {
-  if (sNativeImports.supported())
-    platformData()->native.notify_one();
-  else
-    platformData()->fallback.notify_one();
+  platformData()->fallback.notify_one();
 }
 
 void mozilla::detail::ConditionVariableImpl::notify_all() {
-  if (sNativeImports.supported())
-    platformData()->native.notify_all();
-  else
-    platformData()->fallback.notify_all();
+  platformData()->fallback.notify_all();
 }
 
 void mozilla::detail::ConditionVariableImpl::wait(MutexImpl& lock) {
   CRITICAL_SECTION* cs = &lock.platformData()->criticalSection;
-  bool r;
-  if (sNativeImports.supported())
-    r = platformData()->native.wait(cs, INFINITE);
-  else
-    r = platformData()->fallback.wait(cs, INFINITE);
+  bool r = platformData()->fallback.wait(cs, INFINITE);
   MOZ_RELEASE_ASSERT(r);
 }
 
@@ -246,11 +142,9 @@ mozilla::detail::CVStatus mozilla::detail::ConditionVariableImpl::wait_for(
 
   CRITICAL_SECTION* cs = &lock.platformData()->criticalSection;
 
-  // Note that DWORD is unsigned, so we have to be careful to clamp at 0. If
-  // rel_time is Forever, then ToMilliseconds is +inf, which evaluates as
-  // greater than UINT32_MAX, resulting in the correct INFINITE wait. We also
-  // don't want to round sub-millisecond waits to 0, as that wastes energy (see
-  // bug 1437167 comment 6), so we instead round submillisecond waits to 1ms.
+  // Note that DWORD is unsigned, so we have to be careful to clamp at 0.
+  // If rel_time is Forever, then ToMilliseconds is +inf, resulting in INFINITE.
+  // Don't round sub-millisecond waits to 0; round them to 1ms instead.
   double msecd = rel_time.ToMilliseconds();
   DWORD msec;
   if (msecd < 0.0) {
@@ -259,27 +153,19 @@ mozilla::detail::CVStatus mozilla::detail::ConditionVariableImpl::wait_for(
     msec = INFINITE;
   } else {
     msec = static_cast<DWORD>(msecd);
-    // Round submillisecond waits to 1ms.
     if (msec == 0 && !rel_time.IsZero()) {
       msec = 1;
     }
   }
 
-  BOOL r;
-  if (sNativeImports.supported())
-    r = platformData()->native.wait(cs, msec);
-  else
-    r = platformData()->fallback.wait(cs, msec);
+  BOOL r = platformData()->fallback.wait(cs, msec) ? TRUE : FALSE;
   if (r) return CVStatus::NoTimeout;
   MOZ_RELEASE_ASSERT(GetLastError() == ERROR_TIMEOUT);
   return CVStatus::Timeout;
 }
 
 mozilla::detail::ConditionVariableImpl::~ConditionVariableImpl() {
-  if (sNativeImports.supported())
-    platformData()->native.destroy();
-  else
-    platformData()->fallback.destroy();
+  platformData()->fallback.destroy();
 }
 
 inline mozilla::detail::ConditionVariableImpl::PlatformData*

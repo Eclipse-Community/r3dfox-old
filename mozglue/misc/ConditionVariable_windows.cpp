@@ -97,110 +97,106 @@ struct ConditionVariableNative {
 
 // Fast fallback condition variable support for Windows XP and Server 2003.
 struct ConditionVariableFallback {
-  enum : uint32_t {
-    C_SIGNAL = 0,
-    C_BROADCAST = 1,
-    C_MAX_EVENTS = 2
-  };
+  uint32_t waiting;
+  CRITICAL_SECTION lock_waiting;
+  enum {
+    SIGNAL = 0,
+    BROADCAST = 1,
+    MAX_EVENTS = 2
+  } EVENTS;
+  HANDLE events[MAX_EVENTS];
+  HANDLE broadcast_block_event;
 
   void initialize() {
-    waitersCount_ = 0;
-    waitersCountLock_ = 0;
+    waiting = 0;
+    InitializeCriticalSection(&lock_waiting);
 
-    events_[C_SIGNAL] = CreateEventW(NULL, FALSE, FALSE, NULL);
-    MOZ_RELEASE_ASSERT(events_[C_SIGNAL]);
+    events[SIGNAL] = CreateEventW(NULL, FALSE, FALSE, NULL);
 
-    events_[C_BROADCAST] = CreateEventW(NULL, TRUE, FALSE, NULL);
-    MOZ_RELEASE_ASSERT(events_[C_BROADCAST]);
+    events[BROADCAST] = CreateEventW(NULL, TRUE, FALSE, NULL);
+
+    broadcast_block_event = CreateEventW(NULL, TRUE, TRUE, NULL);
   }
 
   void destroy() {
-    BOOL r;
-    r = CloseHandle(events_[C_SIGNAL]);
-    MOZ_RELEASE_ASSERT(r);
+    DeleteCriticalSection(&lock_waiting);
 
-    r = CloseHandle(events_[C_BROADCAST]);
-    MOZ_RELEASE_ASSERT(r);
+    CloseHandle(events[SIGNAL]);
+
+    CloseHandle(events[BROADCAST]);
+
+    CloseHandle(broadcast_block_event);
   }
 
+ public:
   void notify_one() {
-    bool haveWaiters;
-    lock_();
-    haveWaiters = (waitersCount_ > 0);
-    unlock_();
-
-    if (haveWaiters) {
-      BOOL success = SetEvent(events_[C_SIGNAL]);
-      MOZ_RELEASE_ASSERT(success);
+    EnterCriticalSection(&lock_waiting);
+  
+    if (waiting > 0) {
+      SetEvent(events[SIGNAL]);
     }
+
+    LeaveCriticalSection(&lock_waiting);
   }
 
   void notify_all() {
-    bool haveWaiters;
-    lock_();
-    haveWaiters = (waitersCount_ > 0);
-    unlock_();
+    EnterCriticalSection(&lock_waiting);
 
-    if (haveWaiters) {
-      BOOL success = SetEvent(events_[C_BROADCAST]);
-      MOZ_RELEASE_ASSERT(success);
+  /* The mutex protects us from broadcasting if
+     there isn't any thread waiting to open the
+     block gate after this call has closed it. */
+    if (waiting > 0) {
+      /* Close block gate */
+      ResetEvent(broadcast_block_event); 
+      /* Open broadcast gate */
+      SetEvent(events[BROADCAST]);
     }
+
+    LeaveCriticalSection(&lock_waiting);  
   }
 
   bool wait(CRITICAL_SECTION* userLock, DWORD msec) {
-    lock_();
-    ++waitersCount_;
-    unlock_();
+    int result;
+    DWORD timeout; 
+
+    timeout= msec;
+ 
+  /* Block access if previous broadcast hasn't finished.
+     This is just for safety and should normally not
+     affect the total time spent in this function. */
+    WaitForSingleObject(broadcast_block_event, INFINITE);
+
+    EnterCriticalSection(&lock_waiting);
+    waiting++;
+    LeaveCriticalSection(&lock_waiting);
 
     LeaveCriticalSection(userLock);
-
-    HANDLE handles[C_MAX_EVENTS] = {events_[C_SIGNAL], events_[C_BROADCAST]};
-    DWORD waitResult = WaitForMultipleObjects(C_MAX_EVENTS, handles, FALSE, msec);
-    MOZ_RELEASE_ASSERT(waitResult == WAIT_OBJECT_0 ||
-                       waitResult == WAIT_OBJECT_0 + 1 ||
-                       waitResult == WAIT_TIMEOUT);
-
-    lock_();
-    --waitersCount_;
-    if (waitersCount_ == 0) {
-      BOOL success = ResetEvent(events_[C_BROADCAST]);
-      MOZ_RELEASE_ASSERT(success);
+    result= WaitForMultipleObjects(2, events, FALSE, timeout);
+  
+    EnterCriticalSection(&lock_waiting);
+    waiting--;
+  
+    if (waiting == 0) {
+      /* We're the last waiter to be notified or to stop waiting,
+         so reset the manual event. */
+      /* Close broadcast gate */
+      ResetEvent(events[BROADCAST]);
+      /* Open block gate */
+      SetEvent(broadcast_block_event);
     }
-    unlock_();
 
-    // Reacquire the user mutex.
+    LeaveCriticalSection(&lock_waiting);
+  
     EnterCriticalSection(userLock);
 
     // Return true if woken up, false when timed out.
-    if (waitResult == WAIT_TIMEOUT) {
+    if (result == WAIT_TIMEOUT) {
       SetLastError(ERROR_TIMEOUT);
       return false;
     }
+
     return true;
   }
-
- private:
-  void lock_() {
-    for (int spin = 0;; ++spin) {
-      if (InterlockedCompareExchange(&waitersCountLock_, 1, 0) == 0)
-        return;
-
-      // Backoff: first yield the pipeline a bit, then let the scheduler run.
-      if ((spin & 0x3F) == 0)
-        SwitchToThread();     // or Sleep(0)
-      else
-        YieldProcessor();
-    }
-  }
-
-  void unlock_() {
-    InterlockedExchange(&waitersCountLock_, 0);
-  }
-
- private:
-  uint32_t waitersCount_ = 0;
-  volatile LONG waitersCountLock_ = 0;
-  HANDLE events_[C_MAX_EVENTS]{};
 };
 
 struct mozilla::detail::ConditionVariableImpl::PlatformData {

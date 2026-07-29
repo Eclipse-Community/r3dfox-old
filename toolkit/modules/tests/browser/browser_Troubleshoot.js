@@ -774,10 +774,6 @@ const SNAPSHOT_SCHEMA = {
           required: AppConstants.MOZ_SANDBOX,
           type: "number",
         },
-        effectiveContentSandboxLevel: {
-          required: AppConstants.MOZ_SANDBOX,
-          type: "number",
-        },
         syscallLog: {
           required: AppConstants.platform == "linux",
           type: "array",

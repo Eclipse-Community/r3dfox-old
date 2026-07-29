@@ -794,8 +794,6 @@ if (AppConstants.MOZ_SANDBOX) {
       data.contentSandboxLevel = Services.prefs.getIntPref(
         "security.sandbox.content.level"
       );
-      data.effectiveContentSandboxLevel =
-        sandboxSettings.effectiveContentSandboxLevel;
     }
 
     done(data);

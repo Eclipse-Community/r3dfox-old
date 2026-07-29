@@ -98,7 +98,6 @@
 #endif
 
 #if defined(MOZ_SANDBOX)
-#  include "mozilla/SandboxSettings.h"
 #  include "mozilla/Preferences.h"
 #endif
 
@@ -308,7 +307,7 @@ void SetTaskbarGroupId(const nsString& aId) {
 #if defined(MOZ_SANDBOX)
 void AddContentSandboxLevelAnnotation() {
   if (XRE_GetProcessType() == GeckoProcessType_Content) {
-    int level = GetEffectiveContentSandboxLevel();
+    int level = Preferences::GetInt("security.sandbox.content.level");
     CrashReporter::AnnotateCrashReport(
         CrashReporter::Annotation::ContentSandboxLevel, level);
   }

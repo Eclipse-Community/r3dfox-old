@@ -17,7 +17,6 @@
 #endif
 
 #if (defined(XP_WIN) || defined(XP_MACOSX)) && defined(MOZ_SANDBOX)
-#  include "mozilla/SandboxSettings.h"
 #  include "nsAppDirectoryServiceDefs.h"
 #  include "nsDirectoryService.h"
 #  include "nsDirectoryServiceDefs.h"
@@ -32,7 +31,7 @@ namespace dom {
 static bool IsSandboxTempDirRequired() {
   // On Windows, a sandbox-writable temp directory is only used
   // when sandbox pref level >= 1.
-  return GetEffectiveContentSandboxLevel() >= 1;
+  return Preferences::GetInt("security.sandbox.content.level") >= 1;
 }
 
 static void SetTmpEnvironmentVariable(nsIFile* aValue) {

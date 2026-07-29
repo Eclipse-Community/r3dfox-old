@@ -24,7 +24,6 @@
 #include "nsXPCOMPrivate.h"
 
 #if defined(MOZ_SANDBOX)
-#  include "mozilla/SandboxSettings.h"
 #  include "nsAppDirectoryServiceDefs.h"
 #endif
 
@@ -287,7 +286,7 @@ void GeckoChildProcessHost::PrepareLaunch() {
 #  if defined(MOZ_SANDBOX)
   // We need to get the pref here as the process is launched off main thread.
   if (mProcessType == GeckoProcessType_Content) {
-    mSandboxLevel = GetEffectiveContentSandboxLevel();
+    mSandboxLevel = Preferences::GetInt("security.sandbox.content.level");
     mEnableSandboxLogging =
         Preferences::GetBool("security.sandbox.logging.enabled");
 

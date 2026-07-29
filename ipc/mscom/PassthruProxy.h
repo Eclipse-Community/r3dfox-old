@@ -11,9 +11,6 @@
 #include "mozilla/mscom/ProxyStream.h"
 #include "mozilla/mscom/Ptr.h"
 #include "mozilla/NotNull.h"
-#if defined(MOZ_SANDBOX)
-#  include "mozilla/SandboxSettings.h"
-#endif  // defined(MOZ_SANDBOX)
 
 #include <objbase.h>
 
@@ -38,7 +35,7 @@ class PassthruProxy final : public IMarshal, public IClientSecurity {
     static_assert(detail::VTableSizer<Iface>::Size >= 3, "VTable too small");
 
 #if defined(MOZ_SANDBOX)
-    if (mozilla::GetEffectiveContentSandboxLevel() < 3) {
+    if (Preferences::GetInt("security.sandbox.content.level") < 3) {
       // The sandbox isn't strong enough to be a problem; no wrapping required
       return aIn.get();
     }

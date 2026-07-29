@@ -178,6 +178,10 @@ add_task(async function() {
 
   info(`security.sandbox.content.level=${level}`);
   ok(level > 0, "content sandbox is enabled.");
+  if (level == 0) {
+    info("content sandbox is not enabled, exiting");
+    return;
+  }
 
   let areSyscallsSandboxed = areContentSyscallsSandboxed(level);
 

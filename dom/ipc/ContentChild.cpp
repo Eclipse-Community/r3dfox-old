@@ -112,7 +112,6 @@
 #endif
 
 #if defined(MOZ_SANDBOX)
-#  include "mozilla/SandboxSettings.h"
 #  if defined(XP_WIN)
 #    include "mozilla/sandboxTarget.h"
 #  elif defined(XP_LINUX)
@@ -1578,7 +1577,7 @@ static bool StartMacOSContentSandbox() {
   // is called.
   CGSShutdownServerConnections();
 
-  int sandboxLevel = GetEffectiveContentSandboxLevel();
+  int sandboxLevel = Preferences::GetInt("security.sandbox.content.level");
   if (sandboxLevel < 1) {
     return false;
   }

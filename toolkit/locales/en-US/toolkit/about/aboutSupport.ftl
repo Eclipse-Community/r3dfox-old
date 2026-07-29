@@ -262,7 +262,6 @@ has-privileged-user-namespaces = User Namespaces for privileged processes
 can-sandbox-content = Content Process Sandboxing
 can-sandbox-media = Media Plugin Sandboxing
 content-sandbox-level = Content Process Sandbox Level
-effective-content-sandbox-level = Effective Content Process Sandbox Level
 sandbox-proc-type-content = content
 sandbox-proc-type-file = file content
 sandbox-proc-type-media-plugin = media plugin

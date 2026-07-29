@@ -12,7 +12,6 @@
 #include "mozilla/Array.h"
 #include "mozilla/ClearOnShutdown.h"
 #include "mozilla/Preferences.h"
-#include "mozilla/SandboxSettings.h"
 #include "mozilla/UniquePtr.h"
 #include "mozilla/UniquePtrExtensions.h"
 #include "mozilla/SandboxLaunch.h"
@@ -423,7 +422,7 @@ UniquePtr<SandboxBroker::Policy> SandboxBrokerPolicyFactory::GetContentPolicy(
 
   MOZ_ASSERT(NS_IsMainThread());
   // The file broker is used at level 2 and up.
-  if (GetEffectiveContentSandboxLevel() <= 1) {
+  if (Preferences::GetInt("security.sandbox.content.level") <= 1) {
     return nullptr;
   }
 

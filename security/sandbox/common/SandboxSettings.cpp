@@ -9,16 +9,11 @@
 #include "mozilla/Components.h"
 #include "mozilla/Preferences.h"
 
-#include "prenv.h"
-
 using namespace mozilla;
 
 namespace mozilla {
 
 int GetEffectiveContentSandboxLevel() {
-  if (PR_GetEnv("MOZ_DISABLE_CONTENT_SANDBOX")) {
-    return 0;
-  }
   int level = Preferences::GetInt("security.sandbox.content.level");
 // On Windows and macOS, enforce a minimum content sandbox level of 1 (except on
 // Nightly, where it can be set to 0).
@@ -36,8 +31,6 @@ int GetEffectiveContentSandboxLevel() {
 
   return level;
 }
-
-bool IsContentSandboxEnabled() { return GetEffectiveContentSandboxLevel() > 0; }
 
 #if defined(XP_MACOSX)
 int ClampFlashSandboxLevel(const int aLevel) {

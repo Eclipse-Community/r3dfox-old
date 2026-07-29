@@ -2571,7 +2571,8 @@ void ContentParent::InitInternal(ProcessPriority aInitialPriority) {
   // should be changed so that it is required to restart firefox for the change
   // of value to take effect. Always send SetProcessSandbox message on macOS.
 #  if !defined(XP_MACOSX)
-  shouldSandbox = IsContentSandboxEnabled();
+  shouldSandbox = (GetEffectiveContentSandboxLevel() > 0) &&
+    !PR_GetEnv("MOZ_DISABLE_CONTENT_SANDBOX");
 #  endif
 
 #  ifdef XP_LINUX

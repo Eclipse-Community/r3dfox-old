@@ -727,7 +727,7 @@ nsresult nsXREDirProvider::LoadPluginProcessTempDir() {
 
 static bool IsContentSandboxDisabled() {
   return !mozilla::BrowserTabsRemoteAutostart() ||
-         (!mozilla::IsContentSandboxEnabled());
+         (!mozilla::GetEffectiveContentSandboxLevel() < 1);
 }
 
 //

@@ -1100,7 +1100,8 @@ bool GeckoChildProcessHost::PerformAsyncLaunch(
   // of reorganizing so I don't think this patch is the right time.
   switch (mProcessType) {
     case GeckoProcessType_Content:
-      if (mSandboxLevel > 0) {
+      if (mSandboxLevel > 0 &&
+          !PR_GetEnv("MOZ_DISABLE_CONTENT_SANDBOX")) {
         // For now we treat every failure as fatal in
         // SetSecurityLevelForContentProcess and just crash there right away.
         // Should this change in the future then we should also handle the error

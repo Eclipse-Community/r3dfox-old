@@ -64,7 +64,6 @@
 #endif
 
 #if defined(MOZ_CONTENT_SANDBOX)
-#include "mozilla/SandboxSettings.h"
 #include "nsIUUIDGenerator.h"
 #include "mozilla/Unused.h"
 #if defined(XP_WIN)
@@ -650,7 +649,14 @@ nsresult nsXREDirProvider::LoadContentProcessTempDir() {
 }
 
 static bool IsContentSandboxDisabled() {
-  return !BrowserTabsRemoteAutostart() || (GetEffectiveContentSandboxLevel() < 1);
+  if (!BrowserTabsRemoteAutostart()) {
+    return false;
+  }
+
+  const bool isSandboxDisabled =
+    Preferences::GetInt("security.sandbox.content.level") < 1;
+
+  return isSandboxDisabled;
 }
 
 //
